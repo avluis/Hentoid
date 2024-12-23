@@ -261,7 +261,7 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
                 VIEWER_SLIDESHOW_LOOP_CHAPTER -> loopChapter(currentImg, changed)
                 VIEWER_SLIDESHOW_LOOP_BOOK -> loopBook(currentImg, false, changed)
                 VIEWER_SLIDESHOW_FOLLOW_CONTINUOUS -> loopBook(currentImg, true, changed)
-                else -> {} // Nothing
+                else -> pager.nextPage()
             }
         }
     }
