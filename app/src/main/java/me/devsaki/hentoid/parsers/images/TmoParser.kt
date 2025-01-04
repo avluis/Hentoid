@@ -1,10 +1,12 @@
 package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.formatIntAsStr
 import me.devsaki.hentoid.util.network.getOnlineDocument
+import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import org.jsoup.nodes.Element
 
 class TmoParser : BaseImageListParser() {
@@ -19,7 +21,19 @@ class TmoParser : BaseImageListParser() {
             for (e in thumbs) {
                 val s = getImgSrc(e)
                 if (s.isEmpty()) continue
-                result.add(serverUrl + formatIntAsStr(index++, 3) + ".webp")
+                val url = serverUrl + formatIntAsStr(index++, 3) + ".webp"
+                // Sometimes, index 0 doesn't exist (discrepancy)
+                if (1 == index) {
+                    val response = getOnlineResourceFast(
+                        url,
+                        null,
+                        Site.TMO.useMobileAgent,
+                        Site.TMO.useHentoidAgent,
+                        Site.TMO.useWebviewAgent
+                    )
+                    if (response.code >= 400) continue
+                }
+                result.add(url)
             }
             return result
         }
