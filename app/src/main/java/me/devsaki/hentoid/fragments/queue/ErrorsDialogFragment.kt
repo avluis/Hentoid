@@ -107,10 +107,10 @@ class ErrorsDialogFragment : BaseDialogFragment<ErrorsDialogFragment.Parent>() {
         val errorLogInfo = LogInfo("error_log" + content.id)
         errorLogInfo.setHeaderName("Error")
         errorLogInfo.setNoDataMessage("No error detected.")
-        errorLogInfo.setEntries(log)
-        val errorLog: List<ErrorRecord> = content.errorLog
+        val errorLog = content.errorLog
         errorLogInfo.setHeader("Error log for " + content.title + " [" + content.uniqueSiteId + "@" + content.site.description + "] : " + errorLog.size + " errors")
         for (e in errorLog) log.add(LogEntry(e.timestamp, e.toString()))
+        errorLogInfo.setEntries(log)
         return errorLogInfo
     }
 

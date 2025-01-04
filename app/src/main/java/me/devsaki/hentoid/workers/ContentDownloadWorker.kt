@@ -1225,9 +1225,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val statusCode = error.statusCode
         val message = error.message + if (img.isBackup) " (from backup URL)" else ""
         var cause = "Network error"
-        if (error.type === RequestOrder.NetworkErrorType.FILE_IO) cause =
-            "File I/O" else if (error.type === RequestOrder.NetworkErrorType.PARSE) cause =
-            "Parsing"
+        if (error.type === RequestOrder.NetworkErrorType.FILE_IO) cause = "File I/O"
+        else if (error.type === RequestOrder.NetworkErrorType.PARSE) cause = "Parsing"
         Timber.d("$message $cause")
         updateImageProperties(img, false, "")
         logErrorRecord(
