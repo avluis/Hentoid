@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Interface -->
+    <string name="pref_screen_interface">Gränssnitt &amp; Navigation</string>
+    <string name="pref_cat_library">Bibliotek</string>
+    <string name="pref_drawer_sources_title">Hantera källor</string>
+    <string name="pref_drawer_sources_summary">Aktivera, inaktivera och omorganisera webbplatser som dyker upp på det vänstra navigationsfältet</string>
+    <string name="pref_library_display_title">Visningstyp</string>
+    <string name="pref_library_display_summary">Typ av visningsläge för böcker och grupper\nNuvarande: <x:g example="List" id="display_type">%s</x:g></string>
+    <string name="pref_endless_scroll_title">Oändligt skrollande</string>
+    <string name="pref_endless_scroll_summary_off">Tillåter ändlöst skrollande i nedladdningslistan\nStänger av bläddrande</string>
+    <string name="pref_endless_scroll_summary_on">Skrolla så mycket du vill \'s</string>
+    <string name="pref_quantity_per_page_title">Kvantitet per sida</string>
+    <string name="pref_quantity_per_page_summary">Antalet föremål per sida i nedladdningslistan\nNuvarande: <x:g example="10" id="count">%s</x:g> föremål</string>
+    <string name="pref_top_fab_title">Knapp för att gå tillbaka till toppen</string>
+    <string name="pref_top_fab_summary_off">Knapp avstängd</string>
+    <string name="pref_top_fab_summary_on">Knapp aktiverad</string>
+    <string name="pref_cat_library_grid">Bibliotek / Rutnätsvysanpassning</string>
+    <string name="pref_display_grid_title_title">Titel</string>
+    <string name="pref_display_grid_lang_title">Språkflagga</string>
+    <string name="pref_display_grid_fav_title">Favorisera</string>
+    <string name="pref_display_grid_rating_title">Betygsätt</string>
+    <string name="pref_display_grid_source_title">Visa källa</string>
+    <string name="pref_display_grid_storage_title">Lagringsinformation</string>
+    <string name="pref_grid_card_width">Bokvisningsbredd</string>
+    <string name="pref_cat_search">Avancerad sök</string>
+    <string name="pref_attributes_list_order_title">Sorteringsordning av visad metadata</string>
+    <string name="pref_attributes_list_count_title">Räkna tillgängliga böcker</string>
+    <string name="pref_attributes_list_count_on">Antalet tillgängliga böcker visas intill varje attribut</string>
+    <string name="pref_attributes_list_count_off">Antalet tillgängliga böcker visas inte</string>
+    <string name="pref_cat_theme">Apptema</string>
+    <string name="pref_color_theme_title">Färgtema</string>
+    <string name="pref_color_theme_summary">Nuvarande tema: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
+    <string name="pref_misc">Diverse</string>
+    <string name="pref_cat_language">Gränssnittsspråk</string>
+    <string name="pref_force_english_title">Tvinga engelsk text</string>
+    <string name="pref_force_english_summary_off">Använd din enhets\ språk\n om översättning finns</string>
+    <string name="pref_force_english_summary_on">Använd engelska</string>
+
+    <!-- Storage -->
+    <string name="pref_screen_storage">Lagring</string>
+    <string name="pref_cat_downloads_folder">Hentoidbibliotek</string>
+    <string name="pref_select_folder_title">Välj nedladdningsmapp</string>
+    <string name="pref_select_folder_summary">Välj var Hentoid ska lagra dina nedladdningar</string>
+    <string name="pref_import_queue_empty_title">Köa tomma importerade böcker som felande</string>
+    <string name="pref_import_queue_empty_on">Tomma importerade böcker kommer läggas till kön som felande</string>
+    <string name="pref_import_queue_empty_off">Tomma importerade böcker kommer läggas till i biblioteket</string>
+    <string name="pref_folder_naming_content_title">Mappnamn</string>
+    <string name="pref_folder_naming_content_summary">Mapp-namnkonvention:\n<x:g example="Name - ID" id="convention">%s</x:g></string>
+    <string name="pref_import_running">Importera körs redan</string>
+    <string name="pref_import_browser_mode">Appen är i surfläge</string>
+    <string name="prefs_ask_detach_external_library">Koppla från det externa biblioteket\?</string>
+    <string name="prefs_external_library_detached">Externt bibliotek frånkopplat</string>
+    <string name="pref_folder_trunc_title">Stympa mappnamnet</string>
+    <string name="pref_folder_trunc_summary">Mappnamns-stympning\n nuvarande: <x:g example="80 characters" id="chars">%s</x:g></string>
+    <string name="pref_memory_usage_title">Lagringsmängd</string>
+    <string name="pref_memory_usage_summary">Nuvarande tillgänglig lagringskapacitet: <x:g example="13.37%" id="percentage">%.2f%%</x:g> (tryck för detaljer)</string>
+    <string name="pref_memory_alert_title">Varna om bristande lagringskapacitet</string>
+    <string name="pref_cat_external">Externt bibliotek</string>
+    <string name="pref_external_library_title">Externt bibliotek</string>
+    <string name="pref_external_library_summary_empty">Inget externt bibliotek har ställts in</string>
+    <string name="pref_external_library_delete_title">Tillåt borttagning av externt innehåll</string>
+    <string name="pref_external_library_delete_on">Hentoid kan ta bort böcker och sidor i det externa biblioteket</string>
+    <string name="pref_external_library_delete_off">Hentoid kan\ varken ta bort böcker eller sidor i det externa biblioteket</string>
+    <string name="pref_external_library_detach_title">Avlägsna externt bibliotek</string>
+    <string name="pref_external_library_detach_summary">Inkludera\ inte längre det externa biblioteket i Hentoid </string>
+    <string name="pref_cat_eh">E-hentai / ExHentai</string>
+    <string name="pref_cat_advanced">Avancerat</string>
+    <string name="pref_refresh_library_title">Fräscha upp biblioteket</string>
+    <string name="pref_refresh_library_summary">Manuellt fräscha upp biblioteksinnehåll</string>
+    <string name="mass_operations_title">Mass handlingar</string>
+    <string name="mass_operations_summary">Mass handlingar på biblioteket</string>
+    <plurals name="pref_ask_delete_all_except_favs">
+        <item quantity="one">Ta bort <x:g example="1" id="count">%d</x:g> bok\?</item>
+        <item quantity="other">Ta bort <x:g example="2" id="count">%d</x:g> böcker\?</item>
+    </plurals>
+
+    <!-- Browser -->
+    <string name="pref_screen_browser">Webbläsare</string>
+    <string name="pref_browser_behaviour">Beteende</string>
+    <string name="pref_browser_resume_last_title">Fortsätt vid senast visad sida</string>
+    <string name="pref_browser_resume_last_off">Any site always opens on its homepage</string>
+    <string name="pref_browser_resume_last_on">Any site opens on its last viewed page</string>
+    <string name="pref_browser_dl_action_title">Nerladdningshandling</string>
+    <string name="pref_browser_quick_dl_title">Snabbnedladdning</string>
+    <string name="pref_browser_quick_dl_summary">På boklista sidan, tryck ner och håll nere fingret över valfri bok för att ladda ner</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">Dölj Nhentai-svartlistade böcker</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_off">Nhentai-svartlistade böcker blurras</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_on">Nhentai-svartlistade böcker osynliggörs</string>
+    <string name="pref_browser_quick_dl_threshold_title">Snabbnedladdnings-håll-nere-tröskel</string>
+    <string name="pref_browser_quick_dl_threshold_summary">Håll nere för den här tidslängden för att påbörja en snabbnedladdning\nNuvarande: <x:g example="1 s" id="time">%s</x:g></string>
+    <string name="pref_browser_duplicate_detector">Dubblettdetektor</string>
+    <string name="pref_browser_duplicate_ask_title">Dubblettkontroll</string>
+    <string name="pref_browser_duplicate_ask_off">Nej: ladda alltid ner</string>
+    <string name="pref_browser_duplicate_ask_on">Ja: fråga innan nedladdning</string>
+    <string name="pref_browser_duplicate_use_title_title">Använd titel</string>
+    <string name="pref_browser_duplicate_use_artist_title">Använd konstnär</string>
+    <string name="pref_browser_duplicate_use_language_title">Använd språk</string>
+    <string name="pref_browser_duplicate_use_cover_title">Använd omslag</string>
+    <string name="pref_browser_duplicate_try_pages_title">Försök finna extra sidor på potentiella dubbletter\?</string>
+    <string name="pref_browser_duplicate_try_pages_off">Försöker endast att finna extra sidor på originalverket</string>
+    <string name="pref_browser_duplicate_try_pages_on">Försöker finna extra sidor på potentiella dubbletter</string>
+    <string name="pref_browser_mark_downloaded_title">Markera nedladdade böcker</string>
+    <string name="pref_browser_mark_downloaded_off">Nedladdade böcker visas inte på något särskilt sätt</string>
+    <string name="pref_browser_mark_downloaded_on">Nedladdade böcker markeras\nNotera: fungerar ej på alla sidor</string>
+    <string name="pref_browser_mark_merged_title">Markera sammanslagna böcker</string>
+    <string name="pref_browser_mark_merged_off">Sammanslagna böcker visas inte på något särskilt sätt</string>
+    <string name="pref_browser_mark_merged_on">Sammanslagna böcker markeras\nNotera: fungerar ej på alla sidor</string>
+    <string name="pref_browser_mark_queued_title">Markera köade böcker</string>
+    <string name="pref_browser_mark_queued_off">Köade böcker visas inte på något särskilt vis</string>
+    <string name="pref_browser_mark_queued_on">Köade böcker markeras\nNotera: fungerar ej på alla sidor</string>
+    <string name="pref_browser_mark_blocked_title">Markera böcker med blockerade etiketter</string>
+    <string name="pref_browser_mark_blocked_off">Böcker med blockerade etiketter visas inte på något utmärkande sätt</string>
+    <string name="pref_browser_mark_blocked_on">Böcker med blockerade etiketter markeras\nNotera: does not work on all sites</string>
+    <string name="pref_browser_blocked_tags_title">Blockerade etiketter</string>
+    <string name="pref_browser_blocked_tags_summary">Tips: separera etiketter med komma</string>
+    <string name="pref_browser_visuals">Visuellt</string>
+    <string name="pref_browser_augmented_title">Förstärkt webbläsare</string>
+    <string name="pref_browser_augmented_off">Beter sig som vanligt</string>
+    <string name="pref_browser_augmented_on">Använder reklamplatsborttagning och snabb behandling</string>
+    <string name="pref_browser_override_overview_title">Stäng av sidöversikt</string>
+    <string name="pref_browser_override_overview_summary_off">Stänger av sidöversikt och låter dig ställa in din föredragna initiala zoomnivå nedan</string>
+    <string name="pref_browser_override_overview_summary_on">Justera inställningen nedan för att ställa in din initiala zoomnivå\nObservera: påverkar endast Hitomi och E-Hentai</string>
+    <string name="pref_browser_force_lightmode_title">Tvinga ljust läge</string>
+    <string name="pref_browser_force_lightmode_off">Webbläsaren bestämmer ifall den visar sidor med mörkt eller ljust tema, beroende på appens\ tema</string>
+    <string name="pref_browser_force_lightmode_on">Webbläsaren använder alltid ljust läge</string>
+    <string name="pref_browser_initial_zoom_title">Initial zoomnivå</string>
+    <string name="pref_browser_initial_zoom_summary">Zoomnivå av webbläsarsidor på initial sidladdning\nNuvarande: <x:g example="20%" id="percentage">%s%%</x:g></string>
+    <string name="pref_browser_dns_title">DNS över HTTPS</string>
+    <string name="pref_browser_clear_cookies">Rensa kakor</string>
+    <string name="pref_browser_clear_cookies_site">Sida</string>
+    <string name="pref_browser_clear_cookies_ok">Kakor rensade framgångsrikt</string>
+    <string name="pref_browser_clear_cookies_ko">Ingen kaka att slänga</string>
+    <string name="pref_browser_clear_cookies_missing_webview">Webbvy är otillgänglig, kan\ inte rensa kakor nu</string>
+    <string name="pref_browser_clear_cookies_updating_webview">Webbvy uppdaterar just nu, kan\ inte rensa kakor ännu</string>
+    <string name="pref_browser_language_filter_title">Språkfiltreringsknapp</string>
+    <string name="pref_browser_language_filter_off">Språkfiltreringsknappen är avstängd\nNB: Fungerar endast på Hitomi</string>
+    <string name="pref_browser_language_filter_on">Språkfiltreringsknappen är påslagen\nNB: Fungerar endast på Hitomi</string>
+    <string name="pref_browser_language_filter_setting_title">Språkfiltreringsinställning</string>
+    <string name="pref_browser_language_filter_setting_summary">Tips: Mata in språket på engelska</string>
+
+    <!-- Downloader -->
+    <string name="pref_screen_downloader">Nerladdare</string>
+    <string name="pref_queue_autostart_title">Auto-starta nerladdningskön</string>
+    <string name="pref_queue_autostart_on">Nerladdningskön kommer påbörjas precis efter en nerladdning har färdigställts</string>
+    <string name="pref_queue_autostart_off">Nerladdningskön måste startas manuellt</string>
+    <string name="pref_queue_wifi_only_title">Ladda endast ner via Wi-Fi</string>
+    <string name="pref_queue_wifi_only_on">Nerladdningskön kommer endast påbörjas om ansluten till Wi-Fi</string>
+    <string name="pref_queue_wifi_only_off">Nerladdningskön kommer påbörjas när enheten är ansluten till något nätverk överhuvudtaget</string>
+    <string name="pref_queue_new_position_title">Nya nedladdningars position</string>
+    <string name="download_size_wifi_title">Hoppa över större nedladdningar på mobildata</string>
+    <string name="pref_dl_size_wifi_on">Större nedladdningar kommer ratas om inte ansluten till Wi-Fi</string>
+    <string name="pref_dl_size_wifi_off">Alla nedladdningar kommer behandlas</string>
+    <string name="pref_dl_size_wifi_threshold_title">Storlekströskel för större nerladdningar</string>
+    <string name="pref_dl_pages_wifi_threshold_title">Large downloads pages threshold</string>
+    <string name="download_retries_screen_title">Automatiska åternerladdningsförsök</string>
+    <string name="download_retries_active_title">Återförsök aktiverade</string>
+    <string name="pref_dl_retries_on">Misslyckade nerladdningar kommer auto-återförsökas</string>
+    <string name="pref_dl_retries_off">Misslyckade nerladdningar kommer stanna i ett fel-läge</string>
+    <string name="pref_dl_retries_number_title">Antalet återförsök innan avbrott</string>
+    <string name="pref_dl_retries_mem_limit_title">Minnesanvändningströskel innan avbrott</string>
+    <string name="tag_blocking_screen_title">Etikettblockering</string>
+    <string name="pref_dl_blocked_tags_title">Blockerade etiketter</string>
+    <string name="pref_dl_blocked_tags_summary">Blockera nerladdade böcker märkta med särskilda etiketter\nTips: separera etiketter med komma</string>
+    <string name="pref_dl_blocked_tags_behaviour_title">Blockeringsbeteende</string>
+    <string name="download_eh_hires_title">Ladda ner högupplösta bilder</string>
+    <string name="pref_dl_eh_hires_on">Ladda ner högupplösta bilder när möjligt\nFÖRSIKTIGT:Att slå på den här inställningen kommer konsumera dina E-hentai/Exhentai bildvisningsbegränsning mycket fortare</string>
+    <string name="pref_dl_eh_hires_off">Ladda ner bilder som visas på webbsidan</string>
+    <string name="pref_dl_threads_quantity_title">Antal parallella nedladdningar</string>
+    <string name="pref_dl_threads_quantity_summary">Antal bilder som laddas ner samtidigt\nNuvarande: <x:g example="5" id="number">%s</x:g></string>
+    <string name="pref_dl_speed_cap_title">Nerladdningshastighetsgräns</string>
+    <string name="pref_dl_http_429_default_delay_title">HTTP 429 standardfördröjning (sekunder)</string>
+
+    <!-- Privacy -->
+    <string name="pref_screen_privacy">Sekretessinställningar</string>
+    <string name="pref_app_preview_title">Appförhandsvisning i senaste appar</string>
+    <string name="pref_app_preview_summary_off">Appförhandsvisning i senaste appar avstängd\nTillåt om du behöver ta ett skärmskott</string>
+    <string name="pref_app_preview_summary_on">App-förhandsvisning i senaste appar tillåts</string>
+    <string name="pref_screenshot_title">Skärmskottsinställningar</string>
+    <string name="pref_screenshot_summary_off">App-förhandsvisning i senaste appar + skärmskott avslagna</string>
+    <string name="pref_screenshot_summary_on">Skärmskott tillåts</string>
+    <string name="pref_analytics_preference_title">Firebase Analytics</string>
+    <string name="pref_analytics_preference_summary_off">Analytics Tracking är just nu avstängd.\nAtt slå på den här inställningen kommer hjälpa oss att förbättra appen genom spårande av kraschar &amp; undantagsfall.</string>
+    <string name="pref_analytics_preference_summary_on">Analytics Tracking är påslaget.\nTack för hjälpen att förbättra Hentoid!</string>
+
+    <!-- Updates -->
+    <string name="pref_screen_updates">Uppdateringar</string>
+    <string name="pref_check_updates_manual_title">Manuell uppdateringskontroll</string>
+    <string name="pref_check_updates_manual_summary">Manuellt kontrollera uppdateringar nu</string>
+    <string name="pref_check_updates_manual_checking">Kontrollerar uppdateringar…</string>
+    <string name="pref_check_updates_manual_new">Ny uppdatering tillgänglig! - Installera via notifikationen</string>
+    <string name="pref_check_updates_manual_no_new">Ingen uppdatering påträffades - Använder redan senaste versionen</string>
+    <string name="pref_check_updates_manual_no_connection">Kunde inte kontrollera uppdateringar. Kolla din anslutning eller försök igen senare</string>
+    <string name="pref_check_updates_title">Automatiska uppdateringar</string>
+    <string name="pref_check_updates_summary_off">Tillåt automatiska uppdateringskontroller över mobildata</string>
+    <string name="pref_check_updates_summary_on">Observera: Det kommer fortfarande vara möjligt att kontrollera uppdateringar manuellt</string>
+
+    <!-- Viewer -->
+    <string name="pref_screen_viewer">Läsare</string>
+    <string name="pref_viewer_controls">Styrning</string>
+    <string name="pref_viewer_browse_mode">Webbläsarläge</string>
+    <string name="pref_viewer_page_turn">Sidbläddrings-styrning</string>
+    <string name="pref_viewer_page_turn_swipe">bläddra</string>
+    <string name="pref_viewer_page_turn_tap">Gränsknack</string>
+    <string name="pref_viewer_page_turn_tap_2x">Större knackzon</string>
+    <string name="pref_viewer_page_turn_volume">Volymknapp</string>
+    <string name="pref_viewer_page_turn_keyboard">Keyboard left/right</string>
+    <string name="pref_viewer_swipe_to_fling">Bläddra genom kast</string>
+    <string name="pref_viewer_invert_volume">Invertera volymknappar</string>
+    <string name="pref_viewer_book_switch">Bokbytes-styrning</string>
+    <string name="pref_viewer_book_switch_volume">Volymknapp (håll nere)</string>
+    <string name="pref_viewer_zoom">Zoomkontrol</string>
+    <string name="pref_viewer_zoom_double_tap">Tryck två gånger för att zooma</string>
+    <string name="pref_viewer_zoom_holding">Beröring zoomar in temporärt</string>
+    <string name="pref_viewer_cap_tap_zoom">Dubbleringsbegränsning &amp; långtryckszoom</string>
+    <string name="pref_viewer_visuals">Visuellt</string>
+    <string name="pref_viewer_horizontal_reader">Horisontell läsare</string>
+    <string name="pref_viewer_vertical_reader">Vertikal läsare</string>
+    <string name="pref_viewer_keep_screen_on">Håll skärmen vaken</string>
+    <string name="pref_viewer_display_notch">Visa tryckområdet</string>
+    <string name="pref_viewer_display_pagenum">Visa alltid sidnummer</string>
+    <string name="pref_viewer_tap_transitions">Sätt på sidvändaranimation</string>
+    <string name="pref_viewer_zoom_transitions">Sätt på zoomanimation</string>
+    <string name="pref_viewer_maintain_horizontal_zoom">Behåll zoomnivå mellan sidor</string>
+    <string name="pref_viewer_separating_bars">Separerings-stänger i vertikalt läge</string>
+    <string name="pref_viewer_display_mode">Visningsläge för horisontell visning</string>
+    <string name="pref_viewer_rendering">Återgivning</string>
+    <string name="pref_viewer_rendering_mode">Återgivningsläge</string>
+    <string name="pref_viewer_color_depth">Färgdjup</string>
+    <string name="pref_viewer_rendering_no_android5">Mjuk återgivning är inte tillgängligt på Android 5</string>
+    <string name="pref_viewer_auto_rotate">Auto-rotera bilder</string>
+    <string name="pref_viewer_auto_rotate_summary_off">Bilder roteras inte</string>
+    <string name="pref_viewer_auto_rotate_summary_on">Pictures are rotated to best occupy the screen</string>
+    <string name="pref_viewer_gallery_columns">Antalet kolumner för galleri</string>
+    <string name="pref_viewer_navigation">Navigation &amp; beteende</string>
+    <string name="pref_viewer_resume_last_left_title">Återuppta läsning vid återöppnande av bok</string>
+    <string name="pref_viewer_resume_last_left_summary_off">Återöppnade böcker börjar alltid på första sidan</string>
+    <string name="pref_viewer_resume_last_left_summary_on">Återöppnade böcker fortsätter på senast läst sida, förutom ifall slutet av boken nåddes</string>
+    <string name="pref_viewer_open_gallery">Öppna alltid i galleriläge</string>
+    <string name="pref_viewer_chaptered_navigation_title">Kapitelnavigation</string>
+    <string name="pref_viewer_chaptered_navigation_summary_off">Nästa / föregåendeknappar leder till nästa/föregående bok</string>
+    <string name="pref_viewer_chaptered_navigation_summary_on">Nästa / föregåendeknappar leder till nästa/föregående kapitel inuti den nuvarande boken</string>
+    <string name="pref_viewer_continuous_title">Kontinuerlig läsning</string>
+    <string name="pref_viewer_continuous_summary_off">Använda nästa sida på sista sidan är effektlöst</string>
+    <string name="pref_viewer_continuous_summary_on">Använda nästa sida på sista sidan laddar nästa bok</string>
+    <string name="pref_viewer_read_threshold">Markera boken som läst efter N sidor</string>
+    <string name="pref_viewer_ratio_completed_threshold">Markera boken som komplett efter N% sidor</string>
+    <string name="pref_viewer_slideshow_delay">Fördröjning mellan varje sida (horisontell visning)</string>
+    <string name="pref_viewer_slideshow_delay_vertical">Skrollhastighet (vertikal visning)</string>
+    <string name="pref_viewer_slideshow_loop">Loop</string>
+    <string name="doh_warning">Vissa webbplatser kommer\ inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
+
+    <!-- Misc -->
+    <string name="pref_text_select_menu_title">Textvalsmeny</string>
+    <string name="pref_text_select_menu_summary_off">Din enhets\ textvalsmeny tillåter\ inte att du köra kärnvapenkoder genom Hentoid</string>
+    <string name="pref_text_select_menu_summary_on">Din enhets\ textvalsmeny tillåter dig att köra kärnvapenkoder genom Hentoid</string>
+</resources>

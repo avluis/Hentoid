@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="slide_01_header">Välkommen till Hentoid!</string>
+    <string name="slide_01_text">Hentoid är en Doujinshi\n&amp; H-Manga arkiveringsapp.</string>
+    <!-- Permissions -->
+    <string name="slide_02_header">Behörigheter</string>
+    <string name="slide_02_browser_mode_title">Endast surf</string>
+    <string name="slide_02_browser_mode_description">Använd appen för att surfa på webbplatser.\n\nDu kommer\'varken kunna ladda ner böcker eller hantera ditt bibliotek.\n\nInga behörigheter behövs.</string>
+    <string name="slide_02_library_mode_title">Surfa &amp; Ladda ner</string>
+    <string name="slide_02_library_mode_description">Använd appen för att ladda ner och för att hantera ditt bibliotek.\n\nLagringsåtkomst behövs.</string>
+    <!-- Library import -->
+    <string name="slide_04_header">Bibliotek</string>
+    <string name="slide_04_text">Hentoid behöver en dedikerad mapp för lagring av dina media.</string>
+    <string name="slide_04_skip">Hoppa över</string>
+    <!-- Dialog title -->
+    <string name="slide_04_skip_title">Hoppa över\?</string>
+    <string name="slide_04_skip_msg">Du kommer\' inte kunna ladda ner om du hoppar över det här steget.\nFör att ladda ner, behöver\'du ställa in nedladdningsmappen i appens inställningar.</string>
+    <string name="slide_05_header">Tema</string>
+    <string name="slide_05_text">Välj en visningsfärg.</string>
+    <string name="slide_06_header">Källor</string>
+    <!-- Description text -->
+    <string name="slide_06_text">Välj källor att ladda ner från.</string>
+    <string name="slide_06_subtext">Du kan när som helst ändra det här valet senare genom att använda redigeringsknappen i menyn till vänster.</string>
+    <string name="slide_end_header">Allt färdigt!</string>
+    <string name="slide_end_text">Vi är klara!\nNjut av appen.</string>
+</resources>
