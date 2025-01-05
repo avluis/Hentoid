@@ -99,6 +99,12 @@
       "useHentoidAgent": false,
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2
+    },
+    "TMO": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false,
+      "requestsCapPerSecond": 1,
+      "parallelDownloadCap": 2
     }
   }
 }

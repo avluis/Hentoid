@@ -504,6 +504,7 @@ fun getImgSrc(e: Element): String {
     var result = e.attr("data-src").trim()
     if (result.isEmpty()) result = e.attr("data-lazy-src").trim()
     if (result.isEmpty()) result = e.attr("data-lazysrc").trim()
+    if (result.isEmpty()) result = e.attr("data-original").trim()
     if (result.isEmpty()) result = e.attr("src").trim()
     if (result.isEmpty()) result =
         e.attr("data-cfsrc").trim() // Cloudflare-served image
