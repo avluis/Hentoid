@@ -65,8 +65,8 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
             onPositionChangeListener.invoke(
                 firstVisibleItemPosition.coerceAtLeast(lastCompletelyVisibleItemPosition)
             )
-            if (dy > 0) onPositionReachedListener?.invoke(llm.findLastVisibleItemPosition())
-            else onPositionReachedListener?.invoke(llm.findFirstVisibleItemPosition())
+            if (dy >= 0) onPositionReachedListener?.invoke(llm.findLastVisibleItemPosition())
+            if (dy <= 0) onPositionReachedListener?.invoke(llm.findFirstVisibleItemPosition())
         }
     }
 

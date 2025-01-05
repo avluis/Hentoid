@@ -310,7 +310,7 @@ class ImagePagerAdapter(context: Context) :
         this.isScrollLTR = isScrollLTR
     }
 
-    fun adjustBehaviourForPosition(position: Int, immediate : Boolean = false) {
+    fun setTapBehaviourForPosition(position: Int, immediate : Boolean = false) {
         recyclerView?.lifecycleScope?.launch {
             if (!immediate) {
                 withContext(Dispatchers.Default) {
