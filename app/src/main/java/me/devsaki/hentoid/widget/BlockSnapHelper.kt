@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.OrientationHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SnapHelper
-import timber.log.Timber
 import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.max
 
 private const val MILLISECONDS_PER_INCH = 100f
@@ -40,6 +40,7 @@ private const val MILLISECONDS_PER_INCH = 100f
  **/
 class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
     private lateinit var recyclerView: RecyclerView
+    private lateinit var displayMetrics: DisplayMetrics
 
     // Total number of items in a block of view in the RecyclerView
     private var blocksize: Int = 0
@@ -80,18 +81,17 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
             this.recyclerView = recyclerView
             val layoutManager = this.recyclerView.layoutManager as LinearLayoutManager
             orientationHelper = when {
-                layoutManager.canScrollHorizontally() -> OrientationHelper.createHorizontalHelper(
-                    layoutManager
-                )
+                layoutManager.canScrollHorizontally() ->
+                    OrientationHelper.createHorizontalHelper(layoutManager)
 
-                layoutManager.canScrollVertically() -> OrientationHelper.createVerticalHelper(
-                    layoutManager
-                )
+                layoutManager.canScrollVertically() ->
+                    OrientationHelper.createVerticalHelper(layoutManager)
 
                 else -> throw IllegalStateException("RecyclerView must be scrollable")
             }
             scroller = Scroller(this.recyclerView.context, sInterpolator)
             initItemDimensionIfNeeded(layoutManager)
+            displayMetrics = recyclerView.context.resources.displayMetrics
         }
         super.attachToRecyclerView(recyclerView)
     }
@@ -160,8 +160,6 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
         val snapPos = calcTargetPosition(layoutManager as LinearLayoutManager)
         val snapView = if (snapPos == RecyclerView.NO_POSITION) null
         else layoutManager.findViewByPosition(snapPos)
-        if (snapView == null) Timber.d("<<<<findSnapView is returning null!")
-        Timber.d("<<<<findSnapView snapos=$snapPos")
         return snapView
     }
 
@@ -182,8 +180,15 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
                 if (time > 0) action.update(dx, dy, time, sInterpolator)
             }
 
-            override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float =
-                MILLISECONDS_PER_INCH / displayMetrics.densityDpi
+            override fun calculateSpeedPerPixel(displayMetrics: DisplayMetrics): Float {
+                val factor =
+                    if (layoutManager.canScrollHorizontally() && recyclerView.width > recyclerView.height) 1.75f else 1f
+                return MILLISECONDS_PER_INCH / factor / displayMetrics.densityDpi
+            }
+
+            override fun calculateTimeForScrolling(dx: Int): Int {
+                return ceil(abs(dx) * calculateSpeedPerPixel(displayMetrics)).toInt()
+            }
         }
     }
 
