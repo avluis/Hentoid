@@ -519,7 +519,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         } else {
             sRegion = imageSource.getSRegion()
             uri = imageSource.getUri()
-            if (minimumScaleType != ScaleType.STRETCH_SCREEN) imageSource.enableTiling()
+            // TODO tiling may create artifacts on certain screens for certain images (#1209)
+            //if (minimumScaleType != ScaleType.STRETCH_SCREEN) imageSource.enableTiling()
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
                 lifecycleScope?.launch {
