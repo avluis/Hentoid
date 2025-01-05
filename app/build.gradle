@@ -290,7 +290,7 @@ dependencies {
     implementation 'dev.skomlach:biometric:2.2.39'
 
     // Searchable prefs
-    implementation 'com.github.ByteHamster:SearchPreference:v2.4.0'
+    implementation 'com.github.ByteHamster:SearchPreference:v2.5.1'
 
     // Automated generation of the Licenses screen
     def about_version = '8.9.4'
