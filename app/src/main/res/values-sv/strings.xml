@@ -1,0 +1,1106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Generic usage -->
+    <string name="app_intro">Välkommen</string>
+    <!-- because Android default "OK" value for "yes" key is nonsense -->
+    <string name="yes">Ja</string>
+    <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="no">Nej</string>
+    <string name="ok" tools:ignore="MissingTranslation">OK</string>
+    <string name="on">På</string>
+    <string name="off">Av</string>
+    <string name="select_all">Välj allt</string>
+    <string name="select_none">Välj inget</string>
+    <string name="goto_page">Gå till sid…</string>
+    <string name="confirm">Bekräfta</string>
+    <string name="please_wait">Vänligen vänta…</string>
+    <plurals name="book" tools:ignore="ImpliedQuantity">
+        <item quantity="one">bok</item>
+        <item quantity="other">böcker</item>
+    </plurals>
+    <plurals name="page" tools:ignore="ImpliedQuantity">
+        <item quantity="one">sida</item>
+        <item quantity="other">sidor</item>
+    </plurals>
+    <plurals name="file" tools:ignore="ImpliedQuantity">
+        <item quantity="one">fil</item>
+        <item quantity="other">filer</item>
+    </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">föremål</item>
+        <item quantity="other">föremål</item>
+    </plurals>
+    <string name="groups">Grupper</string>
+    <string name="pause">Paus</string>
+    <string name="stop">Stopp</string>
+    <string name="resume">Fortsätt</string>
+    <string name="cancel">Avbryt</string>
+    <string name="cancel_all">Avbryt alla</string>
+    <string name="reset">Återställ</string>
+    <string name="freeze">Växla frys</string>
+    <string name="menu_completed_single">Markera som komplett</string>
+    <string name="menu_reset_read">Markera som oläst</string>
+    <string name="menu_rate">Betygsätt</string>
+    <string name="service_running">Tjänsten körs redan</string>
+    <string name="open_folder">Öppna mapp</string>
+    <string name="_default">standard</string>
+    <string name="empty">tom</string>
+    <string name="none">inget</string>
+    <string name="help_generic">Hjälp</string>
+    <string name="actions_generic">Actions</string>
+    <string name="disabled_generic">Inaktiverad</string>
+    <string name="create_generic">Skapa</string>
+    <string name="edit_generic">Ändra</string>
+    <string name="remove_generic">Ta bort</string>
+    <string name="invalid_selection_generic">Ogiltig handling</string>
+    <string name="user_generic">Användare</string>
+    <string name="copy_generic">Kopia</string>
+
+    <!-- Colours -->
+    <string name="white">Vit</string>
+    <string name="light_grey">Ljusgrå</string>
+    <string name="dark_grey">Mörkgrå</string>
+    <string name="black">Svart</string>
+
+    <!-- Activities -->
+    <string name="title_activity_downloads">Bibliotek</string>
+    <string name="title_activity_queue">Kö</string>
+    <string name="title_activity_settings">Inställningar</string>
+    <string name="title_activity_about">Om</string>
+    <string name="title_activity_app_lock">Applås</string>
+    <string name="title_activity_search">Avancerad sökning</string>
+    <string name="title_activity_meta_edit">Ändra metadata</string>
+    <string name="title_activity_rules">Omdöpningsregler</string>
+    <string name="title_activity_storage">Förvarshantering</string>
+
+    <!-- Library refresh screen -->
+    <string name="refresh_step1">Primärmapp</string>
+    <string name="refresh_step1_2">Primärmapp (plats: 2)</string>
+    <string name="refresh_step1_external">Extern mapp</string>
+    <string name="refresh_step1_select">Välj Primärmapp</string>
+    <string name="refresh_step1_select_2">SVälj Primärmapp (plats: 2)</string>
+    <string name="refresh_step1_select_external">Välj extern mapp</string>
+    <string name="refresh_step2">Skanna site mappar</string>
+    <string name="refresh_step3_init">Skannar bibliotek…</string>
+    <string name="refresh_step3">Skanna bibliotek (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step4_init">Importerar kö…</string>
+    <string name="refresh_select_folder">Vänligen välj en existerande primärmapp. Platsen för den visas på skärmen.</string>
+    <string name="refresh_allow_write">Vänligen tillåt skrivtillstånd</string>
+
+    <!-- Library screen toolbar -->
+    <string name="menu_search">Sök</string>
+    <string name="menu_fav">Växla favouritfilter</string>
+    <string name="menu_mark_fav">Toggle favourite</string>
+    <string name="menu_group_new">Ny grupp</string>
+    <string name="menu_edit_order">Arrangera om</string>
+    <string name="menu_edit_name">Döpa om</string>
+    <string name="menu_edit_confirm">Confirm editing</string>
+    <string name="menu_edit_cancel">Avbryt redigering</string>
+    <string name="menu_edit_warning_custom">En improviserad ordning kommer skriva över den förra ordningen.</string>
+    <string name="menu_sort_filter">Sortera och filtrera</string>
+    <string name="menu_sort">Sortera</string>
+    <string name="menu_delete_single">Ta bort</string>
+    <string name="menu_change_group">Flytta till grupp</string>
+    <string name="menu_open_folder">Öppna innehållande mapp</string>
+    <string name="menu_redownload">Ladda ner igen</string>
+    <string name="menu_redownload_scratch">Ladda ned från början</string>
+    <string name="menu_stream">Byt till streaming</string>
+    <string name="menu_download_streamed">Ladda ner stream</string>
+    <string name="menu_select_all">Välj alla</string>
+    <string name="menu_share">Dela</string>
+    <string name="menu_share_help">Dela bok-URL och titel genom en annan app</string>
+    <string name="menu_share_title">Bok-URL</string>
+    <string name="menu_archive">Arkiv</string>
+    <string name="menu_archive_help">Arkivera boken i en Zip-fil</string>
+    <string name="library_search_hint">Titel, konstnär, etikett eller bok-ID</string>
+    <string name="group_search_hint">Grupptitel</string>
+    <string name="send_to">Dela med:</string>
+    <string name="open_settings">Öppna inställningar</string>
+    <string name="app_settings">Appinställningar</string>
+    <string name="book_settings">Bokinställningar</string>
+    <string name="alert_browser_mode">Utforskarläge aktiverat : ingen lagringsåtkomst</string>
+    <string name="alert_low_memory">Din enhet börjar få slut på lagringsutrymme!</string>
+    <string name="alert_low_memory_db">Hentoid-databasen börjar få slut på lagringsutrymme! Vänligen ta backup och gör dig av med böcker.</string>
+    <string name="alert_permissions_lost">Filbehörigheter har gått förlorade</string>
+    <string name="alert_notifications">Notifieringar har stängts av!</string>
+    <string name="fix_permissions">Fix</string>
+    <string name="view_queue">Visa kö</string>
+    <string name="clear_search_history">Rensa sökhistorik</string>
+
+    <!-- Queue / Downloader -->
+    <string name="downloader_title">Nerladdare</string>
+    <string name="queue_queue_tab">Pågående</string>
+    <string name="queue_errors_tab">Fel</string>
+    <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
+        <item quantity="one">Avbryt det utvalda föremålet?</item>
+        <item quantity="other">Avbryt de utvalda föremålen?</item>
+    </plurals>
+    <string name="invert_queue">Invertera kö</string>
+    <string name="redownload_all">Ladda ner samtliga från början</string>
+    <string name="cancel_all_errors">Avbryt alla fel</string>
+    <string name="import_downloads">Importera nedladdningar</string>
+    <string name="move_top">Flytta till toppen</string>
+    <string name="move_bottom">Flytta till botten</string>
+    <string name="queue_paused">Kö pausad</string>
+    <string name="queue_preparing">Förbereder nedladdning</string>
+    <string name="queue_dl">Laddar ned <x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
+    <string name="err_stats_title">Felstatistik</string>
+    <string name="err_stats_help">Visa detalierad statistik om nuvarande nedladdningsfel</string>
+    <string name="err_no_content">Boken finns inte (ännu)</string>
+    <string name="confirm_cancel_all">Avbryt hela kön?</string>
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
+        <item quantity="other">Avbryt alla <x:g example="42" id="count">%d</x:g> böcker med fel?</item>
+    </plurals>
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
+        <item quantity="other">Ladda ner pånytt <x:g example="42" id="count">%d</x:g> föremål?</item>
+    </plurals>
+    <string name="paused_no_internet">Kan inte ladda ner - inget internet</string>
+    <string name="paused_no_wifi">Kan inte ladda ner - inget Wi-Fi</string>
+    <string name="paused_no_storage">Kan inte ladda ner - dåligt med lagringsutrymme (<x:g example="0 bytes" id="size_left_bytes">%s</x:g> left). Frigör utrymme eller byt mapp för nedladdning</string>
+    <string name="paused_no_dl_folder">Kan inte ladda ner - ingen nedladdningsmapp. Använd appinställningarna för att välja en</string>
+    <string name="paused_dl_folder_not_found">Kan inte ladda ner - kunde inte hitta nedladdningsmappen. Använd appinställningarna för att välja en</string>
+    <string name="paused_dl_folder_credentials">Kan inte ladda ner - Otillräckliga uppgifter på nedladdningsmappen. Använd appinställningarna för att välja ut den pånytt</string>
+    <string name="paused_dl_stale_online_credentials">Kan inte ladda ner - förruttnade kakor eller inaktuella uppgifter. Använd notifikationen för att genenerera nybakade kakor och ordnade papper</string>
+    <string name="paused_dl_no_available_downloads">No available downloads remaining</string>
+    <string name="step_init">Förbereder</string>
+    <string name="step_prepare_img">Förbereder bilder</string>
+    <string name="step_fetch_img">Hämtar bilder</string>
+    <string name="step_prepare_folder">Förbereder nedladdningsmapp</string>
+    <string name="step_prepare_download">Förbereder nedladdningskedja</string>
+    <string name="step_save_queue">Sparar kön</string>
+    <string name="step_wait_purge">Väntar på att utrensningen ska bli klar</string>
+    <string name="step_start_download">Nerladdningskedja påbörjad!</string>
+    <string name="step_complete_download">Färdigställer nedladdningen</string>
+    <string name="step_remove_duplicate">Ersätter dubblett</string>
+    <string name="help_swipe_cancel">Du kan avbryta nerladdningar genom att slänga dem åt vänster</string>
+    <string name="redownloaded_error">Ett fel inträffade vid hämtning - avbröt</string>
+    <string name="redownloaded_missing_webview">Webbvyn är otillgänglig, kan inte hämta just nu</string>
+    <string name="redownloaded_updating_webview">Webbvyn uppdaterar just nu, kan inte hämta ännu</string>
+    <plurals name="redownloaded_scratch">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> Föremål färdig för hämtning</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> Föremål färdiga för hämtning</item>
+    </plurals>
+    <string name="queue_add_top">Lägg till på toppen</string>
+    <string name="queue_add_bottom">Lägg till vid bottnen</string>
+    <string name="notification_user_action_title">Användarinstruktion</string>
+    <string name="notification_user_action_needed">Behöver användarinstruktion</string>
+    <string name="notification_action_dl_revive">Tryck här för att återaktivera din nedladdning</string>
+    <string name="revive_wait">Vänligen stanna kvar på denna skärm medan din nedladdning återupptas</string>
+    <string name="revive_missing_webview">Webbvyn är otillgänglig, kan inte återuppta nedladdningar just nu</string>
+    <string name="revive_updating_webview">Webbvyn uppdaterar just nu, kan inte återuppta nedladdningar ännu</string>
+    <string name="queue_json_saved">JSON av kön sparad</string>
+    <string name="queue_json_failed">Kunde inte spara JSON av kön</string>
+    <string name="queue_content_size_estimate">beräknad <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
+    <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g> behandlad</string>
+    <plurals name="queue_bottom_bar_errors">
+        <item quantity="one">(<x:g example="1" id="errors">%d</x:g> fel)</item>
+        <item quantity="other">(<x:g example="2" id="errors">%d</x:g> fel)</item>
+    </plurals>
+    <string name="queue_bottom_bar_retry">försök igen <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
+    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
+    <string name="download_notif_failed">Nerladdning misslyckades</string>
+    <string name="download_notif_failed_details">Kan inte ladda ned <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: kan inte skapa mapp <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Vänligen kontrollera din primärmapp och försök ladda ned igen genom att använda nerladdningsknappen.</string>
+    <string name="menu_change_dl_mode">Ändra nerladdningsläge</string>
+    <string name="mode_dl">Bildnedladdare</string>
+    <string name="mode_stream">Stream</string>
+    <string name="redl_scratch">Ladda ner från början</string>
+    <string name="redl_refresh">Uppdatera endast metadata</string>
+    <string name="filter_by_source">Filtrera efter källa</string>
+
+    <!-- Import downloads -->
+    <string name="import_downloads_title">Importera nerladdningar</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one"><x:g example="1" id="downloads">%d</x:g> giltig nerladdning hittad</item>
+        <item quantity="other"><x:g example="2" id="downloads">%d</x:g> giltiga nerladdningar hittade</item>
+    </plurals>
+    <string name="import_streamed">Importera som streamade böcker</string>
+    <string name="importing_downloads">Importerar nerladdningar…</string>
+
+    <!-- TextViews -->
+    <string name="work_series">Serier: <x:g example="original" id="series">%s</x:g></string>
+    <string name="work_artist">Konstnärer: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
+    <plurals name="work_pages_missing">
+        <item quantity="one">(<x:g example="1" id="number">%d</x:g> saknas)</item>
+        <item quantity="other">(<x:g example="2" id="number">%d</x:g> saknas)</item>
+    </plurals>
+    <string name="work_pages_queue">Sidor: %1$s%2$s</string>
+    <plurals name="work_pages_library">
+        <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> sida / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
+        <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> sidor / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
+    </plurals>
+    <string name="work_pages_duplicate_dialog_library">Sidor (i bibliotek): %d</string>
+    <string name="work_pages_duplicate_dialog_queue">Sidor (i kö): %d</string>
+    <string name="work_pages_duplicate_dialog_source">Sidor (den här källan): %d</string>
+    <string name="redownload_queue_progress">Åternerladdar valda böcker</string>
+    <string name="errortype_parsing">Analys</string>
+    <string name="errortype_networking">nätverk</string>
+    <string name="errortype_io">In/Ut</string>
+    <string name="errortype_captcha">Captcha</string>
+    <string name="errortype_img_processing">Bildbehandling</string>
+    <string name="errortype_site_limit">Nerladdnings/bandbreddsgräns nådd</string>
+    <string name="errortype_account">Inget konto eller otillräckliga uppgifter</string>
+    <string name="errortype_import">Ingen lokal fil hittad vid import</string>
+    <string name="errortype_wifi">Bok ratad i och med Wi-Fi nerladdnings-storleksbegränsningar</string>
+    <string name="errortype_blocked">Bok innehåller en blockerad etikett</string>
+    <string name="errortype_undefined">Odefinierad</string>
+
+    <!-- Storage management -->
+    <string name="browse_mode_warning">Browse-only mode is active\nYou are using the app without storage permissions.</string>
+    <string name="primary_library">Primärbibliotek</string>
+    <string name="primary_library_subtitle">Nerladdningar</string>
+    <string name="add_primary_1">Lägg till primärplats 1</string>
+    <string name="add_primary_2">Lägg till primärplats 2</string>
+    <string name="external_library">Externbibliotek</string>
+    <string name="external_library_subtitle">Arkiv, tredjepartsböcker</string>
+    <string name="add_external">Lägg till extern plats</string>
+    <string name="location_storage">%1$s (%2$d%%) free</string>
+    <string name="storage_action_change">Byt plats…</string>
+    <string name="storage_action_remove">Koppla loss</string>
+    <string name="storage_remove_ask">Koppla loss ifrån vald plats?\n Notera: Böcker kommer inte tas bort</string>
+    <string name="storage_remove_ko1">Kan inte koppla loss plats 1 när plats 2 är inställd</string>
+    <string name="storage_remove_complete">Plats frånkopplad</string>
+    <string name="storage_action_merge_to_1">Slå ihop till plats 1</string>
+    <string name="storage_merge_ask">Slå ihop %d böcker från plats 2 till plats 1?\nNotera: Böcker kommer tas bort efter färdig ihopslagning</string>
+    <string name="storage_merge_ko1">Kan inte slå ihop till plats 1 : inte tillräckligt med lagringsutrymme kvar</string>
+    <string name="storage_merge_ko2">Kan inte slå ihop : inga böcker på plats 2</string>
+    <string name="storage_merge_progress">Slår ihop böcker till plats 1</string>
+    <string name="storage_merge_complete">Ihopslagning färdig</string>
+    <string name="storage_strategy_title">Nerladdningsstrategi : %s</string>
+    <string name="storage_strategy_balance">Balancera fritt utrymme</string>
+    <string name="storage_strategy_balance_desc">Hentoid laddar ner till platsen med mest lagringsutrymme och försöker bibehålla en balans. Flyttar inte på böcker som redan finns i biblioteket.</string>
+    <string name="storage_strategy_fallover">Våg</string>
+    <string name="storage_strategy_fallover_desc">Hentoid laddar ner till plats 1 tills %d%% av capaciteten är fylld, sedan laddar den ner till plats 2.</string>
+    <string name="storage_fallover_threshold">Lågutrymmeströskel (%%)</string>
+    <string name="storage_set_strategy">Ställ in nerladdningsstrategi</string>
+    <string name="storage_stats">Statistik</string>
+    <string name="storage_stats_view">Läs användningsstatistik</string>
+
+    <!-- Refresh library -->
+    <string name="refresh_title">Fräscha upp platsen</string>
+    <string name="refresh_caption">Automatiskt fräscha upp biblioteksdata genom att omskanna filer och mappar.</string>
+    <string name="refresh_options">Städningsinställningar</string>
+    <string name="refresh_location_internal">Primärbibliotek (alla)</string>
+    <string name="refresh_location_internal_1">Primärbibliotek 1</string>
+    <string name="refresh_location_internal_2">Primärbibliotek 2</string>
+    <string name="refresh_location_external">Externt bibliotek</string>
+    <string name="refresh_options_rename">Döp om alla mappar enligt nuvarande namn-och maxlängdsinställningarna</string>
+    <string name="refresh_options_remove_placeholders">Ta bort platshållarböcker importerade genom metadata</string>
+    <string name="refresh_options_renumber_pages">Omnumrera sidor</string>
+    <string name="refresh_renumber_warning">Det här kommer kontrollera alla böcker och rätta till sidnumreringsmisstag.\nRäkna med att den här inställningen kommer sakta ner behandlingen rejält.</string>
+    <string name="refresh_options_remove">Var ska mappar tas bort…</string>
+    <string name="refresh_options_remove_1">Ta bort mappar utan JSON-fil (rekommenderas)</string>
+    <string name="refresh_options_remove_2">Ta bort mappar vari ingen bild laddats ner</string>
+    <string name="refresh_options_remove_or">eller</string>
+
+    <!-- Mass operations -->
+    <string name="mass_operation">Handling</string>
+    <string name="mass_operation_1">Ta bort</string>
+    <string name="mass_operation_2">Byt till streaming</string>
+    <string name="mass_operation_scope">Omfattning</string>
+    <string name="mass_operation_scope_1">Nuvarande filter på biblioteksskärmen</string>
+    <string name="mass_operation_scope_2">Alla böcker förutom except nuvarande filter på biblioteksskärmen</string>
+    <string name="mass_external_tip">Notera : Externa böcker kommer tas bort av den här handlingen</string>
+    <string name="keep_fav_groups">Behandla inte böcker i favoritgrupper</string>
+    <plurals name="book_keep">
+        <item quantity="one">Behåll <x:g example="1" id="number">%1$d</x:g> bok</item>
+        <item quantity="other">Behåll <x:g example="2" id="number">%1$d</x:g> böcker</item>
+    </plurals>
+    <plurals name="book_delete">
+        <item quantity="one">Ta bort <x:g example="1" id="number">%1$d</x:g> bok</item>
+        <item quantity="other">Ta bort <x:g example="2" id="number">%1$d</x:g> böcker</item>
+    </plurals>
+    <plurals name="book_stream">
+        <item quantity="one">Byt <x:g example="1" id="number">%1$d</x:g> bok till streaming</item>
+        <item quantity="other">Byt <x:g example="2" id="number">%1$d</x:g> böcker till streaming</item>
+    </plurals>
+    <string name="mass_delete_confirm">Jag vet vad jag\ gör</string>
+    <string name="mass_delete_action">Ta bort i massor</string>
+    <string name="mass_stream_action">Massbyt till stream</string>
+    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
+    <plurals name="book_progress">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> bok</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> böcker</item>
+    </plurals>
+    <plurals name="group_progress">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> grupp</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> grupper</item>
+    </plurals>
+
+    <!-- Import metadata -->
+    <string name="import_title">Importera metadata</string>
+    <string name="import_mode_add">Lägg till importerat gods</string>
+    <string name="import_mode_replace">Ersätt med importerat gods</string>
+    <string name="import_select_file">Välj fil att importera</string>
+    <string name="checking_file">Kontrollerar fil…</string>
+    <string name="import_file_invalid">Fil <x:g example="metadata.json" id="filename">%s</x:g> är ogiltig</string>
+    <plurals name="import_file_library">
+        <item quantity="one">Importera biblioteks (<x:g example="1" id="number">%d</x:g> bok)</item>
+        <item quantity="other">Importera biblioteks (<x:g example="2" id="number">%d</x:g> böcker)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">Importera kö (<x:g example="1" id="number">%d</x:g> bok)</item>
+        <item quantity="other">Importera kö (<x:g example="2" id="number">%d</x:g> böcker)</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Importera anpassad grupp (<x:g example="1" id="number">%d</x:g> grupp)</item>
+        <item quantity="other">Importera anpassade grupper (<x:g example="2" id="number">%d</x:g> grupper)</item>
+    </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Importera bokmärke (<x:g example="1" id="number">%d</x:g> föremål)</item>
+        <item quantity="other">Importera bokmärken (<x:g example="2" id="number">%d</x:g> föremål)</item>
+    </plurals>
+    <string name="import_run">KÖR IMPORT</string>
+    <plurals name="import_result_books">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> bok importerad framgångsrikt</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> böcker importerade framgångsrikt</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> bokmärke framgångsrikt importerad</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> bokmärken framgångsrikt importerade</item>
+    </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> föremål framgångsrikt importerat</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> föremål importerade framgångsrikt</item>
+    </plurals>
+    <string name="dialog_prompt">Välj en mapp</string>
+    <string name="importing_metadata">Importerar metadata…</string>
+
+    <!-- Export metadata -->
+    <string name="export_title">Exportera metadata</string>
+    <string name="export_question">Önskar du överföra ditt bibliotek till en annan telefon?</string>
+
+    <string name="export_answer_yes">Den här funktionen gjordes inte för att låta dig överföra din samling till en annan telefon. Det fungerar i vissa fall men somliga av dina böcker kanske blir omöjliga att åternerladda!</string>
+    <string name="export_transfer_tutorial"><u>Kika gärna på vår wiki angående biblioteksöverföringar</u></string>
+
+    <plurals name="export_file_library">
+        <item quantity="one">Exportera primärbiblioteks (<x:g example="1" id="number">%d</x:g> bok)</item>
+        <item quantity="other">Exportera primärbiblioteks (<x:g example="2" id="number">%d</x:g> böcker)</item>
+    </plurals>
+    <string name="export_location">Plats : %s</string>
+    <string name="export_favs_only">Exportera endast favoriter</string>
+    <string name="export_groups">Exportera anpassade grupper</string>
+    <plurals name="export_file_queue">
+        <item quantity="one">Exportera kö (<x:g example="1" id="number">%d</x:g> bok)</item>
+        <item quantity="other">Exportera kö (<x:g example="2" id="number">%d</x:g> böcker)</item>
+    </plurals>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">Exportera bokmärke (<x:g example="1" id="number">%d</x:g> föremål)</item>
+        <item quantity="other">Exportera bokmärken (<x:g example="2" id="number">%d</x:g> föremål)</item>
+    </plurals>
+    <string name="export_warning1">Export av metadata används huvudsakligen för att skapa en lista på dina böcker i JSON-format.\nDet används varken för att flytta över din samling till din PC eller ditt SD-kort.\nTryck här för att lära dig hur du gör det.</string>
+    <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
+    <string name="export_run">KÖR EXPORT</string>
+    <string name="export_failed">Exporten misslyckades</string>
+    <string name="import_settings_title">Importinställningar</string>
+    <string name="import_settings_success">Importerat</string>
+
+
+    <!-- Import Activity -->
+    <string name="permissioncomplaint_snackbar">Du måste ge tillstånd innan du kan fortsätta</string>
+    <string name="permissioncomplaint_snackbar_manual">Du måste manuellt ge tillstånd innan du kan fortsätta</string>
+    <string name="import_canceled">Import avbruten</string>
+    <string name="import_invalid">Ogiltid mapp vald - vänligen välj en annan</string>
+    <string name="import_app_folder">Du kan inte välja appmappen som en externmapp - vänligen välj en annan</string>
+    <string name="import_download_folder">Du ska\ inte välja din enhets\ egen nerladdningsmapp - vänligen skapa eller välj en annan</string>
+    <string name="import_create_fail">Misslyckades med att skapa primärmapp - vänligen välj en annan plats</string>
+    <string name="import_invalid_uri">Mappen kändes inte igen - vänligen välj den igen</string>
+    <string name="import_empty">Mappen har inga böcker</string>
+    <string name="import_other_primary">Båda primärplatserna måste ha olika basmappar</string>
+    <string name="import_other_external_inside_primary">Primära och externa platser måste ha olika basmappar</string>
+    <string name="import_other">Importen har stoppats</string>
+    <string name="import_unexpected">Importen avstannade oväntat</string>
+    <string name="task_done">Uppdrag slutfört - se detaljer i loggen</string>
+    <string name="content_not_found">Fel - innehåll kunde inte hittas</string>
+    <string name="contents_detected">Hentoid har upptäckt ett existerande bibliotek på den här platsen.\nVill du importera det här biblioteket\?</string>
+    <string name="library_imports_title">Biblioteksimporter</string>
+    <string name="library_metrics_storage_mb">%.0f MB</string>
+    <string name="library_metrics_storage_gb">%.2f GB</string>
+    <string name="starting_import">Påbörjar import…</string>
+    <string name="importing_library">Importerar bibliotek</string>
+    <string name="import_complete">Import färdig</string>
+    <plurals name="import_complete_details_success">
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> importerades framgångsrikt</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> importerades framgångsrikt</item>
+    </plurals>
+    <plurals name="import_complete_details_failure">
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> misslyckades</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> misslyckades</item>
+    </plurals>
+
+    <!-- Storage usage -->
+    <string name="memory_title">Användning av lagring</string>
+    <string name="memory_total">Totalt: <x:g example="100 MB" id="total">%s</x:g></string>
+    <string name="memory_free">Fritt: <x:g example="50 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_main">Hentoid (primär): <x:g example="2 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hentoid (extern): <x:g example="3 MB" id="total">%s</x:g></string>
+    <string name="memory_database">Databas: <x:g example="1.52 MB" id="size_mb">%1$s</x:g> (<x:g example="40%" id="percentage">%2$.1f%%</x:g> fullt)</string>
+    <string name="memory_details">Se detaljer (primär)</string>
+    <string name="memory_details_source">Källa</string>
+    <string name="memory_details_books">Böcker</string>
+    <string name="memory_details_size">Storlek</string>
+
+    <!-- Logs -->
+    <string name="logs_title">Senaste loggarna</string>
+    <string name="logs_open">Öppna logg</string>
+    <string name="read_log">Läg logg</string>
+    <string name="logs_share">Dela logg</string>
+    <string name="no_error_detected">Inga fel hittade.</string>
+    <string name="log_import_external">Externt bibliotek importera/fräscha upp</string>
+    <string name="log_import">Primary library import/refresh</string>
+    <string name="log_cleanup">Primary library cleanup</string>
+    <string name="log_api29_migration">Biblioteksmigration från Hentoid v1.11</string>
+
+    <!-- Errors -->
+    <string name="error_write_permission">Du har\ inte tillstånd att skriva till den mappen, försök med en annan.</string>
+    <string name="error_creating_folder">Mappen är ogiltig.</string>
+    <string name="error_open">Ett fel inträffade vid öppnande av fil: ingen relevant applikation funnen</string>
+    <string name="error_browser">Ett fel inträffade vid öppnande av länk: ingen webbläsare funnen</string>
+    <string name="error_missing_webview">Webbvyn är otillgänglig, kan\ inte öppna app-webbläsaren</string>
+    <string name="error_updating_webview">Webbvyn uppdaterar just nu, kan\ inte öppna app-webbläsaren ännu</string>
+
+    <!-- Error log -->
+    <string name="redownload_dialog_title">Försök ladda ner igen\?</string>
+    <string name="redownload_dialog_message">Totala antalet bilder i nerladdning: <x:g example="10" id="total_imgs">%1$d</x:g>\nBilder utan fel: <x:g example="8" id="fine_imgs">%2$d</x:g>\nBilder med fel: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
+    <string name="redownload_first_error">Första felet: <x:g id="errortype">%s</x:g></string>
+    <string name="redownload_action">ÅTERNERLADDA</string>
+    <string name="redownload_open_log">Öppna fel-logg</string>
+    <string name="redownload_share_log">Dela fel-logg</string>
+    <string name="redownload_generating_log_file">Genererar loggfil…</string>
+
+    <!-- Library fragment -->
+    <string name="resume_closed">Fortsätt läsa där du slutade\?</string>
+    <string name="open_drawer">Öppna låda</string>
+    <string name="close_drawer">Stäng låda</string>
+    <plurals name="ask_delete_multiple">
+        <item quantity="one">Ta bort det utvalda föremålet\?</item>
+        <item quantity="other">Ta bort <x:g example="2" id="count">%d</x:g> utvalda föremål\?</item>
+    </plurals>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">Arkivera utvalt föremål\?</item>
+        <item quantity="other">Arkivera <x:g example="2" id="count">%d</x:g> utvalda föremål\?</item>
+    </plurals>
+    <string name="delete_limit">Kan inte ta bort fler än 1000 böcker samtidigt</string>
+    <string name="redownload_limit">Kan inte åternerladda fler än 1000 böcker samtidigt</string>
+    <string name="stream_limit">Kan inte streama fler än 1000 böcker samtidigt</string>
+    <string name="transform_limit">Kan inte transformera fler än 1000 böcker samtidigt</string>
+    <string name="archive_limit">Kan inte arkivera fler än 1000 böcker samtidigt</string>
+    <string name="new_group_name">Nya gruppens namn\?</string>
+    <string name="group_edit_name">Ändra gruppnamn</string>
+    <string name="book_edit_title">Ändra boktitel</string>
+    <string name="delete_progress">Tar bort böcker</string>
+    <string name="delete_pages_progress">Tar bort sidor</string>
+    <string name="purge_progress">rensar ut böcker</string>
+    <string name="cancel_queue_progress">Avbryter köade saker</string>
+    <plurals name="delete_success_books">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> bok</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> böcker</item>
+    </plurals>
+    <plurals name="delete_success_groups">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> grupp</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> grupper</item>
+    </plurals>
+    <string name="delete_success">Borttagen</string>
+    <string name="archive_progress">Arkiverar böcker</string>
+    <string name="archive_progress_subtitle">Färdig: <x:g example="42" id="count">%s</x:g></string>
+    <string name="notif_archive_complete">Arkivering lyckades</string>
+    <plurals name="notif_archive_complete_details">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> bok arkiverades framgångsrikt</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> böcker arkiverades framgångsrikt</item>
+    </plurals>
+    <string name="notif_archive_fail">Arkivering misslyckades</string>
+    <plurals name="notif_archive_fail_details">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> bok kunde inte bli arkiverad</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> böcker kunde inte bli arkiverade</item>
+    </plurals>
+    <plurals name="archive_success">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> bok arkiverad i din nerladdningsmapp</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> böcker arkiverade i din nerladdningsmapp</item>
+    </plurals>
+    <string name="stream_canceled">Streaming avbruten - bok otillgänglig online</string>
+    <string name="stream_missing_webview">Streaming avbruten - Webbvy är otillgänglig</string>
+    <string name="stream_updating_webview">Streaming avbruten - Webbvy is updating</string>
+    <string name="download_canceled">Nerladdning avbruten - book unavailable online</string>
+    <string name="download_canceled_merged">Nerladdning avbruten - åtminstone ett kapitel är otillgängligt online</string>
+    <string name="download_missing_webview">Nerladdning avbruten - Webby är otillgänglig</string>
+    <string name="download_updating_webview">Nerladdning avbruten - Webbvy uppdaterar</string>
+    <string name="press_back_again">Tryck på tillbaka två gånger (fort) för att stänga av.</string>
+    <string name="queue_empty">Varför är jag tom\?</string>
+    <string name="errors_empty">Inga fel bland nerladdningarna hittade</string>
+    <string name="downloads_empty_library">Varsågod, ladda ner något.</string>
+    <string name="downloads_loading">Laddar~</string>
+    <string name="masterdata_no_result">Inga resultat :(</string>
+    <string name="search_entry_not_found">Det\ där finns inte här, gå och ladda ner det.</string>
+    <string name="search_bookid_label">Sök <x:g example="4567" id="launchcode">\'%s\'</x:g> i…</string>
+    <string name="book_launchcode">Kärnvapenkod: <x:g example="4567" id="launchcode">%s</x:g></string>
+    <plurals name="number_of_items">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> föremål</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> föremål</item>
+    </plurals>
+    <plurals name="number_of_book_search_results">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> resultat</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> resultat</item>
+    </plurals>
+    <string name="restart_needed">"Ändringarna börjar gälla när Hentoid återstartats"</string>
+    <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Åternerladda den utvalda boken från början\?</item>
+        <item quantity="other">Åternerladda de utvalda böckerna från början\?</item>
+    </plurals>
+    <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Ladda ned utvald bok\?</item>
+        <item quantity="other">Ladda ned utvalda böcker\?</item>
+    </plurals>
+    <plurals name="stream_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Byt utvald bok till streaming\?</item>
+        <item quantity="other">Byt utvalda böcker till streaming\?</item>
+    </plurals>
+    <plurals name="redownload_external_content">
+        <item quantity="one">En av de utvalda böckerna finns lagrad i det externa biblioteket och kan inte bli åternedladdad\nDen boken kommer ignoreras.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> selected books are stored in the external library and cannot be redownloaded\nDe kommer bli ignorerade.</item>
+    </plurals>
+    <plurals name="download_non_streamed_content">
+        <item quantity="one">En av de utvalda böckerna är redan nerladdad\nDen boken kommer ignoreras.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> Utvalda böcker är redan nerladdade\nDe kommer bli ignorerade.</item>
+    </plurals>
+    <plurals name="stream_external_streamed_content">
+        <item quantity="one">En av de utvalda böckerna streamas redan eller finns externt\nDen boken kommer ignoreras.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> Utvalda böcker är redan inställda på att bli streamade eller så\ är de tillgängliga på ett externt bibliotek\nDe kommer att ignoreras.</item>
+    </plurals>
+    <string name="help_search">Sök vadsom: titel, konstnär, etikett\noch kärnvapenkod också!</string>
+    <string name="help_page_slider">Du kan söka fortare genom att bläddra sidnummer</string>
+    <plurals name="items_selected">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> föremål valt</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> föremål utvalda</item>
+    </plurals>
+    <string name="folder_undefined">Fel - Innehåller odefinierad mapp</string>
+    <string name="malformed_url">Fel - Missbildad URL</string>
+    <string name="unsupported_site">Fel - Sajt stöds ej</string>
+    <plurals name="external_not_removed">
+        <item quantity="one">En bok från det externa biblioteket kommer inte tas bort</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> Böcker från det externa biblioteket kommer inte tas bort</item>
+    </plurals>
+    <string name="group_make_cover">Ställ in som gruppomslag</string>
+    <string name="group_make_cover_ask">Set this book\'s cover as the current group cover\?</string>
+    <string name="group_change">Flytta till anpassad grupp</string>
+    <string name="group_existing">Existerande grupp</string>
+    <string name="group_new">Skapa ny</string>
+    <string name="group_new_name">Nytt namn på anpassad grupp</string>
+    <string name="group_new_name_dynamic">Ny sparad sökning</string>
+    <string name="group_remove">Koppla loss från nuvarande grupp</string>
+    <string name="group_name_exists">En grupp med det namnet finns redan</string>
+    <string name="group_rename_forbidden">Att byta namn på den gruppen är förbjudet!</string>
+    <string name="group_name_empty">Gruppnamnet är tomt!</string>
+    <string name="group_not_selected">Grupp har inte valts!</string>
+    <plurals name="group_delete_selected_group" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Ta endast bort grupp</item>
+        <item quantity="other">Ta endast bort grupper</item>
+    </plurals>
+    <plurals name="group_delete_selected_book">
+        <item quantity="one">Ta bort <x:g example="1" id="count">%d</x:g> bok</item>
+        <item quantity="other">Ta bort <x:g example="2" id="count">%d</x:g> böcker</item>
+    </plurals>
+    <plurals name="group_delete_selected_group_books" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Ta bort grupp + bok</item>
+        <item quantity="other">Ta bort grupper + böcker</item>
+    </plurals>
+    <string name="group_delete_nothing">Inget att ta bort - kolla "Tillåt borttagning av externt innehåll" för att ändra på det</string>
+    <string name="clear_rating">Rensa betyg</string>
+    <string name="clear_search_history_confirm">Rensa sökhistorik?</string>
+    <string name="fav_pages">Favoritsidor</string>
+
+    <!-- Merge & split -->
+    <string name="notif_split_merge">Splittra / slå ihop</string>
+    <string name="merge_merge">Slå ihop</string>
+    <string name="reorder_progress">Sorterar om sidor…</string>
+    <string name="merge_progress">Slår ihop böcker…</string>
+    <string name="split_progress">Splittrar böcker…</string>
+    <string name="merge_split">Splittra</string>
+    <string name="new_title">Ny titel</string>
+    <string name="merge_use_book_title">Skapa ett kapitel per bok</string>
+    <string name="merge_delete_after_merging">Ta bort böckerna efter ihopslagning</string>
+    <string name="split_select_help">Håll och dra för att välja \nVarje valt kapitel skapar en ny bok</string>
+    <string name="split_no_chapters">Inga kapitel skapade ännu :-(</string>
+    <string name="split_create_chapters">Skapa kapitel</string>
+    <string name="merge_success">Innehåll ihopslaget framgångsrikt</string>
+    <string name="split_success">Innehåll splittrat framgångsrikt</string>
+    <string name="merge_fail">Misslyckades att slå ihop innehåll</string>
+    <string name="split_fail">Misslyckades att splittra innehåll</string>
+
+    <!-- Groupings -->
+    <string name="groups_flat">Alla böcker</string>
+    <string name="groups_by_artist">Via Konstnär</string>
+    <string name="groups_by_dl_date">Via nerladdningsdatum (behandlad)</string>
+    <string name="groups_dynamic">Sparade sökningar</string>
+    <string name="groups_custom">Anpassade grupper</string>
+    <string name="no_artist_group_name">[ingen konstnär]</string>
+
+    <!-- Sort / filter bottom panel -->
+    <string name="sort_ascending">Stigande</string>
+    <string name="sort_descending">Fallande</string>
+    <string name="sort_reshuffle">Blanda om</string>
+    <string name="sort_title">Titel</string>
+    <string name="sort_artist">Konstnär</string>
+    <string name="sort_pages">Sidor</string>
+    <string name="sort_dl_date">Nerladdningsdatum (behandlad)</string>
+    <string name="sort_dl_completion_date">Nerladdningsdatum (färdigställd)</string>
+    <string name="sort_read_date">Läsdatum</string>
+    <string name="sort_reads">Läsningar</string>
+    <string name="sort_size">Storlek</string>
+    <string name="sort_reading_progress">Läsförlopp</string>
+    <string name="sort_random">Godtyckligt</string>
+    <string name="sort_custom">Anpassad</string>
+    <string name="sort_invalid">-ogiltig-</string>
+    <string name="sort_books">Böcker</string>
+    <string name="sort_uplodad_date">Uppladdningsdatum</string>
+    <string name="library_filters_title">Filter</string>
+    <string name="library_filter_favourite_help">Växla display of favourite books</string>
+    <string name="library_filter_nonfavourite_help">Växla display of non-favourite books</string>
+    <string name="filter_completed">Visa endast färdiga böcker</string>
+    <string name="filter_not_completed">Visa endast ofärdiga böcker</string>
+    <string name="filter_rating">Filtrera efter betyg</string>
+
+    <!-- Groups bottom panel -->
+    <string name="display_groups_title">Visar grupper</string>
+    <string name="display">Visning</string>
+    <string name="display_artists">Konstnärer</string>
+    <string name="display_groups">Grupper</string>
+
+    <!-- Item card tooltips -->
+    <string name="drag_help">Dra förmål</string>
+    <string name="external_help">Tillhör det externa biblioteket</string>
+    <string name="rating_help">Bokbetyg</string>
+    <string name="streamed_help">Streama bok</string>
+    <string name="view_source_help">Läs in källan i webbläsaren</string>
+    <string name="fav_help">Märk/omärk som favorit</string>
+
+    <!-- Visibility fields -->
+    <string name="launchcode_present">Du har redan den här boken. Sök i andra källor\?</string>
+
+    <!-- Updates -->
+    <string name="updates_title">Uppdateringar</string>
+    <string name="checking_updates">Söker efter uppdateringar</string>
+    <string name="update_available">En uppdatering är tillgänglig!</string>
+    <string name="tap_to_download">Tryck för att ladda ner</string>
+    <string name="update_download_failed">Nerladdning av uppdatering misslyckades</string>
+    <string name="tap_to_retry">Tryck för att försöka igen</string>
+    <string name="downloading_update">Laddar ner uppdatering</string>
+    <string name="update_ready">Uppdatering är redo!</string>
+    <string name="tap_to_install">Tryck för att installera</string>
+
+    <!-- Alerts -->
+    <string name="alert_orange">Var medveten om att nerladdningar kan misslyckas på den här sajten.</string>
+    <string name="alert_red">Nerladdningsknappen är för tillfället sönder på den här sajten.</string>
+    <string name="alert_grey">This site currently has serious stability issues. The app has nothing to do about it. Please try again later.</string>
+    <string name="alert_black">Den här sidan är för tillfället otillgänglig på riktigt. Appen har inget med det att göra. Vänligen försök igen senare.</string>
+    <string name="alert_wip">Hentoids utvecklarteam arbetar på en lösning. Appen informerar dig när en lösning är färdig.</string>
+    <string name="alert_fix_available">Ett lösning är tillgänglig i den senaste versionen av appen. Vänligen uppdatera.</string>
+
+    <!-- App Lock -->
+    <string name="app_lock_pin">Mata in PIN-kod</string>
+    <string name="app_lock_enable">Applås aktiverat</string>
+    <string name="app_lock_disabled">Applås avstängt</string>
+    <string name="pin_reset">Återställ PIN-kod</string>
+    <string name="pin_reset_success">PIN-kod återställd</string>
+    <string name="pin_current">Mata in nuvarande PIN-kod</string>
+    <string name="pin_new">Mata in ny PIN-kod</string>
+    <string name="pin_new_confirm">Bekräfta ny PIN-kod</string>
+    <string name="pin_explanation">Applås förhindrar obehörig användning av appen genom att begära en 4-siffrig PIN-kod eller en biometrikontroll innan åtkomst beviljas</string>
+    <string name="pin_lock_on_restore">Lås vid återställande\nfrån bakgrund</string>
+    <string name="lock_type">Låstyp</string>
+    <string name="lock_type_pin">PIN-kod</string>
+    <string name="lock_type_biometric">Biometri</string>
+    <string name="app_lock_biometrics_fail">Kunde\ inte hitta något passande biometriskt system</string>
+    <string name="biometric_dialog_title">Biometriskt lås</string>
+    <string name="biometric_dialog_subtitle_lock">Bekräfta innan låsning</string>
+    <string name="biometric_dialog_subtitle_unlock">Biometrisk upplåsning</string>
+
+    <!-- About Activity -->
+    <string name="about1"><b>Hentoid</b> är en Doujinshi &amp; H-Manga arkiveringsapp. Hentoid utvecklades ursprungligen av <b>Cesar Arasaki</b>.</string>
+    <string name="personalDataStatement1"><b>SEKRETESSINFORMATION ANGÅENDE PERSONUPPGIFTER</b>\n\nHentoid är en gratis och öppenkällkodsprogramvara underhållen av Hentoid-gemenskapen (gå med i vår Discord - se länk nedan)</string>
+    <string name="personalDataStatement2">Hentoid samlar in följande personliga data och skickar den till Google för behandling genom Firebasebiblioteket:\n  - Sessions-ID\n  - IP-address</string>
+    <string name="personalDataStatement3">Ovannämnda datan tas bort från Firebases körande samt backupsystem inom 180 dagar (se https://firebase.google.com/support/privacy/ för fler detaljer)\n\nIngen annan personlig data samlas varken in eller skickas till någon annan part.</string>
+    <string name="about_licenses">Licenser</string>
+    <string name="about_achievements">Framsteg</string>
+    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
+    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
+    <string name="about_chrome_unavailable">Webbvyn är otillgänglig</string>
+    <string name="about_chrome_updating">Webbvyn uppdaterar just</string>
+
+    <!-- Web browser -->
+    <string name="web_gallery">Tillbaka till senaste gallerisida</string>
+    <string name="web_home">Tillbaka till biblioteket</string>
+    <string name="web_back">Tillbaka</string>
+    <string name="web_forward">Framåt</string>
+    <string name="web_bookmarks">Bokmärken</string>
+    <string name="web_refresh_stop">Fräscha upp/stoppa</string>
+    <string name="web_url">Använd länk</string>
+    <string name="web_adblocker_on">Reklamblockerare (på)</string>
+    <string name="web_adblocker_off">Reklamblockerare (av)</string>
+    <string name="web_open_ext_browser">Extern webbläsare</string>
+    <string name="web_download">Ladda ner</string>
+    <string name="web_unparsable">Det här innehållet kan inte laddas ned. Förlåt~</string>
+    <string name="web_url_clipboard">URL-kopierad till urklipp</string>
+    <string name="help_web_download">Du\ har nått en boksida.\nDags att ladda ner med båttenlisten!</string>
+    <string name="blocked_tag">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nDownload canceled</string>
+    <string name="blocked_tag_queued">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nKöad som ett fel</string>
+    <string name="bookmark_current">Bokmärk nuvarande sida</string>
+    <string name="unbookmark_current">Ta bort bokmärke på nuvarande sida</string>
+    <string name="bookmark_copy_url">Kopiera bokmärkes-URL till urkklipp</string>
+    <string name="bookmark_toggle_welcome">Växla bokmärkes-URL som välkomstsida</string>
+    <string name="bookmark_change_site">Byt sajt</string>
+    <string name="bookmark_edit_title">Ändra bokmärkestitel</string>
+    <string name="alert_unwanted_tags">Den här boken är märkt med <x:g example="bad" id="tag">%s</x:g></string>
+    <string name="bookmark_homepage">Hemsida</string>
+    <string name="torrent_dl_fail">Nedladdning av torrent misslyckades: <x:g id="torrent">%s</x:g></string>
+    <string name="web_storage_permission_denied">Lagringstillstånd nekat - får inte använda nerladdaren</string>
+    <string name="web_all_sites">Samtliga sidor</string>
+
+    <!-- Web browser (site specifics) -->
+    <string name="help_web_exh_account">Vänligen använd eller skapa ett exHentai konto</string>
+    <string name="help_web_invalid_exh_credentials">Ogiltiga uppgifter, vänligen logga in igen</string>
+    <string name="help_web_incomplete_exh_credentials">Ofullständiga uppgifter, vänligen logga in igen. Om problemet kvarstår, överväg att komma åt sidan från ett annat land eller skapa ett nytt konto.</string>
+    <string name="help_web_hires_eh_account">För att ladda ner högupplösta bilder behöver du använda eller skapa ett e-hentaikonto</string>
+
+    <!-- SearchActivity -->
+    <string name="category_any">Någon</string>
+    <string name="exclude">Exkludera</string>
+    <string name="search_category"><x:g example="Language" id="search_category">%s</x:g>Sök</string>
+    <string name="searching_generic">Söker</string>
+    <string name="search_prompt">Sök <x:g id="search_prompt">%s</x:g></string>
+    <!-- Used as a category on the search screen -->
+    <string name="category_artist">Konstnär</string>
+    <string name="category_tag">Etikett</string>
+    <string name="category_character">Karaktär</string>
+    <string name="category_series">Serier</string>
+    <string name="category_language">Språk</string>
+    <string name="category_source">Källa</string>
+    <string name="category_uploader">Uppladdare</string>
+    <string name="category_circle">Cirkel</string>
+    <string name="category_category">Kategori</string>
+    <string name="category_translator">Översättare</string>
+    <string name="category_publisher">Utgivare</string>
+    <string name="category_undefined">Odefinierad</string>
+    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
+    <string name="object_artist">Konstnär</string>
+    <string name="object_tag">Etikett</string>
+    <string name="object_character">Karaktär</string>
+    <string name="object_series">Serier</string>
+    <string name="object_language">Språk</string>
+    <string name="object_source">Källa</string>
+    <string name="object_uploader">Uppladdare</string>
+    <string name="object_circle">Cirkel</string>
+    <string name="object_category">Kategori</string>
+    <string name="object_translator">Översättare</string>
+    <string name="object_publisher">Utgivare</string>
+    <string name="object_undefined">Odefinierad</string>
+    <plurals name="search_button">
+        <item quantity="one"><x:g example="1" id="count">%s</x:g> Resultat hittat</item>
+        <item quantity="other"><x:g example="2" id="count">%s</x:g> Resultat hittade</item>
+    </plurals>
+    <string name="search_select_a_filter">Välj ett filter</string>
+    <string name="search_location">Location</string>
+    <string name="search_location_entries_1">Alla platser</string>
+    <string name="search_type">Typ</string>
+    <string name="search_type_entries_1">Alla boktyper</string>
+    <string name="search_type_entries_2">Mapp</string>
+    <string name="search_type_entries_3">Streamade</string>
+    <string name="search_type_entries_4">Arkiv</string>
+    <string name="search_type_entries_5">Platshållare</string>
+    <string name="search_type_entries_6">PDF</string>
+
+    <!-- Image reader -->
+    <string name="no_images">Kunde inte ladda boken: Ingen bild hittad</string>
+    <string name="loading_archive">Laddar: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="loading_image">Laddar bild: <x:g example="50%" id="percentage">%d%%</x:g></string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (skala <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="viewer_choose_direction">Välj din läsriktning</string>
+    <string name="viewer_direction_ltr">Vänster till höger</string>
+    <string name="viewer_direction_rtl">Höger till vänster</string>
+    <string name="viewer_direction_ttb">Uppifrån och ned</string>
+    <string name="reader_two_pages_mode">Tvåsidorsläge (bok)</string>
+    <string name="viewer_slideshow">Bildspel</string>
+    <string name="viewer_slideshow_help">Bildspelsläge</string>
+    <string name="viewer_order_reverse">Omvänd ordning</string>
+    <string name="viewer_order_shuffle">Blanda sidor</string>
+    <string name="viewer_order_123">Omordna sidor</string>
+    <string name="viewer_order_shuffle_help">Växla sidblandning</string>
+    <string name="viewer_filter_favourite_off">Visa endast favoritsidor</string>
+    <string name="viewer_filter_favourite_on">Visa alla sidor</string>
+    <string name="viewer_filter_favourite_help">Växla visning av favoritsidor</string>
+    <string name="viewer_make_cover">Ställ in som omslag</string>
+    <string name="viewer_delete_book">Ta bort bok</string>
+    <string name="copy_download_folder_success">Kopierade till nerladdningsmappen</string>
+    <string name="copy_download_folder_fail">Kunde inte skriva till nerladdningsmappen</string>
+    <string name="copy_target_folder_success">Kopierade till målmappen</string>
+    <string name="copy_target_folder_fail">Kunde inte skriva till målmapp</string>
+    <string name="viewer_ask_delete_page">Ta bort den här sidan\?</string>
+    <string name="information_help">Information</string>
+    <string name="previous_book_help">Föregående bok</string>
+    <string name="next_book_help">Nästa bok</string>
+    <string name="gallery_help">Bokgalleri</string>
+    <string name="page_fav_help">Märk/omärk sida som favorit</string>
+    <string name="page_copy_help">Kopiera sida till Androidens nerladdningsmapp</string>
+    <string name="page_share_help">Share page using another app</string>
+    <string name="page_delete_help">Ta bort sida</string>
+    <string-array name="page_delete_choices">
+        <item>Fråga mig igen nästa gång</item>
+        <item>Fråga mig inte igen för nuvarande bok</item>
+        <item>Fråga mig inte igen för nuvarande läs-session</item>
+    </string-array>
+    <string name="viewer_ask_cover">Ställa in den här sidan som bokomslag?</string>
+    <string name="image_not_found">Bild kunde inte hittas</string>
+    <string name="image_streaming">Streamar bild…</string>
+    <string name="image_extracting">Extraherar bild…</string>
+    <string name="book_prefs">Bokinställningar</string>
+    <string name="goto_app_prefs">Appinställningar</string>
+    <string name="use_app_prefs">Använd appinställningar (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
+    <string name="page_favourite_success">Sida favoriserad</string>
+    <string name="page_unfavourite_success">Sida ofavoriserad</string>
+    <string name="book_favourite_success">Bok favoriserad</string>
+    <string name="book_unfavourite_success">Bok ofavoriserad</string>
+    <string name="viewer_fix">Åtgärda nerladdningsfel</string>
+    <string name="viewer_reload_page">Ladda om sida</string>
+    <string name="viewer_reparse_book">Omanalysera bok</string>
+    <string name="menu_edit_chapters">Ändra kapitel</string>
+    <string name="gallery_title">Galleri</string>
+    <string name="gallery_title_edit">Kapiteländrare</string>
+    <string name="gallery_title_add">Kapitelskapare</string>
+    <string name="gallery_chapter_prefix">Kapitel</string>
+    <string name="gallery_edit_chapters_help">För att skapa eller ta bort ett kapitel, tryck på dess första sida</string>
+    <string name="gallery_clear_chapters">Rensa alla kapitel</string>
+    <string name="gallery_add_remove_chapters">Lägg till &amp; ta bort kapitel</string>
+    <string name="gallery_edit_name">Ändra namn</string>
+    <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Sida <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
+    <string name="gallery_display_chapter">Galleriskärmens kapitel<x:g example="2" id="number">%d</x:g></string>
+    <string name="gallery_no_chapter">Inget kapitel</string>
+    <string name="renaming_progress">Byter namn på filer…</string>
+    <string name="content_removal_failed">Innehållsborttagning misslyckades</string>
+    <string name="page_removal_failed">Borttagning av sida misslyckades</string>
+    <string name="file_removal_failed">Filborttagning misslyckades</string>
+    <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
+    <string name="book_list_loading_failed">Inläsning av boklista misslyckades</string>
+    <string name="chapter_toggle_failed">Kunde\ inte växla kapitel vid sida <x:g example="2" id="number">%d</x:g></string>
+    <string name="chapters_remove_failed">Kunde\ inte ta bort kapitel</string>
+    <string name="chapter_move_failed">Kunde\ inte flytta kapitel</string>
+    <string name="slideshow_start">Startar bildspel (fördröjning <x:g example="0.5" id="time">%.om</x:g>s)</string>
+    <string name="slideshow_start_vertical">Startar bildspel (<x:g example="fast" id="speed">%s</x:g>)</string>
+    <string name="slideshow_stop">Bildspel stoppat</string>
+    <string name="ask_clear_chapters">Återställ alla kapitel?</string>
+    <string name="view_book">Läs bok</string>
+
+    <!-- Changelog -->
+    <string name="view_changelog">Ändringslogg</string>
+    <string name="view_changelog_flagged">Ändringslogg*</string>
+    <string name="changelog">Ändringslogg</string>
+    <string name="get_latest">Få den senaste versionen (<x:g example="1.18.1" id="version">%1$s</x:g>)</string>
+    <string name="update_success">Uppdaterade framgångsrikt!</string>
+    <string name="starting_download">Startar nedladdning</string>
+
+    <!-- Edit drawer -->
+    <string name="title_activity_drawer_edit">Ändra byrå</string>
+
+    <!-- Duplicate detector -->
+    <string name="title_activity_duplicate_detector">Dubblettdetektor</string>
+    <string name="duplicate_use_title">Titel</string>
+    <string name="duplicate_use_cover">Omslag</string>
+    <string name="duplicate_use_artist">Konstnär</string>
+    <string name="duplicate_use_same_language">Endast samma språk</string>
+    <string name="duplicate_ignore_chapters">Ignorera kapitel och uppföljare</string>
+    <string name="duplicate_use_sensitivity">känslighet</string>
+    <string-array name="duplicate_use_sensitivities">
+        <item>Något liknande</item>
+        <item>Liknande</item>
+        <item>Väldigt liknande</item>
+    </string-array>
+    <string name="duplicate_find_action">Hitta dubbletter</string>
+    <string name="duplicate_index_covers">Indexerar omslagsbilder</string>
+    <string name="duplicate_find">Detekterar dubblettböcker</string>
+    <plurals name="duplicate_count">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> dubblett</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> dubbletter</item>
+    </plurals>
+    <string name="duplicate_title_score">Titel: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_title_score_nodata">Titel: ingen data</string>
+    <string name="duplicate_cover_score">Omslag: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_cover_score_nodata">Omslag: ingen data</string>
+    <string name="duplicate_artist_score">Konstnär: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_artist_score_nodata">Konstnär: ingen data</string>
+    <string name="apply_final">Verkställ val</string>
+    <string name="duplicate_notif_start">Startar dubblett detektering</string>
+    <string name="duplicate_notif_complete_title">Dubblett detektering komplett</string>
+    <plurals name="duplicate_notif_complete_desc">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> dubblett hittad</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> dubbletter hittade</item>
+    </plurals>
+    <string name="duplicate_empty_first_use">Ingenting att visa - Kör en ny dubblettsökning</string>
+    <string name="duplicate_processing">Detekterar dubbletter…</string>
+    <plurals name="duplicate_main_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> föremål kvar</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> föremål kvar</item>
+    </plurals>
+    <plurals name="duplicate_detail_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> dubblett</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> dubbletter</item>
+    </plurals>
+    <string name="duplicate_empty_no_result">Inga dubbletter hittades</string>
+    <string name="duplicate_keep">Behåll</string>
+    <string name="duplicate_delete">Ta bort</string>
+
+    <!-- Duplicate dialog -->
+    <string name="duplicate_alert">Dubblettvarning!</string>
+    <string name="duplicate_alert_subtitle_book">Boken du\ håller på att ladda ner kan vara en dubblett av en bok du redan äger.</string>
+    <string name="duplicate_alert_subtitle_pages">Boken du\ håller på att ladda ner sidor från kanske inte är den du redan äger.</string>
+    <string name="duplicate_alert_always_download">Ladda alltid ner och fråga\ mig inte igen</string>
+    <string name="duplicate_alert_never_extra_on_dupes">Lägg aldrig till sidor från potentiella dubbletter igen</string>
+    <string name="duplicate_alert_similarity">Likhet: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_alert_replace_existing">Ersätt existerande bok</string>
+    <string name="duplicate_alert_download_book">Ladda ner bok</string>
+    <string name="duplicate_alert_download_pages">Ladda ner extra sidor</string>
+    <string name="duplicate_wait_index">Indexerar…</string>
+    <string name="duplicate_in_library">I bibliotek</string>
+    <string name="duplicate_in_queue">I kö</string>
+
+    <!-- Metadata editor -->
+    <string name="meta_cover_multiple_warning">Omlaget kan inte ändras på fler än en bok åt gången</string>
+    <string name="meta_cover_archive_warning">Det går inte att ändra omslag på arkiv</string>
+    <string name="meta_choose_type">Välj en typ för \'%s\'</string>
+    <string name="meta_replace_with">Ersätt med…</string>
+    <string name="meta_tag_all_selected">Etikettera alla utvalda böcker</string>
+    <string name="meta_tag_all_selected_confirm">Etikettera alla %1$d utvalda böcker med \'%2$s\'?</string>
+    <string name="meta_rename_new_name">Nytt namn</string>
+    <string name="meta_rename_new_rule">Kom ihåg det här för framtida nedladdningar</string>
+
+    <!-- Renaming rules editor -->
+    <string name="meta_rule_source">Källa</string>
+    <string name="meta_rule_target">Mål</string>
+    <string name="meta_rule_wildcard">Om målet har ett jokertecken, måste källan också ha ett jokertecken</string>
+
+    <!-- Image transform -->
+    <string name="transform_pics">Transformera bilder</string>
+    <string name="transform_resizing">Storleksändring</string>
+    <string name="transform_resize_pics">Storleksändra bilder</string>
+    <string name="method">Metod</string>
+    <string name="resize_method_1">Max %% av skärmdimensioner</string>
+    <string name="resize_method_2">Absoluta maxdimensionerna</string>
+    <string name="resize_method_3">%% av original bildsdimensionerna</string>
+    <string name="resize_method_4">AI upskalning 2x</string>
+    <string name="resize_method_1_prompt">%% av skärm dimensionerna</string>
+    <string name="resize_method_2_prompt_max_height">Max höjd (manga)</string>
+    <string name="resize_method_2_prompt_max_width">Max bredd (manhwa, webserietidning)</string>
+    <string name="resize_method_3_prompt">%% av originalstorleken</string>
+    <string name="transform_transcoding">Omkodning</string>
+    <string name="transcode_method_1">Same encoder for all pictures</string>
+    <string name="transcode_method_2">Särskilj förlustbenägna kontra förlustfria bilder</string>
+    <string name="encoder">kodare</string>
+    <string name="encoder_lossless">Förlustfri kodare</string>
+    <string name="encoder_lossy">Förlustbenägen kodare</string>
+    <string name="transcode_encoder_webp_lossless">WEBP (förlustfri)</string>
+    <string name="transcode_encoder_png">PNG</string>
+    <string name="transcode_encoder_webp_lossy">WEBP (förlustbenägen)</string>
+    <string name="transcode_encoder_jpeg">JPEG</string>
+    <string name="encoder_quality">kvalité</string>
+    <string name="encoder_warning">WEBP formatet är begränsat till 16383 pixlar i bredd och höjd. Större bilder kommer automatiskt bli omvandlade till PNG eller JPG.</string>
+    <string name="retransform_warning">%d sidor har redan blivit transformerade. Att transformera dem flera gånger kan resultera i märkbar kvalitetsförlust.\nVi rekommenderar att ladda ner original bilderna en gång till och transformera dessa endast en gång.</string>
+    <string name="ai_rescale_warning">Att uppskala bilder med AI kommer använda din GPU intensivt. Handlingen kan ta några minuter.</string>
+    <string name="preview">Förhandsvisning</string>
+    <string name="transform">Transformera</string>
+    <string name="transform_unsupported">Transformation stöds ej</string>
+    <string name="transform_start">Transformera bilder</string>
+    <string name="transform_progress">Transformerar bilder</string>
+    <string name="transform_complete">Transformation färdig</string>
+    <plurals name="transform_complete_details">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> bild transformerad framgångsrikt</item>
+        <item quantity="other"><x:g example="1" id="number">%d</x:g> bilder transformerade framgångsrikt</item>
+    </plurals>
+    <string name="range_check">Värdet måste vara mellan %1$d och %2$d</string>
+    <string name="previous_page">Föregående sida</string>
+    <string name="next_page">Nästa sida</string>
+
+    <!-- Archive dialog -->
+    <string name="target_folder">Målmapp</string>
+    <string name="archive_format">Arkivformat</string>
+    <string name="background_color">Bakgrundsfärg</string>
+    <string name="folder_device_downloads">Enhetens\ Nerladdningsmapp</string>
+    <string name="folder_other">Välj mapp…</string>
+    <string name="archive_overwrite">Skriv över existerande arkiv</string>
+    <string name="archive_delete_after_archiving">Ta bort böcker efter lyckad arkivering</string>
+    <plurals name="create_archive">
+        <item quantity="one">Skapa arkiv</item>
+        <item quantity="other">Skapa arkiv</item>
+    </plurals>
+
+    <!-- Generic delete & purge -->
+    <string name="notif_archive_title">Innehållsarkivering</string>
+    <string name="notif_delete_title">Innehållsborttagning</string>
+    <string name="notif_delete_complete">Radering klar</string>
+    <string name="notif_delete_prepurge_complete">Åternerladdning/Stream för-utrensning färdig</string>
+    <plurals name="notif_process_complete_details">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> bok behandlad framgångsrikt</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> böcker färdigbehandlade</item>
+    </plurals>
+    <string name="notif_delete_fail">Radering misslyckades</string>
+    <string name="notif_delete_prepurge_fail">Åternedladdning/Stream-förutrensning misslyckades</string>
+    <plurals name="notif_delete_fail_details">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> föremål misslyckat</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> föremål misslyckat</item>
+    </plurals>
+
+    <!-- Update Json service -->
+    <string name="notif_json_title">JSON-uppdatering</string>
+    <string name="notif_json_progress">JSON-uppdatering pågår</string>
+    <string name="notif_json_complete">Uppdatering lyckades</string>
+
+    <!-- Startup -->
+    <string name="title_startup">Uppstart</string>
+    <string name="title_startup_progress">Startar…</string>
+    <string name="title_startup_complete">Uppstart lyckades</string>
+
+    <!-- Missing WebView -->
+    <string name="missing_web_view_title">Webbvyn är inte installerad eller avstängd</string>
+    <string name="missing_web_view">Hentoid har inte lyckats hitta Androids\ inbyggda Webbvy för appar.\nUtan den kan\ du inte surfa källor, återladdaner böcker; det finns inte mycket som du kan\ göra som kräver internetåtkomst.\n\nDet mest sannolika är att det\ faktiskt är installerat på ditt system, men har blivit avstängd.: vänligen gå till <b>Inställningar</b> &gt; <b>Appar</b> &gt; <b>Avstängda appar</b> och sätt på <b>Android System WebView</b>.\n\nOm du inte kan\ hitta appen, vänligen intallera den från din enhet\s <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">appbutik</a></b>.</string>
+    <string name="missing_web_view_library">Tillbaka till biblioteket</string>
+
+    <!-- Launch text selection -->
+    <string name="launch">Kör</string>
+
+    <!-- Group names -->
+    <string name="group_today">Idag</string>
+    <string name="group_7">Senaste 7 dagarna</string>
+    <string name="group_30">Senaste 30 dagarna</string>
+    <string name="group_60">Senaste 60 dagarna</string>
+    <string name="group_year">Senaste året</string>
+    <string name="group_long">För länge sedan</string>
+    <string name="group_no_group">Osorterade</string>
+
+    <!-- Themes -->
+    <string name="theme_light">Ljust</string>
+    <string name="theme_deep_red">Vinrött</string>
+    <string name="theme_dark">Mörkt</string>
+
+    <!-- Book languages detected by the app -->
+    <string name="lang_en">english</string>
+    <string name="lang_zh">chinese</string>
+    <string name="lang_ja">japanese</string>
+    <string name="lang_ko">korean</string>
+    <string name="lang_es">spanish</string>
+    <string name="lang_ru">russian</string>
+    <string name="lang_pt">portuguese</string>
+    <string name="lang_th">thai</string>
+    <string name="lang_fr">french</string>
+    <string name="lang_vi">vietnamese</string>
+    <string name="lang_it">italian</string>
+    <string name="lang_de">german</string>
+    <string name="lang_pl">polish</string>
+    <string name="lang_id">indonesian</string>
+    <string name="lang_hu">hungarian</string>
+    <string name="lang_tr">turkish</string>
+    <string name="lang_cs">czech</string>
+    <string name="lang_sv">swedish</string>
+
+    <!-- Misc -->
+    <string name="select_file_manager">Välj din filhanterare</string>
+    <string name="u_byte" tools:ignore="MissingTranslation">bitar</string>
+    <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
+    <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
+    <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
+</resources>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Activity Title -->
+    <string name="tools_title">Verktyg</string>
+    <!-- Menu item -->
+    <string name="tools_screen_import_export">Importera / Exportera</string>
+
+    <!-- Button -->
+    <string name="tools_export_library_title">Exportera metadata</string>
+    <!-- Button description -->
+    <string name="tools_export_library_summary">Exportera Hentoid böcker till en JSON-fil</string>
+    <!-- Button -->
+    <string name="tools_import_library_title">Importera metadata</string>
+    <!-- Button description -->
+    <string name="tools_import_library_summary">Återställ exporterade Hentoid-böcker från en JSON-fil</string>
+    <!-- Subheading -->
+    <string name="tools_screen_cat_settings">Inställningar</string>
+    <!-- Button -->
+    <string name="tools_export_settings_title">Exportera inställningar</string>
+    <!-- Button description -->
+    <string name="tools_export_settings_summary">Exportera inställningar till en JSON-fil</string>
+    <!-- Button -->
+    <string name="tools_import_settings_title">Importera inställningar</string>
+    <!-- Button description -->
+    <string name="tools_import_settings_summary">Återställ exporterade inställningar från en JSON-fil</string>
+
+    <!-- Menu item -->
+    <string name="tools_screen_library">Bibliotekshantering</string>
+    <!-- Menu item -->
+    <string name="tools_duplicate_detector_title">Dubblettdetektor</string>
+    <!-- Menu item description -->
+    <string name="tools_duplicate_detector_summary">Identifiera och radera dubbletter</string>
+
+    <!-- Menu item -->
+    <string name="tools_screen_cache">Cachehantering</string>
+    <!-- Button -->
+    <string name="tools_cache_browser">Rensa webbläsarcache</string>
+    <!-- Toast notification -->
+    <string name="tools_cache_browser_success">Webbvycache rensades framgångsrikt</string>
+    <string name="tools_cache_browser_missing_webview">Webbvyn är otillgänglig, kan\inte rensa cache nu</string>
+    <string name="tools_cache_browser_updating_webview">Webbvyn uppdateras just nu, kan\inte rensa cachen ännu</string>
+    <!-- Button -->
+    <string name="tools_cache_app">Rensa appcache</string>
+    <!-- Toast notification -->
+    <string name="tools_cache_app_success">Appcachen rensades framgångsrikt</string>
+
+    <!-- Menu item -->
+    <string name="tools_renaming_rules_title">Attributomdöpningsregler</string>
+    <!-- Menu item description -->
+    <string name="tools_renaming_rules_summary">Hantera attribut-omdöpningsregler</string>
+
+    <!-- Menu item -->
+    <string name="tools_latest_logs_title">Apploggar</string>
+    <!-- Menu item description -->
+    <string name="tools_latest_logs_summary">Visa app\ens senaste loggar</string>
+
+    <!-- Menu item -->
+    <string name="tools_ram_usage_title">RAM-användning</string>
+    <!-- Menu item description -->
+    <string name="tools_ram_usage_summary">Visa nuvarande RAM-användning</string>
+
+
+    <!-- Metadata import -->
+    <string name="tools_import_empty_books_intro">Om ingen bildmapp kan hittas…</string>
+    <string name="tools_import_empty_books_entries_1">Importera inte</string>
+    <string name="tools_import_empty_books_entries_2">Importera som tom bok</string>
+    <string name="tools_import_empty_books_entries_3">Importera som streamad bok om möjligt</string>
+    <string name="tools_import_empty_books_entries_4">Lägg till i felkö</string>
+</resources>

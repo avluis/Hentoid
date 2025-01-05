@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Choice for "Display type" setting -->
+    <string name="pref_library_display_entries_1">Lista (standardval)</string>
+    <string name="pref_library_display_entries_2">Rutnät</string>
+    <!-- Choice for "Alert on low memory" setting -->
+    <string name="pref_memory_alert_entries_1">Ingen avisering</string>
+    <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">för 90% fullt</string>
+    <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">för 95% fullt</string>
+    <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">för 98% fullt</string>
+    <!-- Choice for "Quick download long press threshold" setting -->
+    <string name="pref_browser_quick_dl_threshold_entries_1" tools:ignore="MissingTranslation">500 ms</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 s (standardval)</string>
+    <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 s</string>
+    <!-- Choice for "DNS over HTTPS entries" setting -->
+    <string name="pref_browser_dns_entries_1">Ingen</string>
+    <!-- Choice for "New downloads position" setting -->
+    <string name="pref_queue_new_position_entries_1">Topp</string>
+    <string name="pref_queue_new_position_entries_2">Botten</string>
+    <string name="pref_queue_new_position_entries_3">Fråga varje gång</string>
+    <!-- Choice for "Large downloads size threshold" setting -->
+    <string name="pref_dl_size_wifi_threshold_entries_1">Ingen storleksgräns</string>
+    <string name="pref_dl_size_wifi_threshold_entries_2" tools:ignore="MissingTranslation">20 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_3" tools:ignore="MissingTranslation">40 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_4" tools:ignore="MissingTranslation">100 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_5" tools:ignore="MissingTranslation">200 MB</string>
+    <!-- Choice for "Large downloads pages threshold" setting -->
+    <string name="pref_dl_pages_wifi_threshold_entries_1">Ingen sidgräns</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_2">60 sidor</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_3">120 sidor</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_4">200 sidor</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_5">500 sidor</string>
+    <!-- Choice for "Number of parallel downloads" setting -->
+    <string name="pref_dl_threads_quantity_entries_1">Auto (standardval)</string>
+    <string name="pref_dl_threads_quantity_entries_2">2 (segt internet)</string>
+    <string name="pref_dl_threads_quantity_entries_6">10 (snabbt internet; avancerad mobil)</string>
+    <!-- Choice for "Downloader speed limit" setting -->
+    <string name="pref_dl_speed_cap_entries_1">Ingen (standardval)</string>
+    <string name="pref_dl_speed_cap_entries_2">100 KBps</string>
+    <string name="pref_dl_speed_cap_entries_3">200 KBps</string>
+    <string name="pref_dl_speed_cap_entries_4">400 KBps</string>
+    <string name="pref_dl_speed_cap_entries_5">800 KBps</string>
+    <!-- Choice for "Book folder naming convention" setting -->
+    <string name="pref_folder_naming_content_entries_1" tools:ignore="MissingTranslation">ID</string>
+    <string name="pref_folder_naming_content_entries_2">Titel - ID</string>
+    <string name="pref_folder_naming_content_entries_3">Konstnär - Titel - ID</string>
+    <string name="pref_folder_naming_content_entries_4">Titel - Konstnär - ID</string>
+    <!-- Choice for "Truncate folder name" setting -->
+    <string name="pref_folder_trunc_content_entries_1">Ingen</string>
+    <string name="pref_folder_trunc_content_entries_2">60 karaktärer</string>
+    <string name="pref_folder_trunc_content_entries_3">80 karaktärer</string>
+    <string name="pref_folder_trunc_content_entries_4">100 karaktärer</string>
+    <string name="pref_folder_trunc_content_entries_5">120 karaktärer</string>
+    <!-- Choice for "Download action" setting -->
+    <string name="pref_viewer_dl_action_entries_1">Ladda ned samtliga sidor</string>
+    <string name="pref_viewer_dl_action_entries_2">Streama sidorna vid läsning</string>
+    <string name="pref_viewer_dl_action_entries_3">Fråga varje gång</string>
+    <!-- Choice for "Sort order of displayed metadata" setting -->
+    <string name="pref_attribute_list_order_entries_1">Alfabetisk</string>
+    <string name="pref_attribute_list_order_entries_2">Etiketträknad (mest använd först)</string>
+    <!-- Choice for "Mem usage threshold before aborting" setting -->
+    <string name="pref_dl_retries_mem_limit_entries_4">Ingen</string>
+    <!-- Choice for "Blocking behaviour" setting -->
+    <string name="pref_dl_blocked_tags_behaviour_entries_1">Köa\ inte</string>
+    <string name="pref_dl_blocked_tags_behaviour_entries_2">Köa som nedladdningsfel</string>
+    <!-- Choice for "Browse mode" setting -->
+    <string name="pref_viewer_browse_mode_entries_1">Vänster till höger</string>
+    <string name="pref_viewer_browse_mode_entries_2">Höger till vänster</string>
+    <string name="pref_viewer_browse_mode_entries_3">Uppifrån och ned</string>
+    <!-- Choice for "Separating bars in vertical mode" setting -->
+    <string name="pref_viewer_separating_bars_entries_1">Av (standardval)</string>
+    <string name="pref_viewer_separating_bars_entries_2">Små</string>
+    <string name="pref_viewer_separating_bars_entries_3">Tydliga</string>
+    <string name="pref_viewer_separating_bars_entries_4">Stora</string>
+    <!-- Choice for "Mark book as read after N pages" setting -->
+    <string name="pref_viewer_read_threshold_entries_1">1 sida (standardval)</string>
+    <string name="pref_viewer_read_threshold_entries_2">2 sidor</string>
+    <string name="pref_viewer_read_threshold_entries_3">5 sidor</string>
+    <string name="pref_viewer_read_threshold_entries_4">Alla sidor</string>
+    <!-- Choice for "Slideshow delay" setting for horizontal mode -->
+    <string name="pref_viewer_slideshow_delay_entries_1" tools:ignore="MissingTranslation">500 ms</string>
+    <string name="pref_viewer_slideshow_delay_entries_2" tools:ignore="MissingTranslation">1 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_3">2 s (standardval)</string>
+    <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16 s</string>
+    <!-- Choice for "Slideshow delay" setting for vertical mode -->
+    <string name="pref_viewer_slideshow_delay_entries_vertical_1">Superlångsam</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_2">Långsam</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_3">Normal (standardval)</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_4">Snabb</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_5">Snabbare</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_6">Snabbast</string>
+    <!-- Choice for "Slideshow loop" setting -->
+    <string name="pref_viewer_slideshow_loop_entries_1">Stanna vid slut (ingen loop)</string>
+    <string name="pref_viewer_slideshow_loop_entries_2">Loopa genom aktuellt kapitel</string>
+    <string name="pref_viewer_slideshow_loop_entries_3">Loopa genom aktuell bok</string>
+    <string name="pref_viewer_slideshow_loop_entries_4">Loopa genom aktuell bok; följ kontinuerligt läge</string>
+    <!-- Choice for "Display mode" setting -->
+    <string name="pref_viewer_display_mode_entries_1">Anpassa till skärm (standardval)</string>
+    <string name="pref_viewer_display_mode_entries_2">Fyll skärm (proportionellt)</string>
+    <string name="pref_viewer_display_mode_entries_3">Fyll skärm (utdraget)</string>
+    <!-- Choice for "Auto rotate" setting -->
+    <string name="pref_viewer_auto_rotate_entries_1">Av</string>
+    <string name="pref_viewer_auto_rotate_entries_2">Autorotera vänster</string>
+    <string name="pref_viewer_auto_rotate_entries_3">Autorotera höger</string>
+    <!-- Choice for "Rendering mode" setting -->
+    <string name="pref_viewer_rendering_entries_1">Skarp återgivning (standardval)</string>
+    <string name="pref_viewer_rendering_entries_2">Mjuk återgivning</string>
+    <!-- Choice for "Color depth" setting -->
+    <string name="pref_viewer_color_depth_entries_1">16-bit (standardval)</string>
+    <string name="pref_viewer_color_depth_entries_2">32-bit</string>
+    <!-- Choice for "Cap double & long tap zoom" setting -->
+    <string name="pref_viewer_cap_tap_zoom_entries_1">Obegränsad</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_2" tools:ignore="MissingTranslation">2x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_3" tools:ignore="MissingTranslation">4x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_4" tools:ignore="MissingTranslation">6x</string>
+    <!-- Choice for "Lock timer" setting -->
+    <string name="pref_lock_timer_entries_1">Ingen fördröjning</string>
+    <string name="pref_lock_timer_entries_2" tools:ignore="MissingTranslation">10 s</string>
+    <string name="pref_lock_timer_entries_3">30 s (standardval)</string>
+    <string name="pref_lock_timer_entries_4" tools:ignore="MissingTranslation">1 minut</string>
+    <string name="pref_lock_timer_entries_5">2 minuter</string>
+</resources>

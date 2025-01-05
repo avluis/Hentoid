@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Plugging in audio device reaction -->
+    <string name="audio_plug1">slutaaa~~♡</string>
+    <string name="audio_plug2">vänta, det där är... fel hål~</string>
+    <string name="audio_plug3">ve~</string>
+    <string name="audio_plug4">usch ♡ ♡</string>
+    <string name="audio_plug5">inte här~~♡</string>
+    <string name="audio_plug6">stygga, stygga pojk~~</string>
+    <string name="audio_plug7">för… tajt…♡</string>
+    <!-- Plugging in power cord reaction -->
+    <string name="power_plug1">jag gillar det där~~</string>
+    <string name="power_plug2">pressa den ännu längre~~~♡</string>
+    <string name="power_plug3">kommer~~</string>
+    <string name="power_plug4">ahh ♡</string>
+    <string name="power_plug5">åhhh~</string>
+    <string name="power_plug6">ge mig mer ♡</string>
+</resources>
