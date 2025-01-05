@@ -90,8 +90,8 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private val pageMinHeight = context.resources.getDimension(R.dimen.page_min_height).toInt()
-    private val screenWidth = getScreenDimensionsPx(context).x
-    private val screenHeight = getScreenDimensionsPx(context).y
+    private val screenWidth: Int
+    private val screenHeight: Int
 
     private var itemTouchListener: OnZoneTapListener? = null
     private var scaleListener: BiConsumer<Int, Float>? = null
@@ -124,6 +124,10 @@ class ImagePagerAdapter(context: Context) :
 
 
     init {
+        getScreenDimensionsPx(context).let {
+            screenWidth = it.x
+            screenHeight = it.y
+        }
         refreshPrefs()
     }
 
@@ -310,7 +314,7 @@ class ImagePagerAdapter(context: Context) :
         this.isScrollLTR = isScrollLTR
     }
 
-    fun setTapBehaviourForPosition(position: Int, immediate : Boolean = false) {
+    fun setTapBehaviourForPosition(position: Int, immediate: Boolean = false) {
         recyclerView?.lifecycleScope?.launch {
             if (!immediate) {
                 withContext(Dispatchers.Default) {

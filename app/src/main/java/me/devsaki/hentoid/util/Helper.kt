@@ -59,6 +59,7 @@ import java.util.Locale
 import java.util.Random
 import kotlin.math.floor
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 private val rand = Random()
 
@@ -85,13 +86,11 @@ fun dimensAsDp(context: Context, @DimenRes id: Int): Int {
  */
 fun dpToPx(context: Context, dpValue: Int): Int {
     val r = context.resources
-    return Math.round(
-        TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            dpValue.toFloat(),
-            r.displayMetrics
-        )
-    )
+    return TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        dpValue.toFloat(),
+        r.displayMetrics
+    ).roundToInt()
 }
 
 /**

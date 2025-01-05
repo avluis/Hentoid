@@ -380,8 +380,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     init {
         density = resources.displayMetrics.density
-        screenWidth = getScreenDimensionsPx(context).x
-        screenHeight = getScreenDimensionsPx(context).y
+        getScreenDimensionsPx(context).let {
+            screenWidth = it.x
+            screenHeight = it.y
+        }
         screenDpi = getScreenDpi(context)
         setMinimumDpi(160)
         setDoubleTapZoomDpi(160)
