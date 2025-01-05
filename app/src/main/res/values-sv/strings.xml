@@ -190,7 +190,7 @@
     <string name="revive_updating_webview">Webbvyn uppdaterar just nu, kan inte återuppta nedladdningar ännu</string>
     <string name="queue_json_saved">JSON av kön sparad</string>
     <string name="queue_json_failed">Kunde inte spara JSON av kön</string>
-    <string name="queue_content_size_estimate">estimated <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
+    <string name="queue_content_size_estimate">beräknad <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
     <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g> behandlad</string>
     <plurals name="queue_bottom_bar_errors">
         <item quantity="one">(<x:g example="1" id="errors">%d</x:g> fel)</item>
@@ -249,49 +249,49 @@
     <string name="browse_mode_warning">Browse-only mode is active\nYou are using the app without storage permissions.</string>
     <string name="primary_library">Primärbibliotek</string>
     <string name="primary_library_subtitle">Nerladdningar</string>
-    <string name="add_primary_1">Add primary location 1</string>
-    <string name="add_primary_2">Add primary location 2</string>
+    <string name="add_primary_1">Lägg till primärplats 1</string>
+    <string name="add_primary_2">Lägg till primärplats 2</string>
     <string name="external_library">Externbibliotek</string>
     <string name="external_library_subtitle">Arkiv, tredjepartsböcker</string>
     <string name="add_external">Lägg till extern plats</string>
     <string name="location_storage">%1$s (%2$d%%) free</string>
-    <string name="storage_action_change">Change location…</string>
+    <string name="storage_action_change">Byt plats…</string>
     <string name="storage_action_remove">Koppla loss</string>
     <string name="storage_remove_ask">Koppla loss ifrån vald plats?\n Notera: Böcker kommer inte tas bort</string>
     <string name="storage_remove_ko1">Kan inte koppla loss plats 1 när plats 2 är inställd</string>
     <string name="storage_remove_complete">Plats frånkopplad</string>
     <string name="storage_action_merge_to_1">Slå ihop till plats 1</string>
-    <string name="storage_merge_ask">Merge %d books from Location 2 to Location 1?\nNB : Books will be deleted after merge is complete</string>
-    <string name="storage_merge_ko1">Cannot merge to Location 1 : not enough free storage left</string>
-    <string name="storage_merge_ko2">Cannot merge : no books on Location 2</string>
-    <string name="storage_merge_progress">Merging books to Location 1</string>
-    <string name="storage_merge_complete">Merge complete</string>
-    <string name="storage_strategy_title">Download strategy : %s</string>
-    <string name="storage_strategy_balance">Balance free space</string>
-    <string name="storage_strategy_balance_desc">Hentoid downloads to whichever location has more free space, trying to maintain balance. Does not move books already in the library.</string>
-    <string name="storage_strategy_fallover">Fallover</string>
-    <string name="storage_strategy_fallover_desc">Hentoid downloads to Location 1 until %d%% of capacity is filled, then downloads to Location 2.</string>
-    <string name="storage_fallover_threshold">Low space threshold (%%)</string>
+    <string name="storage_merge_ask">Slå ihop %d böcker från plats 2 till plats 1?\nNotera: Böcker kommer tas bort efter färdig ihopslagning</string>
+    <string name="storage_merge_ko1">Kan inte slå ihop till plats 1 : inte tillräckligt med lagringsutrymme kvar</string>
+    <string name="storage_merge_ko2">Kan inte slå ihop : inga böcker på plats 2</string>
+    <string name="storage_merge_progress">Slår ihop böcker till plats 1</string>
+    <string name="storage_merge_complete">Ihopslagning färdig</string>
+    <string name="storage_strategy_title">Nerladdningsstrategi : %s</string>
+    <string name="storage_strategy_balance">Balancera fritt utrymme</string>
+    <string name="storage_strategy_balance_desc">Hentoid laddar ner till platsen med mest lagringsutrymme och försöker bibehålla en balans. Flyttar inte på böcker som redan finns i biblioteket.</string>
+    <string name="storage_strategy_fallover">Våg</string>
+    <string name="storage_strategy_fallover_desc">Hentoid laddar ner till plats 1 tills %d%% av capaciteten är fylld, sedan laddar den ner till plats 2.</string>
+    <string name="storage_fallover_threshold">Lågutrymmeströskel (%%)</string>
     <string name="storage_set_strategy">Ställ in nerladdningsstrategi</string>
     <string name="storage_stats">Statistik</string>
     <string name="storage_stats_view">Läs användningsstatistik</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Fräscha upp platsen</string>
-    <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
+    <string name="refresh_caption">Automatiskt fräscha upp biblioteksdata genom att omskanna filer och mappar.</string>
     <string name="refresh_options">Städningsinställningar</string>
     <string name="refresh_location_internal">Primärbibliotek (alla)</string>
     <string name="refresh_location_internal_1">Primärbibliotek 1</string>
     <string name="refresh_location_internal_2">Primärbibliotek 2</string>
     <string name="refresh_location_external">Externt bibliotek</string>
-    <string name="refresh_options_rename">Rename all folders according to the current naming and max length settings</string>
-    <string name="refresh_options_remove_placeholders">Remove placeholder books imported through metadata</string>
+    <string name="refresh_options_rename">Döp om alla mappar enligt nuvarande namn-och maxlängdsinställningarna</string>
+    <string name="refresh_options_remove_placeholders">Ta bort platshållarböcker importerade genom metadata</string>
     <string name="refresh_options_renumber_pages">Omnumrera sidor</string>
-    <string name="refresh_renumber_warning">This will check all books and correct any mistaken page counts.\nBe aware this option WILL slow down the process significantly.</string>
-    <string name="refresh_options_remove">Remove folders where…</string>
-    <string name="refresh_options_remove_1">Remove folders where JSON file is absent (recommended)</string>
-    <string name="refresh_options_remove_2">Remove folders where no image has been downloaded</string>
-    <string name="refresh_options_remove_or">or</string>
+    <string name="refresh_renumber_warning">Det här kommer kontrollera alla böcker och rätta till sidnumreringsmisstag.\nRäkna med att den här inställningen kommer sakta ner behandlingen rejält.</string>
+    <string name="refresh_options_remove">Var ska mappar tas bort…</string>
+    <string name="refresh_options_remove_1">Ta bort mappar utan JSON-fil (rekommenderas)</string>
+    <string name="refresh_options_remove_2">Ta bort mappar vari ingen bild laddats ner</string>
+    <string name="refresh_options_remove_or">eller</string>
 
     <!-- Mass operations -->
     <string name="mass_operation">Handling</string>
@@ -401,31 +401,31 @@
     <string name="permissioncomplaint_snackbar_manual">Du måste manuellt ge tillstånd innan du kan fortsätta</string>
     <string name="import_canceled">Import avbruten</string>
     <string name="import_invalid">Ogiltid mapp vald - vänligen välj en annan</string>
-    <string name="import_app_folder">You cannot select the app folder as an external folder - vänligen välj en annan</string>
+    <string name="import_app_folder">Du kan inte välja appmappen som en externmapp - vänligen välj en annan</string>
     <string name="import_download_folder">Du ska\ inte välja din enhets\ egen nerladdningsmapp - vänligen skapa eller välj en annan</string>
-    <string name="import_create_fail">Primary folder creation failed - please select another location</string>
-    <string name="import_invalid_uri">Folder not recognized - please select it again</string>
-    <string name="import_empty">Folder has no books</string>
-    <string name="import_other_primary">Both primary locations must have separate base folders</string>
-    <string name="import_other_external_inside_primary">Primary and external locations must have separate base folders</string>
+    <string name="import_create_fail">Misslyckades med att skapa primärmapp - vänligen välj en annan plats</string>
+    <string name="import_invalid_uri">Mappen kändes inte igen - vänligen välj den igen</string>
+    <string name="import_empty">Mappen har inga böcker</string>
+    <string name="import_other_primary">Båda primärplatserna måste ha olika basmappar</string>
+    <string name="import_other_external_inside_primary">Primära och externa platser måste ha olika basmappar</string>
     <string name="import_other">Importen har stoppats</string>
     <string name="import_unexpected">Importen avstannade oväntat</string>
     <string name="task_done">Uppdrag slutfört - se detaljer i loggen</string>
     <string name="content_not_found">Fel - innehåll kunde inte hittas</string>
-    <string name="contents_detected">Hentoid has recognized an existing library in this location.\nVill du importera det här biblioteket\?</string>
-    <string name="library_imports_title">Library imports</string>
-    <string name="library_metrics_storage_mb">%.0f MB</string>
+    <string name="contents_detected">Hentoid har upptäckt ett existerande bibliotek på den här platsen.\nVill du importera det här biblioteket\?</string>
+    <string name="library_imports_title">Biblioteksimporter</string>
+    <string name="library_metrics_storage_mb">%.av MB</string>
     <string name="library_metrics_storage_gb">%.2f GB</string>
-    <string name="starting_import">Starting import…</string>
-    <string name="importing_library">Importing Library</string>
-    <string name="import_complete">Import complete</string>
+    <string name="starting_import">Påbörjar import…</string>
+    <string name="importing_library">Importerar bibliotek</string>
+    <string name="import_complete">Import färdig</string>
     <plurals name="import_complete_details_success">
-        <item quantity="one"><x:g example="1" id="number">%s</x:g> imported successfully</item>
-        <item quantity="other"><x:g example="2" id="number">%s</x:g> imported successfully</item>
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> importerades framgångsrikt</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> importerades framgångsrikt</item>
     </plurals>
     <plurals name="import_complete_details_failure">
-        <item quantity="one"><x:g example="1" id="number">%s</x:g> failed</item>
-        <item quantity="other"><x:g example="2" id="number">%s</x:g> failed</item>
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> misslyckades</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> misslyckades</item>
     </plurals>
 
     <!-- Storage usage -->
@@ -446,7 +446,7 @@
     <string name="read_log">Läg logg</string>
     <string name="logs_share">Dela logg</string>
     <string name="no_error_detected">Inga fel hittade.</string>
-    <string name="log_import_external">External library import/refresh</string>
+    <string name="log_import_external">Externt bibliotek importera/fräscha upp</string>
     <string name="log_import">Primary library import/refresh</string>
     <string name="log_cleanup">Primary library cleanup</string>
     <string name="log_api29_migration">Biblioteksmigration från Hentoid v1.11</string>
@@ -456,12 +456,12 @@
     <string name="error_creating_folder">Mappen är ogiltig.</string>
     <string name="error_open">Ett fel inträffade vid öppnande av fil: ingen relevant applikation funnen</string>
     <string name="error_browser">Ett fel inträffade vid öppnande av länk: ingen webbläsare funnen</string>
-    <string name="error_missing_webview">WebView is unavailable, can\'t open in-app browser now</string>
-    <string name="error_updating_webview">WebView is updating right now, can\'t open in-app browser yet</string>
+    <string name="error_missing_webview">Webbvyn är otillgänglig, kan\ inte öppna app-webbläsaren</string>
+    <string name="error_updating_webview">Webbvyn uppdaterar just nu, kan\ inte öppna app-webbläsaren ännu</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Försök ladda ner igen\?</string>
-    <string name="redownload_dialog_message">Totala antalet bilder i nerladdning: <x:g example="10" id="total_imgs">%1$d</x:g>\nBilder utan fel: <x:g example="8" id="fine_imgs">%2$d</x:g>\nImages with errors: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
+    <string name="redownload_dialog_message">Totala antalet bilder i nerladdning: <x:g example="10" id="total_imgs">%1$d</x:g>\nBilder utan fel: <x:g example="8" id="fine_imgs">%2$d</x:g>\nBilder med fel: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
     <string name="redownload_first_error">Första felet: <x:g id="errortype">%s</x:g></string>
     <string name="redownload_action">ÅTERNERLADDA</string>
     <string name="redownload_open_log">Öppna fel-logg</string>
@@ -618,7 +618,7 @@
     <string name="new_title">Ny titel</string>
     <string name="merge_use_book_title">Skapa ett kapitel per bok</string>
     <string name="merge_delete_after_merging">Ta bort böckerna efter ihopslagning</string>
-    <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
+    <string name="split_select_help">Håll och dra för att välja \nVarje valt kapitel skapar en ny bok</string>
     <string name="split_no_chapters">Inga kapitel skapade ännu :-(</string>
     <string name="split_create_chapters">Skapa kapitel</string>
     <string name="merge_success">Innehåll ihopslaget framgångsrikt</string>
@@ -648,8 +648,8 @@
     <string name="sort_size">Storlek</string>
     <string name="sort_reading_progress">Läsförlopp</string>
     <string name="sort_random">Godtyckligt</string>
-    <string name="sort_custom">Custom</string>
-    <string name="sort_invalid">-invalid-</string>
+    <string name="sort_custom">Anpassad</string>
+    <string name="sort_invalid">-ogiltig-</string>
     <string name="sort_books">Böcker</string>
     <string name="sort_uplodad_date">Uppladdningsdatum</string>
     <string name="library_filters_title">Filter</string>
@@ -810,9 +810,9 @@
 
     <!-- Image reader -->
     <string name="no_images">Kunde inte ladda boken: Ingen bild hittad</string>
-    <string name="loading_archive">Loading: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
-    <string name="loading_image">Loading image: <x:g example="50%" id="percentage">%d%%</x:g></string>
-    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (scale <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="loading_archive">Laddar: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="loading_image">Laddar bild: <x:g example="50%" id="percentage">%d%%</x:g></string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (skala <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
     <string name="viewer_choose_direction">Välj din läsriktning</string>
     <string name="viewer_direction_ltr">Vänster till höger</string>
     <string name="viewer_direction_rtl">Höger till vänster</string>
@@ -854,8 +854,8 @@
     <string name="book_prefs">Bokinställningar</string>
     <string name="goto_app_prefs">Appinställningar</string>
     <string name="use_app_prefs">Använd appinställningar (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
-    <string name="page_favourite_success">sida favoriserad</string>
-    <string name="page_unfavourite_success">sida ofavoriserad</string>
+    <string name="page_favourite_success">Sida favoriserad</string>
+    <string name="page_unfavourite_success">Sida ofavoriserad</string>
     <string name="book_favourite_success">Bok favoriserad</string>
     <string name="book_unfavourite_success">Bok ofavoriserad</string>
     <string name="viewer_fix">Åtgärda nerladdningsfel</string>
@@ -950,9 +950,9 @@
     <string name="duplicate_alert">Dubblettvarning!</string>
     <string name="duplicate_alert_subtitle_book">Boken du\ håller på att ladda ner kan vara en dubblett av en bok du redan äger.</string>
     <string name="duplicate_alert_subtitle_pages">Boken du\ håller på att ladda ner sidor från kanske inte är den du redan äger.</string>
-    <string name="duplicate_alert_always_download">Always download and don\'t ask me again</string>
-    <string name="duplicate_alert_never_extra_on_dupes">Never add pages from potential duplicates again</string>
-    <string name="duplicate_alert_similarity">Similarity: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_alert_always_download">Ladda alltid ner och fråga\ mig inte igen</string>
+    <string name="duplicate_alert_never_extra_on_dupes">Lägg aldrig till sidor från potentiella dubbletter igen</string>
+    <string name="duplicate_alert_similarity">Likhet: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_alert_replace_existing">Ersätt existerande bok</string>
     <string name="duplicate_alert_download_book">Ladda ner bok</string>
     <string name="duplicate_alert_download_pages">Ladda ner extra sidor</string>
@@ -1032,7 +1032,7 @@
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Innehållsarkivering</string>
     <string name="notif_delete_title">Innehållsborttagning</string>
-    <string name="notif_delete_complete">Radering färdig</string>
+    <string name="notif_delete_complete">Radering klar</string>
     <string name="notif_delete_prepurge_complete">Åternerladdning/Stream för-utrensning färdig</string>
     <plurals name="notif_process_complete_details">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> bok behandlad framgångsrikt</item>
