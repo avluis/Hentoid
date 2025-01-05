@@ -676,7 +676,7 @@ fun scanFolderRecursive(
     // We've got an archived book
     if (archivesPdf.isNotEmpty()) {
         for (archive in archivesPdf) {
-            val json = getFileWithName(jsons, archive.name)
+            val json = getFileWithName(jsons, archive.name ?: "")
             val c = scanArchivePdf(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, dao, json
             )
@@ -1064,7 +1064,7 @@ fun scanForArchivesPdf(
             else if (getJsonNamesFilter().accept(fileName)) jsons.add(file)
         }
         for (archive in archives) {
-            val json = getFileWithName(jsons, archive.name)
+            val json = getFileWithName(jsons, archive.name ?: "")
             val c = scanArchivePdf(
                 context,
                 subfolder,
@@ -1281,8 +1281,7 @@ fun importRenamingRules(dao: CollectionDAO, rules: List<RenamingRule>) {
  * @param name  File name to detect
  * @return First file with the given name among the given list, or null if none matches the given name
  */
-fun getFileWithName(files: List<DocumentFile>, name: String?): DocumentFile? {
-    if (null == name) return null
+fun getFileWithName(files: List<DocumentFile>, name: String): DocumentFile? {
     val targetBareName = getFileNameWithoutExtension(name)
     val file = files.firstOrNull { f ->
         f.name != null && getFileNameWithoutExtension(f.name!!)
