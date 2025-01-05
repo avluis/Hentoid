@@ -899,7 +899,7 @@ class ObjectBoxDAO : CollectionDAO {
         content.status = StatusContent.PAUSED
         content.isBeingProcessed = false // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId)
-        if (replacementTitle != null) content.replacementTitle = replacementTitle
+        content.replacementTitle = replacementTitle ?: ""
         insertContent(content)
         if (!ObjectBoxDB.isContentInQueue(content)) {
             val targetPosition: Int =
