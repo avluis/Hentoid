@@ -10,7 +10,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -23,9 +22,6 @@ class TmoContent : BaseContentParser() {
 
     @Selector(value = ".panel-title", defValue = "")
     private lateinit var title: String
-
-    @Selector(value = "#tags time", attr = "datetime", defValue = "")
-    private lateinit var uploadDate: String
 
     @Selector(value = ".tag a[href*='[searchBy]=artist']")
     private var artists: List<Element>? = null
@@ -65,8 +61,6 @@ class TmoContent : BaseContentParser() {
         var titleDef = title.trim()
         if (titleDef.isEmpty()) titleDef = NO_TITLE
         content.title = cleanup(titleDef)
-        // e.g. 2022-03-20T00:09:43.309901+00:00
-        content.uploadDate = parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
 
         val attributes = AttributeMap()
         parseAttributes(
