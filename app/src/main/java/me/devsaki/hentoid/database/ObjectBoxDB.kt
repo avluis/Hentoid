@@ -84,7 +84,7 @@ object ObjectBoxDB {
     }
 
     private fun initStore(): BoxStore {
-        val context = HentoidApp.getInstance()
+        val context = HentoidApp.getInstance().applicationContext
         val mStore = MyObjectBox.builder().androidContext(context)
             .maxSizeInKByte(Settings.maxDbSizeKb).build()
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
