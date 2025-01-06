@@ -989,7 +989,7 @@
     <string name="resize_method_2_prompt_max_width">Max bredd (manhwa, webserietidning)</string>
     <string name="resize_method_3_prompt">%% av originalstorleken</string>
     <string name="transform_transcoding">Omkodning</string>
-    <string name="transcode_method_1">Same encoder for all pictures</string>
+    <string name="transcode_method_1">Samma kodare för alla bilder</string>
     <string name="transcode_method_2">Särskilj förlustbenägna kontra förlustfria bilder</string>
     <string name="encoder">kodare</string>
     <string name="encoder_lossless">Förlustfri kodare</string>
