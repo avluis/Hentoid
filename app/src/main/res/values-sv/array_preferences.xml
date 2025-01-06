@@ -110,8 +110,8 @@
     <string name="pref_viewer_rendering_entries_1">Skarp återgivning (standardval)</string>
     <string name="pref_viewer_rendering_entries_2">Mjuk återgivning</string>
     <!-- Choice for "Color depth" setting -->
-    <string name="pref_viewer_color_depth_entries_1">16-bit (standardval)</string>
-    <string name="pref_viewer_color_depth_entries_2">32-bit</string>
+    <string name="pref_viewer_color_depth_entries_1">16-bitar (standardval)</string>
+    <string name="pref_viewer_color_depth_entries_2">32-bitar</string>
     <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_1">Obegränsad</string>
     <string name="pref_viewer_cap_tap_zoom_entries_2" tools:ignore="MissingTranslation">2x</string>
