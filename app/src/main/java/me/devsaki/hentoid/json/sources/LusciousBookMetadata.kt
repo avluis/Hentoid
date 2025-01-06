@@ -31,7 +31,7 @@ data class LusciousBookMetadata(
         val url: String?,
         val created: String?,
         @Json(name = "number_of_pictures")
-        val nbPictures: Int,
+        val nbPictures: Int?,
         val cover: CoverInfo?,
         val language: LanguageInfo?,
         val tags: List<TagInfo>?,

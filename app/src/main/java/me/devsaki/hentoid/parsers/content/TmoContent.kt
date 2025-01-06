@@ -3,15 +3,13 @@ package me.devsaki.hentoid.parsers.content
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
-import me.devsaki.hentoid.parsers.images.TmoParser
 import me.devsaki.hentoid.parsers.parseAttributes
-import me.devsaki.hentoid.parsers.urlsToImageFiles
-import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -25,9 +23,6 @@ class TmoContent : BaseContentParser() {
     @Selector(value = ".panel-title", defValue = "")
     private lateinit var title: String
 
-    @Selector(value = "#tags time", attr = "datetime", defValue = "")
-    private lateinit var uploadDate: String
-
     @Selector(value = ".tag a[href*='[searchBy]=artist']")
     private var artists: List<Element>? = null
 
@@ -40,8 +35,8 @@ class TmoContent : BaseContentParser() {
     @Selector(value = ".content-property .flag-icon")
     private var languages: List<Element>? = null
 
-    @Selector(value = ".panel-body img[data-toggle]")
-    private var thumbs: List<Element>? = null
+    @Selector(value = ".panel-body a.lanzador", attr = "href", defValue = "")
+    private var thumbs: List<String>? = null
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
@@ -66,8 +61,6 @@ class TmoContent : BaseContentParser() {
         var titleDef = title.trim()
         if (titleDef.isEmpty()) titleDef = NO_TITLE
         content.title = cleanup(titleDef)
-        // e.g. 2022-03-20T00:09:43.309901+00:00
-        content.uploadDate = parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")
 
         val attributes = AttributeMap()
         parseAttributes(
@@ -100,14 +93,21 @@ class TmoContent : BaseContentParser() {
 
         content.putAttributes(attributes)
         if (updateImages) {
-            thumbs?.let {
-                val images = urlsToImageFiles(
-                    TmoParser.parseImages(content, it),
-                    content.coverImageUrl,
-                    StatusContent.SAVED
-                )
-                content.setImageFiles(images)
-                content.qtyPages = images.size - 1 // Don't count the cover
+            thumbs?.let { t ->
+                val galleryPages = t.filterNot { it.isEmpty() }
+                    .mapIndexed { i, s ->
+                        ImageFile.fromPageUrl(
+                            i + 1,
+                            s,
+                            StatusContent.SAVED,
+                            t.size
+                        )
+                    }
+                content.setImageFiles(galleryPages)
+                content.qtyPages = galleryPages.size
+            } ?: run {
+                content.setImageFiles(emptyList())
+                content.qtyPages = 0
             }
         }
         return content

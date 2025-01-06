@@ -47,6 +47,7 @@ import me.devsaki.hentoid.util.computeAndSaveCoverHash
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.download.ContentQueueManager.pauseQueue
+import me.devsaki.hentoid.util.download.DownloadRateLimiter
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.prefsSpeedCapToKbps
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.setSpeedLimitKbps
 import me.devsaki.hentoid.util.download.RequestOrder
@@ -1083,6 +1084,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             val pages: Pair<String, String?>
             try {
                 pages = parser.parseImagePage(img.pageUrl, reqHeaders)
+                DownloadRateLimiter.take()
             } finally {
                 parser.clear()
             }
@@ -1225,9 +1227,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val statusCode = error.statusCode
         val message = error.message + if (img.isBackup) " (from backup URL)" else ""
         var cause = "Network error"
-        if (error.type === RequestOrder.NetworkErrorType.FILE_IO) cause =
-            "File I/O" else if (error.type === RequestOrder.NetworkErrorType.PARSE) cause =
-            "Parsing"
+        if (error.type === RequestOrder.NetworkErrorType.FILE_IO) cause = "File I/O"
+        else if (error.type === RequestOrder.NetworkErrorType.PARSE) cause = "Parsing"
         Timber.d("$message $cause")
         updateImageProperties(img, false, "")
         logErrorRecord(

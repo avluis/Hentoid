@@ -380,8 +380,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     init {
         density = resources.displayMetrics.density
-        screenWidth = getScreenDimensionsPx(context).x
-        screenHeight = getScreenDimensionsPx(context).y
+        getScreenDimensionsPx(context).let {
+            screenWidth = it.x
+            screenHeight = it.y
+        }
         screenDpi = getScreenDpi(context)
         setMinimumDpi(160)
         setDoubleTapZoomDpi(160)
@@ -519,7 +521,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         } else {
             sRegion = imageSource.getSRegion()
             uri = imageSource.getUri()
-            if (minimumScaleType != ScaleType.STRETCH_SCREEN) imageSource.enableTiling()
+            // TODO tiling may create artifacts on certain screens for certain images (#1209)
+            //if (minimumScaleType != ScaleType.STRETCH_SCREEN) imageSource.enableTiling()
             if (imageSource.getTile() || sRegion != null) {
                 // Load the bitmap using tile decoding.
                 lifecycleScope?.launch {

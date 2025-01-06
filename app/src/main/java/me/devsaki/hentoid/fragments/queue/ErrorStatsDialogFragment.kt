@@ -104,7 +104,7 @@ class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
         errorsByType.forEach {
             detailsStr.append(resources.getString(it.key.displayName)).append(": ")
             detailsStr.append(it.value)
-            detailsStr.append(System.getProperty("line.separator"))
+            detailsStr.append(System.lineSeparator())
         }
         binding?.statsDetails?.text = detailsStr.toString()
     }
@@ -140,7 +140,6 @@ class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
         val errorLogInfo = LogInfo("error_log" + content.id)
         errorLogInfo.setHeaderName(resources.getString(R.string.error))
         errorLogInfo.setNoDataMessage(resources.getString(R.string.no_error_detected))
-        errorLogInfo.setEntries(log)
         val errorLog: List<ErrorRecord>? = content.errorLog
         if (errorLog != null) {
             errorLogInfo.setHeader(
@@ -154,6 +153,7 @@ class ErrorStatsDialogFragment : BaseDialogFragment<Nothing>() {
             )
             for (e in errorLog) log.add(LogEntry(e.timestamp, e.toString()))
         }
+        errorLogInfo.setEntries(log)
         return errorLogInfo
     }
 

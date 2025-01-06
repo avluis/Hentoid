@@ -94,7 +94,7 @@
     <string name="menu_group_new">Ny grupp</string>
     <string name="menu_edit_order">Arrangera om</string>
     <string name="menu_edit_name">Döpa om</string>
-    <string name="menu_edit_confirm">Bekräfta redigering</string>
+    <string name="menu_edit_confirm">Confirm editing</string>
     <string name="menu_edit_cancel">Avbryt redigering</string>
     <string name="menu_edit_warning_custom">En improviserad ordning kommer skriva över den förra ordningen.</string>
     <string name="menu_sort_filter">Sortera och filtrera</string>
@@ -161,7 +161,7 @@
     <string name="paused_dl_folder_not_found">Kan inte ladda ner - kunde inte hitta nedladdningsmappen. Använd appinställningarna för att välja en</string>
     <string name="paused_dl_folder_credentials">Kan inte ladda ner - Otillräckliga uppgifter på nedladdningsmappen. Använd appinställningarna för att välja ut den pånytt</string>
     <string name="paused_dl_stale_online_credentials">Kan inte ladda ner - förruttnade kakor eller inaktuella uppgifter. Använd notifikationen för att genenerera nybakade kakor och ordnade papper</string>
-    <string name="paused_dl_no_available_downloads">Inga tillgängliga nedladdningar kvar</string>
+    <string name="paused_dl_no_available_downloads">No available downloads remaining</string>
     <string name="step_init">Förbereder</string>
     <string name="step_prepare_img">Förbereder bilder</string>
     <string name="step_fetch_img">Hämtar bilder</string>
@@ -254,7 +254,7 @@
     <string name="external_library">Externbibliotek</string>
     <string name="external_library_subtitle">Arkiv, tredjepartsböcker</string>
     <string name="add_external">Lägg till extern plats</string>
-    <string name="location_storage">%1$s (%2$d%%) fritt</string>
+    <string name="location_storage">%1$s (%2$d%%) free</string>
     <string name="storage_action_change">Byt plats…</string>
     <string name="storage_action_remove">Koppla loss</string>
     <string name="storage_remove_ask">Koppla loss ifrån vald plats?\n Notera: Böcker kommer inte tas bort</string>
@@ -267,7 +267,7 @@
     <string name="storage_merge_progress">Slår ihop böcker till plats 1</string>
     <string name="storage_merge_complete">Ihopslagning färdig</string>
     <string name="storage_strategy_title">Nerladdningsstrategi : %s</string>
-    <string name="storage_strategy_balance">Balansera fritt utrymme</string>
+    <string name="storage_strategy_balance">Balancera fritt utrymme</string>
     <string name="storage_strategy_balance_desc">Hentoid laddar ner till platsen med mest lagringsutrymme och försöker bibehålla en balans. Flyttar inte på böcker som redan finns i biblioteket.</string>
     <string name="storage_strategy_fallover">Våg</string>
     <string name="storage_strategy_fallover_desc">Hentoid laddar ner till plats 1 tills %d%% av capaciteten är fylld, sedan laddar den ner till plats 2.</string>
@@ -370,8 +370,8 @@
     <string name="export_title">Exportera metadata</string>
     <string name="export_question">Önskar du överföra ditt bibliotek till en annan telefon?</string>
 
-    <string name="export_answer_yes">Den här funktionen gjordes inte för att låta dig överföra din samling till en annan telefon. Det fungerar i vissa fall men nägra av dina böcker kanske blir omöjliga att åternerladda!</string>
-    <string name="export_transfer_tutorial"><u>Kika gärna på vår Github-wiki angående biblioteksöverföringar</u></string>
+    <string name="export_answer_yes">Den här funktionen gjordes inte för att låta dig överföra din samling till en annan telefon. Det fungerar i vissa fall men somliga av dina böcker kanske blir omöjliga att åternerladda!</string>
+    <string name="export_transfer_tutorial"><u>Kika gärna på vår wiki angående biblioteksöverföringar</u></string>
 
     <plurals name="export_file_library">
         <item quantity="one">Exportera primärbiblioteks (<x:g example="1" id="number">%d</x:g> bok)</item>
@@ -389,7 +389,7 @@
         <item quantity="other">Exportera bokmärken (<x:g example="2" id="number">%d</x:g> föremål)</item>
     </plurals>
     <string name="export_warning1">Export av metadata används huvudsakligen för att skapa en lista på dina böcker i JSON-format.\nDet används varken för att flytta över din samling till din PC eller ditt SD-kort.\nTryck här för att lära dig hur du gör det.</string>
-    <string name="export_warning2">Böcker exporteras utan bilder. \nDu kommer behöva ladda ner dem igen vid återställning om bildmappen inte är närvarande.</string>
+    <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_run">KÖR EXPORT</string>
     <string name="export_failed">Exporten misslyckades</string>
     <string name="import_settings_title">Importinställningar</string>
@@ -519,8 +519,8 @@
     </plurals>
     <string name="stream_canceled">Streaming avbruten - bok otillgänglig online</string>
     <string name="stream_missing_webview">Streaming avbruten - Webbvy är otillgänglig</string>
-    <string name="stream_updating_webview">Streaming avbruten - Webbvyn uppdaterar</string>
-    <string name="download_canceled">Nerladdning avbruten - bok otillgänglig online</string>
+    <string name="stream_updating_webview">Streaming avbruten - Webbvy is updating</string>
+    <string name="download_canceled">Nerladdning avbruten - book unavailable online</string>
     <string name="download_canceled_merged">Nerladdning avbruten - åtminstone ett kapitel är otillgängligt online</string>
     <string name="download_missing_webview">Nerladdning avbruten - Webby är otillgänglig</string>
     <string name="download_updating_webview">Nerladdning avbruten - Webbvy uppdaterar</string>
@@ -653,8 +653,8 @@
     <string name="sort_books">Böcker</string>
     <string name="sort_uplodad_date">Uppladdningsdatum</string>
     <string name="library_filters_title">Filter</string>
-    <string name="library_filter_favourite_help">Växla visning av favoritböcker</string>
-    <string name="library_filter_nonfavourite_help">Växla display of icke-favoriserade böcker</string>
+    <string name="library_filter_favourite_help">Växla display of favourite books</string>
+    <string name="library_filter_nonfavourite_help">Växla display of non-favourite books</string>
     <string name="filter_completed">Visa endast färdiga böcker</string>
     <string name="filter_not_completed">Visa endast ofärdiga böcker</string>
     <string name="filter_rating">Filtrera efter betyg</string>
@@ -690,7 +690,7 @@
     <!-- Alerts -->
     <string name="alert_orange">Var medveten om att nerladdningar kan misslyckas på den här sajten.</string>
     <string name="alert_red">Nerladdningsknappen är för tillfället sönder på den här sajten.</string>
-    <string name="alert_grey">Den här sidan har för tillfället allvarliga stabilitetsproblem. Appen har inget med det att göra, vänligen försök igen senare.</string>
+    <string name="alert_grey">This site currently has serious stability issues. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_black">Den här sidan är för tillfället otillgänglig på riktigt. Appen har inget med det att göra. Vänligen försök igen senare.</string>
     <string name="alert_wip">Hentoids utvecklarteam arbetar på en lösning. Appen informerar dig när en lösning är färdig.</string>
     <string name="alert_fix_available">Ett lösning är tillgänglig i den senaste versionen av appen. Vänligen uppdatera.</string>
@@ -740,8 +740,8 @@
     <string name="web_download">Ladda ner</string>
     <string name="web_unparsable">Det här innehållet kan inte laddas ned. Förlåt~</string>
     <string name="web_url_clipboard">URL-kopierad till urklipp</string>
-    <string name="help_web_download">Du\ har nått en boksida.\nDags att ladda ner med ikonen!</string>
-    <string name="blocked_tag">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nNerladdning avbruten</string>
+    <string name="help_web_download">Du\ har nått en boksida.\nDags att ladda ner med båttenlisten!</string>
+    <string name="blocked_tag">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nDownload canceled</string>
     <string name="blocked_tag_queued">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nKöad som ett fel</string>
     <string name="bookmark_current">Bokmärk nuvarande sida</string>
     <string name="unbookmark_current">Ta bort bokmärke på nuvarande sida</string>
@@ -751,7 +751,7 @@
     <string name="bookmark_edit_title">Ändra bokmärkestitel</string>
     <string name="alert_unwanted_tags">Den här boken är märkt med <x:g example="bad" id="tag">%s</x:g></string>
     <string name="bookmark_homepage">Hemsida</string>
-    <string name="torrent_dl_fail">Nerladdning av torrent misslyckades: <x:g id="torrent">%s</x:g></string>
+    <string name="torrent_dl_fail">Nedladdning av torrent misslyckades: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Lagringstillstånd nekat - får inte använda nerladdaren</string>
     <string name="web_all_sites">Samtliga sidor</string>
 
@@ -798,7 +798,7 @@
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Resultat hittade</item>
     </plurals>
     <string name="search_select_a_filter">Välj ett filter</string>
-    <string name="search_location">Plats</string>
+    <string name="search_location">Location</string>
     <string name="search_location_entries_1">Alla platser</string>
     <string name="search_type">Typ</string>
     <string name="search_type_entries_1">Alla boktyper</string>
@@ -840,7 +840,7 @@
     <string name="gallery_help">Bokgalleri</string>
     <string name="page_fav_help">Märk/omärk sida som favorit</string>
     <string name="page_copy_help">Kopiera sida till Androidens nerladdningsmapp</string>
-    <string name="page_share_help">Dela sida genom att använda en annan app</string>
+    <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Ta bort sida</string>
     <string-array name="page_delete_choices">
         <item>Fråga mig igen nästa gång</item>
@@ -871,13 +871,13 @@
     <string name="gallery_add_remove_chapters">Lägg till &amp; ta bort kapitel</string>
     <string name="gallery_edit_name">Ändra namn</string>
     <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Sida <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
-    <string name="gallery_display_chapter">Galleriskärmskapitel<x:g example="2" id="number">%d</x:g></string>
+    <string name="gallery_display_chapter">Galleriskärmens kapitel<x:g example="2" id="number">%d</x:g></string>
     <string name="gallery_no_chapter">Inget kapitel</string>
     <string name="renaming_progress">Byter namn på filer…</string>
     <string name="content_removal_failed">Innehållsborttagning misslyckades</string>
     <string name="page_removal_failed">Borttagning av sida misslyckades</string>
     <string name="file_removal_failed">Filborttagning misslyckades</string>
-    <string name="storage_permission_denied">Lagringsåtkomst nekad - kan inte öppna läsaren</string>
+    <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
     <string name="book_list_loading_failed">Inläsning av boklista misslyckades</string>
     <string name="chapter_toggle_failed">Kunde\ inte växla kapitel vid sida <x:g example="2" id="number">%d</x:g></string>
     <string name="chapters_remove_failed">Kunde\ inte ta bort kapitel</string>
@@ -906,7 +906,7 @@
     <string name="duplicate_use_artist">Konstnär</string>
     <string name="duplicate_use_same_language">Endast samma språk</string>
     <string name="duplicate_ignore_chapters">Ignorera kapitel och uppföljare</string>
-    <string name="duplicate_use_sensitivity">Känslighet</string>
+    <string name="duplicate_use_sensitivity">känslighet</string>
     <string-array name="duplicate_use_sensitivities">
         <item>Något liknande</item>
         <item>Liknande</item>
@@ -989,7 +989,7 @@
     <string name="resize_method_2_prompt_max_width">Max bredd (manhwa, webserietidning)</string>
     <string name="resize_method_3_prompt">%% av originalstorleken</string>
     <string name="transform_transcoding">Omkodning</string>
-    <string name="transcode_method_1">Samma kodare för alla bilder</string>
+    <string name="transcode_method_1">Same encoder for all pictures</string>
     <string name="transcode_method_2">Särskilj förlustbenägna kontra förlustfria bilder</string>
     <string name="encoder">kodare</string>
     <string name="encoder_lossless">Förlustfri kodare</string>
@@ -1033,7 +1033,7 @@
     <string name="notif_archive_title">Innehållsarkivering</string>
     <string name="notif_delete_title">Innehållsborttagning</string>
     <string name="notif_delete_complete">Radering klar</string>
-    <string name="notif_delete_prepurge_complete">Åternerladdning/Stream-förutrensning färdig</string>
+    <string name="notif_delete_prepurge_complete">Åternerladdning/Stream för-utrensning färdig</string>
     <plurals name="notif_process_complete_details">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> bok behandlad framgångsrikt</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> böcker färdigbehandlade</item>
@@ -1056,7 +1056,7 @@
     <string name="title_startup_complete">Uppstart lyckades</string>
 
     <!-- Missing WebView -->
-    <string name="missing_web_view_title">Webbvyn är inte installerad eller så är den avstängd</string>
+    <string name="missing_web_view_title">Webbvyn är inte installerad eller avstängd</string>
     <string name="missing_web_view">Hentoid har inte lyckats hitta Androids\ inbyggda Webbvy för appar.\nUtan den kan\ du inte surfa källor, återladdaner böcker; det finns inte mycket som du kan\ göra som kräver internetåtkomst.\n\nDet mest sannolika är att det\ faktiskt är installerat på ditt system, men har blivit avstängd.: vänligen gå till <b>Inställningar</b> &gt; <b>Appar</b> &gt; <b>Avstängda appar</b> och sätt på <b>Android System WebView</b>.\n\nOm du inte kan\ hitta appen, vänligen intallera den från din enhet\s <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">appbutik</a></b>.</string>
     <string name="missing_web_view_library">Tillbaka till biblioteket</string>
 
@@ -1078,24 +1078,24 @@
     <string name="theme_dark">Mörkt</string>
 
     <!-- Book languages detected by the app -->
-    <string name="lang_en">Engelska</string>
-    <string name="lang_zh">Kinesiska</string>
-    <string name="lang_ja">Japanska</string>
-    <string name="lang_ko">Koreanska</string>
-    <string name="lang_es">Spanska</string>
-    <string name="lang_ru">Ryska</string>
-    <string name="lang_pt">Portugisiska</string>
-    <string name="lang_th">Thailändska</string>
-    <string name="lang_fr">Franska</string>
-    <string name="lang_vi">Vietnamesiska</string>
-    <string name="lang_it">Italienska</string>
-    <string name="lang_de">Tyska</string>
-    <string name="lang_pl">Polska</string>
-    <string name="lang_id">Indonesiska</string>
-    <string name="lang_hu">Ungerska</string>
-    <string name="lang_tr">Turkiska</string>
-    <string name="lang_cs">Tjeckiska</string>
-    <string name="lang_sv">Svenska</string>
+    <string name="lang_en">english</string>
+    <string name="lang_zh">chinese</string>
+    <string name="lang_ja">japanese</string>
+    <string name="lang_ko">korean</string>
+    <string name="lang_es">spanish</string>
+    <string name="lang_ru">russian</string>
+    <string name="lang_pt">portuguese</string>
+    <string name="lang_th">thai</string>
+    <string name="lang_fr">french</string>
+    <string name="lang_vi">vietnamese</string>
+    <string name="lang_it">italian</string>
+    <string name="lang_de">german</string>
+    <string name="lang_pl">polish</string>
+    <string name="lang_id">indonesian</string>
+    <string name="lang_hu">hungarian</string>
+    <string name="lang_tr">turkish</string>
+    <string name="lang_cs">czech</string>
+    <string name="lang_sv">swedish</string>
 
     <!-- Misc -->
     <string name="select_file_manager">Välj din filhanterare</string>
@@ -1103,24 +1103,4 @@
     <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
     <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
     <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
-    <string name="book">Bok</string>
-    <string name="page">Sida</string>
-    <string name="file">Arkiv</string>
-    <string name="item">Element</string>
-    <string name="ask_cancel_multiple">Avbryt valt element?</string>
-    <string name="redownloaded_scratch">Laddade ned från början</string>
-    <string name="pref_ask_delete_all_except_favs">Ta bort alla böcker förutom favoriter?</string>
-    <string name="pref_delete_all_except_favs_summary">Tar bort alla böcker förutom favoriter</string>
-    <string name="pref_delete_all_except_favs_title">Ta bort alla böcker förutom favoriter</string>
-    <string name="ask_delete_multiple">Ta bort valda objekt?</string>
-    <string name="ask_archive_multiple">Arkivera valda objekt?</string>
-    <string name="redownload_confirm">Påbörja åternerladdning?</string>
-    <string name="download_confirm">Ladda ner vald bok?</string>
-    <string name="stream_confirm">Streama vald bok?</string>
-    <string name="redownload_external_content">En av böckerna finns lagrade externt och går därför inte att ladda ner</string>
-    <string name="download_non_streamed_content">En av de valda böckerna går inte att streama.</string>
-    <string name="group_delete_selected_group">Ta endast bort gruppen</string>
-    <string name="create_archive">Skapa arkiv</string>
-    <string name="download_completed">Nedladdning färdig</string>
-    <string name="keep_fav_books">Behåll favoritböcker</string>
 </resources>
