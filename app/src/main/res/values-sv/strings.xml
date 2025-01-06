@@ -871,7 +871,7 @@
     <string name="gallery_add_remove_chapters">Lägg till &amp; ta bort kapitel</string>
     <string name="gallery_edit_name">Ändra namn</string>
     <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Sida <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
-    <string name="gallery_display_chapter">Galleriskärms kapitel<x:g example="2" id="number">%d</x:g></string>
+    <string name="gallery_display_chapter">Galleriskärmskapitel<x:g example="2" id="number">%d</x:g></string>
     <string name="gallery_no_chapter">Inget kapitel</string>
     <string name="renaming_progress">Byter namn på filer…</string>
     <string name="content_removal_failed">Innehållsborttagning misslyckades</string>
