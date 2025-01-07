@@ -8,7 +8,7 @@
     <string name="ach_desc_3">Läs 500 sidor eller mer</string>
     <string name="ach_name_4">Handlingen fördjupas</string>
     <string name="ach_desc_4">Läs 1000 sidor eller mer</string>
-    <string name="ach_name_5">Serie läsare</string>
+    <string name="ach_name_5">Serieläsare</string>
     <string name="ach_desc_5">Läs 5000 sidor eller mer</string>
     <string name="ach_name_6">Fantast</string>
     <string name="ach_desc_6">Samla in mer än 10 böcker från en och samma konstnär</string>
@@ -30,14 +30,14 @@
     <string name="ach_desc_14">Samla in åtminstone 20 böcker märkta med \'lingerie\'</string>
     <string name="ach_name_15">Zettai Ryouiki</string>
     <string name="ach_desc_15">Samla in åtminstone 20 böcker märkta med \'stockings\'</string>
-    <string name="ach_name_16">Juridisk avdelning</string>
-    <string name="ach_desc_16">Läs "Licenser" skärmen från topp till botten</string>
+    <string name="ach_name_16">Juridikavdelning</string>
+    <string name="ach_desc_16">Läs \'Licenser\' skärmen från topp till botten</string>
     <string name="ach_name_17">Såg soljus</string>
     <string name="ach_desc_17">Ladda\varken ned eller läs för åtminstone 72 timmar</string>
     <string name="ach_name_18">Tillfredsställd</string>
     <string name="ach_desc_18">Fyll hela ditt förråd</string>
     <string name="ach_name_19">Spökstad</string>
-    <string name="ach_desc_19">Ha åtminstone 10 böcker i den ägo från tidigare stödda källor</string>
+    <string name="ach_desc_19">Ha åtminstone 10 böcker i din ägo från tidigare stödda källor</string>
     <string name="ach_name_20">Fruga gånger två</string>
     <string name="ach_desc_20">Använd AI-uppskalning på 2 böcker</string>
     <string name="ach_name_21">Du är underbar på insidan</string>
@@ -47,7 +47,7 @@
     <string name="ach_name_23">En berättelse utan slut</string>
     <string name="ach_desc_23">Samla in en bok med mer än 300 kapitel</string>
     <string name="ach_name_24">Vända på varje sten</string>
-    <string name="ach_desc_24">Ha ingen bok i gruppen "Osorterade" i en 100+ böcker-samling</string>
+    <string name="ach_desc_24">Ha ingen bok i gruppen \'Osorterade\' i en 100+ böcker-samling</string>
     <string name="ach_name_25">Stack Overflow</string>
     <string name="ach_desc_25">Ha fler än 50 köade böcker</string>
     <string name="ach_name_26">Kråkväpnare</string>
