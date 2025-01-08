@@ -34,7 +34,7 @@
     <string name="pref_misc">Diverse</string>
     <string name="pref_cat_language">Gränssnittsspråk</string>
     <string name="pref_force_english_title">Tvinga engelsk text</string>
-    <string name="pref_force_english_summary_off">Använd din enhets\ språk\n om översättning finns</string>
+    <string name="pref_force_english_summary_off">Använd din enhets språk\n om översättning finns</string>
     <string name="pref_force_english_summary_on">Använd engelska</string>
 
     <!-- Storage -->
@@ -61,9 +61,9 @@
     <string name="pref_external_library_summary_empty">Inget externt bibliotek har ställts in</string>
     <string name="pref_external_library_delete_title">Tillåt borttagning av externt innehåll</string>
     <string name="pref_external_library_delete_on">Hentoid kan ta bort böcker och sidor i det externa biblioteket</string>
-    <string name="pref_external_library_delete_off">Hentoid kan\ varken ta bort böcker eller sidor i det externa biblioteket</string>
+    <string name="pref_external_library_delete_off">Hentoid kan varken ta bort böcker eller sidor i det externa biblioteket</string>
     <string name="pref_external_library_detach_title">Avlägsna externt bibliotek</string>
-    <string name="pref_external_library_detach_summary">Inkludera\ inte längre det externa biblioteket i Hentoid </string>
+    <string name="pref_external_library_detach_summary">Inkludera inte längre det externa biblioteket i Hentoid </string>
     <string name="pref_cat_eh">E-hentai / ExHentai</string>
     <string name="pref_cat_advanced">Avancerat</string>
     <string name="pref_refresh_library_title">Fräscha upp biblioteket</string>
@@ -131,8 +131,8 @@
     <string name="pref_browser_clear_cookies_site">Sida</string>
     <string name="pref_browser_clear_cookies_ok">Kakor rensade framgångsrikt</string>
     <string name="pref_browser_clear_cookies_ko">Ingen kaka att slänga</string>
-    <string name="pref_browser_clear_cookies_missing_webview">Webbvy är otillgänglig, kan\ inte rensa kakor nu</string>
-    <string name="pref_browser_clear_cookies_updating_webview">Webbvy uppdaterar just nu, kan\ inte rensa kakor ännu</string>
+    <string name="pref_browser_clear_cookies_missing_webview">Webbvy är otillgänglig, kan inte rensa kakor nu</string>
+    <string name="pref_browser_clear_cookies_updating_webview">Webbvy uppdaterar just nu, kan inte rensa kakor ännu</string>
     <string name="pref_browser_language_filter_title">Språkfiltreringsknapp</string>
     <string name="pref_browser_language_filter_off">Språkfiltreringsknappen är avstängd\nNotera: Fungerar endast på Hitomi</string>
     <string name="pref_browser_language_filter_on">Språkfiltreringsknappen är påslagen\nNotera: Fungerar endast på Hitomi</string>
@@ -198,7 +198,7 @@
     <!-- Viewer -->
     <string name="pref_screen_viewer">Läsare</string>
     <string name="pref_viewer_controls">Styrning</string>
-    <string name="pref_viewer_browse_mode">Webbläsarläge</string>
+    <string name="pref_viewer_browse_mode">Läsriktning</string>
     <string name="pref_viewer_page_turn">Sidbläddrings-styrning</string>
     <string name="pref_viewer_page_turn_swipe">bläddra</string>
     <string name="pref_viewer_page_turn_tap">Gränsknack</string>
@@ -248,10 +248,10 @@
     <string name="pref_viewer_slideshow_delay">Fördröjning mellan varje sida (horisontell visning)</string>
     <string name="pref_viewer_slideshow_delay_vertical">Skrollhastighet (vertikal visning)</string>
     <string name="pref_viewer_slideshow_loop">Loop</string>
-    <string name="doh_warning">Vissa webbplatser kommer\ inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
+    <string name="doh_warning">Vissa webbplatser kommer inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
 
     <!-- Misc -->
     <string name="pref_text_select_menu_title">Textvalsmeny</string>
-    <string name="pref_text_select_menu_summary_off">Din enhets\ textvalsmeny tillåter\ inte att du kör kärnvapenkoder genom Hentoid</string>
-    <string name="pref_text_select_menu_summary_on">Din enhets\ textvalsmeny tillåter dig att köra kärnvapenkoder genom Hentoid</string>
+    <string name="pref_text_select_menu_summary_off">Din enhets textvalsmeny tillåter inte att du kör kärnvapenkoder genom Hentoid</string>
+    <string name="pref_text_select_menu_summary_on">Din enhets textvalsmeny tillåter dig att köra kärnvapenkoder genom Hentoid</string>
 </resources>

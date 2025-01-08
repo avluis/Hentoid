@@ -118,7 +118,7 @@
     <string name="open_settings">Öppna inställningar</string>
     <string name="app_settings">Appinställningar</string>
     <string name="book_settings">Bokinställningar</string>
-    <string name="alert_browser_mode">Utforskarläge aktiverat : ingen lagringsåtkomst</string>
+    <string name="alert_browser_mode">Surfläge aktiverat : ingen lagringsåtkomst</string>
     <string name="alert_low_memory">Din enhet börjar få slut på lagringsutrymme!</string>
     <string name="alert_low_memory_db">Hentoid-databasen börjar få slut på lagringsutrymme! Vänligen ta backup och gör dig av med böcker.</string>
     <string name="alert_permissions_lost">Filbehörigheter har gått förlorade</string>
@@ -314,7 +314,7 @@
         <item quantity="one">Byt <x:g example="1" id="number">%1$d</x:g> bok till streaming</item>
         <item quantity="other">Byt <x:g example="2" id="number">%1$d</x:g> böcker till streaming</item>
     </plurals>
-    <string name="mass_delete_confirm">Jag vet vad jag\ gör</string>
+    <string name="mass_delete_confirm">Jag vet vad jag gör</string>
     <string name="mass_delete_action">Ta bort i massor</string>
     <string name="mass_stream_action">Massbyt till stream</string>
     <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
@@ -402,7 +402,7 @@
     <string name="import_canceled">Import avbruten</string>
     <string name="import_invalid">Ogiltid mapp vald - vänligen välj en annan</string>
     <string name="import_app_folder">Du kan inte välja appmappen som en externmapp - vänligen välj en annan</string>
-    <string name="import_download_folder">Du ska\ inte välja din enhets\ egen nerladdningsmapp - vänligen skapa eller välj en annan</string>
+    <string name="import_download_folder">Du ska inte välja din enhets egen nerladdningsmapp - vänligen skapa eller välj en annan</string>
     <string name="import_create_fail">Misslyckades med att skapa primärmapp - vänligen välj en annan plats</string>
     <string name="import_invalid_uri">Mappen kändes inte igen - vänligen välj den igen</string>
     <string name="import_empty">Mappen har inga böcker</string>
@@ -452,12 +452,12 @@
     <string name="log_api29_migration">Biblioteksmigration från Hentoid v1.11</string>
 
     <!-- Errors -->
-    <string name="error_write_permission">Du har\ inte tillstånd att skriva till den mappen, försök med en annan.</string>
+    <string name="error_write_permission">Du har inte tillstånd att skriva till den mappen, försök med en annan.</string>
     <string name="error_creating_folder">Mappen är ogiltig.</string>
     <string name="error_open">Ett fel inträffade vid öppnande av fil: ingen relevant applikation funnen</string>
     <string name="error_browser">Ett fel inträffade vid öppnande av länk: ingen webbläsare funnen</string>
-    <string name="error_missing_webview">Webbvyn är otillgänglig, kan\ inte öppna app-webbläsaren</string>
-    <string name="error_updating_webview">Webbvyn uppdaterar just nu, kan\ inte öppna app-webbläsaren ännu</string>
+    <string name="error_missing_webview">Webbvyn är otillgänglig, kan inte öppna app-webbläsaren</string>
+    <string name="error_updating_webview">Webbvyn uppdaterar just nu, kan inte öppna app-webbläsaren ännu</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Försök ladda ner igen\?</string>
@@ -530,7 +530,7 @@
     <string name="downloads_empty_library">Varsågod, ladda ner något.</string>
     <string name="downloads_loading">Laddar~</string>
     <string name="masterdata_no_result">Inga resultat :(</string>
-    <string name="search_entry_not_found">Det\ där finns inte här, gå och ladda ner det.</string>
+    <string name="search_entry_not_found">Det där finns inte här, gå och ladda ner det.</string>
     <string name="search_bookid_label">Sök <x:g example="4567" id="launchcode">\'%s\'</x:g> i…</string>
     <string name="book_launchcode">Kärnvapenkod: <x:g example="4567" id="launchcode">%s</x:g></string>
     <plurals name="number_of_items">
@@ -580,7 +580,7 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> Böcker från det externa biblioteket kommer inte tas bort</item>
     </plurals>
     <string name="group_make_cover">Ställ in som gruppomslag</string>
-    <string name="group_make_cover_ask">Set this book\'s cover as the current group cover\?</string>
+    <string name="group_make_cover_ask">Ställ in den här bokens omslag som det nuvarande gruppomslaget?</string>
     <string name="group_change">Flytta till anpassad grupp</string>
     <string name="group_existing">Existerande grupp</string>
     <string name="group_new">Skapa ny</string>
@@ -709,7 +709,7 @@
     <string name="lock_type">Låstyp</string>
     <string name="lock_type_pin">PIN-kod</string>
     <string name="lock_type_biometric">Biometri</string>
-    <string name="app_lock_biometrics_fail">Kunde\ inte hitta något passande biometriskt system</string>
+    <string name="app_lock_biometrics_fail">Kunde inte hitta något passande biometriskt system</string>
     <string name="biometric_dialog_title">Biometriskt lås</string>
     <string name="biometric_dialog_subtitle_lock">Bekräfta innan låsning</string>
     <string name="biometric_dialog_subtitle_unlock">Biometrisk upplåsning</string>
@@ -740,7 +740,7 @@
     <string name="web_download">Ladda ner</string>
     <string name="web_unparsable">Det här innehållet kan inte laddas ned. Förlåt~</string>
     <string name="web_url_clipboard">URL-kopierad till urklipp</string>
-    <string name="help_web_download">Du\ har nått en boksida.\nDags att ladda ner med ikonen!</string>
+    <string name="help_web_download">Du har nått en boksida.\nDags att ladda ner med ikonen!</string>
     <string name="blocked_tag">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nNerladdning avbruten</string>
     <string name="blocked_tag_queued">Boken har en blockerad etikett (<x:g example="bad" id="tag">%s</x:g>)\nKöad som ett fel</string>
     <string name="bookmark_current">Bokmärk nuvarande sida</string>
@@ -879,9 +879,9 @@
     <string name="file_removal_failed">Filborttagning misslyckades</string>
     <string name="storage_permission_denied">Lagringsåtkomst nekad - kan inte öppna läsaren</string>
     <string name="book_list_loading_failed">Inläsning av boklista misslyckades</string>
-    <string name="chapter_toggle_failed">Kunde\ inte växla kapitel vid sida <x:g example="2" id="number">%d</x:g></string>
-    <string name="chapters_remove_failed">Kunde\ inte ta bort kapitel</string>
-    <string name="chapter_move_failed">Kunde\ inte flytta kapitel</string>
+    <string name="chapter_toggle_failed">Kunde inte växla kapitel vid sida <x:g example="2" id="number">%d</x:g></string>
+    <string name="chapters_remove_failed">Kunde inte ta bort kapitel</string>
+    <string name="chapter_move_failed">Kunde inte flytta kapitel</string>
     <string name="slideshow_start">Startar bildspel (fördröjning <x:g example="0.5" id="time">%.om</x:g>s)</string>
     <string name="slideshow_start_vertical">Startar bildspel (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Bildspel stoppat</string>
@@ -948,9 +948,9 @@
 
     <!-- Duplicate dialog -->
     <string name="duplicate_alert">Dubblettvarning!</string>
-    <string name="duplicate_alert_subtitle_book">Boken du\ håller på att ladda ner kan vara en dubblett av en bok du redan äger.</string>
-    <string name="duplicate_alert_subtitle_pages">Boken du\ håller på att ladda ner sidor från kanske inte är den du redan äger.</string>
-    <string name="duplicate_alert_always_download">Ladda alltid ner och fråga\ mig inte igen</string>
+    <string name="duplicate_alert_subtitle_book">Boken du håller på att ladda ner kan vara en dubblett av en bok du redan äger.</string>
+    <string name="duplicate_alert_subtitle_pages">Boken du håller på att ladda ner sidor från kanske inte är den du redan äger.</string>
+    <string name="duplicate_alert_always_download">Ladda alltid ner och fråga mig inte igen</string>
     <string name="duplicate_alert_never_extra_on_dupes">Lägg aldrig till sidor från potentiella dubbletter igen</string>
     <string name="duplicate_alert_similarity">Likhet: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_alert_replace_existing">Ersätt existerande bok</string>
@@ -1083,6 +1083,7 @@
     <string name="lang_ja">Japanska</string>
     <string name="lang_ko">Koreanska</string>
     <string name="lang_es">Spanska</string>
+    <string name="lang_uk">Ukrainska</string>
     <string name="lang_ru">Ryska</string>
     <string name="lang_pt">Portugisiska</string>
     <string name="lang_th">Thailändska</string>

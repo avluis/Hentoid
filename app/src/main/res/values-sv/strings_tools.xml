@@ -37,8 +37,8 @@
     <string name="tools_cache_browser">Rensa webbläsarcache</string>
     <!-- Toast notification -->
     <string name="tools_cache_browser_success">Webbvycache rensades framgångsrikt</string>
-    <string name="tools_cache_browser_missing_webview">Webbvyn är otillgänglig, kan\ inte rensa cache nu</string>
-    <string name="tools_cache_browser_updating_webview">Webbvyn uppdateras just nu, kan\ inte rensa cachen ännu</string>
+    <string name="tools_cache_browser_missing_webview">Webbvyn är otillgänglig, kan inte rensa cache nu</string>
+    <string name="tools_cache_browser_updating_webview">Webbvyn uppdateras just nu, kan inte rensa cachen ännu</string>
     <!-- Button -->
     <string name="tools_cache_app">Rensa appcache</string>
     <!-- Toast notification -->
@@ -52,7 +52,7 @@
     <!-- Menu item -->
     <string name="tools_latest_logs_title">Apploggar</string>
     <!-- Menu item description -->
-    <string name="tools_latest_logs_summary">Visa\ senaste apploggar</string>
+    <string name="tools_latest_logs_summary">Visa senaste apploggar</string>
 
     <!-- Menu item -->
     <string name="tools_ram_usage_title">RAM-användning</string>
