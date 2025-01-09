@@ -79,8 +79,8 @@
     <string name="pref_screen_browser">Webbläsare</string>
     <string name="pref_browser_behaviour">Beteende</string>
     <string name="pref_browser_resume_last_title">Fortsätt vid senast visad sida</string>
-    <string name="pref_browser_resume_last_off">Any site always opens on its homepage</string>
-    <string name="pref_browser_resume_last_on">Any site opens on its last viewed page</string>
+    <string name="pref_browser_resume_last_off">En given webbplats öppnas alltid på sin hemsida</string>
+    <string name="pref_browser_resume_last_on">En given webbplats öppnas på senast visad sida</string>
     <string name="pref_browser_dl_action_title">Nerladdningshandling</string>
     <string name="pref_browser_quick_dl_title">Snabbnedladdning</string>
     <string name="pref_browser_quick_dl_summary">På boklista sidan, tryck ner och håll nere fingret över valfri bok för att ladda ner</string>
@@ -152,7 +152,7 @@
     <string name="pref_dl_size_wifi_on">Större nedladdningar kommer ratas om inte ansluten till Wi-Fi</string>
     <string name="pref_dl_size_wifi_off">Alla nedladdningar kommer behandlas</string>
     <string name="pref_dl_size_wifi_threshold_title">Storlekströskel för större nerladdningar</string>
-    <string name="pref_dl_pages_wifi_threshold_title">Large downloads pages threshold</string>
+    <string name="pref_dl_pages_wifi_threshold_title">Stora nerladdningars sidgräns</string>
     <string name="download_retries_screen_title">Automatiska åternerladdningsförsök</string>
     <string name="download_retries_active_title">Återförsök aktiverade</string>
     <string name="pref_dl_retries_on">Misslyckade nerladdningar kommer auto-återförsökas</string>
@@ -230,7 +230,7 @@
     <string name="pref_viewer_rendering_no_android5">Mjuk återgivning är inte tillgängligt på Android 5</string>
     <string name="pref_viewer_auto_rotate">Auto-rotera bilder</string>
     <string name="pref_viewer_auto_rotate_summary_off">Bilder roteras inte</string>
-    <string name="pref_viewer_auto_rotate_summary_on">Pictures are rotated to best occupy the screen</string>
+    <string name="pref_viewer_auto_rotate_summary_on">Bilder roteras för att bäst passa skärmen</string>
     <string name="pref_viewer_gallery_columns">Antalet kolumner för galleri</string>
     <string name="pref_viewer_navigation">Navigation &amp; beteende</string>
     <string name="pref_viewer_resume_last_left_title">Återuppta läsning vid återöppnande av bok</string>
