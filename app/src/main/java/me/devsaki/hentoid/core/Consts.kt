@@ -12,6 +12,7 @@ const val DEFAULT_PRIMARY_FOLDER = ".Hentoid"
 const val JSON_FILE_NAME_OLD = "data.json"
 const val JSON_FILE_NAME = "content.json"
 const val JSON_FILE_NAME_V2 = "contentV2.json"
+const val JSON_ARCHIVE_SUFFIX = "_h"
 
 const val QUEUE_JSON_FILE_NAME = "queue.json"
 const val BOOKMARKS_JSON_FILE_NAME = "bookmarks.json"

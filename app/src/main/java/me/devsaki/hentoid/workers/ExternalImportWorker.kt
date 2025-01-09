@@ -34,6 +34,7 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.jsonToContent
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
@@ -240,7 +241,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         val dao = ObjectBoxDAO()
         try {
-            Timber.d("delta+ : " + delta.first.size + " roots")
+            Timber.d("delta+ : ${delta.first.size} roots")
 
             // == Content to add
             delta.first.forEach { deltaPlus ->
@@ -271,7 +272,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
             // == Content to remove
             val toRemove = delta.second.filter { it > 0 }
-            Timber.d("delta- : " + toRemove.size + " useful / " + delta.second.size + " total")
+            Timber.d("delta- : ${toRemove.size} useful / ${delta.second.size} total")
             toRemove.forEach { idToRemove ->
                 if (isStopped) return
                 Timber.d("delta- => $idToRemove")
@@ -352,19 +353,19 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         archivePdf: DocumentFile,
         dao: CollectionDAO
     ): Content? {
-        val json =
-            docs.firstOrNull {
+        val jsons =
+            docs.filter {
                 it.isFile && getExtension(it.name ?: "")
                     .equals("json", true)
             }
+        val content = jsonToContent(context, dao, jsons, archivePdf.name ?: "")
         val c = scanArchivePdf(
             context,
             deltaPlusRoot,
             archivePdf,
             emptyList(),
             StatusContent.EXTERNAL,
-            dao,
-            json
+            content
         )
         // Valid archive
         if (0 == c.first) return c.second
