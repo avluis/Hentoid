@@ -47,12 +47,12 @@
     <string name="empty">tom</string>
     <string name="none">inget</string>
     <string name="help_generic">Hjälp</string>
-    <string name="actions_generic">Actions</string>
+    <string name="actions_generic">Handlingar</string>
     <string name="disabled_generic">Inaktiverad</string>
     <string name="create_generic">Skapa</string>
     <string name="edit_generic">Ändra</string>
     <string name="remove_generic">Ta bort</string>
-    <string name="invalid_selection_generic">Ogiltig handling</string>
+    <string name="invalid_selection_generic">Ogiltigt val</string>
     <string name="user_generic">Användare</string>
     <string name="copy_generic">Kopia</string>
 
