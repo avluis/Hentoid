@@ -2122,7 +2122,7 @@ suspend fun mergeContents(
                 val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
                 contentChapter.uniqueId = c.uniqueSiteId + "-" + contentChapter.order
 
-                val imgs = c.imageList
+                val imgs = c.imageList.sortedBy { it.order }
                 val firstImageIsCover = !imgs.any { it.isCover }
                 var imgIndex = -1
                 for (img in imgs) {
