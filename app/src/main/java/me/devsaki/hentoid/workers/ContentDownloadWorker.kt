@@ -962,7 +962,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             content.computeSize()
 
             // Replace the book with its new title, if any
-            if (content.replacementTitle.isNotEmpty()) {
+            @Suppress("USELESS_ELVIS") // Central log reports NPE here
+            if ((content.replacementTitle ?: "").isNotEmpty()) {
                 content.title = content.replacementTitle
                 content.replacementTitle = ""
             }
