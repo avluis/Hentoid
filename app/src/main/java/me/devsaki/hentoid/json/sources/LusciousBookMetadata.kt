@@ -36,7 +36,7 @@ data class LusciousBookMetadata(
         val language: LanguageInfo?,
         val tags: List<TagInfo>?,
         @Json(name = "is_manga")
-        val isManga: Boolean
+        val isManga: Boolean?
     )
 
     @JsonClass(generateAdapter = true)
@@ -100,7 +100,7 @@ data class LusciousBookMetadata(
         }
         val attribute = Attribute(
             AttributeType.CATEGORY,
-            if (info.isManga) "manga" else "picture set",
+            if (info.isManga == true) "manga" else "picture set",
             "",
             Site.LUSCIOUS
         )
