@@ -13,12 +13,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private val NOT_A_DIGIT = "\\D".toRegex()
+
 class GitHubReleaseItem(releaseStruct: GithubRelease) :
     AbstractItem<GitHubReleaseItem.ReleaseViewHolder>() {
-
-    companion object {
-        private val NOT_A_DIGIT = "[^\\d]".toRegex()
-    }
 
     val tagName: String
     private val name: String
