@@ -878,6 +878,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
         }
         adapter.setTapBehaviourForPosition(absImageIndex, true)
+        // Preemptively set listeners for adjacent items
+        if (absImageIndex > 0) adapter.setTapBehaviourForPosition(absImageIndex - 1, true)
+        if (absImageIndex < adapter.itemCount - 1) adapter.setTapBehaviourForPosition(absImageIndex + 1, true)
         if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             slideshowMgr.onPageChange(true)
         viewModel.onPageChange(absImageIndex, scrollDirection)
