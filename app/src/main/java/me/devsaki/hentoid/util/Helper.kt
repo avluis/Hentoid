@@ -344,8 +344,7 @@ fun parseDatetimeToEpoch(date: String, pattern: String, logException: Boolean = 
 
 // https://www.threeten.org/threetenbp/apidocs/org/threeten/bp/format/DateTimeFormatter.html#ofPattern(java.lang.String)
 fun parseDateToEpoch(date: String, pattern: String): Long {
-    val dateClean = date.trim { it <= ' ' }
-        .replace("(?<=\\d)(st|nd|rd|th)".toRegex(), "")
+    val dateClean = date.trim().replace(DATE_LITERALS, "")
     val formatter = DateTimeFormatterBuilder()
         .appendPattern(pattern)
         .parseDefaulting(ChronoField.NANO_OF_DAY, 0) // To allow passing dates without time

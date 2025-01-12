@@ -4,13 +4,12 @@ import android.util.Base64
 import org.apache.commons.text.StringEscapeUtils
 import java.util.Locale
 import java.util.regex.Pattern
-import java.util.stream.Stream
 import kotlin.math.min
 
 private val NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?")
 private val STRING_CLEANUP_INVALID_CHARS_PATTERN =
     Pattern.compile("[(\\[\\-+?!_~/,:;|.#\"'’=&)\\]]")
-
+private val SEPARATOR_PATTERN = "\\W".toRegex()
 
 /**
  * Return the given string formatted with a capital letter as its first letter
@@ -55,13 +54,8 @@ fun formatIntAsStr(value: Int, length: Int): String {
  * @return True if the given string is present as a word inside the given expression; false if not
  */
 fun isPresentAsWord(toDetect: String, expression: String): Boolean {
-    val words = expression.split("\\W".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-    return Stream.of(*words).anyMatch { w: String ->
-        w.equals(
-            toDetect,
-            ignoreCase = true
-        )
-    }
+    val words = expression.split(SEPARATOR_PATTERN)
+    return words.any { it.equals(toDetect, ignoreCase = true) }
 }
 
 /**
