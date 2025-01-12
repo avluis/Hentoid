@@ -55,7 +55,28 @@ fun formatIntAsStr(value: Int, length: Int): String {
  */
 fun isPresentAsWord(toDetect: String, expression: String): Boolean {
     val words = expression.split(SEPARATOR_PATTERN)
-    return words.any { it.equals(toDetect, ignoreCase = true) }
+    // Expression to detect has itself a word separator
+    if (toDetect.contains(SEPARATOR_PATTERN)) {
+        val dWords = toDetect.split(SEPARATOR_PATTERN)
+        val firstIndexes = words
+            .indexesOf { it.equals(dWords[0], ignoreCase = true) }
+            .filter { it <= words.size - dWords.size } // Only keep if the rest can contain what we're looking for
+        if (firstIndexes.isEmpty()) return false
+        firstIndexes.forEach { fi ->
+            var found = true
+            for (j in 0..dWords.size - 1) {
+                val pos = fi + j
+                if (!words[pos].equals(dWords[j], ignoreCase = true)) {
+                    found = false
+                    break
+                }
+            }
+            if (found) return true
+        }
+        return false
+    } else { // Expression to detect has a single word
+        return words.any { it.equals(toDetect, ignoreCase = true) }
+    }
 }
 
 /**

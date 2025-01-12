@@ -569,3 +569,6 @@ fun getScreenDimensionsPx(context: Context): Point {
         return result
     }
 }
+
+inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean)
+        = mapIndexedNotNull{ index, elem -> index.takeIf{ predicate(elem) } }
