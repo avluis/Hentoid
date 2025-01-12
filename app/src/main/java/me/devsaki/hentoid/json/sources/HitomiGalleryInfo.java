@@ -21,7 +21,7 @@ public class HitomiGalleryInfo {
     private String title;
     private List<HitomiCharacter> characters;
     private List<HitomiGroup> groups;
-    private String date; // Format : "YYYY-MM-DD HH:MM:ss-05" or "YYYY-MM-DD HH:MM:ss.SSS-05" (-05 being the timezone of the server ?)
+    private String date; // Format : "YYYY-MM-DD HH:MM:ss-05", "YYYY-MM-DD HH:MM:ss.SSS-05" or "YYYY-MM-DD HH:MM:ss.SS-05" (-05 being the timezone of the server ?)
     private String language;
     private String language_localname;
     private String language_url;
@@ -70,9 +70,11 @@ public class HitomiGalleryInfo {
     public void updateContent(@NonNull Content content) {
         content.setTitle(cleanup(title));
 
-        long uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx");
+        long uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx", false);
         if (0 == uploadDate)
-            uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx");
+            uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx", false);
+        if (0 == uploadDate)
+            uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSx", true);
         content.setUploadDate(uploadDate);
 
         AttributeMap attributes = new AttributeMap();

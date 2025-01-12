@@ -65,6 +65,7 @@ private val rand = Random()
 
 private val SIP_KEY = "0123456789ABCDEF".toByteArray()
 
+private val DATE_LITERALS = "(?<=\\d)(st|nd|rd|th)".toRegex()
 
 /**
  * Retreive the given dimension value as DP, not pixels
@@ -324,9 +325,8 @@ fun getRandomInt(maxExclude: Int): Int {
 }
 
 // TODO doc
-fun parseDatetimeToEpoch(date: String, pattern: String): Long {
-    val dateClean = date.trim { it <= ' ' }
-        .replace("(?<=\\d)(st|nd|rd|th)".toRegex(), "")
+fun parseDatetimeToEpoch(date: String, pattern: String, logException: Boolean = true): Long {
+    val dateClean = date.trim().replace(DATE_LITERALS, "")
     val formatter = DateTimeFormatter
         .ofPattern(pattern)
         .withResolverStyle(ResolverStyle.LENIENT)
@@ -336,7 +336,8 @@ fun parseDatetimeToEpoch(date: String, pattern: String): Long {
     try {
         return Instant.from(formatter.parse(dateClean)).toEpochMilli()
     } catch (e: DateTimeParseException) {
-        Timber.w(e)
+        if (logException) Timber.w(e)
+        else Timber.d(e)
     }
     return 0
 }

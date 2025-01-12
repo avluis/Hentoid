@@ -81,7 +81,7 @@ public class SimplyContentMetadata {
 
         content.setUrl(url);
         if (!data.createdAt.isEmpty())
-            content.setUploadDate(parseDatetimeToEpoch(data.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")); // e.g. 2022-10-23T19:47:08.717+02:00
+            content.setUploadDate(parseDatetimeToEpoch(data.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", true)); // e.g. 2022-10-23T19:47:08.717+02:00
 
         content.setTitle(cleanup(data.title));
 

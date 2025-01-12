@@ -97,16 +97,16 @@ class EdoujinContent : BaseContentParser() {
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId = urlParts[urlParts.size - 1]
 
-        content.uploadDate = -1
+        content.uploadDate = 0L
         dateModified?.let {
             if (it.isNotEmpty())
                 content.uploadDate = parseDatetimeToEpoch(
                     it,
-                    "yyyy-MM-dd'T'HH:mm:ssXXX"
+                    "yyyy-MM-dd'T'HH:mm:ssXXX", false
                 ) // e.g. 2022-02-02T02:44:17+07:00
         }
 
-        if (-1L == content.uploadDate) {
+        if (0L == content.uploadDate) {
             datePosted?.let {
                 if (it.isNotEmpty()) content.uploadDate = parseDatetimeToEpoch(
                     it, "yyyy-MM-dd'T'HH:mm:ssXXX"
