@@ -882,7 +882,7 @@
     <string name="chapter_toggle_failed">Kunde inte växla kapitel vid sida <x:g example="2" id="number">%d</x:g></string>
     <string name="chapters_remove_failed">Kunde inte ta bort kapitel</string>
     <string name="chapter_move_failed">Kunde inte flytta kapitel</string>
-    <string name="slideshow_start">Startar bildspel (fördröjning <x:g example="0.5" id="time">%.om</x:g>s)</string>
+    <string name="slideshow_start">Startar bildspel (fördröjning <x:g example="0.5" id="time">%.1f</x:g>s)</string>
     <string name="slideshow_start_vertical">Startar bildspel (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Bildspel stoppat</string>
     <string name="ask_clear_chapters">Återställ alla kapitel?</string>
