@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
-import android.widget.CompoundButton
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import dev.skomlach.biometric.compat.BiometricAuthRequest
@@ -37,8 +36,8 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
         binding?.apply {
             refresh()
             toolbar.setNavigationOnClickListener { requireActivity().finish() }
-            lockType.setOnIndexChangeListener { i -> onLockTypeChanged(i) }
-            switchLockOnRestore.setOnCheckedChangeListener { _: CompoundButton?, v: Boolean ->
+            lockType.setOnIndexChangeListener { onLockTypeChanged(it) }
+            switchLockOnRestore.setOnCheckedChangeListener { _, v: Boolean ->
                 onLockOnAppRestoreClick(v)
             }
             lockTimer.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -66,11 +65,12 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     }
 
     private fun refresh() {
-        val lockTypeVal = Settings.lockType
+        val newLockType = Settings.lockType
         binding?.apply {
-            switchLockOnRestore.isVisible = (lockTypeVal > 0)
-            textResetPin.isVisible = (1 == lockTypeVal)
-            lockType.index = lockTypeVal
+            switchLockOnRestore.isVisible = (newLockType > 0)
+            textResetPin.isVisible = (1 == newLockType)
+            lockType.index = newLockType
+            initialLockType = newLockType
             val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
             switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
             lockTimer.isVisible = lockOnAppRestoredEnabled
