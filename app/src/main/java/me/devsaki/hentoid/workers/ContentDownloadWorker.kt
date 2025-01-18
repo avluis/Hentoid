@@ -10,7 +10,6 @@ import kotlinx.coroutines.*
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
-import me.devsaki.hentoid.core.HentoidApp.Companion.trackDownloadEvent
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.core.UGOIRA_CACHE_FOLDER
@@ -453,7 +452,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (downloadMode == DownloadMode.STREAM)
             content.cover.status = StatusContent.SAVED
         dao.insertContent(content)
-        trackDownloadEvent("Added")
         Timber.i("Downloading '%s' [%s]", content.title, content.id)
 
         // Wait until the end of purge if the content is being purged (e.g. redownload from scratch)
@@ -1017,14 +1015,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             if (0 == pagesKO) {
                 val downloadCount = contentQueueManager.downloadCount
                 notificationManager.notify(DownloadSuccessNotification(downloadCount))
-
-                // Tracking Event (Download Success)
-                trackDownloadEvent("Success")
             } else {
                 notificationManager.notify(DownloadErrorNotification(content))
-
-                // Tracking Event (Download Error)
-                trackDownloadEvent("Error")
             }
 
             // Signals current download as completed
@@ -1050,9 +1042,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             AchievementsManager.checkStorage(context)
             AchievementsManager.checkCollection()
-
-            // Tracking Event (Download Completed)
-            trackDownloadEvent("Completed")
         } else if (downloadCanceled.get()) {
             Timber.d("Content download canceled: %s [%s]", title, contentId)
             notificationManager.cancel()
@@ -1466,8 +1455,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 requestQueueManager.cancelQueue()
                 downloadCanceled.set(true)
                 downloadInterrupted.set(true)
-                // Tracking Event (Download Canceled)
-                trackDownloadEvent("Cancelled")
             }
 
             DownloadCommandEvent.Type.EV_SKIP -> {
@@ -1475,8 +1462,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 requestQueueManager.cancelQueue()
                 downloadSkipped.set(true)
                 downloadInterrupted.set(true)
-                // Tracking Event (Download Skipped)
-                trackDownloadEvent("Skipped")
             }
 
             DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, DownloadCommandEvent.Type.EV_UNPAUSE -> {}
@@ -1531,7 +1516,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             .toEpochMilli() // Needs a download date to appear the right location when sorted by download date
         dao.insertContent(content)
         dao.deleteQueue(content)
-        trackDownloadEvent("Error")
         val context = applicationContext
         if (updateQueueJson(context, dao))
             Timber.i(context.getString(R.string.queue_json_saved))

@@ -49,9 +49,8 @@ class HentoidApp : Application() {
         Settings.performHousekeeping()
 
         // Init version number
-        if (0 == Preferences.getLastKnownAppVersionCode()) Preferences.setLastKnownAppVersionCode(
-            BuildConfig.VERSION_CODE
-        )
+        if (0 == Preferences.getLastKnownAppVersionCode())
+            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE)
 
         // Firebase
         val isAnalyticsEnabled = Settings.isAnalyticsEnabled
@@ -59,10 +58,7 @@ class HentoidApp : Application() {
 
         // Make sure the app restarts with the splash screen in case of any unhandled issue
         Thread.setDefaultUncaughtExceptionHandler(
-            EmergencyRestartHandler(
-                this,
-                SplashActivity::class.java
-            )
+            EmergencyRestartHandler(this, SplashActivity::class.java)
         )
 
         // Plug the lifecycle listener to handle locking
@@ -94,12 +90,6 @@ class HentoidApp : Application() {
         @Synchronized
         private fun setInstance(value: Application) {
             instance = value
-        }
-
-        fun trackDownloadEvent(tag: String?) {
-            val bundle = Bundle()
-            bundle.putString("tag", tag)
-            FirebaseAnalytics.getInstance(instance).logEvent("Download", bundle)
         }
 
         fun isInForeground(): Boolean {
