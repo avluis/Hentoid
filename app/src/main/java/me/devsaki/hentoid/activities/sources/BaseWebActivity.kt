@@ -122,6 +122,8 @@ import kotlin.math.round
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
+private val GALLERY_REGEX = "\\b|/galleries|/gallery|/g|/entry\\b".toRegex()
+
 abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebActivity,
     BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
 
@@ -156,9 +158,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private lateinit var webClient: CustomWebViewClient
 
     private var callback: OnBackPressedCallback? = null
-
-    // Database
-    private lateinit var dao: CollectionDAO
 
     private val listener =
         OnSharedPreferenceChangeListener { _, key: String? ->
@@ -242,7 +241,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             return
         }
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-        dao = ObjectBoxDAO()
         Preferences.registerPrefsChangedListener(listener)
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls()
         if (Preferences.isBrowserMarkMerged()) updateMergedBooksUrls()
@@ -324,24 +322,29 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @return URL to load at startup
      */
     private fun getStartUrl(): String {
-        // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
-        if (intent.extras != null) {
-            val bundle = BaseWebActivityBundle(intent.extras!!)
-            val intentUrl = bundle.url
-            if (intentUrl.isNotEmpty()) return intentUrl
+        val dao: CollectionDAO = ObjectBoxDAO()
+        try {
+            // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
+            if (intent.extras != null) {
+                val bundle = BaseWebActivityBundle(intent.extras!!)
+                val intentUrl = bundle.url
+                if (intentUrl.isNotEmpty()) return intentUrl
+            }
+
+            // Priority 2 : Last viewed position, if option enabled
+            if (Preferences.isBrowserResumeLast()) {
+                val siteHistory = dao.selectHistory(getStartSite())
+                if (siteHistory.url.isNotEmpty()) return siteHistory.url
+            }
+
+            // Priority 3 : Homepage, if manually set through bookmarks
+            val welcomePage = dao.selectHomepage(getStartSite())
+            return welcomePage?.url ?: getStartSite().url
+
+            // Default site URL
+        } finally {
+            dao.cleanup()
         }
-
-        // Priority 2 : Last viewed position, if option enabled
-        if (Preferences.isBrowserResumeLast()) {
-            val siteHistory = dao.selectHistory(getStartSite())
-            if (siteHistory.url.isNotEmpty()) return siteHistory.url
-        }
-
-        // Priority 3 : Homepage, if manually set through bookmarks
-        val welcomePage = dao.selectHomepage(getStartSite())
-        return welcomePage?.url ?: getStartSite().url
-
-        // Default site URL
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -438,8 +441,14 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     override fun onStop() {
-        if (WebkitPackageHelper.getWebViewAvailable() && webView.url != null)
-            dao.insertSiteHistory(getStartSite(), webView.url!!)
+        if (WebkitPackageHelper.getWebViewAvailable() && webView.url != null) {
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                dao.insertSiteHistory(getStartSite(), webView.url!!)
+            } finally {
+                dao.cleanup()
+            }
+        }
         super.onStop()
     }
 
@@ -463,7 +472,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 currentContent
             )
         )
-        dao.cleanup()
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
         binding = null
         super.onDestroy()
@@ -480,7 +488,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun initWebview() {
         webView = try {
             NestedScrollWebView(this)
-        } catch (e: NotFoundException) {
+        } catch (_: NotFoundException) {
             // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
             // Creating with the application Context fixes this, but is not generally recommended for view creation
             NestedScrollWebView(getFixedContext(this))
@@ -646,12 +654,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         )
         // Update bookmark button
         if (isBookmarkable) {
-            val bookmarks = dao.selectBookmarks(getStartSite())
-            val currentBookmark = bookmarks.firstOrNull { b ->
-                SiteBookmark.urlsAreSame(b.url, url)
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                val bookmarks = dao.selectBookmarks(getStartSite())
+                val currentBookmark = bookmarks.firstOrNull {
+                    SiteBookmark.urlsAreSame(it.url, url)
+                }
+                updateBookmarkButton(currentBookmark != null)
+            } finally {
+                dao.cleanup()
             }
-
-            updateBookmarkButton(currentBookmark != null)
         }
     }
 
@@ -890,22 +902,27 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ActionMode.READ -> {
                 val searchUrl =
                     if (getStartSite().hasCoverBasedPageUpdates) currentContent!!.coverImageUrl else ""
-                currentContent = dao.selectContentByUrlOrCover(
-                    currentContent!!.site,
-                    currentContent!!.url,
-                    searchUrl
-                )
-                if (currentContent != null && (StatusContent.DOWNLOADED == currentContent!!.status || StatusContent.ERROR == currentContent!!.status || StatusContent.MIGRATED == currentContent!!.status))
-                    openReader(
-                        this, currentContent!!, -1, null,
-                        forceShowGallery = false,
-                        newTask = false
+                val dao: CollectionDAO = ObjectBoxDAO()
+                try {
+                    currentContent = dao.selectContentByUrlOrCover(
+                        currentContent!!.site,
+                        currentContent!!.url,
+                        searchUrl
                     )
-                else {
-                    binding?.apply {
-                        actionButton.visibility = View.INVISIBLE
-                        actionBtnBadge.visibility = View.INVISIBLE
+                    if (currentContent != null && (StatusContent.DOWNLOADED == currentContent!!.status || StatusContent.ERROR == currentContent!!.status || StatusContent.MIGRATED == currentContent!!.status))
+                        openReader(
+                            this, currentContent!!, -1, null,
+                            forceShowGallery = false,
+                            newTask = false
+                        )
+                    else {
+                        binding?.apply {
+                            actionButton.visibility = View.INVISIBLE
+                            actionBtnBadge.visibility = View.INVISIBLE
+                        }
                     }
+                } finally {
+                    dao.cleanup()
                 }
             }
 
@@ -989,6 +1006,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         isReplaceDuplicate: Boolean
     ) {
         if (null == currentContent) return
+        val dao: CollectionDAO = ObjectBoxDAO()
         if (currentContent!!.id > 0) currentContent = dao.selectContent(currentContent!!.id)
         if (null == currentContent) return
         if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent!!.status) {
@@ -1127,6 +1145,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 replacementTitleFinal
             )
         }
+        dao.cleanup()
     }
 
     /**
@@ -1167,15 +1186,20 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }, 1000)
         }
         currentContent!!.downloadMode = downloadMode
-        dao.addContentToQueue(
-            currentContent!!,
-            null,
-            null,
-            position,
-            if (isReplaceDuplicate) duplicateId else -1,
-            replacementTitle,
-            isQueueActive(this)
-        )
+        val dao: CollectionDAO = ObjectBoxDAO()
+        try {
+            dao.addContentToQueue(
+                currentContent!!,
+                null,
+                null,
+                position,
+                if (isReplaceDuplicate) duplicateId else -1,
+                replacementTitle,
+                isQueueActive(this)
+            )
+        } finally {
+            dao.cleanup()
+        }
         if (Preferences.isQueueAutostart()) resumeQueue(this)
         setActionMode(ActionMode.VIEW_QUEUE)
         if (webClient.isMarkQueued()) updateQueuedBooksUrls()
@@ -1212,7 +1236,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (webView.canGoBackOrForward(i - webBFL.currentIndex)) {
                 webView.goBackOrForward(i - webBFL.currentIndex)
             } else {
-                super.onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
             }
             return true
         }
@@ -1234,85 +1258,90 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val searchUrl =
             if (getStartSite().hasCoverBasedPageUpdates) onlineContent.coverImageUrl else ""
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts
-        val contentDB =
-            dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
-        val isInCollection = contentDB != null && isInLibrary(contentDB.status)
-        val isInQueue = contentDB != null && isInQueue(contentDB.status)
-        if (!isInCollection && !isInQueue) {
-            if (Preferences.isDownloadDuplicateAsk() && onlineContent.coverImageUrl.isNotEmpty()) {
-                // Index the content's cover picture
-                var pHash = Long.MIN_VALUE
-                try {
-                    val requestHeadersList: List<Pair<String, String>> = ArrayList()
-                    val downloadParams =
-                        parseDownloadParams(onlineContent.downloadParams).toMutableMap()
-                    downloadParams[HEADER_COOKIE_KEY] =
-                        getCookies(onlineContent.coverImageUrl)
-                    downloadParams[HEADER_REFERER_KEY] = onlineContent.site.url
-                    val onlineCover = getOnlineResourceFast(
-                        fixUrl(
-                            onlineContent.coverImageUrl,
-                            getStartUrl()
-                        ),
-                        requestHeadersList,
-                        getStartSite().useMobileAgent,
-                        getStartSite().useHentoidAgent,
-                        getStartSite().useWebviewAgent
-                    )
-                    val coverBody = onlineCover.body
-                    if (coverBody != null) {
-                        val bodyStream = coverBody.byteStream()
-                        val b = getCoverBitmapFromStream(bodyStream)
-                        pHash = calcPhash(getHashEngine(), b)
-                    }
-                } catch (e: IOException) {
-                    Timber.w(e)
-                } catch (e: IllegalArgumentException) {
-                    Timber.w(e)
-                }
-                // Look for duplicates
-                try {
-                    val duplicateResult = findDuplicate(
-                        this,
-                        onlineContent,
-                        Preferences.isDuplicateBrowserUseTitle(),
-                        Preferences.isDuplicateBrowserUseArtist(),
-                        Preferences.isDuplicateBrowserUseSameLanguage(),
-                        Preferences.isDuplicateBrowserUseCover(),
-                        Preferences.getDuplicateBrowserSensitivity(),
-                        pHash,
-                        dao
-                    )
-                    if (duplicateResult != null) {
-                        duplicateId = duplicateResult.first.id
-                        duplicateSimilarity = duplicateResult.second
-                        // Content ID of the duplicate candidate of the currently viewed Content
-                        val duplicateSameSite = duplicateResult.first.site == onlineContent.site
-                        // Same site and similar => enable download button by default, but look for extra pics just in case
-                        if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload) searchForExtraImages(
-                            duplicateResult.first,
-                            onlineContent
+        val dao: CollectionDAO = ObjectBoxDAO()
+        try {
+            val contentDB =
+                dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
+            val isInCollection = contentDB != null && isInLibrary(contentDB.status)
+            val isInQueue = contentDB != null && isInQueue(contentDB.status)
+            if (!isInCollection && !isInQueue) {
+                if (Preferences.isDownloadDuplicateAsk() && onlineContent.coverImageUrl.isNotEmpty()) {
+                    // Index the content's cover picture
+                    var pHash = Long.MIN_VALUE
+                    try {
+                        val requestHeadersList: List<Pair<String, String>> = ArrayList()
+                        val downloadParams =
+                            parseDownloadParams(onlineContent.downloadParams).toMutableMap()
+                        downloadParams[HEADER_COOKIE_KEY] =
+                            getCookies(onlineContent.coverImageUrl)
+                        downloadParams[HEADER_REFERER_KEY] = onlineContent.site.url
+                        val onlineCover = getOnlineResourceFast(
+                            fixUrl(
+                                onlineContent.coverImageUrl,
+                                getStartUrl()
+                            ),
+                            requestHeadersList,
+                            getStartSite().useMobileAgent,
+                            getStartSite().useHentoidAgent,
+                            getStartSite().useWebviewAgent
                         )
+                        val coverBody = onlineCover.body
+                        if (coverBody != null) {
+                            val bodyStream = coverBody.byteStream()
+                            val b = getCoverBitmapFromStream(bodyStream)
+                            pHash = calcPhash(getHashEngine(), b)
+                        }
+                    } catch (e: IOException) {
+                        Timber.w(e)
+                    } catch (e: IllegalArgumentException) {
+                        Timber.w(e)
                     }
-                } catch (e: Exception) {
-                    Timber.w(e)
+                    // Look for duplicates
+                    try {
+                        val duplicateResult = findDuplicate(
+                            this,
+                            onlineContent,
+                            Preferences.isDuplicateBrowserUseTitle(),
+                            Preferences.isDuplicateBrowserUseArtist(),
+                            Preferences.isDuplicateBrowserUseSameLanguage(),
+                            Preferences.isDuplicateBrowserUseCover(),
+                            Preferences.getDuplicateBrowserSensitivity(),
+                            pHash,
+                            dao
+                        )
+                        if (duplicateResult != null) {
+                            duplicateId = duplicateResult.first.id
+                            duplicateSimilarity = duplicateResult.second
+                            // Content ID of the duplicate candidate of the currently viewed Content
+                            val duplicateSameSite = duplicateResult.first.site == onlineContent.site
+                            // Same site and similar => enable download button by default, but look for extra pics just in case
+                            if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload) searchForExtraImages(
+                                duplicateResult.first,
+                                onlineContent
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                    }
                 }
-            }
-            if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
-                onlineContent.status = StatusContent.SAVED
-                addContent(this, dao, onlineContent)
+                if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
+                    onlineContent.status = StatusContent.SAVED
+                    addContent(this, dao, onlineContent)
+                } else {
+                    currentContent = contentDB
+                }
             } else {
                 currentContent = contentDB
             }
-        } else {
-            currentContent = contentDB
+            if (null == currentContent) currentContent = onlineContent
+            if (isInCollection) {
+                if (!quickDownload) searchForExtraImages(contentDB!!, onlineContent)
+                return ContentStatus.IN_COLLECTION
+            }
+            return if (isInQueue) ContentStatus.IN_QUEUE else ContentStatus.UNKNOWN
+        } finally {
+            dao.cleanup()
         }
-        if (null == currentContent) currentContent = onlineContent
-        if (isInCollection) {
-            if (!quickDownload) searchForExtraImages(contentDB!!, onlineContent)
-            return ContentStatus.IN_COLLECTION
-        }
-        return if (isInQueue) ContentStatus.IN_QUEUE else ContentStatus.UNKNOWN
     }
 
     override fun onContentReady(result: Content, quickDownload: Boolean) {
@@ -1397,13 +1426,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val parser = ContentParserFactory.getImageListParser(onlineContent)
         // Call the parser to retrieve all the pages
         // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-        val onlineImgs: List<ImageFile>?
+        val onlineImgs: List<ImageFile>
         try {
             onlineImgs = parser.parseImageList(onlineContent, storedContent)
         } finally {
             parser.clear()
         }
-        if (onlineImgs.isNullOrEmpty()) return result
+        if (onlineImgs.isEmpty()) return result
 
         var maxStoredImageOrder = 0
         val opt = storedContent.imageFiles
@@ -1433,12 +1462,17 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     if (targetChapter != null) img.setChapter(targetChapter)
                 }
             }
-            dao.insertImageFiles(storedImages)
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                dao.insertImageFiles(storedImages)
+            } finally {
+                dao.cleanup()
+            }
         }
 
         // Online book has more pictures than stored book -> that's what we're looking for
         return if (maxOnlineImageOrder > maxStoredImageOrder) {
-            onlineImgs.filter { img -> img.order > maxStoredImageOrderFinal }.distinct()
+            onlineImgs.filter { it.order > maxStoredImageOrderFinal }.distinct()
         } else result
     }
 
@@ -1468,8 +1502,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             val storedUrls: MutableSet<String> = HashSet()
             storedContent.imageFiles.let {
                 storedUrls.addAll(it
-                    .filter { img -> isInLibrary(img.status) }
-                    .map { obj: ImageFile -> obj.url }.toList()
+                    .filter { isInLibrary(it.status) }.map { it.url }.toList()
                 )
             }
             // Memorize the title of the online content (to update title of stored book later)
@@ -1477,7 +1510,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
             // Display the "download more" button only if extra images URLs aren't duplicates
             val additionalNonDownloadedImages =
-                additionalImages.filterNot { img -> storedUrls.contains(img.url) }
+                additionalImages.filterNot { storedUrls.contains(it.url) }
             if (additionalNonDownloadedImages.isNotEmpty()) {
                 extraImages = additionalNonDownloadedImages.toMutableList()
                 setActionMode(ActionMode.DOWNLOAD_PLUS)
@@ -1496,11 +1529,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun updateDownloadedBooksUrls() {
         synchronized(downloadedBooksUrls) {
             downloadedBooksUrls.clear()
-            downloadedBooksUrls.addAll(
-                dao.selectAllSourceUrls(getStartSite())
-                    .map { url -> simplifyUrl(url) }
-                    .filterNot { obj: String -> obj.isEmpty() }
-            )
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                downloadedBooksUrls.addAll(
+                    dao.selectAllSourceUrls(getStartSite())
+                        .map { simplifyUrl(it) }
+                        .filterNot { it.isEmpty() }
+                )
+            } finally {
+                dao.cleanup()
+            }
         }
     }
 
@@ -1511,19 +1549,24 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun updateMergedBooksUrls() {
         synchronized(mergedBooksUrls) {
             mergedBooksUrls.clear()
-            mergedBooksUrls.addAll(
-                dao.selectAllMergedUrls(getStartSite())
-                    .asSequence()
-                    .map { s -> s.replace(getStartSite().url, "") }
-                    .map { s ->
-                        s.replace(
-                            "\\b|/galleries|/gallery|/g|/entry\\b".toRegex(),
-                            ""
-                        )
-                    } //each sites "gallery" path
-                    .map { url -> simplifyUrl(url) }
-                    .filterNot { obj: String -> obj.isEmpty() }
-            )
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                mergedBooksUrls.addAll(
+                    dao.selectAllMergedUrls(getStartSite())
+                        .asSequence()
+                        .map { it.replace(getStartSite().url, "") }
+                        .map {
+                            it.replace(
+                                GALLERY_REGEX,
+                                ""
+                            )
+                        } //each sites "gallery" path
+                        .map { simplifyUrl(it) }
+                        .filterNot { it.isEmpty() }
+                )
+            } finally {
+                dao.cleanup()
+            }
         }
     }
 
@@ -1534,11 +1577,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun updateQueuedBooksUrls() {
         synchronized(queuedBooksUrls) {
             queuedBooksUrls.clear()
-            queuedBooksUrls.addAll(
-                dao.selectQueueUrls(getStartSite())
-                    .map { url -> simplifyUrl(url) }
-                    .filterNot { obj: String -> obj.isEmpty() }
-            )
+            val dao: CollectionDAO = ObjectBoxDAO()
+            try {
+                queuedBooksUrls.addAll(
+                    dao.selectQueueUrls(getStartSite())
+                        .map { simplifyUrl(it) }
+                        .filterNot { it.isEmpty() }
+                )
+            } finally {
+                dao.cleanup()
+            }
         }
     }
 

@@ -188,7 +188,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         // Handle notifications on another coroutine not to steal focus for unnecessary stuff
                         GlobalScope.launch(Dispatchers.Default) {
                             trace(
-                                Log.INFO, 1, logs, "Import book OK : %s", content.storageUri
+                                Log.INFO, 1, logs, "Import book OK : ${content.storageUri}"
                             )
                             notificationManager.notify(
                                 ImportProgressNotification(
