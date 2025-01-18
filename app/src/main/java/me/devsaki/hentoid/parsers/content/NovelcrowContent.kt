@@ -34,10 +34,13 @@ class NovelcrowContent : BaseContentParser() {
     private var metadata: Element? = null
 
     @Selector(value = ".author-content a")
-    private var author: List<Element>? = null
+    private var characters: List<Element>? = null
 
     @Selector(value = ".artist-content a")
     private var artist: List<Element>? = null
+
+    @Selector(value = ".genres-content a")
+    private var tags: List<Element>? = null
 
     @Selector(value = "#chapter-heading")
     private var chapterTitle: Element? = null
@@ -109,7 +112,8 @@ class NovelcrowContent : BaseContentParser() {
         }
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.NOVELCROW)
-        parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.NOVELCROW)
+        parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.NOVELCROW)
+        parseAttributes(attributes, AttributeType.TAG, tags, false, Site.NOVELCROW)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
