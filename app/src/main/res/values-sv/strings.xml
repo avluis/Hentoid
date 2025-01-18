@@ -90,7 +90,7 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Sök</string>
     <string name="menu_fav">Växla favouritfilter</string>
-    <string name="menu_mark_fav">Toggle favourite</string>
+    <string name="menu_mark_fav">Växla favorit</string>
     <string name="menu_group_new">Ny grupp</string>
     <string name="menu_edit_order">Arrangera om</string>
     <string name="menu_edit_name">Döpa om</string>
@@ -299,7 +299,7 @@
     <string name="mass_operation_2">Byt till streaming</string>
     <string name="mass_operation_scope">Omfattning</string>
     <string name="mass_operation_scope_1">Nuvarande filter på biblioteksskärmen</string>
-    <string name="mass_operation_scope_2">Alla böcker förutom except nuvarande filter på biblioteksskärmen</string>
+    <string name="mass_operation_scope_2">Alla böcker förutom nuvarande filter på biblioteksskärmen</string>
     <string name="mass_external_tip">Notera : Externa böcker kommer tas bort av den här handlingen</string>
     <string name="keep_fav_groups">Behandla inte böcker i favoritgrupper</string>
     <plurals name="book_keep">
