@@ -5,7 +5,6 @@ import android.os.Build
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
@@ -254,7 +253,7 @@ fun Context.writeLog(logInfo: LogInfo): DocumentFile? {
             return logDocumentFile
         } else { // If it fails, use device's "download" folder (panic mode)
             openNewDownloadOutputStream(
-                HentoidApp.getInstance(),
+                this,
                 logFileName,
                 "text/plain"
             )?.use { newDownload ->

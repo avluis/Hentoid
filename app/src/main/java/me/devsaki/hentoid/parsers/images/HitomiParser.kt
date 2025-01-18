@@ -58,7 +58,7 @@ class HitomiParser : BaseImageListParser() {
             result = parseImageListWithWebview(onlineContent, null)
             setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
-            logException(e)
+            logException(e, webview?.context)
             result = ArrayList()
         } finally {
             EventBus.getDefault().unregister(this)

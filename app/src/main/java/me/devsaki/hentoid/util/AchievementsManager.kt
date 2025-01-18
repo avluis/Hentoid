@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util
 
+import android.annotation.SuppressLint
 import android.content.Context
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp
@@ -24,6 +25,7 @@ object AchievementsManager {
 
     val masterdata: Map<Int, Achievement> by lazy { init(HentoidApp.getInstance()) }
 
+    @SuppressLint("DiscouragedApi")
     fun init(context: Context): Map<Int, Achievement> {
         val result = HashMap<Int, Achievement>()
 
@@ -91,7 +93,7 @@ object AchievementsManager {
         val db = AchievementsDAO()
         val now = Instant.now().toEpochMilli()
         try {
-            val eligibleContent = db.selectEligibleContentIds();
+            val eligibleContent = db.selectEligibleContentIds()
             if (!isRegistered(3) || !isRegistered(4) || !isRegistered(5)) {
                 val readPages = db.selectTotalReadPages()
                 if (!isRegistered(5) && readPages >= 5000) registerAndSignal(5)
@@ -131,7 +133,7 @@ object AchievementsManager {
             }
             if (!isRegistered(19)) {
                 val invisibleSites =
-                    Site.entries.filter { e -> !e.isVisible }.filterNot { e -> e == Site.NONE }
+                    Site.entries.filter { !it.isVisible }.filterNot { it == Site.NONE }
                 val count = db.countWithSitesOr(eligibleContent, invisibleSites)
                 if (count >= 10) registerAndSignal(19)
             }

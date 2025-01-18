@@ -14,7 +14,7 @@ object DuplicatesDB {
     val store: BoxStore by lazy { initStore() }
 
     private fun initStore(): BoxStore {
-        val context = HentoidApp.getInstance()
+        val context = HentoidApp.getInstance().applicationContext
         return MyObjectBox.builder().name(DB_NAME).androidContext(context)
             .maxSizeInKByte(Settings.maxDbSizeKb).build()
     }

@@ -12,7 +12,7 @@ class DuplicatesDAO {
     }
 
     fun getEntries(): List<DuplicateEntry> {
-        val entries = DuplicatesDB.selectEntriesQ().find()
+        val entries = DuplicatesDB.selectEntriesQ().safeFind()
 
         // Get all contents in one go
         val contentIds = entries.map { it.referenceId }

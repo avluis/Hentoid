@@ -226,7 +226,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             }
         } catch (e: IOException) {
             Timber.w(e)
-            logException(e)
+            logException(e, context)
         } finally {
             notificationManager.notify(ImportCompleteNotification(booksOK, booksKO))
         }

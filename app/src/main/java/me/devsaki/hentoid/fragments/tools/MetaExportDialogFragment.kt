@@ -228,7 +228,7 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                         )
                     } catch (e: Exception) {
                         Timber.w(e)
-                        logException(e)
+                        logException(e, activity)
                         Snackbar.make(
                             it.root,
                             R.string.export_failed,

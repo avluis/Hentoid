@@ -16,7 +16,7 @@ class EmergencyRestartHandler(val context: Context, private val myActivityClass:
         // Log the exception
         Timber.i("Logging crash exception")
         try {
-            logException(e)
+            logException(e, context)
         } finally {
             // Restart the Activity
             Timber.i("Restart %s", myActivityClass.simpleName)

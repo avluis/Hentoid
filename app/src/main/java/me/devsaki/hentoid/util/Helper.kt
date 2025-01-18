@@ -451,7 +451,7 @@ fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
     return true
 }
 
-fun logException(t: Throwable) {
+fun logException(t: Throwable, context : Context? = null) {
     val log: MutableList<LogEntry> = ArrayList()
     log.add(LogEntry(t.message ?: ""))
     log.add(LogEntry(getStackTraceString(t)))
@@ -459,7 +459,8 @@ fun logException(t: Throwable) {
     val logInfo = LogInfo("latest-crash")
     logInfo.setEntries(log)
     logInfo.setHeaderName("latest-crash")
-    getInstance().writeLog(logInfo)
+    val ctx = context ?: getInstance()
+    ctx.writeLog(logInfo)
 }
 
 fun getStackTraceString(t: Throwable): String {
