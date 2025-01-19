@@ -144,7 +144,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
                         this::onBiometricsActivateSuccess
                     )
                 } else {
-                    binding?.lockType?.index = 0 // Off
+                    binding?.lockType?.index = initialLockType
                     snack(R.string.app_lock_biometrics_fail, true)
                 }
             }
