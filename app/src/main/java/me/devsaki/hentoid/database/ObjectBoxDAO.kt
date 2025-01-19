@@ -75,9 +75,7 @@ class ObjectBoxDAO : CollectionDAO {
         consumer: Consumer<Content>
     ) {
         ObjectBoxDB.selectStoredContentQ(includeQueued, orderField, orderDesc).build()
-            .use { query ->
-                query.forEach { c -> consumer(c) }
-            }
+            .use { query -> query.forEach { consumer(it) } }
     }
 
     override fun selectRecentBookIds(searchBundle: ContentSearchBundle): List<Long> {
@@ -826,12 +824,18 @@ class ObjectBoxDAO : CollectionDAO {
         // Lists all relevant content
         val contents = imgs.map { it.content.targetId }.distinct()
 
-        // Update the content with its new size
+        // Update the contents
         for (contentId in contents) {
             val content = ObjectBoxDB.selectContentById(contentId)
             if (content != null) {
+                // Compute new size and page count
                 content.computeSize()
+                content.qtyPages = content.imageList.size
                 ObjectBoxDB.insertContentCore(content)
+
+                // Prune empty chapters
+                val emptyChapters = content.chaptersList.filter { it.imageList.isEmpty() }
+                emptyChapters.forEach { deleteChapter(it) }
             }
         }
     }

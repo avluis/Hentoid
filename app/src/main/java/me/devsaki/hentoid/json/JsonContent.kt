@@ -79,7 +79,6 @@ data class JsonContent(
             dbUrl = url ?: "",
             title = cleanup(title),
             coverImageUrl = coverImageUrl,
-            qtyPages = qtyPages,
             uploadDate = uploadDate,
             downloadDate = downloadDate,
             downloadCompletionDate = if ((downloadCompletionDate ?: 0) > 0) downloadCompletionDate
@@ -95,9 +94,9 @@ data class JsonContent(
             downloadMode = DownloadMode.fromValue(
                 downloadMode ?: Preferences.Constant.DL_ACTION_DL_PAGES
             ),
-            manuallyMerged = manuallyMerged ?: false
+            manuallyMerged = manuallyMerged == true
         )
-        result.isFrozen = isFrozen ?: false
+        result.isFrozen = isFrozen == true
 
         // ATTRIBUTES
         attributes?.let { attrs ->
@@ -111,18 +110,21 @@ data class JsonContent(
 
         // CHAPTERS
         val chps = chapters?.map { it.toEntity() } ?: emptyList()
-        result.setChapters(chps)
 
-        // IMAGES
+        // IMAGES + chapter linking
         val imgs = imageFiles.map { it.toEntity(chps) }.toMutableList()
         // If no cover, set the first page as cover
         val cover = imgs.firstOrNull { it.isCover }
-        if ((null == cover || cover.url.isEmpty()) && imgs.size > 0) imgs[0].isCover = true
+        if ((null == cover || cover.url.isEmpty()) && imgs.isNotEmpty()) imgs[0].isCover = true
 
+        // Prune empty chapters
+        val fullChps = chps.filterNot { it.imageList.isEmpty() }
+
+        result.setChapters(fullChps)
         result.setImageFiles(imgs)
 
-        // Fix books with incorrect QtyPages that may exist in old JSONs
-        if (qtyPages <= 0) result.qtyPages = imageFiles.size
+        // Reset qtyPages to the actual number of image files
+        result.qtyPages = imageFiles.size
 
 
         // ERROR RECORDS
