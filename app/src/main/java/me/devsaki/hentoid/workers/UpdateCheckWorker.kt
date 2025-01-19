@@ -60,6 +60,7 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
                         applicationContext.resources.getString(R.string.pref_check_updates_manual_no_connection)
                     )
                 )
+                notificationManager.cancel()
                 Timber.w("Failed to get update info (null result)")
             }
         } catch (e: Exception) {
@@ -71,7 +72,6 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
             Timber.w(e, "Failed to get update info")
-        } finally {
             notificationManager.cancel()
         }
     }
