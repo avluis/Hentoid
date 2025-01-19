@@ -151,8 +151,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 // Write JSON file for every found book and persist it in the DB
                 trace(
                     Log.DEBUG,
-                    "Import books starting - initial detected count : %s",
-                    detectedContent.size.toString()
+                    "Import books starting - initial detected count : ${detectedContent.size}"
                 )
 
                 // Flag DB content for cleanup
@@ -173,7 +172,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             continue
                         }
                         trace(Log.INFO, "Importing ${content.storageUri}...")
-                        dumpLog()
                         createJsonFileFor(context, content, explorer, logs)
                         addContent(context, dao, content)
                         content.parentStorageUri?.let { parentUri ->
@@ -192,9 +190,12 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                                     content.title, booksOK + booksKO, detectedContent.size
                                 )
                             )
-                            eventProgress(
-                                STEP_3_BOOKS, detectedContent.size, booksOK, booksKO
-                            )
+                            eventProgress(STEP_3_BOOKS, detectedContent.size, booksOK, booksKO)
+                        }
+                        // Clear the DAO every 2500K iterations to optimize memory
+                        if (0 == booksOK % 2500) {
+                            dao.cleanup()
+                            dao = ObjectBoxDAO()
                         }
                     } // detected content
                     dao.deleteAllFlaggedBooks(false, null)
