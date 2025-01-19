@@ -578,8 +578,8 @@ class ObjectBoxDAO : CollectionDAO {
             val result = MediatorLiveData<List<Group>>()
             result.addSource(workingData) { groups ->
                 val sortOrder = if (orderDesc) -1 else 1
-                val orderedByNbChildren = groups.sortedBy { g -> g.getItems().size * sortOrder }
-                result.setValue(orderedByNbChildren)
+                val orderedByNbChildren = groups.sortedBy { it.getItems().size * sortOrder }
+                result.value = orderedByNbChildren
             }
             return result
         }
@@ -589,10 +589,10 @@ class ObjectBoxDAO : CollectionDAO {
             val result = MediatorLiveData<List<Group>>()
             result.addSource(workingData) { groups ->
                 val sortOrder = if (orderDesc) -1 else 1
-                val orderedByDlDate = groups.sortedBy { g ->
-                    getLatestDlDate(g) * sortOrder
+                val orderedByDlDate = groups.sortedBy {
+                    getLatestDlDate(it) * sortOrder
                 }
-                result.setValue(orderedByDlDate)
+                result.value = orderedByDlDate
             }
             return result
         }
@@ -647,7 +647,7 @@ class ObjectBoxDAO : CollectionDAO {
     private fun getLatestDlDate(g: Group): Long {
         // Manually select all content as g.getContents won't work (unresolved items)
         val contents = ObjectBoxDB.selectContentById(g.contentIds)
-        return contents.maxOfOrNull { c -> c.downloadDate } ?: 0
+        return contents.maxOfOrNull { it.downloadDate } ?: 0
     }
 
     override fun selectGroup(groupId: Long): Group? {
