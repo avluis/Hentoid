@@ -83,7 +83,7 @@ abstract class BaseWorker(
 
     protected fun trace(priority: Int, msg: String?, vararg t: Any?) {
         var s = msg ?: ""
-        s = String.format(s, *t)
+        if (t.isNotEmpty()) s = String.format(s, *t)
         Timber.log(priority, s)
         val isError = priority > Log.INFO
         logs?.add(LogEntry(s, isError))

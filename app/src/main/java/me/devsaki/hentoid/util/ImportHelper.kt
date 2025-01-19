@@ -677,7 +677,6 @@ fun scanFolderRecursive(
     // We've got an archived book
     if (archivesPdf.isNotEmpty()) {
         for (archive in archivesPdf) {
-            //val json = getFileWithName(jsons, archive.name ?: "")
             val content = jsonToContent(context, dao, jsons, archive.name ?: "")
             val c = scanArchivePdf(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, content

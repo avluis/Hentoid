@@ -39,7 +39,7 @@ class LogEntry {
 
     constructor(message: String, vararg formatArgs: Any?) {
         timestamp = Instant.now()
-        this.message = String.format(message, *formatArgs)
+        this.message = if (formatArgs.isNotEmpty()) String.format(message, *formatArgs) else message
         chapter = 1
         isError = false
     }
@@ -217,7 +217,7 @@ fun trace(
     str: String,
     vararg t: Any
 ) {
-    val s = String.format(str, *t)
+    val s = if (t.isNotEmpty()) String.format(str, *t) else str
     Timber.log(priority, s)
     val isError = priority > Log.INFO
     memoryLog?.add(LogEntry(s, chapter, isError))
