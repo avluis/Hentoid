@@ -69,6 +69,7 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                     existingRadio.isChecked = true
                     existingList.visibility = View.VISIBLE
                     existingList.entries = customGroups.map { it.name }
+                    existingList.index = 0 // Default
 
                     // If all content are in the same group, show it by default
                     val groupIds = dao.selectContent(contentIds)
