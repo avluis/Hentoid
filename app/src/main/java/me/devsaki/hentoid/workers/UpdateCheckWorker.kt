@@ -71,6 +71,7 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
             Timber.w(e, "Failed to get update info")
+        } finally {
             notificationManager.cancel()
         }
     }
