@@ -1779,14 +1779,25 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         refreshIfNeeded()
     }
 
-    override fun onChangeGroupSuccess(nbItems: Int) {
-        snack(
-            resources.getQuantityString(
-                R.plurals.notif_process_complete_details,
-                nbItems,
-                nbItems
+    override fun onChangeGroupSuccess(nbProcessed: Int, nbTotal: Int) {
+        if (nbProcessed == nbTotal) {
+            snack(
+                resources.getQuantityString(
+                    R.plurals.notif_process_complete_details,
+                    nbProcessed,
+                    nbProcessed
+                )
             )
-        )
+        } else {
+            val nbErrors = nbTotal - nbProcessed
+            snack(
+                resources.getQuantityString(
+                    R.plurals.notif_delete_fail_details,
+                    nbErrors,
+                    nbErrors
+                )
+            )
+        }
         refreshIfNeeded()
     }
 

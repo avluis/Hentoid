@@ -14,7 +14,6 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import timber.log.Timber
-import java.io.IOException
 
 fun getOrCreateNoArtistGroup(context: Context, dao: CollectionDAO): Group {
     val noArtistGroupName = context.resources.getString(R.string.no_artist_group_name)
@@ -111,15 +110,10 @@ fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
             context, contentCollection,
             JsonContentCollection::class.java, rootFolder, GROUPS_JSON_FILE_NAME
         )
-    } catch (e: IOException) {
+    } catch (e: Exception) {
         // NB : IllegalArgumentException might happen for an unknown reason on certain devices
         // even though all the file existence checks are in place
         // ("Failed to determine if primary:.Hentoid/groups.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/groups.json at /storage/emulated/0/.Hentoid/groups.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
-    } catch (e: IllegalArgumentException) {
         Timber.e(e)
         val crashlytics = FirebaseCrashlytics.getInstance()
         crashlytics.recordException(e)
@@ -142,7 +136,7 @@ fun moveContentToCustomGroup(
     group: Group?,
     dao: CollectionDAO,
     order: Int = -1,
-    ): Content {
+): Content {
     assertNonUiThread()
     // Get all groupItems of the given content for custom grouping
     val groupItems = dao.selectGroupItems(content.id, Grouping.CUSTOM)

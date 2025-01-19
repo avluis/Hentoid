@@ -154,16 +154,16 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                     viewModel.moveContentsToCustomGroup(
                         contentIds,
                         customGroups[existingList.index]
-                    ) {
-                        parent?.onChangeGroupSuccess(contentIds.size)
+                    ) { nbProcessed ->
+                        parent?.onChangeGroupSuccess(nbProcessed, contentIds.size)
                         dismissAllowingStateLoss()
                     }
                 } else {
                     toast(R.string.group_not_selected)
                 }
             } else if (detachRadio.isChecked) {
-                viewModel.moveContentsToCustomGroup(contentIds, null) {
-                    parent?.onChangeGroupSuccess(contentIds.size)
+                viewModel.moveContentsToCustomGroup(contentIds, null) { nbProcessed ->
+                    parent?.onChangeGroupSuccess(nbProcessed, contentIds.size)
                     dismissAllowingStateLoss()
                 }
             } else newNameTxt.editText?.let { edit -> // New group
@@ -173,8 +173,8 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
                         customGroups.filter { g -> g.name.equals(newNameStr, ignoreCase = true) }
                     if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
                         viewModel.moveContentsToNewCustomGroup(contentIds, newNameStr)
-                        {
-                            parent?.onChangeGroupSuccess(contentIds.size)
+                        { nbProcessed ->
+                            parent?.onChangeGroupSuccess(nbProcessed, contentIds.size)
                             dismissAllowingStateLoss()
                         }
                     } else {
@@ -188,6 +188,6 @@ class ChangeGroupDialogFragment : BaseDialogFragment<ChangeGroupDialogFragment.P
     }
 
     interface Parent {
-        fun onChangeGroupSuccess(nbItems: Int)
+        fun onChangeGroupSuccess(nbProcessed : Int, nbTotal: Int)
     }
 }

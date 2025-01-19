@@ -991,17 +991,17 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun moveContentsToNewCustomGroup(
         contentIds: LongArray,
         newGroupName: String,
-        onSuccess: Consumer<Int>
+        onProcessed: Consumer<Int>
     ) {
         val newGroup = Group(Grouping.CUSTOM, newGroupName.trim(), -1)
         newGroup.id = dao.insertGroup(newGroup)
-        moveContentsToCustomGroup(contentIds, newGroup, onSuccess)
+        moveContentsToCustomGroup(contentIds, newGroup, onProcessed)
     }
 
     fun moveContentsToCustomGroup(
         contentIds: LongArray,
         group: Group?,
-        onSuccess: Consumer<Int>
+        onProcessed: Consumer<Int>
     ) {
         var nbProcessed = 0
         viewModelScope.launch {
@@ -1020,7 +1020,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     updateGroupsJson(getApplication(), dao)
                     dao.cleanup()
                 }
-                onSuccess.run()
+                withContext(Dispatchers.Main) {
+                    onProcessed.invoke(nbProcessed)
+                }
             } catch (t: Throwable) {
                 Timber.e(t, "Book couldn't be added to group")
             }
