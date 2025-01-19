@@ -171,7 +171,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             booksKO++
                             continue
                         }
-                        trace(Log.INFO, "Importing ${content.storageUri}...")
                         createJsonFileFor(context, content, explorer, logs)
                         addContent(context, dao, content)
                         content.parentStorageUri?.let { parentUri ->
