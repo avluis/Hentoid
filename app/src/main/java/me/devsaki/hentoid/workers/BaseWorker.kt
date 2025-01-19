@@ -118,7 +118,7 @@ abstract class BaseWorker(
         return if (!isStopped && !isComplete) Result.retry() else Result.success()
     }
 
-    private fun dumpLog(): DocumentFile? {
+    protected fun dumpLog(): DocumentFile? {
         return logs?.let {
             val logInfo = LogInfo(logName)
             logInfo.setHeaderName(logName)
