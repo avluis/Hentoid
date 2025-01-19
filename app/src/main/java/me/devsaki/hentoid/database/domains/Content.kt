@@ -601,7 +601,9 @@ data class Content(
         get() = groupItems.reach(this)
 
     fun getGroupItems(grouping: Grouping): List<GroupItem> {
-        return groupItemList.filter { it.linkedGroup?.grouping == grouping }
+        return groupItemList
+            .filterNot { null == it.linkedGroup }
+            .filter { it.linkedGroup?.grouping == grouping }
     }
 
     private fun computeReadPagesCount(): Int {
