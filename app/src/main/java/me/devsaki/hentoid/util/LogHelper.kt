@@ -215,7 +215,7 @@ fun trace(
     chapter: Int,
     memoryLog: MutableList<LogEntry>?,
     str: String,
-    vararg t: Any
+    vararg t: Any?
 ) {
     val s = if (t.isNotEmpty()) String.format(str, *t) else str
     Timber.log(priority, s)

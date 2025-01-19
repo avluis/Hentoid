@@ -40,7 +40,6 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.scanArchivePdf
 import me.devsaki.hentoid.util.scanFolderRecursive
-import me.devsaki.hentoid.util.trace
 import me.devsaki.hentoid.workers.data.ExternalImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -152,10 +151,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 // Write JSON file for every found book and persist it in the DB
                 trace(
                     Log.DEBUG,
-                    0,
-                    logs,
                     "Import books starting - initial detected count : %s",
-                    detectedContent.size.toString() + ""
+                    detectedContent.size.toString()
                 )
 
                 // Flag DB content for cleanup
@@ -187,9 +184,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         booksOK++
                         // Handle notifications on another coroutine not to steal focus for unnecessary stuff
                         GlobalScope.launch(Dispatchers.Default) {
-                            trace(
-                                Log.INFO, 1, logs, "Import book OK : ${content.storageUri}"
-                            )
+                            trace(Log.INFO, "Import book OK : ${content.storageUri}")
                             notificationManager.notify(
                                 ImportProgressNotification(
                                     content.title, booksOK + booksKO, detectedContent.size
@@ -207,12 +202,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 }
                 trace(
                     Log.INFO,
-                    2,
-                    logs,
-                    "Import books complete - %s OK; %s KO; %s final count",
-                    booksOK.toString() + "",
-                    booksKO.toString() + "",
-                    detectedContent.size.toString() + ""
+                    "Import books complete - $booksOK OK; $booksKO KO; ${detectedContent.size} final count"
                 )
                 eventComplete(
                     STEP_3_BOOKS, detectedContent.size, booksOK, booksKO, null
@@ -377,8 +367,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             }
             trace(
                 Log.INFO,
-                0,
-                logs,
                 message,
                 archivePdf.name ?: "<name not found>"
             )
