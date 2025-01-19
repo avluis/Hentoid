@@ -15,6 +15,8 @@ import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import com.waynejo.androidndkgif.GifEncoder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
@@ -22,6 +24,7 @@ import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.findSequencePosition
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.network.getExtensionFromUri
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -525,26 +528,30 @@ fun needsRotating(screenWidth: Int, screenHeight: Int, width: Int, height: Int):
 
 /**
  * Return the given image's dimensions
- * NB : Only works for formats natively supported by Android
  *
  * @param context Context to be used
  * @param uri     Uri of the image to be read
  * @return Dimensions (x,y) of the given image
  */
-fun getImageDimensions(context: Context, uri: String): Point {
+suspend fun getImageDimensions(context: Context, uri: String): Point = withContext(Dispatchers.IO) {
     val fileUri = Uri.parse(uri)
-    if (!fileExists(context, fileUri)) return Point(0, 0)
-    val options = BitmapFactory.Options()
-    options.inJustDecodeBounds = true
-    return try {
-        BitmapFactory.decodeStream(getInputStream(context, fileUri), null, options)
-        Point(options.outWidth, options.outHeight)
-    } catch (e: IOException) {
-        Timber.w(e)
-        Point(0, 0)
-    } catch (e: IllegalArgumentException) {
-        Timber.w(e)
-        Point(0, 0)
+    if (!fileExists(context, fileUri)) return@withContext Point(0, 0)
+
+    if (getExtensionFromUri(uri) == "jxl") {
+        return@withContext getDimensions(context, uri)
+    } else { // Natively supported by Android
+        val options = BitmapFactory.Options()
+        options.inJustDecodeBounds = true
+        return@withContext try {
+            BitmapFactory.decodeStream(getInputStream(context, fileUri), null, options)
+            Point(options.outWidth, options.outHeight)
+        } catch (e: IOException) {
+            Timber.w(e)
+            Point(0, 0)
+        } catch (e: IllegalArgumentException) {
+            Timber.w(e)
+            Point(0, 0)
+        }
     }
 }
 

@@ -10,11 +10,13 @@ import android.view.ViewGroup
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import coil3.load
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -128,21 +130,23 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
                 imagePath.text = filePath
                 val imageExists = fileExists(requireContext(), Uri.parse(it.fileUri))
                 if (imageExists) {
-                    val dimensions = getImageDimensions(requireContext(), it.fileUri)
-                    val sizeStr: String = if (it.size > 0) {
-                        formatHumanReadableSize(it.size, resources)
-                    } else {
-                        val size =
-                            fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
-                        formatHumanReadableSize(size, resources)
+                    lifecycleScope.launch {
+                        val dimensions = getImageDimensions(requireContext(), it.fileUri)
+                        val sizeStr: String = if (it.size > 0) {
+                            formatHumanReadableSize(it.size, resources)
+                        } else {
+                            val size =
+                                fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
+                            formatHumanReadableSize(size, resources)
+                        }
+                        imageStats.text = resources.getString(
+                            R.string.viewer_img_details,
+                            dimensions.x,
+                            dimensions.y,
+                            scale * 100,
+                            sizeStr
+                        )
                     }
-                    imageStats.text = resources.getString(
-                        R.string.viewer_img_details,
-                        dimensions.x,
-                        dimensions.y,
-                        scale * 100,
-                        sizeStr
-                    )
                     ivThumb.load(it.fileUri)
                 } else {
                     imageStats.setText(R.string.image_not_found)

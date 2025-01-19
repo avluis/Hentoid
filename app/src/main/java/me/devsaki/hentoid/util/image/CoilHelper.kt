@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.image
 
 import android.content.Context
+import android.graphics.Point
 import android.view.View
 import android.widget.ImageView
 import coil3.ImageLoader
@@ -110,6 +111,19 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
     val loader = if (disableAnimation && !isOnline) stillImageLoader
     else SingletonImageLoader.get(this.context)
     loader.enqueue(request.build())
+}
+
+suspend fun getDimensions(context: Context, data: String): Point = withContext(Dispatchers.IO) {
+    val request = ImageRequest.Builder(context)
+        .data(data)
+        .memoryCacheKey(data)
+        .diskCacheKey(data)
+
+    val result = stillImageLoader.execute(request.build())
+    result.image?.let { img ->
+        return@withContext Point(img.width, img.height)
+    }
+    return@withContext Point(0, 0)
 }
 
 class AnimatedPngDecoder(private val source: ImageSource) : Decoder {
