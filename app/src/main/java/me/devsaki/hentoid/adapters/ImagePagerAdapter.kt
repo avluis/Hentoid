@@ -524,9 +524,15 @@ class ImagePagerAdapter(context: Context) :
         }
 
         fun setTapListener(isImageView: Boolean) {
-            var iterations = 0 // Wait for 5 secs max
-            while (isLoading.get() && iterations++ < 33) pause(150)
-            imgView.setOnTouchListener(if (isImageView) null else itemTouchListener)
+            recyclerView?.lifecycleScope?.launch {
+                withContext(Dispatchers.Default) {
+                    var iterations = 0 // Wait for 5 secs max
+                    while (isLoading.get() && iterations++ < 33) pause(150)
+                }
+                withContext(Dispatchers.Main) {
+                    imgView.setOnTouchListener(if (isImageView) null else itemTouchListener)
+                }
+            }
         }
 
         suspend fun isImageView(): Boolean = withContext(Dispatchers.Default) {
