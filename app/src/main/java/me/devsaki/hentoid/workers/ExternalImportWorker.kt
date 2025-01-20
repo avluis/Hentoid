@@ -146,6 +146,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 } finally {
                     dao.cleanup()
                 }
+                dumpLog()
                 eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null)
 
                 // Write JSON file for every found book and persist it in the DB

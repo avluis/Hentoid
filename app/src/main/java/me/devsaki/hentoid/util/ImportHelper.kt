@@ -620,7 +620,7 @@ fun scanFolderRecursive(
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
     progressFeedback?.invoke(rootName)
-    Timber.d(">>>> scan root %s", toScan.uri)
+    trace(Log.DEBUG, 0, log, "Scan ${toScan.uri}")
     val files = explorer.listDocumentFiles(context, toScan)
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
@@ -643,9 +643,11 @@ fun scanFolderRecursive(
 
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
     if (subFolders.size >= 2) {
+        trace(Log.DEBUG, 0, log, "Chaptered book detected ${toScan.uri}")
         val allSubfoldersEndWithNumber =
             subFolders.mapNotNull { it.name }.all { ENDS_WITH_NUMBER.matcher(it).matches() }
         if (allSubfoldersEndWithNumber) {
+            trace(Log.DEBUG, 0, log, "Chaptered book confirmed ${toScan.uri}")
             // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
             if (nbPicturesInside > 1) {
@@ -696,6 +698,7 @@ fun scanFolderRecursive(
 
     // We've got a book
     if (images.size > 2 || contentJsons.isNotEmpty()) {
+        trace(Log.DEBUG, 0, log, "Book detected ${toScan.uri}")
         val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
         library.add(
             scanBookFolder(
