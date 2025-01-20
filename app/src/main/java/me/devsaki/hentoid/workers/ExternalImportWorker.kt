@@ -146,7 +146,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 } finally {
                     dao.cleanup()
                 }
-                dumpLog()
                 eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null)
 
                 // Write JSON file for every found book and persist it in the DB
@@ -154,6 +153,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     Log.DEBUG,
                     "Import books starting - initial detected count : ${detectedContent.size}"
                 )
+                dumpLog()
 
                 // Flag DB content for cleanup
                 dao = ObjectBoxDAO()

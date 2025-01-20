@@ -620,7 +620,6 @@ fun scanFolderRecursive(
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
     progressFeedback?.invoke(rootName)
-    trace(Log.DEBUG, 0, log, "Scan ${toScan.uri}")
     val files = explorer.listDocumentFiles(context, toScan)
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
@@ -643,11 +642,10 @@ fun scanFolderRecursive(
 
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
     if (subFolders.size >= 2) {
-        trace(Log.DEBUG, 0, log, "Chaptered book detected ${toScan.uri}")
         val allSubfoldersEndWithNumber =
             subFolders.mapNotNull { it.name }.all { ENDS_WITH_NUMBER.matcher(it).matches() }
         if (allSubfoldersEndWithNumber) {
-            trace(Log.DEBUG, 0, log, "Chaptered book confirmed ${toScan.uri}")
+            trace(Log.DEBUG, 0, log, "Chaptered book detected ${toScan.uri}")
             // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
             if (nbPicturesInside > 1) {
