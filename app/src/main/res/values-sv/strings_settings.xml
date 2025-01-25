@@ -209,7 +209,7 @@
     <string name="pref_viewer_invert_volume">Invertera volymknappar</string>
     <string name="pref_viewer_book_switch">Bokbytes-styrning</string>
     <string name="pref_viewer_book_switch_volume">Volymknapp (håll nere)</string>
-    <string name="pref_viewer_zoom">Zoomkontrol</string>
+    <string name="pref_viewer_zoom">Zoomkontroll</string>
     <string name="pref_viewer_zoom_double_tap">Tryck två gånger för att zooma</string>
     <string name="pref_viewer_zoom_holding">Beröring zoomar in temporärt</string>
     <string name="pref_viewer_cap_tap_zoom">Dubbleringsbegränsning &amp; långtryckszoom</string>
