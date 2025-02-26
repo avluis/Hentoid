@@ -68,3 +68,4 @@ signing.gradle
 
 .externalNativeBuild
 .cxx
+/.kotlin/sessions/kotlin-compiler-*.salive
