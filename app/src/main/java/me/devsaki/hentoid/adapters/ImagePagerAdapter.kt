@@ -384,8 +384,9 @@ class ImagePagerAdapter(context: Context) :
                 switchImageView(forceImageView!!, true)
                 forceImageView = null // Reset force flag
             } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType || ImageType.IMG_TYPE_AWEBP == imageType || ImageType.IMG_TYPE_JXL == imageType) {
+                // Formats that aren't supported by SSIV
                 switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(false, false)
+            } else switchImageView(false, false) // Use SSIV by default
 
             // Initialize SSIV when required
             if (!isVertical && !isImageView) {
@@ -425,6 +426,31 @@ class ImagePagerAdapter(context: Context) :
             else if (isExtracting) text = R.string.image_extracting
             noImgTxt.setText(text)
             noImgTxt.isVisible = !imageAvailable
+        }
+
+        fun clear() {
+            if (isImageView) imageView.dispose()
+            else ssiv.clear()
+            isLoading.set(false)
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        fun reset() {
+            clear()
+            imageView.isClickable = true
+            imageView.isFocusable = true
+            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
+            imageView.setOnTouchListener(null)
+            imageView.rotation = 0f
+
+            ssiv.setIgnoreTouchEvents(false)
+            ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
+            ssiv.setPreferredBitmapConfig(colorDepth)
+            ssiv.setDoubleTapZoomDuration(500)
+            ssiv.setOnTouchListener(null)
+
+            rootView.minimumHeight = 0
+            noImgTxt.isVisible = false
         }
 
         private fun setImage(img: ImageFile, isJxl: Boolean) {
@@ -634,31 +660,6 @@ class ImagePagerAdapter(context: Context) :
         private fun forceImageView() {
             switchImageView(true)
             forceImageView = true
-        }
-
-        fun clear() {
-            if (isImageView) imageView.dispose()
-            else ssiv.clear()
-            isLoading.set(false)
-        }
-
-        @SuppressLint("ClickableViewAccessibility")
-        fun reset() {
-            clear()
-            imageView.isClickable = true
-            imageView.isFocusable = true
-            imageView.scaleType = ImageView.ScaleType.FIT_CENTER
-            imageView.setOnTouchListener(null)
-            imageView.rotation = 0f
-
-            ssiv.setIgnoreTouchEvents(false)
-            ssiv.setDirection(CustomSubsamplingScaleImageView.Direction.HORIZONTAL)
-            ssiv.setPreferredBitmapConfig(colorDepth)
-            ssiv.setDoubleTapZoomDuration(500)
-            ssiv.setOnTouchListener(null)
-
-            rootView.minimumHeight = 0
-            noImgTxt.isVisible = false
         }
 
         private fun adjustDimensions(
