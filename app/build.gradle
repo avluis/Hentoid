@@ -156,7 +156,7 @@ dependencies {
      * MEDIA
      */
     // Image loader and animated pics support -> https://github.com/coil-kt/coil
-    def Coil_version = '3.0.4'
+    def Coil_version = '3.1.0'
     implementation("io.coil-kt.coil3:coil:$Coil_version")
     implementation("io.coil-kt.coil3:coil-network-okhttp:$Coil_version")
     implementation("io.coil-kt.coil3:coil-gif:$Coil_version")
