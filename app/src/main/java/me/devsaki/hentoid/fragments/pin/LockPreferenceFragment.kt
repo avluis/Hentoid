@@ -28,7 +28,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentPinPreferenceOnBinding.inflate(inflater, container, false)
 
         initialLockType = Settings.lockType
@@ -56,7 +56,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
             }
             textResetPin.setOnClickListener { onResetClick() }
         }
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -68,12 +68,12 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
         val newLockType = Settings.lockType
         binding?.apply {
             switchLockOnRestore.isVisible = (newLockType > 0)
+            lockTimer.isVisible = (newLockType > 0)
             textResetPin.isVisible = (1 == newLockType)
             lockType.index = newLockType
             initialLockType = newLockType
             val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
             switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
-            lockTimer.isVisible = lockOnAppRestoredEnabled
             lockTimer.setSelection(Preferences.getLockTimer())
         }
     }
@@ -122,7 +122,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     }
 
     private fun onLockTypeChanged(index: Int) {
-        if (0 == index) {
+        if (0 == index) { // Off
             if (1 == initialLockType) DeactivatePinDialogFragment().show(childFragmentManager, null)
             else if (2 == initialLockType) {
                 val bestBM = BiometricsHelper.detectBestBiometric()
