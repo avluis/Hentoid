@@ -694,7 +694,7 @@ fun scanFolderRecursive(
         }
     }
 
-    // We've got a book
+    // We've got a regular book
     if (images.size > 2 || contentJsons.isNotEmpty()) {
         val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
         library.add(
