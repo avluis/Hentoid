@@ -80,7 +80,7 @@
     <string name="refresh_step1_select">Välj Primärmapp</string>
     <string name="refresh_step1_select_2">SVälj Primärmapp (plats: 2)</string>
     <string name="refresh_step1_select_external">Välj extern mapp</string>
-    <string name="refresh_step2">Skanna site mappar</string>
+    <string name="refresh_step2">Skanna platsmappar</string>
     <string name="refresh_step3_init">Skannar bibliotek…</string>
     <string name="refresh_step3">Skanna bibliotek (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="refresh_step4_init">Importerar kö…</string>
@@ -89,11 +89,11 @@
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Sök</string>
-    <string name="menu_fav">Växla favouritfilter</string>
+    <string name="menu_fav">Växla favoritfilter</string>
     <string name="menu_mark_fav">Växla favorit</string>
     <string name="menu_group_new">Ny grupp</string>
-    <string name="menu_edit_order">Arrangera om</string>
-    <string name="menu_edit_name">Döpa om</string>
+    <string name="menu_edit_order">Omarrangera</string>
+    <string name="menu_edit_name">Redigera</string>
     <string name="menu_edit_confirm">Bekräfta redigering</string>
     <string name="menu_edit_cancel">Avbryt redigering</string>
     <string name="menu_edit_warning_custom">En improviserad ordning kommer skriva över den förra ordningen.</string>
@@ -111,7 +111,7 @@
     <string name="menu_share_help">Dela bok-URL och titel genom en annan app</string>
     <string name="menu_share_title">Bok-URL</string>
     <string name="menu_archive">Arkiv</string>
-    <string name="menu_archive_help">Arkivera boken i en Zip-fil</string>
+    <string name="menu_archive_help">Arkivera boken i en zip-fil</string>
     <string name="library_search_hint">Titel, konstnär, etikett eller bok-ID</string>
     <string name="group_search_hint">Grupptitel</string>
     <string name="send_to">Dela med:</string>
@@ -270,7 +270,7 @@
     <string name="storage_strategy_balance">Balansera fritt utrymme</string>
     <string name="storage_strategy_balance_desc">Hentoid laddar ner till platsen med mest lagringsutrymme och försöker bibehålla en balans. Flyttar inte på böcker som redan finns i biblioteket.</string>
     <string name="storage_strategy_fallover">Våg</string>
-    <string name="storage_strategy_fallover_desc">Hentoid laddar ner till plats 1 tills %d%% av capaciteten är fylld, sedan laddar den ner till plats 2.</string>
+    <string name="storage_strategy_fallover_desc">Hentoid laddar ner till plats 1 tills %d%% av kapaciteten är fylld, sedan laddar den ner till plats 2.</string>
     <string name="storage_fallover_threshold">Lågutrymmeströskel (%%)</string>
     <string name="storage_set_strategy">Ställ in nerladdningsstrategi</string>
     <string name="storage_stats">Statistik</string>
@@ -284,7 +284,7 @@
     <string name="refresh_location_internal_1">Primärbibliotek 1</string>
     <string name="refresh_location_internal_2">Primärbibliotek 2</string>
     <string name="refresh_location_external">Externt bibliotek</string>
-    <string name="refresh_options_rename">Döp om alla mappar enligt nuvarande namn-och maxlängdsinställningarna</string>
+    <string name="refresh_options_rename">Döp om alla mappar enligt nuvarande namn-och maxlängdsinställningar</string>
     <string name="refresh_options_remove_placeholders">Ta bort platshållarböcker importerade genom metadata</string>
     <string name="refresh_options_renumber_pages">Omnumrera sidor</string>
     <string name="refresh_renumber_warning">Det här kommer kontrollera alla böcker och rätta till sidnumreringsmisstag.\nRäkna med att den här inställningen kommer sakta ner behandlingen rejält.</string>
@@ -441,14 +441,14 @@
     <string name="memory_details_size">Storlek</string>
 
     <!-- Logs -->
-    <string name="logs_title">Senaste loggarna</string>
+    <string name="logs_title">Senaste loggar</string>
     <string name="logs_open">Öppna logg</string>
-    <string name="read_log">Läg logg</string>
+    <string name="read_log">Läs logg</string>
     <string name="logs_share">Dela logg</string>
     <string name="no_error_detected">Inga fel hittade.</string>
-    <string name="log_import_external">Externt bibliotek importera/fräscha upp</string>
-    <string name="log_import">Primary library import/refresh</string>
-    <string name="log_cleanup">Primary library cleanup</string>
+    <string name="log_import_external">Import/uppfräschningslogg externbibliotek</string>
+    <string name="log_import">Import/uppfräschningslogg primärbibliotek</string>
+    <string name="log_cleanup">Primärbiblioteksstädningslogg</string>
     <string name="log_api29_migration">Biblioteksmigration från Hentoid v1.11</string>
 
     <!-- Errors -->
@@ -541,7 +541,7 @@
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> resultat</item>
         <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> resultat</item>
     </plurals>
-    <string name="restart_needed">"Ändringarna börjar gälla när Hentoid återstartats"</string>
+    <string name="restart_needed">Ändringarna börjar gälla när Hentoid återstartats</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
         <item quantity="one">Åternerladda den utvalda boken från början\?</item>
         <item quantity="other">Åternerladda de utvalda böckerna från början\?</item>
@@ -556,7 +556,7 @@
     </plurals>
     <plurals name="redownload_external_content">
         <item quantity="one">En av de utvalda böckerna finns lagrad i det externa biblioteket och kan inte bli åternedladdad\nDen boken kommer ignoreras.</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g> selected books are stored in the external library and cannot be redownloaded\nDe kommer bli ignorerade.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> Valda böcker lagras i det externa biblioteket och kan inte åternerladdas\nDe kommer bli ignorerade.</item>
     </plurals>
     <plurals name="download_non_streamed_content">
         <item quantity="one">En av de utvalda böckerna är redan nerladdad\nDen boken kommer ignoreras.</item>
@@ -693,7 +693,7 @@
     <string name="alert_grey">Den här sidan har för tillfället allvarliga stabilitetsproblem. Appen har inget med det att göra, vänligen försök igen senare.</string>
     <string name="alert_black">Den här sidan är för tillfället otillgänglig på riktigt. Appen har inget med det att göra. Vänligen försök igen senare.</string>
     <string name="alert_wip">Hentoids utvecklarteam arbetar på en lösning. Appen informerar dig när en lösning är färdig.</string>
-    <string name="alert_fix_available">Ett lösning är tillgänglig i den senaste versionen av appen. Vänligen uppdatera.</string>
+    <string name="alert_fix_available">En lösning är tillgänglig i den senaste versionen av appen. Vänligen uppdatera.</string>
 
     <!-- App Lock -->
     <string name="app_lock_pin">Mata in PIN-kod</string>
@@ -716,7 +716,7 @@
 
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> är en Doujinshi &amp; H-Manga arkiveringsapp. Hentoid utvecklades ursprungligen av <b>Cesar Arasaki</b>.</string>
-    <string name="personalDataStatement1"><b>SEKRETESSINFORMATION ANGÅENDE PERSONUPPGIFTER</b>\n\nHentoid är en gratis och öppenkällkodsprogramvara underhållen av Hentoid-gemenskapen (gå med i vår Discord - se länk nedan)</string>
+    <string name="personalDataStatement1"><b>SEKRETESSINFORMATION ANGÅENDE PERSONUPPGIFTER</b>\n\nHentoid är en gratis och öppenkällkodsprogramvara underhållen av Hentoid-gemenskapen (gå med i vår Discord - se länk ovanför)</string>
     <string name="personalDataStatement2">Hentoid samlar in följande personliga data och skickar den till Google för behandling genom Firebasebiblioteket:\n  - Sessions-ID\n  - IP-address</string>
     <string name="personalDataStatement3">Ovannämnda datan tas bort från Firebases körande samt backupsystem inom 180 dagar (se https://firebase.google.com/support/privacy/ för fler detaljer)\n\nIngen annan personlig data samlas varken in eller skickas till någon annan part.</string>
     <string name="about_licenses">Licenser</string>

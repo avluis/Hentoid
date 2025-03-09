@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -127,7 +127,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
         try {
             Beholder.clearSnapshot(context)
-            FileExplorer(context, Uri.parse(Settings.externalLibraryUri)).use { explorer ->
+            FileExplorer(context, Settings.externalLibraryUri.toUri()).use { explorer ->
                 val detectedContent: MutableList<Content> = ArrayList()
                 // Deep recursive search starting from the place the user has selected
                 var dao: CollectionDAO = ObjectBoxDAO()
@@ -225,7 +225,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private suspend fun updateWithBeholder(context: Context) {
-        logName = "refresh_external"
+        logName = "refresh_external_auto"
         Timber.d("delta init")
         Beholder.init(context)
         val delta = Beholder.scanForDelta(context)
@@ -302,7 +302,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         // Forge parent names using folder root path minus ext library root path
         val extRootElts =
-            getFullPathFromUri(context, Uri.parse(Settings.externalLibraryUri))
+            getFullPathFromUri(context, Settings.externalLibraryUri.toUri())
                 .split(File.separator)
         val parentNames = getFullPathFromUri(context, deltaPlusRoot.uri)
             .split(File.separator).toMutableList()

@@ -34,6 +34,9 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import androidx.core.net.toUri
 
 private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
@@ -254,13 +257,13 @@ fun getBitmapFromVectorDrawable(context: Context, @DrawableRes drawableId: Int):
     val d = ContextCompat.getDrawable(context, drawableId)
     return if (d != null) {
         val b =
-            Bitmap.createBitmap(d.intrinsicWidth, d.intrinsicHeight, Bitmap.Config.ARGB_8888)
+            createBitmap(d.intrinsicWidth, d.intrinsicHeight, Bitmap.Config.ARGB_8888, false)
         val c = Canvas(b)
         d.setBounds(0, 0, c.width, c.height)
         d.draw(c)
         b
     } else {
-        Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888)
+        createBitmap(0, 0, Bitmap.Config.ARGB_8888, false)
     }
 }
 
@@ -284,7 +287,7 @@ fun bitmapToWebp(bitmap: Bitmap): ByteArray {
 fun tintBitmap(bitmap: Bitmap, @ColorInt color: Int): Bitmap {
     val p = Paint()
     p.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
-    val b = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
+    val b = createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888, false)
     val canvas = Canvas(b)
     canvas.drawBitmap(bitmap, 0f, 0f, p)
     return b
@@ -499,7 +502,7 @@ private fun successiveRescale(src: Bitmap, resizeNum: Int): Bitmap {
     for (i in 0 until resizeNum) {
         srcWidth /= 2
         srcHeight /= 2
-        val temp = Bitmap.createScaledBitmap(output, srcWidth, srcHeight, true)
+        val temp = output.scale(srcWidth, srcHeight)
         if (i != 0) { // don't recycle the src bitmap
             output.recycle()
         }
@@ -534,7 +537,7 @@ fun needsRotating(screenWidth: Int, screenHeight: Int, width: Int, height: Int):
  * @return Dimensions (x,y) of the given image
  */
 suspend fun getImageDimensions(context: Context, uri: String): Point = withContext(Dispatchers.IO) {
-    val fileUri = Uri.parse(uri)
+    val fileUri = uri.toUri()
     if (!fileExists(context, fileUri)) return@withContext Point(0, 0)
 
     if (getExtensionFromUri(uri) == "jxl") {

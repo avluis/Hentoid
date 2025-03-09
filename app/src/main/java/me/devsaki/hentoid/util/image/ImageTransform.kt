@@ -11,6 +11,7 @@ import me.devsaki.hentoid.util.getScreenDimensionsPx
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
 import kotlin.math.min
+import androidx.core.graphics.scale
 
 @JsonClass(generateAdapter = true)
 data class TransformParams(
@@ -113,9 +114,7 @@ private fun resizePlainRatio(
         val rescaled = sharpRescale(sourceBmp, ratio)
         if (rescaled != sourceBmp) sourceBmp.recycle()
         try {
-            Bitmap.createScaledBitmap(
-                rescaled, (dims.x * ratio).toInt(), (dims.y * ratio).toInt(), true
-            )
+            rescaled.scale((dims.x * ratio).toInt(), (dims.y * ratio).toInt())
         } finally {
             rescaled.recycle()
         }

@@ -32,6 +32,7 @@ import com.itextpdf.layout.element.Image
 import com.itextpdf.layout.properties.AreaBreakType
 import com.itextpdf.layout.properties.HorizontalAlignment
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
+import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.DiskCache
@@ -167,7 +168,18 @@ class PdfManager {
                     }
                     .mapNotNull { processFile(context, it, keepImgFormat) }
                     .forEachIndexed { index, data ->
-                        val image = Image(ImageDataFactory.create(data))
+                        // Convert to PNG or JPEG if not supported
+                        val image = Image(
+                            ImageDataFactory.create(
+                                if (!ImageDataFactory.isSupportedType(data)) {
+                                    var params = TransformParams(
+                                        false, 0, 0, 0, 0, 0, 1, PictureEncoder.PNG,
+                                        PictureEncoder.JPEG, PictureEncoder.PNG, 90
+                                    )
+                                    transform(data, params)
+                                } else data
+                            )
+                        )
 
                         val isImageLandscape = image.imageWidth > image.imageHeight * 1.33
                         val pageRotation = if (isImageLandscape) LANDSCAPE else PORTRAIT

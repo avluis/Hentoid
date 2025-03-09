@@ -911,11 +911,13 @@ data class Cookie(
 
 /**
  * Class to parse and manipulate Uri parts
- * Example source Uri : http://host.ext:80/this/is/the/police.jpg?query=here#anchor
+ * Example source Uri : http://subdomain.host.ext:80/this/is/the/police.jpg?query=here#anchor
+ *
+ * @param lowercase True to convert the entire Uri to lowercase; false to keep as is
  */
 class UriParts(uri: String, lowercase: Boolean = false) {
-    val host: String // Host alone (e.g. http://host.ext:80)
-    var path: String // Entire path, host included (e.g. http://host.ext:80/this/is/the/police)
+    val host: String // Host alone, subdomain included (e.g. http://subdomain.host.ext:80)
+    var path: String // Entire path, host included (e.g. http://subdomain.host.ext:80/this/is/the/police)
     var fileNameNoExt: String // Filename without extension (e.g. police)
     var extension: String // File extension alone (e.g. jpg)
     var query: String // Query alone (e.g. query=here)

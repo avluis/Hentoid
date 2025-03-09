@@ -318,7 +318,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         super.onStart()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
         (requireActivity() as ReaderActivity)
-            .registerKeyListener(ReaderKeyListener(lifecycleScope)
+            .registerKeyListener(
+                ReaderKeyListener(lifecycleScope)
                 .setOnVolumeDownListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.previousContainer() else previousPage() }
                 .setOnVolumeUpListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.nextContainer() else nextPage() }
                 .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
@@ -329,7 +330,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         super.onResume()
         binding?.apply {
             // System bars are visible only if HUD is visible
-            setSystemBarsVisible(controlsOverlay.root.visibility == View.VISIBLE)
+            setSystemBarsVisible(controlsOverlay.root.isVisible)
         }
         if (Settings.Value.VIEWER_BROWSE_NONE == Settings.readerBrowseMode) invoke(this)
         navigator.updatePageControls()
@@ -863,7 +864,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 viewModel.markPageAsRead(it.order)
                 isPageFavourite = it.favourite
                 updateFavouriteButtonIcon()
-                Settings.readerCurrentPageNum = it.order
             }
 
             navigator.updatePageControls()
@@ -880,7 +880,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         adapter.setTapBehaviourForPosition(absImageIndex, true)
         // Preemptively set listeners for adjacent items
         if (absImageIndex > 0) adapter.setTapBehaviourForPosition(absImageIndex - 1, true)
-        if (absImageIndex < adapter.itemCount - 1) adapter.setTapBehaviourForPosition(absImageIndex + 1, true)
+        if (absImageIndex < adapter.itemCount - 1) adapter.setTapBehaviourForPosition(
+            absImageIndex + 1,
+            true
+        )
         if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             slideshowMgr.onPageChange(true)
         viewModel.onPageChange(absImageIndex, scrollDirection)

@@ -5,8 +5,8 @@ import me.devsaki.hentoid.parsers.getExtensionFromFormat
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import timber.log.Timber
@@ -15,9 +15,6 @@ import java.io.IOException
 class HentaifoxParser : BaseImageListParser() {
 
     companion object {
-        // Hentaifox have two image servers; each hosts the exact same files
-        private val HOSTS = arrayOf("i.hentaifox.com", "i2.hentaifox.com")
-
         fun parseImages(
             content: Content,
             thumbs: List<Element>,
@@ -44,18 +41,17 @@ class HentaifoxParser : BaseImageListParser() {
                 }
             }
             if (thumbs.isNotEmpty() && imageFormats != null) {
+                // Use thumb URL to extract gallery ID and host
+                // NB : i and i2 seem to host the same files whereas i3 has its own sets
                 val thumbUrl = getImgSrc(thumbs[0])
-                val thumbPath = thumbUrl.substring(
-                    thumbUrl.indexOf("hentaifox.com") + 14,
-                    thumbUrl.lastIndexOf("/") + 1
-                )
+                val thumbHost = UriParts(thumbUrl).host
+                val thumbPath = thumbUrl.substring(thumbHost.length + 1,
+                    thumbUrl.lastIndexOf("/") + 1)
 
                 // Forge all page URLs
                 for (i in 0 until imageFormats.size) {
-                    val imgUrl =
-                        "https://" + HOSTS[getRandomInt(HOSTS.size)] + "/" +
-                                thumbPath +
-                                (i + 1) + "." + getExtensionFromFormat(imageFormats, i)
+                    val imgUrl = thumbHost + "/" + thumbPath +
+                            (i + 1) + "." + getExtensionFromFormat(imageFormats, i)
                     result.add(imgUrl)
                 }
             }

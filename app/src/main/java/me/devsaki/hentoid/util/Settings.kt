@@ -278,7 +278,6 @@ object Settings {
         Value.READER_AUTO_ROTATE_NONE
     )
     var readerCurrentContent: Long by LongSetting("viewer_current_content", -1)
-    var readerCurrentPageNum: Int by IntSettingStr("viewer_current_pagenum", -1)
     var readerGalleryColumns: Int by IntSettingStr("viewer_gallery_columns", 4)
     var readerDeleteAskMode: Int by IntSettingStr(
         Key.VIEWER_DELETE_ASK_MODE,

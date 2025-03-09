@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -35,8 +34,7 @@ import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 
-class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
-    AttributeTypePickerDialogFragment.Parent {
+class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
     // Communication
     private lateinit var viewModel: MetadataEditViewModel
@@ -123,9 +121,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         binding.tagSuggestion.layoutManager = layoutManager
         attributeAdapter = AvailableAttributeAdapter()
         attributeAdapter.setOnScrollToEndListener { this.loadMore() }
-        attributeAdapter.setOnClickListener { button: View ->
-            this.onAttributeClicked(button)
-        }
+        attributeAdapter.setOnClickListener { this.onAttributeClicked(it) }
         binding.tagSuggestion.adapter = attributeAdapter
         binding.tagFilter.setSearchableInfo(getSearchableInfo(requireActivity())) // Associate searchable configuration with the SearchView
 
@@ -143,21 +139,13 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         })
 
         viewModel.getAttributeTypes()
-            .observe(viewLifecycleOwner) { results: List<AttributeType> ->
-                onSelectedAttributeTypesReady(results)
-            }
+            .observe(viewLifecycleOwner) { onSelectedAttributeTypesReady(it) }
         viewModel.getContentAttributes()
-            .observe(viewLifecycleOwner) { results: List<Attribute> ->
-                onContentAttributesReady(results)
-            }
+            .observe(viewLifecycleOwner) { onContentAttributesReady(it) }
         viewModel.getLibraryAttributes()
-            .observe(viewLifecycleOwner) { results: AttributeQueryResult ->
-                onLibraryAttributesReady(results)
-            }
+            .observe(viewLifecycleOwner) { onLibraryAttributesReady(it) }
         viewModel.getResetSelectionFilter()
-            .observe(viewLifecycleOwner) {
-                binding.tagFilter.setQuery("", true)
-            }
+            .observe(viewLifecycleOwner) { binding.tagFilter.setQuery("", true) }
         searchMasterData("")
     }
 
@@ -291,10 +279,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         } else if (!contentAttributes.contains(attr)) { // Add existing attribute
             button.isPressed = true
             attr.isExcluded = excludeAttr
-            if (idToReplace > -1) viewModel.replaceContentAttribute(
-                idToReplace,
-                attr
-            ) else viewModel.addContentAttribute(attr)
+            if (idToReplace > -1) viewModel.replaceContentAttribute(idToReplace, attr)
+            else viewModel.addContentAttribute(attr)
             // Empty query and display all attributes again
             binding.tagFilter.setQuery("", false)
             attributeAdapter.remove(attr)
@@ -334,7 +320,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         }
     }
 
-    override fun onNewAttributeSelected(name: String, type: AttributeType) {
+    fun onNewAttributeSelected(name: String, type: AttributeType) {
         val attr = viewModel.createAssignNewAttribute(name, type)
         attributeAdapter.remove(attr)
         searchMasterData(name)
@@ -357,7 +343,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             bottomSheetFragment.arguments = builder.bundle
             context.setStyle(
                 bottomSheetFragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
             bottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")

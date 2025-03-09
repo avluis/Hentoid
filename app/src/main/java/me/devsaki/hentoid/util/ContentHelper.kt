@@ -363,7 +363,7 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
  *
  * @param context          Context to use for the action
  * @param content          Content to view
- * @param pageNumber       Page number to view
+ * @param pageNumber       Page number to view (-1 if undefined)
  * @param searchParams     Current search parameters (so that the next/previous book feature
  * is faithful to the library screen's order)
  * @param forceShowGallery True to force the gallery screen to show first; false to follow app settings
