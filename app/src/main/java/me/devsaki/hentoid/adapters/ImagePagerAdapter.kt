@@ -343,7 +343,7 @@ class ImagePagerAdapter(context: Context) :
         private val imageView: ImageView = rootView.requireById(R.id.imageview)
         private val noImgTxt: TextView = rootView.requireById(R.id.viewer_no_page_txt)
 
-        private lateinit var imgView: View
+        private var imgView: View? = null
 
         private var displayMode = 0
         var viewerOrientation = 0
@@ -407,10 +407,13 @@ class ImagePagerAdapter(context: Context) :
             // NB : Will be rewritten once images have been loaded
             val layoutStyle =
                 if (isVertical) ViewGroup.LayoutParams.WRAP_CONTENT else ViewGroup.LayoutParams.MATCH_PARENT
-            val layoutParams = imgView.layoutParams
-            layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
-            layoutParams.height = layoutStyle
-            imgView.layoutParams = layoutParams
+
+            imgView?.layoutParams?.let {
+                val layoutParams = it
+                layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+                layoutParams.height = layoutStyle
+                imgView?.layoutParams = layoutParams
+            }
 
             var imageAvailable = true
             val img = getImageAt(position)
@@ -556,7 +559,7 @@ class ImagePagerAdapter(context: Context) :
                     while (isLoading.get() && iterations++ < 33) pause(150)
                 }
                 withContext(Dispatchers.Main) {
-                    imgView.setOnTouchListener(if (isImageView) null else itemTouchListener)
+                    imgView?.setOnTouchListener(if (isImageView) null else itemTouchListener)
                 }
             }
         }
@@ -669,7 +672,7 @@ class ImagePagerAdapter(context: Context) :
             resizeSmallPics: Boolean,
             doAutoRotate: Boolean
         ) {
-            imgView.rotation =
+            imgView?.rotation =
                 if (doAutoRotate && needsRotating(screenWidth, screenHeight, imgWidth, imgHeight)) {
                     when (autoRotate) {
                         Settings.Value.READER_AUTO_ROTATE_LEFT -> 90f
@@ -696,10 +699,14 @@ class ImagePagerAdapter(context: Context) :
                 if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
                     targetImgHeight =
                         (imgHeight * getTargetScale(imgWidth, imgHeight, displayMode)).roundToInt()
-                    val imgLayoutParams = imgView.layoutParams
-                    imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
-                    imgLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
-                    imgView.layoutParams = imgLayoutParams
+
+                    imgView?.layoutParams?.let {
+                        val imgLayoutParams = it
+                        imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+                        imgLayoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+                        imgView?.layoutParams = imgLayoutParams
+                    }
+
                 }
                 rootView.minimumHeight = targetImgHeight + separatingBarsHeight
             }
