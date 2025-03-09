@@ -257,13 +257,13 @@ fun getBitmapFromVectorDrawable(context: Context, @DrawableRes drawableId: Int):
     val d = ContextCompat.getDrawable(context, drawableId)
     return if (d != null) {
         val b =
-            createBitmap(d.intrinsicWidth, d.intrinsicHeight, Bitmap.Config.ARGB_8888, false)
+            createBitmap(d.intrinsicWidth, d.intrinsicHeight)
         val c = Canvas(b)
         d.setBounds(0, 0, c.width, c.height)
         d.draw(c)
         b
     } else {
-        createBitmap(0, 0, Bitmap.Config.ARGB_8888, false)
+        createBitmap(0, 0)
     }
 }
 
@@ -287,7 +287,7 @@ fun bitmapToWebp(bitmap: Bitmap): ByteArray {
 fun tintBitmap(bitmap: Bitmap, @ColorInt color: Int): Bitmap {
     val p = Paint()
     p.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
-    val b = createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888, false)
+    val b = createBitmap(bitmap.width, bitmap.height)
     val canvas = Canvas(b)
     canvas.drawBitmap(bitmap, 0f, 0f, p)
     return b
