@@ -765,6 +765,7 @@ fun scanBookFolder(
         }
     }
     if (null == result) { // JSON can't be used
+        Timber.d(">>>> recreating metadata from scratch")
         var title = cleanTitle(bookFolder.name)
         // Tachiyomi downloads - include parent folder name as title
         if (title.lowercase(Locale.getDefault())
@@ -1390,9 +1391,10 @@ fun jsonToContent(
     jsons: List<DocumentFile>,
     archiveName: String
 ): Content? {
+    val nameNoExt = getFileNameWithoutExtension(archiveName)
     // Use new suffixed naming; default on old naming
-    val jsonFile = getFileWithName(jsons, archiveName + JSON_ARCHIVE_SUFFIX)
-        ?: getFileWithName(jsons, archiveName) ?: return null
+    val jsonFile = getFileWithName(jsons, nameNoExt + JSON_ARCHIVE_SUFFIX)
+        ?: getFileWithName(jsons, nameNoExt) ?: return null
     try {
         val content = jsonToObject(context, jsonFile, JsonContent::class.java)
         if (content != null) {
