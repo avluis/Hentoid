@@ -168,7 +168,7 @@ class PdfManager {
                     }
                     .mapNotNull { processFile(context, it, keepImgFormat) }
                     .forEachIndexed { index, data ->
-                        // Convert to PNG if not supported
+                        // Convert to PNG or JPEG if not supported
                         val image = Image(
                             ImageDataFactory.create(
                                 if (!ImageDataFactory.isSupportedType(data)) {
