@@ -422,8 +422,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun considerResumeReading() {
         val previouslyViewedContent = Settings.readerCurrentContent
-        val previouslyViewedPage = Settings.readerCurrentPageNum
-        if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ReaderActivity.isRunning()) {
+        if (previouslyViewedContent > -1 && !ReaderActivity.isRunning()) {
             binding?.let {
                 val snackbar: Snackbar =
                     Snackbar.make(
@@ -433,9 +432,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     )
                 snackbar.setAction(R.string.resume) {
                     Timber.i(
-                        "Reopening book %d from page %d",
-                        previouslyViewedContent,
-                        previouslyViewedPage
+                        "Reopening book %d",
+                        previouslyViewedContent
                     )
                     val dao: CollectionDAO = ObjectBoxDAO()
                     try {
@@ -443,7 +441,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                         if (c != null) openReader(
                             this,
                             c,
-                            previouslyViewedPage,
+                            -1,
                             contentSearchBundle,
                             forceShowGallery = false,
                             newTask = false
@@ -456,7 +454,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             }
             // Only show that once
             Settings.readerCurrentContent = -1
-            Settings.readerCurrentPageNum = -1
         }
     }
 

@@ -92,7 +92,6 @@ open class ReaderActivity : BaseActivity() {
         if (isFinishing) { // i.e. the activity is closing for good; not being paused / backgrounded
             viewModel.onActivityLeave()
             Settings.readerDeleteAskMode = Settings.Value.VIEWER_DELETE_ASK_AGAIN
-            Settings.readerCurrentPageNum = -1
             Settings.readerCurrentContent = -1
             setRunning(false)
         }
