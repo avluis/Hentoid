@@ -58,6 +58,7 @@ import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.getPdfNamesFilter
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
+import me.devsaki.hentoid.workers.BaseSplitMergeWorker
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.data.ExternalImportData
@@ -601,7 +602,6 @@ fun runExternalImport(
  * @param toScan Folder to scan
  * @param explorer FileExplorer to use
  * @param parentNames Names of all parent folders
- * @param library Structure that will receive all detected Content
  * @param progressFeedback Progress feedback to run (optional)
  * @param log Log to write to (optional)
  */
@@ -612,11 +612,13 @@ fun scanFolderRecursive(
     toScan: DocumentFile,
     explorer: FileExplorer,
     parentNames: List<String>,
-    library: MutableList<Content>,
     progressFeedback: Consumer<String>? = null,
-    log: MutableList<LogEntry>? = null
+    log: MutableList<LogEntry>? = null,
+    isCanceled: (() -> Boolean)? = null,
+    onFound: (Content) -> Unit,
 ) {
     assertNonUiThread()
+    if (isCanceled?.invoke() == true) return
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
     progressFeedback?.invoke(rootName)
@@ -650,7 +652,7 @@ fun scanFolderRecursive(
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
             if (nbPicturesInside > 1) {
                 val json = getFileWithName(jsons, JSON_FILE_NAME_V2)
-                library.add(
+                onFound(
                     scanChapterFolders(
                         context, toScan, subFolders, explorer, parentNames, dao, json
                     )
@@ -659,17 +661,15 @@ fun scanFolderRecursive(
             // Look for archives inside; if there's one inside the 1st folder, load them as a chapters
             val nbArchivesInside = explorer.countFiles(subFolders[0], getArchiveNamesFilter())
             if (1 == nbArchivesInside) {
-                val c =
-                    scanForArchivesPdf(
-                        context,
-                        toScan,
-                        subFolders,
-                        explorer,
-                        parentNames,
-                        dao,
-                        true
-                    )
-                library.addAll(c)
+                scanForArchivesPdf(
+                    context,
+                    toScan,
+                    subFolders,
+                    explorer,
+                    parentNames,
+                    dao,
+                    true
+                ).forEach { onFound(it) }
             }
         }
     }
@@ -682,7 +682,7 @@ fun scanFolderRecursive(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, content
             )
             // Valid archive
-            if (0 == c.first) library.add(c.second!!)
+            if (0 == c.first) onFound(c.second!!)
             else {
                 // Invalid archive
                 val message = when (c.first) {
@@ -691,13 +691,14 @@ fun scanFolderRecursive(
                 }
                 trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
             }
+            if (isCanceled?.invoke() == true) return
         }
     }
 
     // We've got a regular book
     if (images.size > 2 || contentJsons.isNotEmpty()) {
         val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
-        library.add(
+        onFound(
             scanBookFolder(
                 context,
                 parent,
@@ -716,7 +717,7 @@ fun scanFolderRecursive(
     val newParentNames: MutableList<String> = ArrayList(parentNames)
     newParentNames.add(rootName)
     for (subfolder in subFolders) scanFolderRecursive(
-        context, dao, toScan, subfolder, explorer, newParentNames, library, progressFeedback, log
+        context, dao, toScan, subfolder, explorer, newParentNames, progressFeedback, log, isCanceled, onFound
     )
 }
 
