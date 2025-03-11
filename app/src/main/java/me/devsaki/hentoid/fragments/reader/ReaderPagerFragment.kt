@@ -320,10 +320,10 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         (requireActivity() as ReaderActivity)
             .registerKeyListener(
                 ReaderKeyListener(lifecycleScope)
-                .setOnVolumeDownListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.previousContainer() else previousPage() }
-                .setOnVolumeUpListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.nextContainer() else nextPage() }
-                .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
-                .setOnBackListener { onBackClick() })
+                    .setOnVolumeDownListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.previousContainer() else previousPage() }
+                    .setOnVolumeUpListener { b -> if (b && Settings.isReaderVolumeToSwitchBooks) navigator.nextContainer() else nextPage() }
+                    .setOnKeyLeftListener { onLeftTap() }.setOnKeyRightListener { onRightTap() }
+                    .setOnBackListener { onBackClick() })
     }
 
     override fun onResume() {
@@ -846,9 +846,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 pageSnapWidget.setPageSnapEnabled(true)
             }
 
-            // Set the correct gesture listener (recyclerView or image)
-            adapter.setTapBehaviourForPosition(scrollPosition)
-
             // Don't show loading progress from previous image
             binding?.apply {
                 viewerLoadingTxt.visibility = View.GONE
@@ -877,13 +874,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 adjustDisplay(bookPreferences, absImageIndex)
             }
         }
-        adapter.setTapBehaviourForPosition(absImageIndex, true)
-        // Preemptively set listeners for adjacent items
-        if (absImageIndex > 0) adapter.setTapBehaviourForPosition(absImageIndex - 1, true)
-        if (absImageIndex < adapter.itemCount - 1) adapter.setTapBehaviourForPosition(
-            absImageIndex + 1,
-            true
-        )
         if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
             slideshowMgr.onPageChange(true)
         viewModel.onPageChange(absImageIndex, scrollDirection)
@@ -897,10 +887,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onScrollPositionReached(position: Int) {
         if (position == absImageIndex || position == reachedPosition) return
         reachedPosition = position
-        adapter.setTapBehaviourForPosition(position, true)
-        // Preemptively set listeners for adjacent items
-        if (position > 0) adapter.setTapBehaviourForPosition(position - 1, true)
-        if (position < adapter.itemCount - 1) adapter.setTapBehaviourForPosition(position + 1, true)
     }
 
     /**
@@ -973,7 +959,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             }
             adapter.notifyDataSetChanged() // NB : will re-run onBindViewHolder for all displayed pictures
         }
-        adapter.setTapBehaviourForPosition(absImageIndex)
         seekToIndex(absImageIndex)
     }
 
