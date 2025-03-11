@@ -191,8 +191,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             )
                             eventProgress(STEP_3_BOOKS, detectedContent.size, booksOK, booksKO)
                         }
-                        // Clear the DAO every 2500K iterations to optimize memory
-                        if (0 == booksOK % 2500) {
+                        // Clear the DAO every 500K iterations to optimize memory
+                        if (0 == booksOK % 500) {
                             dao.cleanup()
                             dao = ObjectBoxDAO()
                         }
