@@ -30,7 +30,7 @@
 	  {"sourceName":"PURURIN", "status":"BLACK", "fixedByBuild":"760"},
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"761" },
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"762" },
-	  {"sourceName":"HENTAIFOX", "status":"RED" , "fixedByBuild":"777" },
+	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"777" },
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},
