@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -265,7 +266,7 @@ fun setAndScanPrimaryFolder(
     if (otherLocationUriStr.isNotEmpty()) {
         val treeFullPath = getFullPathFromUri(context, treeUri)
         val otherLocationFullPath =
-            getFullPathFromUri(context, Uri.parse(otherLocationUriStr))
+            getFullPathFromUri(context, otherLocationUriStr.toUri())
         if (treeFullPath.startsWith(otherLocationFullPath)) {
             Timber.e(
                 "Selected folder is inside the other primary location : %s",
@@ -286,7 +287,7 @@ fun setAndScanPrimaryFolder(
     val extLocationStr = Settings.getStorageUri(StorageLocation.EXTERNAL)
     if (extLocationStr.isNotEmpty()) {
         val treeFullPath = getFullPathFromUri(context, treeUri)
-        val extFullPath = getFullPathFromUri(context, Uri.parse(extLocationStr))
+        val extFullPath = getFullPathFromUri(context, extLocationStr.toUri())
         if (treeFullPath.startsWith(extFullPath)) {
             Timber.e("Selected folder is inside the external location : %s", treeUri.toString())
             return Pair(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString())
@@ -374,9 +375,9 @@ fun setAndScanExternalFolder(
     var primaryUri1 = Settings.getStorageUri(StorageLocation.PRIMARY_1)
     var primaryUri2 = Settings.getStorageUri(StorageLocation.PRIMARY_2)
     if (primaryUri1.isNotEmpty()) primaryUri1 =
-        getFullPathFromUri(context, Uri.parse(primaryUri1))
+        getFullPathFromUri(context, primaryUri1.toUri())
     if (primaryUri2.isNotEmpty()) primaryUri2 =
-        getFullPathFromUri(context, Uri.parse(primaryUri2))
+        getFullPathFromUri(context, primaryUri2.toUri())
     val selectedFullPath = getFullPathFromUri(context, treeUri)
     if (primaryUri1.isNotEmpty() && selectedFullPath.startsWith(primaryUri1)
         || primaryUri2.isNotEmpty() && selectedFullPath.startsWith(primaryUri2)
@@ -421,7 +422,7 @@ fun persistLocationCredentials(
     val uri = location
         .map { Settings.getStorageUri(it) }
         .filterNot { it.isEmpty() }
-        .map { Uri.parse(it) }
+        .map { it.toUri() }
     persistNewUriPermission(context, treeUri, uri)
 }
 
@@ -600,9 +601,11 @@ fun runExternalImport(
  * @param parent Parent of the folder to scan (cuz DocumentFile.getParentFile can't stand on its own)
  * @param toScan Folder to scan
  * @param explorer FileExplorer to use
+ * @param progress ProgressManager to use
  * @param parentNames Names of all parent folders
- * @param progressFeedback Progress feedback to run (optional)
  * @param log Log to write to (optional)
+ * @param isCanceled Returns true if the process has been canceled upstream
+ * @param onFound Callback when a Content has been found
  */
 fun scanFolderRecursive(
     context: Context,
@@ -868,7 +871,7 @@ private fun cleanTitle(s: String?): String {
     var result = s ?: ""
     result = result.replace("_", " ")
     // Remove expressions between []'s
-    result = result.replace("\\[[^(\\[\\])]*\\]".toRegex(), "")
+    result = result.replace("\\[[^(\\[\\])]*]".toRegex(), "")
     return result.trim()
 }
 
