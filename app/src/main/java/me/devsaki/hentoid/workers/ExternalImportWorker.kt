@@ -354,10 +354,10 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         return isSupportedArchive(fileName) || getExtension(fileName).equals("pdf", true)
     }
 
-    private fun eventProgress(step: Int, nbBooks: Int, booksOK: Int, booksKO: Int) {
+    private fun eventProgress(step: Int, booksOK: Int, progressPc: Float) {
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.PROGRESS, R.id.import_external, step, booksOK, booksKO, nbBooks
+                ProcessEvent.Type.PROGRESS, R.id.import_external, step, booksOK, booksKO, progressPc
             )
         )
     }
@@ -372,7 +372,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             notificationManager.notify(
                 ImportProgressNotification(content.title, progressPc, 100)
             )
-            eventProgress(STEP_3_BOOKS, booksOK, booksOK, 0)
+            eventProgress(STEP_3_BOOKS, booksOK, progress.getGlobalProgress())
         }
     }
 

@@ -32,7 +32,17 @@ class ProcessEvent {
 
     var elementsTotal = 0 // Number of elements to process
 
+    private var _progressPc = -1f
+
     var logFile: DocumentFile? = null // Log file, if exists (for EventType.COMPLETE)
+
+    val progressPc: Float
+        get() {
+            return if (_progressPc < 0f) {
+                if (elementsTotal > 0) 1f * (elementsKO + elementsKO) / elementsTotal
+                else -1f
+            } else _progressPc
+        }
 
 
     /**
@@ -82,6 +92,34 @@ class ProcessEvent {
         elementsOKOther = -1
         this.elementsKO = elementsKO
         this.elementsTotal = elementsTotal
+        logFile = null
+        elementName = ""
+    }
+
+    /**
+     * Use for indefinite EventType.PROGRESS events
+     *
+     * @param eventType     event type code
+     * @param step          step of the  process
+     * @param elementsOK    elements processed successfully so far
+     * @param elementsKO    elements whose processing has failed so far
+     * @param progressPc    Progress as a percentage (0f = 0%; 1f = 100%=
+     */
+    constructor(
+        eventType: Type,
+        @IdRes processId: Int,
+        step: Int,
+        elementsOK: Int,
+        elementsKO: Int,
+        progressPc: Float
+    ) {
+        this.eventType = eventType
+        this.processId = processId
+        this.step = step
+        this.elementsOK = elementsOK
+        elementsOKOther = -1
+        this.elementsKO = elementsKO
+        this._progressPc = progressPc
         logFile = null
         elementName = ""
     }

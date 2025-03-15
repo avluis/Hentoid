@@ -47,6 +47,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
+import kotlin.math.roundToInt
 
 /**
  * Launcher dialog for the following features :
@@ -433,10 +434,10 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 else -> importStep4Bar
             }
             if (ProcessEvent.Type.PROGRESS == event.eventType) {
-                if (event.elementsTotal > -1) {
+                if (event.progressPc > -1) {
                     progressBar.isIndeterminate = false
-                    progressBar.max = event.elementsTotal
-                    progressBar.progress = nbElts
+                    progressBar.max = 100
+                    progressBar.progress = (event.progressPc * 100).roundToInt()
                 } else {
                     progressBar.isIndeterminate = true
                 }
@@ -452,7 +453,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                         importStep2Text.visibility = View.GONE
                         importStep2Check.visibility = View.VISIBLE
                         importStep3.visibility = View.VISIBLE
-                        if (nbElts == event.elementsTotal) {
+                        if (nbElts >= event.elementsTotal || event.elementsTotal < 1) {
                             importStep3Text.text = resources.getString(
                                 R.string.refresh_step3_nomax,
                                 nbElts

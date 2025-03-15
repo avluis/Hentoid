@@ -726,6 +726,9 @@ fun scanFolderRecursive(
                 json
             )
         )
+        if (1 == parentNames.size) {
+            progress?.setProgress(rootName, 1f)
+        }
     }
 
     // Go down one level
@@ -744,11 +747,6 @@ fun scanFolderRecursive(
             isCanceled,
             onFound
         )
-        progress?.let { prg ->
-            if (1 == parentNames.size) {
-                progress.setProgress(rootName, ++nbProcessed * 1f / nbItems)
-            }
-        }
     }
 }
 
