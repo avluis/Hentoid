@@ -39,7 +39,7 @@ class ProcessEvent {
     val progressPc: Float
         get() {
             return if (_progressPc < 0f) {
-                if (elementsTotal > 0) 1f * (elementsKO + elementsKO) / elementsTotal
+                if (elementsTotal > 0) 1f * (elementsOK + elementsKO) / elementsTotal
                 else -1f
             } else _progressPc
         }
