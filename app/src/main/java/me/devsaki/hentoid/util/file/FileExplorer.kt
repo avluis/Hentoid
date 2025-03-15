@@ -21,12 +21,14 @@ private const val DOCPROVIDER_PATH_DOCUMENT = "document"
 private const val DOCPROVIDER_PATH_TREE = "tree"
 
 class FileExplorer : Closeable {
+    val root: Uri
+
     private var treeDocumentFileConstructor: Constructor<*>? = null
 
     private val providersCache: MutableMap<String?, Boolean> = HashMap()
     private val documentIdCache = MaxSizeHashMap<String, String?>(2000)
 
-    private var client: ContentProviderClient? = null
+    private val client: ContentProviderClient?
 
 
     @Synchronized
@@ -36,11 +38,17 @@ class FileExplorer : Closeable {
 
 
     constructor(context: Context, parent: DocumentFile) {
-        client = context.contentResolver.acquireContentProviderClient(parent.uri)
+        root = parent.uri
+        client = init(context, parent.uri)
     }
 
     constructor(context: Context, parentUri: Uri) {
-        client = context.contentResolver.acquireContentProviderClient(parentUri)
+        root = parentUri
+        client = init(context, parentUri)
+    }
+
+    private fun init(context: Context, uri: Uri): ContentProviderClient? {
+        return context.contentResolver.acquireContentProviderClient(uri)
     }
 
     @Throws(IOException::class)

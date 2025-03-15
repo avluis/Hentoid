@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
@@ -23,6 +24,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
+import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJsonFileFor
@@ -46,6 +48,8 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.net.URLDecoder
+import kotlin.math.roundToInt
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.external_import_service, "import_external") {
@@ -89,7 +93,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     /**
      * Import books from external folder
      */
-    @OptIn(DelicateCoroutinesApi::class)
     private fun startImport(context: Context) {
         logNoDataMessage = "No content detected."
         val rootFolder = getDocumentFromTreeUriString(context, Settings.externalLibraryUri)
@@ -97,6 +100,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             Timber.e("External folder is not defined (%s)", Settings.externalLibraryUri)
             return
         }
+        trace(Log.INFO, "Import from ${URLDecoder.decode(rootFolder.uri.toString(), "UTF-8")}")
         try {
             eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null) // TODO that's artificial
 
@@ -110,7 +114,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
             Beholder.clearSnapshot(context)
             val addedContent = HashMap<String, MutableList<Pair<DocumentFile, Long>>>()
-            FileExplorer(context, Settings.externalLibraryUri.toUri()).use { explorer ->
+            val progress = ProgressManager()
+            FileExplorer(context, rootFolder.uri).use { explorer ->
                 // Deep recursive search starting from the place the user has selected
                 try {
                     scanFolderRecursive(
@@ -119,11 +124,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         null,
                         rootFolder,
                         explorer,
+                        progress,
                         ArrayList(),
-                        { s -> eventProcessed(2, s) },
                         logs,
                         isCanceled = this::isStopped,
-                        { c -> onContentFound(context, explorer, dao, addedContent, c) }
+                        { c -> onContentFound(context, explorer, dao, progress, addedContent, c) }
                     )
                 } finally {
                     dao.reset()
@@ -136,53 +141,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     dao.reset()
                 }
 
-                /*
-                trace(
-                    Log.DEBUG,
-                    "Import books starting - initial detected count : ${detectedContent.size}"
-                )
-                 */
-
-                /*
-                val addedContent = HashMap<String, MutableList<Pair<DocumentFile, Long>>>()
-                dao = ObjectBoxDAO()
-                try {
-                    for (content in detectedContent) {
-                        if (isStopped) break
-                        if (existsInCollection(content, dao, true, logs)) {
-                            booksKO++
-                            continue
-                        }
-                        createJsonFileFor(context, content, explorer, logs)
-                        addContent(context, dao, content)
-                        content.parentStorageUri?.let { parentUri ->
-                            val entry = addedContent[parentUri] ?: ArrayList()
-                            addedContent[parentUri] = entry
-                            content.getStorageDoc()?.let { doc ->
-                                entry.add(Pair(doc, content.id))
-                            }
-                        }
-                        booksOK++
-                        // Handle notifications on another coroutine not to steal focus for unnecessary stuff
-                        GlobalScope.launch(Dispatchers.Default) {
-                            trace(Log.INFO, "Import book OK : ${content.storageUri}")
-                            notificationManager.notify(
-                                ImportProgressNotification(
-                                    content.title, booksOK + booksKO, detectedContent.size
-                                )
-                            )
-                            eventProgress(STEP_3_BOOKS, detectedContent.size, booksOK, booksKO)
-                        }
-                        // Clear the DAO every 1000 iterations to optimize memory
-                        if (0 == booksOK % 1000) {
-                            dao.cleanup()
-                            dao = ObjectBoxDAO()
-                        }
-                    } // detected content
-                } finally {
-                    dao.cleanup()
-                }
-                */
                 trace(
                     Log.INFO,
                     "Import books complete - $booksOK OK; $booksKO KO; ${booksOK + booksKO} final count"
@@ -206,11 +164,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     // Write JSON file for every found book and persist it in the DB
-    @OptIn(DelicateCoroutinesApi::class)
     private fun onContentFound(
         context: Context,
         explorer: FileExplorer,
         dao: ObjectBoxDAOContainer,
+        progress: ProgressManager,
         addedContent: MutableMap<String, MutableList<Pair<DocumentFile, Long>>>,
         content: Content,
     ) {
@@ -230,7 +188,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         booksOK++
 
-        newContentEvent(content)
+        newContentEvent(content, explorer.root, progress)
 
         // Clear the DAO every 1000 iterations to optimize memory
         if (0 == booksOK % 1000) dao.reset()
@@ -319,8 +277,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     deltaPlusRoot,
                     folder,
                     explorer,
-                    parentNames,
                     null,
+                    parentNames,
                     logs,
                     isCanceled = this::isStopped
                 ) { c -> onContentFound2(context, explorer, dao, deltaPlusRoot, c) }
@@ -331,7 +289,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     // Write JSON file for every found book and persist it in the DB
-    @OptIn(DelicateCoroutinesApi::class)
     private fun onContentFound2(
         context: Context,
         explorer: FileExplorer,
@@ -405,16 +362,17 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         )
     }
 
-    private fun newContentEvent(content: Content) {
+    @OptIn(DelicateCoroutinesApi::class)
+    private fun newContentEvent(content: Content, root: Uri, progress: ProgressManager) {
         // Handle notifications on another coroutine not to steal focus for unnecessary stuff
         GlobalScope.launch(Dispatchers.Default) {
-            trace(Log.INFO, "Import book OK : ${content.storageUri}")
+            val progressPc = (100 * progress.getGlobalProgress()).roundToInt()
+            val simplifiedUri = content.storageUri.replace(root.toString(), "")
+            trace(Log.INFO, "Import book OK : ${URLDecoder.decode(simplifiedUri, "UTF-8")}")
             notificationManager.notify(
-                ImportProgressNotification(
-                    content.title, booksOK + booksKO, booksOK + booksKO, true
-                )
+                ImportProgressNotification(content.title, progressPc, 100)
             )
-            eventProgress(STEP_3_BOOKS, booksOK + booksKO, booksOK, booksKO)
+            eventProgress(STEP_3_BOOKS, booksOK, booksOK, 0)
         }
     }
 

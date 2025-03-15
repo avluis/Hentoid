@@ -10,8 +10,7 @@ import java.util.Locale
 class ImportProgressNotification(
     private val title: String,
     private val progress: Int,
-    private val max: Int,
-    private val indeterminate : Boolean = false
+    private val max: Int
 ) : BaseNotification() {
 
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
@@ -22,7 +21,7 @@ class ImportProgressNotification(
             .setContentTitle(context.getString(R.string.importing_library))
             .setContentText(title)
             .setContentInfo(progressString)
-            .setProgress(max, progress, indeterminate)
+            .setProgress(max, progress, false)
             .setColor(context.getThemedColor(R.color.secondary_light))
             .setLocalOnly(true)
             .setOngoing(true)

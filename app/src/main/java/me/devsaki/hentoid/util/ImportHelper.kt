@@ -14,7 +14,6 @@ import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.moshi.JsonDataException
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER_OLD
 import me.devsaki.hentoid.core.HentoidApp.LifeCycleListener.Companion.disable
@@ -58,7 +57,6 @@ import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.getPdfNamesFilter
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
-import me.devsaki.hentoid.workers.BaseSplitMergeWorker
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.data.ExternalImportData
@@ -66,6 +64,7 @@ import me.devsaki.hentoid.workers.data.PrimaryImportData
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.net.URLDecoder
 import java.time.Instant
 import java.util.Locale
 import java.util.regex.Pattern
@@ -611,8 +610,8 @@ fun scanFolderRecursive(
     parent: DocumentFile?,
     toScan: DocumentFile,
     explorer: FileExplorer,
+    progress: ProgressManager?,
     parentNames: List<String>,
-    progressFeedback: Consumer<String>? = null,
     log: MutableList<LogEntry>? = null,
     isCanceled: (() -> Boolean)? = null,
     onFound: (Content) -> Unit,
@@ -621,8 +620,7 @@ fun scanFolderRecursive(
     if (isCanceled?.invoke() == true) return
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
-    progressFeedback?.invoke(rootName)
-    Timber.d(">>>> scan root %s", toScan.uri)
+    Timber.d(">>>> scan root ${URLDecoder.decode(toScan.uri.toString(), "UTF-8")}")
     val files = explorer.listDocumentFiles(context, toScan)
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
@@ -640,6 +638,16 @@ fun scanFolderRecursive(
         else if (getJsonNamesFilter().accept(fileName)) {
             jsons.add(file)
             if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
+        }
+    }
+    val nbItems = archivesPdf.size + subFolders.size
+    var nbProcessed = 0
+
+    progress?.let { prg ->
+        if (parentNames.isEmpty()) {
+            // Level 0 : init steps according to found content
+            subFolders.forEach { prg.setProgress(it.name ?: "", 0f) }
+            archivesPdf.forEach { prg.setProgress(it.name ?: "", 0f) }
         }
     }
 
@@ -691,6 +699,13 @@ fun scanFolderRecursive(
                 }
                 trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
             }
+            progress?.let { prg ->
+                if (parentNames.isEmpty()) {
+                    progress.setProgress(archive.name ?: "", 1f)
+                } else if (1 == parentNames.size) {
+                    progress.setProgress(rootName, ++nbProcessed * 1f / nbItems)
+                }
+            }
             if (isCanceled?.invoke() == true) return
         }
     }
@@ -716,9 +731,25 @@ fun scanFolderRecursive(
     // Go down one level
     val newParentNames: MutableList<String> = ArrayList(parentNames)
     newParentNames.add(rootName)
-    for (subfolder in subFolders) scanFolderRecursive(
-        context, dao, toScan, subfolder, explorer, newParentNames, progressFeedback, log, isCanceled, onFound
-    )
+    for (subfolder in subFolders) {
+        scanFolderRecursive(
+            context,
+            dao,
+            toScan,
+            subfolder,
+            explorer,
+            progress,
+            newParentNames,
+            log,
+            isCanceled,
+            onFound
+        )
+        progress?.let { prg ->
+            if (1 == parentNames.size) {
+                progress.setProgress(rootName, ++nbProcessed * 1f / nbItems)
+            }
+        }
+    }
 }
 
 /**
