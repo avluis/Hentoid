@@ -102,7 +102,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
         trace(Log.INFO, "Import from ${URLDecoder.decode(rootFolder.uri.toString(), "UTF-8")}")
         try {
-            eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null) // TODO that's artificial
+            eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null) // Artificial
 
             val dao = ObjectBoxDAOContainer()
             // Flag DB content for cleanup
@@ -367,8 +367,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         // Handle notifications on another coroutine not to steal focus for unnecessary stuff
         GlobalScope.launch(Dispatchers.Default) {
             val progressPc = (100 * progress.getGlobalProgress()).roundToInt()
-            val simplifiedUri = content.storageUri.replace(root.toString(), "")
-            trace(Log.INFO, "Import book OK : ${URLDecoder.decode(simplifiedUri, "UTF-8")}")
+            val bookLocation = content.storageUri.replace(root.toString(), "")
+            trace(Log.INFO, "Import book OK : ${URLDecoder.decode(bookLocation, "UTF-8")}")
             notificationManager.notify(
                 ImportProgressNotification(content.title, progressPc, 100)
             )
