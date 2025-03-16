@@ -36,6 +36,7 @@ import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 import java.io.File
+import androidx.core.net.toUri
 
 class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
     ReaderCopyImgDialogFragment.Parent {
@@ -119,16 +120,16 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
                 filePath =
                     getFullPathFromUri(
                         requireContext(),
-                        Uri.parse(archiveUri)
+                        archiveUri.toUri()
                     ) + fileName
             } else {
                 filePath =
-                    getFullPathFromUri(requireContext(), Uri.parse(it.fileUri))
+                    getFullPathFromUri(requireContext(), it.fileUri.toUri())
             }
 
             binding?.apply {
                 imagePath.text = filePath
-                val imageExists = fileExists(requireContext(), Uri.parse(it.fileUri))
+                val imageExists = fileExists(requireContext(), it.fileUri.toUri())
                 if (imageExists) {
                     lifecycleScope.launch {
                         val dimensions = getImageDimensions(requireContext(), it.fileUri)
@@ -136,7 +137,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
                             formatHumanReadableSize(it.size, resources)
                         } else {
                             val size =
-                                fileSizeFromUri(requireContext(), Uri.parse(it.fileUri))
+                                fileSizeFromUri(requireContext(), it.fileUri.toUri())
                             formatHumanReadableSize(size, resources)
                         }
                         imageStats.text = resources.getString(
@@ -213,7 +214,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
      */
     private fun onShareClick() {
         image?.let {
-            val fileUri = Uri.parse(it.fileUri)
+            val fileUri = it.fileUri.toUri()
             if (fileExists(requireContext(), fileUri)) shareFile(
                 requireContext(),
                 fileUri,

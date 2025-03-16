@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.annotation.StringRes
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
@@ -46,6 +47,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
+import kotlin.math.roundToInt
 
 /**
  * Launcher dialog for the following features :
@@ -150,7 +152,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
         isCancelable = false
 
         if (location == StorageLocation.EXTERNAL) {
-            val externalUri = Uri.parse(Settings.externalLibraryUri)
+            val externalUri = Settings.externalLibraryUri.toUri()
 
             lifecycleScope.launch {
                 val res = withContext(Dispatchers.IO) {
@@ -195,7 +197,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 dismissAllowingStateLoss()
                 return
             }
-            val rootUri = Uri.parse(uriStr)
+            val rootUri = uriStr.toUri()
 
             lifecycleScope.launch {
                 val res = withContext(Dispatchers.IO) {
@@ -267,7 +269,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 pickFolder() // Ask right away, there's no reason why the user should click again
             } else {
                 importStep1Folder.text = getFullPathFromUri(
-                    requireContext(), Uri.parse(Settings.getStorageUri(location))
+                    requireContext(), Settings.getStorageUri(location).toUri()
                 )
                 importStep1Folder.isVisible = true
                 importStep1Text.isVisible = true
@@ -390,7 +392,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     private fun updateOnSelectFolder() {
         binding2?.apply {
             importStep1Folder.text = getFullPathFromUri(
-                requireContext(), Uri.parse(Settings.getStorageUri(location))
+                requireContext(), Settings.getStorageUri(location).toUri()
             )
             importStep1Folder.isVisible = true
             importStep1Text.isVisible = true
@@ -423,6 +425,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     }
 
     private fun importEvent(event: ProcessEvent) {
+        val nbElts = event.elementsOK + event.elementsKO
         binding2?.apply {
             val progressBar: ProgressBar = when (event.step) {
                 STEP_2_BOOK_FOLDERS -> importStep2Bar
@@ -431,10 +434,10 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 else -> importStep4Bar
             }
             if (ProcessEvent.Type.PROGRESS == event.eventType) {
-                if (event.elementsTotal > -1) {
+                if (event.progressPc > -1) {
                     progressBar.isIndeterminate = false
-                    progressBar.max = event.elementsTotal
-                    progressBar.progress = event.elementsOK + event.elementsKO
+                    progressBar.max = 100
+                    progressBar.progress = (event.progressPc * 100).roundToInt()
                 } else {
                     progressBar.isIndeterminate = true
                 }
@@ -450,11 +453,18 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                         importStep2Text.visibility = View.GONE
                         importStep2Check.visibility = View.VISIBLE
                         importStep3.visibility = View.VISIBLE
-                        importStep3Text.text = resources.getString(
-                            R.string.refresh_step3,
-                            event.elementsKO + event.elementsOK,
-                            event.elementsTotal
-                        )
+                        if (nbElts >= event.elementsTotal || event.elementsTotal < 1) {
+                            importStep3Text.text = resources.getString(
+                                R.string.refresh_step3_nomax,
+                                nbElts
+                            )
+                        } else {
+                            importStep3Text.text = resources.getString(
+                                R.string.refresh_step3,
+                                nbElts,
+                                event.elementsTotal
+                            )
+                        }
                     }
 
                     STEP_3_PAGES -> {
