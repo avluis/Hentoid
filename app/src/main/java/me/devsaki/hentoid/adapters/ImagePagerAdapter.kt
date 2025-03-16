@@ -546,6 +546,7 @@ class ImagePagerAdapter(context: Context) :
                     imageLoader.enqueue(request.build())
                 }
             }
+            Timber.d("Picture $absoluteAdapterPosition : binding viewholder END $imgType $uri")
         }
 
         fun setTapListener() {
