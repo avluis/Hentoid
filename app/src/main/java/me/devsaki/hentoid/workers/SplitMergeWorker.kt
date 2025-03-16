@@ -51,6 +51,7 @@ import java.time.Instant
 import java.util.regex.Pattern
 import kotlin.math.floor
 import kotlin.math.log10
+import androidx.core.net.toUri
 
 enum class SplitMergeType {
     SPLIT, MERGE, REORDER
@@ -164,7 +165,7 @@ abstract class BaseSplitMergeWorker(
                 try {
                     copyFiles(
                         applicationContext,
-                        splitContentImages.map { Pair(Uri.parse(it.fileUri), it.name) },
+                        splitContentImages.map { Pair(it.fileUri.toUri(), it.name) },
                         targetFolder.uri,
                         isCanceled = this@BaseSplitMergeWorker::isStopped,
                         onProgress = { _, oldUri, newUri ->

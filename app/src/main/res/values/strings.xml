@@ -83,6 +83,7 @@
     <string name="refresh_step2">Scan site folders</string>
     <string name="refresh_step3_init">Scanning library…</string>
     <string name="refresh_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="refresh_step3_nomax">Scan library (<x:g example="1" id="number">%1$d</x:g>)</string>
     <string name="refresh_step4_init">Importing queue…</string>
     <string name="refresh_select_folder">Please select an existing primary folder. Its location is displayed on screen.</string>
     <string name="refresh_allow_write">Please allow write permission</string>
