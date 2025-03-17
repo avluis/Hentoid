@@ -398,7 +398,7 @@ class ImagePagerAdapter(context: Context) :
             if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType) {
                 // Formats that aren't supported by SSIV
                 switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(false, false) // Use SSIV by default
+            } else switchImageView(false, isVertical || isHalfWidth) // Use SSIV by default
 
             // Initialize SSIV when required
             if (!isVertical && !isImageView) {
@@ -553,21 +553,15 @@ class ImagePagerAdapter(context: Context) :
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
             if (isImageView || VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                 Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
-                recyclerView?.setTapListener(itemTouchListener)
-                setTapListener(true)
+                imgView?.setOnTouchListener(null)
             } else { // Single-page, horizontal SSIV => SSIV handles gestures
                 Timber.d("$absoluteAdapterPosition setTapListener on imageView")
-                recyclerView?.setTapListener(null)
-                setTapListener(false)
+                imgView?.setOnTouchListener(itemTouchListener)
             }
         }
 
-        fun setTapListener(isImageView: Boolean) {
-            imgView?.setOnTouchListener(if (isImageView) null else itemTouchListener)
-        }
-
-        suspend fun isImageView(): Boolean = withContext(Dispatchers.Default) {
-            isImageView
+        fun isImageView(): Boolean {
+            return isImageView
         }
 
         private val ssivScaleType: ScaleType

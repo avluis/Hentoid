@@ -411,9 +411,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             recyclerView.adapter = adapter
             recyclerView.setHasFixedSize(true)
             recyclerView.addOnScrollListener(scrollListener)
-            recyclerView.setOnGetMaxDimensionsListener { maxDimensions: Point ->
-                onGetMaxDimensions(maxDimensions)
-            }
+            recyclerView.setOnGetMaxDimensionsListener { onGetMaxDimensions(it) }
             recyclerView.requestFocus()
             // Scale listener from the ImageView, incl. top to bottom browsing
             recyclerView.setOnScaleListener { onScaleChanged(it.toFloat()) }
@@ -1023,6 +1021,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         OnZoneTapListener(recyclerView)
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
+                    recyclerView.setTapListener(onVerticalZoneTapListener)
                     adapter.setItemTouchListener(onVerticalZoneTapListener)
                     isZoomFrameEnabled = true
                     shouldUpdateImageDisplay = true
@@ -1037,6 +1036,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                             .setOnRightZoneTapListener { onRightTap() }
                             .setOnMiddleZoneTapListener { onMiddleTap() }
                             .setOnLongTapListener { onLongTap() }
+                    recyclerView.setTapListener(onHorizontalZoneTapListener)
                     adapter.setItemTouchListener(onHorizontalZoneTapListener)
                     isZoomFrameEnabled = isZoomFrameEnabled || newDisplayParams.twoPages
                     seekToIndex(absImageIndex)
