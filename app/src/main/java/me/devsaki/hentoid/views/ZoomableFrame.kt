@@ -8,6 +8,7 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
 import android.widget.FrameLayout
+import androidx.core.view.isNotEmpty
 import kotlin.math.roundToInt
 
 /**
@@ -49,7 +50,7 @@ class ZoomableFrame : FrameLayout {
     private var recycler: ZoomableRecyclerView? = null
 
     private fun getRecycler(): ZoomableRecyclerView? {
-        if (null == recycler && childCount > 0) recycler = getChildAt(0) as ZoomableRecyclerView
+        if (null == recycler && isNotEmpty()) recycler = getChildAt(0) as ZoomableRecyclerView
         return recycler
     }
 
@@ -62,6 +63,7 @@ class ZoomableFrame : FrameLayout {
             scaleDetector.onTouchEvent(ev)
             flingDetector.onTouchEvent(ev)
         }
+        // Must return the default value; if not, events don't even reach the RecyclerView
         return super.dispatchTouchEvent(ev)
     }
 
