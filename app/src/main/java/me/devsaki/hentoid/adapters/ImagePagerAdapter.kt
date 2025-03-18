@@ -4,13 +4,13 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
-import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.StringRes
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeLifecycleOwner
@@ -28,7 +28,6 @@ import coil3.request.allowConversionToBitmap
 import coil3.request.allowHardware
 import coil3.request.target
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BiConsumer
@@ -38,7 +37,6 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.AutoRotateM
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.OnImageEventListener
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.ScaleType
 import me.devsaki.hentoid.customssiv.uri
-import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment
@@ -53,9 +51,15 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_LARGE
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_MEDIUM
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_SMALL
 import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.getScreenDimensionsPx
+import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
+import me.devsaki.hentoid.util.image.MIME_IMAGE_JXL
+import me.devsaki.hentoid.util.image.MIME_IMAGE_PNG
+import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
+import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.isImageAnimated
 import me.devsaki.hentoid.util.image.needsRotating
-import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import timber.log.Timber
@@ -88,6 +92,9 @@ class ImagePagerAdapter(context: Context) :
         IMG_TYPE_AWEBP(3), // Animated WEBPs -> use Coil
         IMG_TYPE_JXL(4) // JXL -> use Coil
     }
+
+    // Cached image types
+    private val cachedImageTypes: MutableMap<Long, ImageType> = HashMap()
 
     private val pageMinHeight = context.resources.getDimension(R.dimen.page_min_height).toInt()
     private val screenWidth: Int
@@ -161,7 +168,27 @@ class ImagePagerAdapter(context: Context) :
         this.itemTouchListener = itemTouchListener
     }
 
-    private fun getImageType(img: ImageFile?): ImageType {
+    private fun getImageType(context: Context, img: ImageFile): ImageType {
+        if (img.fileUri.isBlank()) return ImageType.IMG_TYPE_OTHER
+
+        getInputStream(context, img.fileUri.toUri()).use { input ->
+            val header = ByteArray(400)
+            if (input.read(header) > 0) {
+                val mime = getMimeTypeFromPictureBinary(header)
+                val isAnimated = isImageAnimated(header)
+                if (isAnimated) {
+                    if (mime == MIME_IMAGE_PNG) return ImageType.IMG_TYPE_APNG
+                    else if (mime == MIME_IMAGE_WEBP) return ImageType.IMG_TYPE_AWEBP
+                } else {
+                    if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
+                    else if (mime == MIME_IMAGE_JXL) return ImageType.IMG_TYPE_JXL
+                }
+            }
+        }
+        return ImageType.IMG_TYPE_OTHER
+    }
+
+    private fun guessImageType(img: ImageFile?): ImageType {
         if (null == img) return ImageType.IMG_TYPE_OTHER
         val extension = getExtension(img.fileUri)
         if ("gif".equals(extension, ignoreCase = true) || img.mimeType.contains("gif")) {
@@ -314,23 +341,6 @@ class ImagePagerAdapter(context: Context) :
         this.isScrollLTR = isScrollLTR
     }
 
-    fun setTapBehaviourForPosition(position: Int, immediate: Boolean = false) {
-        recyclerView?.lifecycleScope?.launch {
-            if (!immediate) {
-                withContext(Dispatchers.Default) {
-                    // Account for items being refreshed just after that call
-                    // NB : A cleaner implementation would be to intercept all notifyxxxChanged calls and set a debouncer on them,
-                    // but it would add complexity for little perceived value
-                    pause(500)
-                }
-            }
-            (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.apply {
-                Timber.d("adjustBehaviourForPosition $position")
-                setTapListener()
-            }
-        }
-    }
-
     fun setTwoPagesMode(value: Boolean) {
         if (twoPagesMode != value) twoPagesMode = value
     }
@@ -351,7 +361,8 @@ class ImagePagerAdapter(context: Context) :
         private var isHalfWidth = false
 
         private var isImageView = false
-        private var forceImageView: Boolean? = null
+
+        //        private var forceImageView: Boolean? = null
         private var img: ImageFile? = null
         private var scaleMultiplier = 1f // When used with ZoomableFrame in vertical mode
 
@@ -379,14 +390,18 @@ class ImagePagerAdapter(context: Context) :
             // WARNING following line must be coherent with what happens in setTapListener
             ssiv.setIgnoreTouchEvents(isVertical || isHalfWidth)
 
-            val imageType = getImageType(getImageAt(position))
-            if (forceImageView != null) { // ImageView has been forced
-                switchImageView(forceImageView!!, true)
-                forceImageView = null // Reset force flag
-            } else if (ImageType.IMG_TYPE_GIF == imageType || ImageType.IMG_TYPE_APNG == imageType || ImageType.IMG_TYPE_AWEBP == imageType || ImageType.IMG_TYPE_JXL == imageType) {
+            val img = getImageAt(position)
+            var imgType: ImageType = ImageType.IMG_TYPE_OTHER
+            img?.let {
+                imgType =
+                    if (cachedImageTypes.containsKey(it.id)) cachedImageTypes.getValue(it.id)
+                    else getImageType(rootView.context, it)
+            }
+
+            if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType) {
                 // Formats that aren't supported by SSIV
                 switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(false, false) // Use SSIV by default
+            } else switchImageView(false, isVertical || isHalfWidth) // Use SSIV by default
 
             // Initialize SSIV when required
             if (!isVertical && !isImageView) {
@@ -416,9 +431,7 @@ class ImagePagerAdapter(context: Context) :
             }
 
             var imageAvailable = true
-            val img = getImageAt(position)
-            if (img != null && img.fileUri.isNotEmpty())
-                setImage(img, ImageType.IMG_TYPE_JXL == imageType)
+            if (img != null && img.fileUri.isNotEmpty()) setImage(img, imgType)
             else imageAvailable = false
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
@@ -456,10 +469,9 @@ class ImagePagerAdapter(context: Context) :
             noImgTxt.isVisible = false
         }
 
-        private fun setImage(img: ImageFile, isJxl: Boolean) {
+        private fun setImage(img: ImageFile, imgType: ImageType) {
             this.img = img
-            val imgType = getImageType(img)
-            val uri = Uri.parse(img.fileUri)
+            val uri = img.fileUri.toUri()
             isLoading.set(true)
             noImgTxt.isVisible = false
             Timber.d("Picture $absoluteAdapterPosition : binding viewholder $imgType $uri")
@@ -496,7 +508,7 @@ class ImagePagerAdapter(context: Context) :
                                 .data(uri)
                                 .diskCacheKey(uri.toString())
                                 .memoryCacheKey(uri.toString())
-                                .allowHardware(!isJxl)
+                                .allowHardware(imgType != ImageType.IMG_TYPE_JXL)
                                 .allowConversionToBitmap(false)
                                 .build()
                             // TODO does that block the UI thread?
@@ -528,7 +540,7 @@ class ImagePagerAdapter(context: Context) :
                         .diskCacheKey(uri.toString())
                         .memoryCacheKey(uri.toString())
                         .target(imageView)
-                        .allowHardware(!isJxl)
+                        .allowHardware(imgType != ImageType.IMG_TYPE_JXL)
                         .listener(
                             onError = { _, err -> onCoilLoadFailed(err) },
                             onSuccess = { _, res -> onCoilLoadSuccess(res) }
@@ -537,37 +549,22 @@ class ImagePagerAdapter(context: Context) :
                     imageLoader.enqueue(request.build())
                 }
             }
+            Timber.d("Picture $absoluteAdapterPosition : binding viewholder END $imgType $uri")
         }
 
-        suspend fun setTapListener() {
+        fun setTapListener() {
             // ImageView or vertical mode => ZoomableRecycleView handles gestures
-            if (isImageView() || VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
+            if (isImageView || VIEWER_ORIENTATION_VERTICAL == viewerOrientation || isHalfWidth) {
                 Timber.d("$absoluteAdapterPosition setTapListener on recyclerView")
-                recyclerView?.setTapListener(itemTouchListener)
-                setTapListener(true)
+                imgView?.setOnTouchListener(null)
             } else { // Single-page, horizontal SSIV => SSIV handles gestures
                 Timber.d("$absoluteAdapterPosition setTapListener on imageView")
-                recyclerView?.setTapListener(null)
-                setTapListener(false)
+                imgView?.setOnTouchListener(itemTouchListener)
             }
         }
 
-        fun setTapListener(isImageView: Boolean) {
-            recyclerView?.lifecycleScope?.launch {
-                withContext(Dispatchers.Default) {
-                    var iterations = 0 // Wait for 5 secs max
-                    while (isLoading.get() && iterations++ < 33) pause(150)
-                }
-                withContext(Dispatchers.Main) {
-                    imgView?.setOnTouchListener(if (isImageView) null else itemTouchListener)
-                }
-            }
-        }
-
-        suspend fun isImageView(): Boolean = withContext(Dispatchers.Default) {
-            var iterations = 0 // Wait for 5 secs max
-            while (isLoading.get() && iterations++ < 33) pause(150)
-            isImageView
+        fun isImageView(): Boolean {
+            return isImageView
         }
 
         private val ssivScaleType: ScaleType
@@ -656,13 +653,10 @@ class ImagePagerAdapter(context: Context) :
                 imageView.isClickable = !isClickThrough
                 imageView.isFocusable = !isClickThrough
             }
-            setTapListener(isImageView)
-            this.isImageView = isImageView
-        }
+            ssiv.setIgnoreTouchEvents(isClickThrough)
 
-        private fun forceImageView() {
-            switchImageView(true)
-            forceImageView = true
+            this.isImageView = isImageView
+            setTapListener()
         }
 
         private fun adjustDimensions(
@@ -741,7 +735,7 @@ class ImagePagerAdapter(context: Context) :
                 img!!.fileUri
             )
             // Fall back to ImageView
-            forceImageView()
+//            forceImageView()
             // Reload adapter
             notifyItemChanged(layoutPosition)
         }

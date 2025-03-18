@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContract
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -14,7 +15,6 @@ import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.squareup.moshi.JsonDataException
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER
 import me.devsaki.hentoid.core.DEFAULT_PRIMARY_FOLDER_OLD
 import me.devsaki.hentoid.core.HentoidApp.LifeCycleListener.Companion.disable
@@ -65,6 +65,7 @@ import me.devsaki.hentoid.workers.data.PrimaryImportData
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.net.URLDecoder
 import java.time.Instant
 import java.util.Locale
 import java.util.regex.Pattern
@@ -265,7 +266,7 @@ fun setAndScanPrimaryFolder(
     if (otherLocationUriStr.isNotEmpty()) {
         val treeFullPath = getFullPathFromUri(context, treeUri)
         val otherLocationFullPath =
-            getFullPathFromUri(context, Uri.parse(otherLocationUriStr))
+            getFullPathFromUri(context, otherLocationUriStr.toUri())
         if (treeFullPath.startsWith(otherLocationFullPath)) {
             Timber.e(
                 "Selected folder is inside the other primary location : %s",
@@ -286,7 +287,7 @@ fun setAndScanPrimaryFolder(
     val extLocationStr = Settings.getStorageUri(StorageLocation.EXTERNAL)
     if (extLocationStr.isNotEmpty()) {
         val treeFullPath = getFullPathFromUri(context, treeUri)
-        val extFullPath = getFullPathFromUri(context, Uri.parse(extLocationStr))
+        val extFullPath = getFullPathFromUri(context, extLocationStr.toUri())
         if (treeFullPath.startsWith(extFullPath)) {
             Timber.e("Selected folder is inside the external location : %s", treeUri.toString())
             return Pair(ProcessFolderResult.KO_PRIMARY_EXTERNAL, treeUri.toString())
@@ -374,9 +375,9 @@ fun setAndScanExternalFolder(
     var primaryUri1 = Settings.getStorageUri(StorageLocation.PRIMARY_1)
     var primaryUri2 = Settings.getStorageUri(StorageLocation.PRIMARY_2)
     if (primaryUri1.isNotEmpty()) primaryUri1 =
-        getFullPathFromUri(context, Uri.parse(primaryUri1))
+        getFullPathFromUri(context, primaryUri1.toUri())
     if (primaryUri2.isNotEmpty()) primaryUri2 =
-        getFullPathFromUri(context, Uri.parse(primaryUri2))
+        getFullPathFromUri(context, primaryUri2.toUri())
     val selectedFullPath = getFullPathFromUri(context, treeUri)
     if (primaryUri1.isNotEmpty() && selectedFullPath.startsWith(primaryUri1)
         || primaryUri2.isNotEmpty() && selectedFullPath.startsWith(primaryUri2)
@@ -421,7 +422,7 @@ fun persistLocationCredentials(
     val uri = location
         .map { Settings.getStorageUri(it) }
         .filterNot { it.isEmpty() }
-        .map { Uri.parse(it) }
+        .map { it.toUri() }
     persistNewUriPermission(context, treeUri, uri)
 }
 
@@ -600,10 +601,11 @@ fun runExternalImport(
  * @param parent Parent of the folder to scan (cuz DocumentFile.getParentFile can't stand on its own)
  * @param toScan Folder to scan
  * @param explorer FileExplorer to use
+ * @param progress ProgressManager to use
  * @param parentNames Names of all parent folders
- * @param library Structure that will receive all detected Content
- * @param progressFeedback Progress feedback to run (optional)
  * @param log Log to write to (optional)
+ * @param isCanceled Returns true if the process has been canceled upstream
+ * @param onFound Callback when a Content has been found
  */
 fun scanFolderRecursive(
     context: Context,
@@ -611,16 +613,17 @@ fun scanFolderRecursive(
     parent: DocumentFile?,
     toScan: DocumentFile,
     explorer: FileExplorer,
+    progress: ProgressManager?,
     parentNames: List<String>,
-    library: MutableList<Content>,
-    progressFeedback: Consumer<String>? = null,
-    log: MutableList<LogEntry>? = null
+    log: MutableList<LogEntry>? = null,
+    isCanceled: (() -> Boolean)? = null,
+    onFound: (Content) -> Unit,
 ) {
     assertNonUiThread()
+    if (isCanceled?.invoke() == true) return
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
-    progressFeedback?.invoke(rootName)
-    Timber.d(">>>> scan root %s", toScan.uri)
+    Timber.d(">>>> scan root ${URLDecoder.decode(toScan.uri.toString(), "UTF-8")}")
     val files = explorer.listDocumentFiles(context, toScan)
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
@@ -640,6 +643,16 @@ fun scanFolderRecursive(
             if (getContentJsonNamesFilter().accept(fileName)) contentJsons.add(file)
         }
     }
+    val nbItems = archivesPdf.size + subFolders.size
+    var nbProcessed = 0
+
+    progress?.let { prg ->
+        if (parentNames.isEmpty()) {
+            // Level 0 : init steps according to found content
+            subFolders.forEach { prg.setProgress(it.name ?: "", 0f) }
+            archivesPdf.forEach { prg.setProgress(it.name ?: "", 0f) }
+        }
+    }
 
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
     if (subFolders.size >= 2) {
@@ -650,7 +663,7 @@ fun scanFolderRecursive(
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
             if (nbPicturesInside > 1) {
                 val json = getFileWithName(jsons, JSON_FILE_NAME_V2)
-                library.add(
+                onFound(
                     scanChapterFolders(
                         context, toScan, subFolders, explorer, parentNames, dao, json
                     )
@@ -659,17 +672,15 @@ fun scanFolderRecursive(
             // Look for archives inside; if there's one inside the 1st folder, load them as a chapters
             val nbArchivesInside = explorer.countFiles(subFolders[0], getArchiveNamesFilter())
             if (1 == nbArchivesInside) {
-                val c =
-                    scanForArchivesPdf(
-                        context,
-                        toScan,
-                        subFolders,
-                        explorer,
-                        parentNames,
-                        dao,
-                        true
-                    )
-                library.addAll(c)
+                scanForArchivesPdf(
+                    context,
+                    toScan,
+                    subFolders,
+                    explorer,
+                    parentNames,
+                    dao,
+                    true
+                ).forEach { onFound(it) }
             }
         }
     }
@@ -682,7 +693,7 @@ fun scanFolderRecursive(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, content
             )
             // Valid archive
-            if (0 == c.first) library.add(c.second!!)
+            if (0 == c.first) onFound(c.second!!)
             else {
                 // Invalid archive
                 val message = when (c.first) {
@@ -691,13 +702,21 @@ fun scanFolderRecursive(
                 }
                 trace(Log.INFO, 0, log, message, archive.name ?: "<name not found>")
             }
+            progress?.let { prg ->
+                if (parentNames.isEmpty()) {
+                    progress.setProgress(archive.name ?: "", 1f)
+                } else if (1 == parentNames.size) {
+                    progress.setProgress(rootName, ++nbProcessed * 1f / nbItems)
+                }
+            }
+            if (isCanceled?.invoke() == true) return
         }
     }
 
     // We've got a regular book
     if (images.size > 2 || contentJsons.isNotEmpty()) {
         val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
-        library.add(
+        onFound(
             scanBookFolder(
                 context,
                 parent,
@@ -710,14 +729,28 @@ fun scanFolderRecursive(
                 json
             )
         )
+        if (1 == parentNames.size) {
+            progress?.setProgress(rootName, 1f)
+        }
     }
 
     // Go down one level
     val newParentNames: MutableList<String> = ArrayList(parentNames)
     newParentNames.add(rootName)
-    for (subfolder in subFolders) scanFolderRecursive(
-        context, dao, toScan, subfolder, explorer, newParentNames, library, progressFeedback, log
-    )
+    for (subfolder in subFolders) {
+        scanFolderRecursive(
+            context,
+            dao,
+            toScan,
+            subfolder,
+            explorer,
+            progress,
+            newParentNames,
+            log,
+            isCanceled,
+            onFound
+        )
+    }
 }
 
 /**
@@ -838,7 +871,7 @@ private fun cleanTitle(s: String?): String {
     var result = s ?: ""
     result = result.replace("_", " ")
     // Remove expressions between []'s
-    result = result.replace("\\[[^(\\[\\])]*\\]".toRegex(), "")
+    result = result.replace("\\[[^(\\[\\])]*]".toRegex(), "")
     return result.trim()
 }
 

@@ -30,6 +30,7 @@ import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.Orientation.entries
 import me.devsaki.hentoid.customssiv.decoder.ImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder

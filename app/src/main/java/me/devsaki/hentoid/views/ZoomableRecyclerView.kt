@@ -319,6 +319,7 @@ class ZoomableRecyclerView : RecyclerView {
         private var isZoomDragging = false
         var isDoubleTapping = false
         var isQuickScaling = false
+
         override fun onTouchEvent(ev: MotionEvent): Boolean {
             val action = ev.actionMasked
             val actionIndex = ev.actionIndex
@@ -360,19 +361,13 @@ class ZoomableRecyclerView : RecyclerView {
             if (!isZoomDragging && scale > DEFAULT_SCALE) {
                 var startScroll = false
                 if (abs(dx) > touchSlop) {
-                    if (dx < 0) {
-                        dx += touchSlop
-                    } else {
-                        dx -= touchSlop
-                    }
+                    if (dx < 0) dx += touchSlop
+                    else dx -= touchSlop
                     startScroll = true
                 }
                 if (abs(dy) > touchSlop) {
-                    if (dy < 0) {
-                        dy += touchSlop
-                    } else {
-                        dy -= touchSlop
-                    }
+                    if (dy < 0) dy += touchSlop
+                    else dy -= touchSlop
                     startScroll = true
                 }
                 if (startScroll) {
@@ -405,12 +400,8 @@ class ZoomableRecyclerView : RecyclerView {
         }
 
         private fun zoomScrollBy(dx: Int, dy: Int) {
-            if (dx != 0) {
-                x = getPositionX(x + dx)
-            }
-            if (dy != 0) {
-                y = getPositionY(y + dy)
-            }
+            if (dx != 0) x = getPositionX(x + dx)
+            if (dy != 0) y = getPositionY(y + dy)
         }
     }
 }

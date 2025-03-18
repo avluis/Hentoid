@@ -13,6 +13,9 @@ import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.waynejo.androidndkgif.GifEncoder
 import kotlinx.coroutines.Dispatchers
@@ -34,9 +37,6 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
-import androidx.core.graphics.createBitmap
-import androidx.core.graphics.scale
-import androidx.core.net.toUri
 
 private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
@@ -257,13 +257,13 @@ fun getBitmapFromVectorDrawable(context: Context, @DrawableRes drawableId: Int):
     val d = ContextCompat.getDrawable(context, drawableId)
     return if (d != null) {
         val b =
-            createBitmap(d.intrinsicWidth, d.intrinsicHeight, Bitmap.Config.ARGB_8888, false)
+            createBitmap(d.intrinsicWidth, d.intrinsicHeight)
         val c = Canvas(b)
         d.setBounds(0, 0, c.width, c.height)
         d.draw(c)
         b
     } else {
-        createBitmap(0, 0, Bitmap.Config.ARGB_8888, false)
+        createBitmap(0, 0)
     }
 }
 
@@ -287,7 +287,7 @@ fun bitmapToWebp(bitmap: Bitmap): ByteArray {
 fun tintBitmap(bitmap: Bitmap, @ColorInt color: Int): Bitmap {
     val p = Paint()
     p.colorFilter = PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
-    val b = createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888, false)
+    val b = createBitmap(bitmap.width, bitmap.height)
     val canvas = Canvas(b)
     canvas.drawBitmap(bitmap, 0f, 0f, p)
     return b
@@ -347,11 +347,9 @@ fun decodeSampledBitmapFromStream(
     // First decode with inJustDecodeBounds=true to check dimensions
     val options = BitmapFactory.Options()
     options.inJustDecodeBounds = true
-    BitmapFactory.decodeStream(workStream1, null, options)
-    if (null == workStream2) {
-        workStream1.reset()
-        workStream2 = workStream1
-    } else {
+    try {
+        BitmapFactory.decodeStream(workStream1, null, options)
+    } finally {
         workStream1.close()
     }
 

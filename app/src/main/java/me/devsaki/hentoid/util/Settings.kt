@@ -349,6 +349,7 @@ object Settings {
     var isBrowserMode: Boolean by BoolSetting(Key.BROWSER_MODE, false)
     val isForceEnglishLocale: Boolean by BoolSetting(Key.FORCE_ENGLISH, false)
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
+    var arePlugReactionsOn: Boolean by BoolSetting("plug_reactions_on", true)
     val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
     val maxDbSizeKb: Long by LongSetting("db_max_size", 3L * 1024 * 1024) // 3GB
 

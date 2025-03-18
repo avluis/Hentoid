@@ -37,7 +37,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 35
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.20.11'
+        versionName '1.20.12'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -162,7 +162,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-gif:$Coil_version")
 
     // Coil support for JXL
-    implementation 'io.github.awxkee:jxl-coder-coil:2.4.0.5'
+    implementation 'io.github.awxkee:jxl-coder-coil:2.4.0.7'
 
     // Animated pics that Coil doesn't support (APNG) -> https://github.com/penfeizhou/APNG4Android
     def APNG4Android_version = '3.0.2'

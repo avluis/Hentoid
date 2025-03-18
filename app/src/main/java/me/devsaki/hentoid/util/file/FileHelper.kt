@@ -777,10 +777,9 @@ fun shareFile(context: Context, fileUri: Uri, title: String, type: String) {
     val sharingIntent = Intent(Intent.ACTION_SEND)
     sharingIntent.setType(type)
     if (title.isNotEmpty()) sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title)
-    if (fileUri.toString().startsWith("file")) {
-        val legitUri = FileProvider.getUriForFile(context, AUTHORITY, File(fileUri.toString()))
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, legitUri)
-    } else {
+    legacyFileFromUri(fileUri)?.let {
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, getFileUriCompat(context, it))
+    } ?: run {
         sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
     }
     context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)))

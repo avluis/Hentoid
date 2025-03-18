@@ -76,6 +76,7 @@ import me.devsaki.hentoid.workers.data.PrimaryImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
+import java.net.URLDecoder
 import java.time.Instant
 import kotlin.math.floor
 import kotlin.math.log10
@@ -216,6 +217,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             Timber.e("Root folder is invalid for location %s (%s)", location.name, targetRootUri)
             return@withContext
         }
+        trace(
+            Log.INFO,
+            0,
+            log,
+            "Import from ${URLDecoder.decode(rootFolder.uri.toString(), "UTF-8")}"
+        )
 
         val bookFolders: MutableList<DocumentFile> = ArrayList()
         try {
@@ -471,6 +478,10 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     ) {
         var content: Content? = null
         var bookFiles: List<DocumentFile>? = null
+        val bookLocation = URLDecoder.decode(
+            bookFolder.uri.toString().replace(explorer.root.toString(), ""),
+            "UTF-8"
+        )
 
         // Detect the presence of images if the corresponding cleanup option has been enabled
         if (cleanNoImages) {
@@ -485,13 +496,13 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     // Don't delete books that are _not supposed to_ have downloaded images
                     if (content != null && content.downloadMode == DownloadMode.STREAM)
                         doRemove = false
-                } catch (e: ParseException) {
+                } catch (_: ParseException) {
                     trace(
                         Log.WARN,
                         STEP_1,
                         log,
                         "[Remove no image] Folder %s : unreadable JSON",
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                 }
                 if (doRemove) {
@@ -503,7 +514,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         log,
                         "[Remove no image %s] Folder %s",
                         if (success) "OK" else "KO",
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     return
                 }
@@ -530,7 +541,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         if (isInQueue(existingDuplicate.status)) "queue" else "collection"
                     trace(
                         Log.INFO, STEP_2_BOOK_FOLDERS, log,
-                        "Import book KO! (already in $location) : %s", bookFolder.uri.toString()
+                        "Import book KO! (already in $location) : %s", bookLocation
                     )
                     return
                 }
@@ -658,7 +669,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     STEP_2_BOOK_FOLDERS,
                     log,
                     "Import book OK$groupStr : %s",
-                    bookFolder.uri.toString()
+                    bookLocation
                 )
             } else { // JSON not found
                 val subfolders = explorer.listFolders(context, bookFolder)
@@ -669,7 +680,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Subfolders found in : %s",
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     nbFolders++
                     return
@@ -679,7 +690,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book KO! (no JSON found) : %s",
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     // Deletes the folder if cleanup is active
                     if (cleanNoJSON) {
@@ -690,7 +701,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             log,
                             "[Remove no JSON %s] Folder %s",
                             if (success) "OK" else "KO",
-                            bookFolder.uri.toString()
+                            bookLocation
                         )
                     }
                 }
@@ -712,7 +723,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book OK (JSON regenerated) : %s",
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     booksOK++
                 } catch (e: IOException) {
@@ -723,7 +734,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         log,
                         "Import book ERROR while regenerating JSON : %s for Folder %s",
                         jse.message!!,
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     booksKO++
                 } catch (e: JsonDataException) {
@@ -734,7 +745,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         log,
                         "Import book ERROR while regenerating JSON : %s for Folder %s",
                         jse.message!!,
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     booksKO++
                 }
@@ -777,7 +788,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book OK (Content regenerated) : %s",
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     booksOK++
                 } catch (e: IOException) {
@@ -788,7 +799,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         log,
                         "Import book ERROR while regenerating Content : %s for Folder %s",
                         jse.message!!,
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     booksKO++
                 } catch (e: JsonDataException) {
@@ -799,7 +810,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         log,
                         "Import book ERROR while regenerating Content : %s for Folder %s",
                         jse.message!!,
-                        bookFolder.uri.toString()
+                        bookLocation
                     )
                     booksKO++
                 }
@@ -813,7 +824,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 log,
                 "Import book ERROR : %s for Folder %s",
                 e.message!!,
-                bookFolder.uri.toString()
+                bookLocation
             )
         }
         val bookName = bookFolder.name ?: ""
