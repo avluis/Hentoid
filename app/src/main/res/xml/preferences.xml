@@ -113,6 +113,17 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
+            android:title="@string/pref_misc"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_plug_reactions_on_default"
+                android:key="plug_reactions_on"
+                android:summaryOff="@string/off"
+                android:summaryOn="@string/on"
+                android:title="@string/pref_plug_reactions"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
             android:title="@string/pref_cat_theme"
             app:iconSpaceReserved="false">
             <ListPreference

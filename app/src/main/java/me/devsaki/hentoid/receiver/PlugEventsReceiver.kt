@@ -9,6 +9,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.util.AchievementsManager.trigger
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
 import org.greenrobot.eventbus.EventBus
 
@@ -16,6 +17,7 @@ class PlugEventsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
         if (!isInForeground()) return
         if (null == intent) return
+        if (!Settings.arePlugReactionsOn) return
 
         val action = intent.action
         if (!isInitialStickyBroadcast) {
