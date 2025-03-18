@@ -11,6 +11,7 @@ import timber.log.Timber
 
 // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 private val INVISIBLE_SITES = setOf(
+    Site.EDOUJIN,  // Dead
     Site.NEXUS,  // Dead
     Site.HBROWSE,  // Dead
     Site.HENTAICAFE,  // Dead

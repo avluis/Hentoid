@@ -33,6 +33,7 @@
     <string name="pref_color_theme_summary">Current theme: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">Miscellaneous</string>
     <string name="pref_cat_language">Interface Language</string>
+    <string name="pref_plug_reactions">Plug reactions</string>
     <string name="pref_force_english_title">Force English locale</string>
     <string name="pref_force_english_summary_off">Use your device\'s language\nif the translation is available</string>
     <string name="pref_force_english_summary_on">Use English</string>
