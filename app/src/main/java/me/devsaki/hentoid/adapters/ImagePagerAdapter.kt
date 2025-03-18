@@ -169,6 +169,8 @@ class ImagePagerAdapter(context: Context) :
     }
 
     private fun getImageType(context: Context, img: ImageFile): ImageType {
+        if (img.fileUri.isBlank()) return ImageType.IMG_TYPE_OTHER
+
         getInputStream(context, img.fileUri.toUri()).use { input ->
             val header = ByteArray(400)
             if (input.read(header) > 0) {
@@ -391,12 +393,9 @@ class ImagePagerAdapter(context: Context) :
             val img = getImageAt(position)
             var imgType: ImageType = ImageType.IMG_TYPE_OTHER
             img?.let {
-                // Stop there if the image isn't downloaded nor unarchived
-                if (!img.fileUri.isBlank()) {
-                    imgType =
-                        if (cachedImageTypes.containsKey(it.id)) cachedImageTypes.getValue(it.id)
-                        else getImageType(rootView.context, it)
-                }
+                imgType =
+                    if (cachedImageTypes.containsKey(it.id)) cachedImageTypes.getValue(it.id)
+                    else getImageType(rootView.context, it)
             }
 
             if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType) {
