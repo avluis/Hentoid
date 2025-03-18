@@ -68,12 +68,12 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
         val newLockType = Settings.lockType
         binding?.apply {
             switchLockOnRestore.isVisible = (newLockType > 0)
-            lockTimer.isVisible = (newLockType > 0)
             textResetPin.isVisible = (1 == newLockType)
             lockType.index = newLockType
             initialLockType = newLockType
             val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
             switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
+            lockTimer.isVisible = (newLockType > 0 && lockOnAppRestoredEnabled)
             lockTimer.setSelection(Preferences.getLockTimer())
         }
     }
