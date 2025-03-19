@@ -179,6 +179,7 @@ class ImagePagerAdapter(context: Context) :
                 if (isAnimated) {
                     if (mime == MIME_IMAGE_PNG) return ImageType.IMG_TYPE_APNG
                     else if (mime == MIME_IMAGE_WEBP) return ImageType.IMG_TYPE_AWEBP
+                    else if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
                 } else {
                     if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
                     else if (mime == MIME_IMAGE_JXL) return ImageType.IMG_TYPE_JXL
