@@ -33,6 +33,7 @@
     <string name="pref_color_theme_summary">Nuvarande tema: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">Diverse</string>
     <string name="pref_cat_language">Gränssnittsspråk</string>
+    <string name="pref_plug_reactions">Pluggreaktioner</string>
     <string name="pref_force_english_title">Tvinga engelsk text</string>
     <string name="pref_force_english_summary_off">Använd din enhets språk\n om översättning finns</string>
     <string name="pref_force_english_summary_on">Använd engelska</string>
@@ -209,7 +210,7 @@
     <string name="pref_viewer_invert_volume">Invertera volymknappar</string>
     <string name="pref_viewer_book_switch">Bokbytes-styrning</string>
     <string name="pref_viewer_book_switch_volume">Volymknapp (håll nere)</string>
-    <string name="pref_viewer_zoom">Zoomkontroll</string>
+    <string name="pref_viewer_zoom">Zoomstyrning</string>
     <string name="pref_viewer_zoom_double_tap">Tryck två gånger för att zooma</string>
     <string name="pref_viewer_zoom_holding">Beröring zoomar in temporärt</string>
     <string name="pref_viewer_cap_tap_zoom">Dubbleringsbegränsning &amp; långtryckszoom</string>
