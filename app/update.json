@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.12/hentoid12012-785.apk",
-  "versionCode": "785",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.13/hentoid12013-786.apk",
+  "versionCode": "786",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -31,7 +31,7 @@
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"761" },
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"762"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"777"},
-	  {"sourceName":"HITOMI", "status":"RED" },
+	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"786"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
