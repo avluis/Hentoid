@@ -8,7 +8,7 @@ ___
 
 [![Build status](https://app.bitrise.io/app/70539fbfc39cb9d8/status.svg?token=_kOMCvtscTfWpw7mdsqvJA&branch=dev)](https://app.bitrise.io/app/70539fbfc39cb9d8) 
 
-[![](https://discordapp.com/api/guilds/173995475098271746/embed.png?style=banner2)](https://discord.gg/QEZ3qk9)
+[![](https://discordapp.com/api/guilds/173995475098271746/embed.png?style=banner2)](https://discord.gg/TNCwwUw)
 
 ![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome_2023.png)
 
