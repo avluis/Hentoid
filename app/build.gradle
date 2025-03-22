@@ -140,7 +140,7 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.webkit:webkit:1.13.0'
 
-    def android_work_version = '2.9.1'
+    def android_work_version = '2.10.0'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
