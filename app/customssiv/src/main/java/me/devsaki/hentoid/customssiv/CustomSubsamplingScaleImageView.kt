@@ -867,7 +867,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
                             val previousScale = scale
                             scale = min(maxScale, vDistEnd / vDistStart * scaleStart)
-                            signalScaleChange(scale)
+                            signalScaleChange(previousScale, scale)
 
                             if (scale <= minScale()) {
                                 // Minimum scale reached so don't pan. Adjust start settings so any expand will zoom in.
@@ -930,7 +930,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
                             val previousScale = scale
                             scale = max(minScale(), min(maxScale, scale * multiplier))
-                            signalScaleChange(scale)
+                            signalScaleChange(previousScale, scale)
 
                             if (panEnabled) {
                                 val vLeftStart = vCenterStart!!.x - vTranslateStart!!.x
@@ -1167,6 +1167,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             var scaleElapsed = System.currentTimeMillis() - anim!!.time
             val finished = scaleElapsed > anim!!.duration
             scaleElapsed = min(scaleElapsed, anim!!.duration)
+            val previousScale = scale
             scale = ease(
                 anim!!.easing,
                 scaleElapsed,
@@ -1174,7 +1175,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 anim!!.scaleEnd - anim!!.scaleStart,
                 anim!!.duration
             )
-            signalScaleChange(scale)
+            signalScaleChange(previousScale, scale)
 
             // Apply required animation to the focal point
             val vFocusNowX = ease(
@@ -1579,8 +1580,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         // If waiting to translate to new center position, set translate now
         if (sPendingCenter != null) {
             pendingScale?.let {
+                val previousScale = scale
                 scale = it
-                signalScaleChange(scale)
+                signalScaleChange(previousScale, scale)
                 if (vTranslate == null) vTranslate = PointF()
                 vTranslate!!.x = (getWidthInternal() / 2f) - (scale * sPendingCenter!!.x)
                 vTranslate!!.y = (getHeightInternal() / 2f) - (scale * sPendingCenter!!.y)
@@ -1653,8 +1655,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             it.scale = scale
             it.vTranslate.set(vTranslate!!)
             fitToBounds(center, sSize, it)
+            val previousScale = scale
             scale = it.scale
-            signalScaleChange(scale)
+            signalScaleChange(previousScale, scale)
             if (-1f == initialScale) {
                 initialScale = scale
                 Timber.i(">> initialScale : %s", initialScale)
@@ -2444,7 +2447,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Adjust a requested scale to be within the allowed limits.
      */
     private fun limitedScale(targetScale: Float): Float {
-        return coerceIn(targetScale, minScale(), maxScale)
+        val min = minScale()
+        // Sometimes minScale gets higher than maxScale => align both
+        val max = if (min < maxScale) maxScale else min
+        return coerceIn(targetScale, min, max)
     }
 
     /**
@@ -2949,8 +2955,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         this.scaleListener = scaleListener
     }
 
-    private fun signalScaleChange(targetScale: Float) {
-        scaleDebouncer.submit(targetScale)
+    private fun signalScaleChange(previousScale: Float, targetScale: Float) {
+        if (abs(previousScale - targetScale) > 0.01) scaleDebouncer.submit(targetScale)
     }
 
     /**
