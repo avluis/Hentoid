@@ -6,6 +6,7 @@ import android.net.Uri
 import java.io.File
 import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
+import androidx.core.net.toUri
 
 /**
  * Helper class used to set the source and additional attributes from a variety of sources. Supports
@@ -43,7 +44,7 @@ fun uri(uri: String): ImageSource {
         }
         theUri = FILE_SCHEME + theUri
     }
-    return ImageSource(Uri.parse(theUri))
+    return ImageSource(theUri.toUri())
 }
 
 /**
@@ -93,7 +94,7 @@ class ImageSource {
             val uriFile = File(uriString.substring(FILE_SCHEME.length - 1))
             if (!uriFile.exists()) {
                 try {
-                    theUri = Uri.parse(URLDecoder.decode(uriString, "UTF-8"))
+                    theUri = URLDecoder.decode(uriString, "UTF-8").toUri()
                 } catch (_: UnsupportedEncodingException) {
                     // Fallback to encoded URI. This exception is not expected.
                 }
