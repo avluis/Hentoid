@@ -25,6 +25,8 @@ import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.AnyThread
+import androidx.core.content.withStyledAttributes
+import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
@@ -404,50 +406,50 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
         // Handle XML attributes
         if (attr != null) {
-            val typedAttr = getContext().obtainStyledAttributes(
+            getContext().withStyledAttributes(
                 attr,
                 R.styleable.CustomSubsamplingScaleImageView
-            )
-            if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_assetName)) {
-                val assetName =
-                    typedAttr.getString(R.styleable.CustomSubsamplingScaleImageView_assetName)
-                if (!assetName.isNullOrEmpty()) {
-                    setImage(asset(assetName).enableTiling())
+            ) {
+                if (hasValue(R.styleable.CustomSubsamplingScaleImageView_assetName)) {
+                    val assetName =
+                        getString(R.styleable.CustomSubsamplingScaleImageView_assetName)
+                    if (!assetName.isNullOrEmpty()) {
+                        setImage(asset(assetName).enableTiling())
+                    }
+                }
+                if (hasValue(R.styleable.CustomSubsamplingScaleImageView_panEnabled)) {
+                    setPanEnabled(
+                        getBoolean(
+                            R.styleable.CustomSubsamplingScaleImageView_panEnabled,
+                            true
+                        )
+                    )
+                }
+                if (hasValue(R.styleable.CustomSubsamplingScaleImageView_zoomEnabled)) {
+                    setZoomEnabled(
+                        getBoolean(
+                            R.styleable.CustomSubsamplingScaleImageView_zoomEnabled,
+                            true
+                        )
+                    )
+                }
+                if (hasValue(R.styleable.CustomSubsamplingScaleImageView_quickScaleEnabled)) {
+                    setQuickScaleEnabled(
+                        getBoolean(
+                            R.styleable.CustomSubsamplingScaleImageView_quickScaleEnabled,
+                            true
+                        )
+                    )
+                }
+                if (hasValue(R.styleable.CustomSubsamplingScaleImageView_tileBackgroundColor)) {
+                    setTileBackgroundColor(
+                        getColor(
+                            R.styleable.CustomSubsamplingScaleImageView_tileBackgroundColor,
+                            Color.argb(0, 0, 0, 0)
+                        )
+                    )
                 }
             }
-            if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_panEnabled)) {
-                setPanEnabled(
-                    typedAttr.getBoolean(
-                        R.styleable.CustomSubsamplingScaleImageView_panEnabled,
-                        true
-                    )
-                )
-            }
-            if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_zoomEnabled)) {
-                setZoomEnabled(
-                    typedAttr.getBoolean(
-                        R.styleable.CustomSubsamplingScaleImageView_zoomEnabled,
-                        true
-                    )
-                )
-            }
-            if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_quickScaleEnabled)) {
-                setQuickScaleEnabled(
-                    typedAttr.getBoolean(
-                        R.styleable.CustomSubsamplingScaleImageView_quickScaleEnabled,
-                        true
-                    )
-                )
-            }
-            if (typedAttr.hasValue(R.styleable.CustomSubsamplingScaleImageView_tileBackgroundColor)) {
-                setTileBackgroundColor(
-                    typedAttr.getColor(
-                        R.styleable.CustomSubsamplingScaleImageView_tileBackgroundColor,
-                        Color.argb(0, 0, 0, 0)
-                    )
-                )
-            }
-            typedAttr.recycle()
         }
         quickScaleThreshold = TypedValue.applyDimension(
             TypedValue.COMPLEX_UNIT_DIP,
@@ -507,6 +509,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         if (imageSource.getBitmap() != null && imageSource.getSRegion() != null) {
             // Load part of Bitmap directly handed inside the source
             onImageLoaded(
+                imageSource.getUri()?.toString() ?: "", 1f,
                 Bitmap.createBitmap(
                     imageSource.getBitmap()!!,
                     imageSource.getSRegion()!!.left,
@@ -518,7 +521,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             )
         } else if (imageSource.getBitmap() != null) {
             // Load Bitmap directly handed inside the source
-            onImageLoaded(imageSource.getBitmap()!!, Orientation.O_0, imageSource.isCached(), 1f)
+            onImageLoaded(
+                imageSource.getUri()?.toString() ?: "",
+                1f,
+                imageSource.getBitmap()!!,
+                Orientation.O_0,
+                imageSource.isCached(),
+                1f
+            )
         } else {
             sRegion = imageSource.getSRegion()
             uri = imageSource.getUri()
@@ -1014,7 +1024,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                                 requestDisallowInterceptTouchEvent(false)
                             }
 
-                            refreshRequiredResource(eagerLoadingEnabled)
+                            refreshRequiredResource(eagerLoadingEnabled) // #TODO
                         }
                     }
                 }
@@ -1390,6 +1400,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     private fun loadBitmapToImage(context: Context, uri: Uri, targetScale: Float) {
+        // Don't load when previous loading is still happening
+        if (singleImage.loading) return
+        // Don't load something that's already loaded
+        if (singleImage.location == uri.toString() && abs(singleImage.targetScale - targetScale) < 0.01) return
+
         lifecycleScope?.launch {
             try {
                 val bmp = loadBitmap(context, uri)
@@ -1403,6 +1418,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 )
                 withContext(Dispatchers.Main) {
                     onImageLoaded(
+                        uri.toString(),
+                        targetScale,
                         res.bitmap,
                         res.orientation,
                         false,
@@ -1472,17 +1489,17 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     // TODO doc
     private fun refreshRequiredResource(load: Boolean) {
-        val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
         if (regionDecoder == null || tileMap == null) refreshSingleDebouncer.submit(load)
-        else refreshRequiredTiles(load, sampleSize)
+        else {
+            val sampleSize = min(fullImageSampleSize, calculateInSampleSize(scale))
+            refreshRequiredTiles(load, sampleSize)
+        }
     }
 
     // TODO doc
     private fun refreshSingle(load: Boolean) {
-        if (!singleImage.loading && load) {
-            Timber.d("refreshSingle")
-            uri?.let { loadBitmapToImage(context, it, getVirtualScale()) }
-        }
+        if (!load) return
+        uri?.let { loadBitmapToImage(context, it, getVirtualScale()) }
     }
 
     /**
@@ -1940,6 +1957,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     @Synchronized
     private fun onImageLoaded(
+        location: String,
+        targetScale: Float,
         bitmap: Bitmap,
         sOrientation: Orientation,
         bitmapIsCached: Boolean,
@@ -1955,6 +1974,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         synchronized(singleImage) {
             this.bitmapIsCached = bitmapIsCached
             singleImage.scale = imageScale
+            singleImage.location = location
+            singleImage.targetScale = targetScale
             this.bitmap = bitmap
             this.sWidth = bitmap.width
             this.sHeight = bitmap.height
@@ -1981,7 +2002,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             try {
                 val columns = arrayOf(MediaStore.MediaColumns.ORIENTATION)
                 cursor =
-                    context.contentResolver.query(Uri.parse(sourceUri), columns, null, null, null)
+                    context.contentResolver.query(sourceUri.toUri(), columns, null, null, null)
                 if (cursor != null && cursor.moveToFirst()) {
                     val targetOrientation = Orientation.fromCode(cursor.getInt(0))
                     if (targetOrientation != Orientation.USE_EXIF) {
@@ -2039,9 +2060,12 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     class SingleImage {
-        var scale: Float = 1f
-        var rawWidth: Int = -1
-        var rawHeight: Int = -1
+        var location: String = ""
+        var targetScale = 1f
+
+        var scale = 1f
+        var rawWidth = -1
+        var rawHeight = -1
 
         var loading: Boolean = false
     }
