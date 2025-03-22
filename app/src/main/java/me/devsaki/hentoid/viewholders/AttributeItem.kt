@@ -47,31 +47,29 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
             // Nothing special here
         }
     }
+}
 
-    companion object {
-        fun formatAttrBadge(
-            context: Context,
-            attribute: Attribute,
-            showCount: Boolean,
-            excluded: Boolean = false
-        ): SpannableString {
-            val badgePaddingV = context.resources.getDimension(R.dimen.badge_padding_vertical)
-            val badgePaddingH = context.resources.getDimension(R.dimen.badge_padding_horizontal)
-            val badgeStroke = context.resources.getDimension(R.dimen.badge_stroke_width).toInt()
-            val badgeType =
-                if (!attribute.isNew && (0 == attribute.count || !showCount)) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
-            val text2 =
-                if (attribute.count > 0) attribute.count.toString() else if (attribute.isNew) "+" else ""
-            val badgeDrawable = BadgeDrawable.Builder()
-                .type(badgeType)
-                .badgeColor(ContextCompat.getColor(context, attribute.type.color))
-                .textColor(ContextCompat.getColor(context, R.color.white_opacity_87))
-                .text1((if (excluded) "✖ " else "") + attribute.displayName.lowercase())
-                .text2(text2)
-                .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
-                .strokeWidth(badgeStroke)
-                .build()
-            return badgeDrawable.toSpannable()
-        }
-    }
+fun formatAttrBadge(
+    context: Context,
+    attribute: Attribute,
+    showCount: Boolean,
+    excluded: Boolean = false
+): SpannableString {
+    val badgePaddingV = context.resources.getDimension(R.dimen.badge_padding_vertical)
+    val badgePaddingH = context.resources.getDimension(R.dimen.badge_padding_horizontal)
+    val badgeStroke = context.resources.getDimension(R.dimen.badge_stroke_width).toInt()
+    val badgeType =
+        if (!attribute.isNew && (0 == attribute.count || !showCount)) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
+    val text2 =
+        if (attribute.count > 0) attribute.count.toString() else if (attribute.isNew) "+" else ""
+    val badgeDrawable = BadgeDrawable.Builder()
+        .type(badgeType)
+        .badgeColor(ContextCompat.getColor(context, attribute.type.color))
+        .textColor(ContextCompat.getColor(context, R.color.white_opacity_87))
+        .text1((if (excluded) "✖ " else "") + attribute.displayName.lowercase())
+        .text2(text2)
+        .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
+        .strokeWidth(badgeStroke)
+        .build()
+    return badgeDrawable.toSpannable()
 }
