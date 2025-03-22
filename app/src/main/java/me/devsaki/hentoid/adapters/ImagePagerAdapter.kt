@@ -401,8 +401,8 @@ class ImagePagerAdapter(context: Context) :
 
             if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType) {
                 // Formats that aren't supported by SSIV
-                switchImageView(isImageView = true, isClickThrough = true)
-            } else switchImageView(false, isVertical || isHalfWidth) // Use SSIV by default
+                useImageView(isImageView = true, isClickThrough = true)
+            } else useImageView(false, isVertical || isHalfWidth) // Use SSIV by default
 
             // Initialize SSIV when required
             if (!isVertical && !isImageView) {
@@ -639,9 +639,9 @@ class ImagePagerAdapter(context: Context) :
             }
         }
 
-        private fun switchImageView(isImageView: Boolean, isClickThrough: Boolean = false) {
+        private fun useImageView(isImageView: Boolean, isClickThrough: Boolean = false) {
             Timber.d(
-                "Picture %d : switching to %s (%s)",
+                "Picture %d : using %s (%s)",
                 absoluteAdapterPosition,
                 if (isImageView) "imageView" else "ssiv",
                 isClickThrough
