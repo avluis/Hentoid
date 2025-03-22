@@ -230,9 +230,7 @@ dependencies {
     implementation "com.squareup.okhttp3:okhttp-brotli:$okhttpVersion"
 
     // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon; uses JSOUP
-    //def jspoon_version = '1.3.3'
     implementation "pl.droidsonroids:jspoon:1.3.3"
-    implementation "pl.droidsonroids.retrofit2:converter-jspoon:1.3.2"
 
     // JSOUP HTML parser: github.com/jhy/jsoup
     implementation 'org.jsoup:jsoup:1.18.1'
