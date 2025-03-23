@@ -9,8 +9,10 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.databinding.ActivityPrefsSourceSpecificsBinding
+import me.devsaki.hentoid.util.PreferenceItem
 import me.devsaki.hentoid.util.PreferencesParser
 import me.devsaki.hentoid.util.applyTheme
+import me.devsaki.hentoid.viewholders.ListPickerItem
 import me.devsaki.hentoid.viewholders.TextItem
 
 /**
@@ -19,8 +21,8 @@ import me.devsaki.hentoid.viewholders.TextItem
 class PreferencesSourceSpecificsActivity : BaseActivity() {
     private var binding: ActivityPrefsSourceSpecificsBinding? = null
     private lateinit var recyclerView: RecyclerView
-    private val itemAdapter = ItemAdapter<TextItem<String>>()
-    private val fastAdapter: FastAdapter<TextItem<String>> = FastAdapter.with(itemAdapter)
+    private val itemAdapter = ItemAdapter<ListPickerItem<PreferenceItem>>()
+    private val fastAdapter: FastAdapter<ListPickerItem<PreferenceItem>> = FastAdapter.with(itemAdapter)
 
     @SuppressLint("NonConstantResourceId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,16 +45,15 @@ class PreferencesSourceSpecificsActivity : BaseActivity() {
         }
 
         // Recycler
-        val items: MutableList<TextItem<String>> = ArrayList()
+        val items: MutableList<ListPickerItem<PreferenceItem>> = ArrayList()
         val prefsParser = PreferencesParser()
         prefsParser.addResourceFile(this, R.xml.preferences)
 
         prefsParser.allEntries.forEach {
             items.add(
-                TextItem<String>(
+                ListPickerItem<PreferenceItem>(
                     it.breadcrumbs ?: "" + " : " + it.title ?: "",
-                    it.key ?: "",
-                    false
+                    it
                 )
             )
         }

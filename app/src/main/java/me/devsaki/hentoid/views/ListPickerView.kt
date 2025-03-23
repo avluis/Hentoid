@@ -40,6 +40,13 @@ class ListPickerView : ConstraintLayout {
             else ""
         }
 
+    var title: String = ""
+        set(value) {
+            field = value
+            binding.title.isVisible = value.isNotEmpty()
+            binding.title.text = value
+        }
+
 
     constructor(context: Context) : super(context)
 
@@ -55,11 +62,12 @@ class ListPickerView : ConstraintLayout {
     private fun initialize(context: Context, attrs: AttributeSet?) {
         val arr = context.obtainStyledAttributes(attrs, R.styleable.ListPickerView)
         try {
-            val title = arr.getString(R.styleable.ListPickerView_title) ?: ""
+            val rawTitle = arr.getString(R.styleable.ListPickerView_title)
+            if (rawTitle != null) title = rawTitle
             val rawEntries = arr.getTextArray(R.styleable.ListPickerView_entries)
-            if (rawEntries != null) entries = rawEntries.map { cs -> cs.toString() }
+            if (rawEntries != null) entries = rawEntries.map { it.toString() }
             val rawValues = arr.getTextArray(R.styleable.ListPickerView_values)
-            if (rawValues != null) values = rawValues.map { cs -> cs.toString() }
+            if (rawValues != null) values = rawValues.map { it.toString() }
 
             binding.let {
                 it.root.clipToOutline = true
