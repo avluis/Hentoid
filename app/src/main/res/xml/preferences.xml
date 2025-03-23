@@ -14,6 +14,11 @@
                 android:summary="@string/pref_drawer_sources_summary"
                 android:title="@string/pref_drawer_sources_title"
                 app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_source_specifics"
+                android:summary="@string/title_activity_source_specifics"
+                android:title="@string/title_activity_source_specifics"
+                app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_library_display_default"
                 android:entries="@array/pref_library_display_entries"
@@ -309,7 +314,8 @@
                 android:summaryOff="@string/pref_browser_augmented_off"
                 android:summaryOn="@string/pref_browser_augmented_on"
                 android:title="@string/pref_browser_augmented_title"
-                app:iconSpaceReserved="false" />
+                app:iconSpaceReserved="false"
+                app:tag="ANY" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_mark_downloaded_default"
                 android:key="browser_mark_downloaded"
@@ -366,7 +372,8 @@
                 android:key="pref_webview_initial_zoom_lists"
                 android:summary="@string/pref_browser_initial_zoom_summary"
                 android:title="@string/pref_browser_initial_zoom_title"
-                app:iconSpaceReserved="false" />
+                app:iconSpaceReserved="false"
+                app:tag="ANY" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_force_lightmode_default"
                 android:key="WEB_FORCE_LIGHTMODE"
@@ -499,7 +506,8 @@
                 android:summaryOff="@string/pref_dl_eh_hires_off"
                 android:summaryOn="@string/pref_dl_eh_hires_on"
                 android:title="@string/download_eh_hires_title"
-                app:iconSpaceReserved="false" />
+                app:iconSpaceReserved="false"
+                app:tag="EHENTAI,EXHENTAI" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_advanced"
@@ -511,7 +519,8 @@
                 android:key="pref_dl_threads_quantity_lists"
                 android:summary="@string/pref_dl_threads_quantity_summary"
                 android:title="@string/pref_dl_threads_quantity_title"
-                app:iconSpaceReserved="false" />
+                app:iconSpaceReserved="false"
+                app:tag="ANY" />
             <ListPreference
                 android:defaultValue="@string/pref_dl_speed_cap_default"
                 android:entries="@array/pref_dl_speed_cap_entries"
@@ -574,7 +583,8 @@
                     android:key="pref_viewer_browse_mode"
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_browse_mode"
-                    app:iconSpaceReserved="false" />
+                    app:iconSpaceReserved="false"
+                    app:tag="ANY" />
             </PreferenceCategory>
             <PreferenceCategory
                 android:title="@string/pref_viewer_page_turn"

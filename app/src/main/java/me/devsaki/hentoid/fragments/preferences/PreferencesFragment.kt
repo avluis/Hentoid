@@ -25,8 +25,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
 import me.devsaki.hentoid.activities.prefs.PreferencesPinActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesSourceSpecificsActivity
 import me.devsaki.hentoid.activities.prefs.PreferencesStorageActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
@@ -135,6 +136,11 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         when (preference.key) {
             Preferences.Key.DRAWER_SOURCES -> {
                 requireContext().startLocalActivity<PreferencesSourceSelectActivity>()
+                true
+            }
+
+            Preferences.Key.SOURCE_SPECIFICS -> {
+                requireContext().startLocalActivity<PreferencesSourceSpecificsActivity>()
                 true
             }
 

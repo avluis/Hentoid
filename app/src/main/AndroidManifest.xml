@@ -198,6 +198,10 @@
             android:label="@string/title_activity_drawer_edit"
             tools:ignore="UnusedAttribute" />
         <activity
+            android:name=".activities.prefs.PreferencesSourceSpecificsActivity"
+            android:label="@string/title_activity_source_specifics"
+            tools:ignore="UnusedAttribute" />
+        <activity
             android:name=".activities.DuplicateDetectorActivity"
             android:label="@string/title_activity_duplicate_detector"
             tools:ignore="UnusedAttribute" />
