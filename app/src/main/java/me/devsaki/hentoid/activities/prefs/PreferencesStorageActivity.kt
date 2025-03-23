@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities
+package me.devsaki.hentoid.activities.prefs
 
 import android.content.DialogInterface
 import android.graphics.Typeface
@@ -18,6 +18,7 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.core.URL_GITHUB_WIKI_STORAGE
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
@@ -49,7 +50,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent,
+class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent,
     LibRefreshDialogFragment.Parent {
 
     // == Communication
@@ -120,7 +121,7 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             }
 
             alertLowPanel.setOnClickListener {
-                MaterialAlertDialogBuilder(this@StoragePreferenceActivity)
+                MaterialAlertDialogBuilder(this@PreferencesStorageActivity)
                     .setCancelable(true)
                     .setTitle(R.string.pref_memory_alert_title)
                     .setSingleChoiceItems(
@@ -141,11 +142,11 @@ class StoragePreferenceActivity : BaseActivity(), DownloadStrategyDialogFragment
             }
 
             strategyPanel.setOnClickListener {
-                DownloadStrategyDialogFragment.invoke(this@StoragePreferenceActivity)
+                DownloadStrategyDialogFragment.invoke(this@PreferencesStorageActivity)
             }
 
             statsPanel.setOnClickListener {
-                StorageUsageDialogFragment.invoke(this@StoragePreferenceActivity)
+                StorageUsageDialogFragment.invoke(this@PreferencesStorageActivity)
             }
         }
     }

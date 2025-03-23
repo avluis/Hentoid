@@ -18,7 +18,7 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.LibraryActivity
-import me.devsaki.hentoid.activities.PrefsActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ToolsActivity
@@ -246,7 +246,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     }
 
     private fun onPrefsClick() {
-        launchActivity(PrefsActivity::class.java)
+        launchActivity(PreferencesActivity::class.java)
     }
 
     private fun onToolsClick() {

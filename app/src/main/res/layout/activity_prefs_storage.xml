@@ -15,7 +15,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/storage_menu"
+        app:menu="@menu/prefs_storage_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
         app:title="@string/title_activity_storage"
         tools:ignore="UnusedAttribute" />

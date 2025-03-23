@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities
+package me.devsaki.hentoid.activities.prefs
 
 import android.os.Bundle
 import android.view.MenuItem
@@ -6,6 +6,7 @@ import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
+import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
@@ -15,7 +16,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class PrefsActivity : BaseActivity(), SearchPreferenceResultListener {
+class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
 
     private lateinit var fragment: PreferencesFragment
 

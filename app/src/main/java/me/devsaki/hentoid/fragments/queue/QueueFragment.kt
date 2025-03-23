@@ -37,7 +37,7 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.PrefsActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
@@ -45,7 +45,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.QueueRecord
-import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.databinding.FragmentQueueBinding
 import me.devsaki.hentoid.databinding.IncludeQueueBottomBarBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -1044,7 +1043,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * Show the viewer settings dialog
      */
     private fun onSettingsClick() {
-        val intent = Intent(requireActivity(), PrefsActivity::class.java)
+        val intent = Intent(requireActivity(), PreferencesActivity::class.java)
         val prefsBundle = PrefsBundle()
         prefsBundle.isDownloaderPrefs = true
         intent.putExtras(prefsBundle.bundle)

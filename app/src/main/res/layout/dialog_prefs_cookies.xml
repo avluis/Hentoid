@@ -7,7 +7,7 @@
     android:layout_gravity="center"
     android:clipToPadding="false"
     android:padding="8dp"
-    tools:context=".activities.PrefsActivity">
+    tools:context=".activities.prefs.PreferencesActivity">
 
     <me.devsaki.hentoid.views.ListPickerView
         android:id="@+id/site_picker"

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".activities.DrawerEditActivity">
+    tools:context=".activities.prefs.PreferencesSourceSelectActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -15,7 +15,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/drawer_edit_menu"
+        app:menu="@menu/prefs_drawer_edit_menu"
         app:navigationIcon="@drawable/ic_close" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -30,13 +30,13 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/drawer_edit_ok_btn"
+        app:layout_constraintBottom_toTopOf="@id/ok_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         tools:listitem="@layout/item_drawer_edit" />
 
     <TextView
-        android:id="@+id/drawer_edit_ok_btn"
+        android:id="@+id/ok_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?colorSecondary"

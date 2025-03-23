@@ -42,7 +42,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
-import me.devsaki.hentoid.activities.PrefsActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.database.domains.Content
@@ -516,7 +516,7 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     snackbar.setAction(R.string.app_settings) {
                         // Open prefs on the "storage" category
-                        val intent = Intent(requireActivity(), PrefsActivity::class.java)
+                        val intent = Intent(requireActivity(), PreferencesActivity::class.java)
                         val prefsBundle = PrefsBundle()
                         prefsBundle.isStoragePrefs = true
                         intent.putExtras(prefsBundle.bundle)

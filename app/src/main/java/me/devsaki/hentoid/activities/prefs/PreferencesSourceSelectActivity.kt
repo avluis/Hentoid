@@ -1,9 +1,8 @@
-package me.devsaki.hentoid.activities
+package me.devsaki.hentoid.activities.prefs
 
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.fastadapter.FastAdapter
@@ -12,7 +11,8 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.databinding.ActivityDrawerEditBinding
+import me.devsaki.hentoid.activities.BaseActivity
+import me.devsaki.hentoid.databinding.ActivityPrefsSourcesEditBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
@@ -22,8 +22,8 @@ import me.devsaki.hentoid.viewholders.SiteItem
 /**
  * Activity to edit the left drawer where the sources are
  */
-class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
-    private var binding: ActivityDrawerEditBinding? = null
+class PreferencesSourceSelectActivity : BaseActivity(), ItemTouchCallback {
+    private var binding: ActivityPrefsSourcesEditBinding? = null
     private lateinit var recyclerView: RecyclerView
     private val itemAdapter = ItemAdapter<SiteItem>()
     private val fastAdapter: FastAdapter<SiteItem> = FastAdapter.with(itemAdapter)
@@ -33,7 +33,7 @@ class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
         super.onCreate(savedInstanceState)
         applyTheme()
 
-        binding = ActivityDrawerEditBinding.inflate(layoutInflater)
+        binding = ActivityPrefsSourcesEditBinding.inflate(layoutInflater)
         binding?.let {
             setContentView(it.root)
 
@@ -47,6 +47,7 @@ class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
                 }
                 true
             }
+            it.okBtn.setOnClickListener { onValidateClick() }
         }
 
         // Activate drag & drop
@@ -68,10 +69,6 @@ class DrawerEditActivity : BaseActivity(), ItemTouchCallback {
         recyclerView.adapter = fastAdapter
         recyclerView.setHasFixedSize(true)
         touchHelper.attachToRecyclerView(recyclerView)
-
-        // OK button
-        val okBtn = findViewById<View>(R.id.drawer_edit_ok_btn)
-        okBtn.setOnClickListener { onValidateClick() }
     }
 
     override fun onDestroy() {

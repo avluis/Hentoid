@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.PrefsActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -153,7 +153,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
 
         // == Bottom buttons
         binding?.appPrefsBtn?.setOnClickListener {
-            val intent = Intent(requireActivity(), PrefsActivity::class.java)
+            val intent = Intent(requireActivity(), PreferencesActivity::class.java)
             val prefsBundle = PrefsBundle()
             prefsBundle.isViewerPrefs = true
             intent.putExtras(prefsBundle.bundle)

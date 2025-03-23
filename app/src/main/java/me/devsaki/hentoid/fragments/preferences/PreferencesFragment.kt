@@ -25,9 +25,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.DrawerEditActivity
-import me.devsaki.hentoid.activities.PinPreferenceActivity
-import me.devsaki.hentoid.activities.StoragePreferenceActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesPinActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesStorageActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.retrofit.DeviantArtServer
@@ -134,17 +134,17 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
         when (preference.key) {
             Preferences.Key.DRAWER_SOURCES -> {
-                requireContext().startLocalActivity<DrawerEditActivity>()
+                requireContext().startLocalActivity<PreferencesSourceSelectActivity>()
                 true
             }
 
             Preferences.Key.STORAGE_MANAGEMENT -> {
-                requireContext().startLocalActivity<StoragePreferenceActivity>()
+                requireContext().startLocalActivity<PreferencesStorageActivity>()
                 true
             }
 
             Settings.Key.APP_LOCK -> {
-                requireContext().startLocalActivity<PinPreferenceActivity>()
+                requireContext().startLocalActivity<PreferencesPinActivity>()
                 true
             }
 

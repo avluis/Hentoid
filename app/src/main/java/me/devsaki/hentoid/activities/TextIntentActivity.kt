@@ -10,8 +10,10 @@ import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.launchBrowserFor
 import timber.log.Timber
 
-
-class ProcessTextActivity : AppCompatActivity() {
+/**
+ * Activity that handles text intents ("Send to Hentoid" when selecting text on other apps)
+ */
+class TextIntentActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

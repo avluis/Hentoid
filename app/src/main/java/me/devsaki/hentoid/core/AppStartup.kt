@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.ProcessTextActivity
+import me.devsaki.hentoid.activities.TextIntentActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DatabaseMaintenance
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -329,7 +329,7 @@ object AppStartup {
         else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 
         context.packageManager.setComponentEnabledSetting(
-            ComponentName(context, ProcessTextActivity::class.java), state, flags
+            ComponentName(context, TextIntentActivity::class.java), state, flags
         )
 
         Timber.i("Activate text intent : done")
