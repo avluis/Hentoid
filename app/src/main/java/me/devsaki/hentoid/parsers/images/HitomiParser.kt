@@ -33,6 +33,8 @@ import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
+private val DOMAIN = "ltn.gold-usergeneratedcontent.net"
+
 class HitomiParser : BaseImageListParser() {
 
     private var webview: HitomiBackgroundWebView? = null
@@ -75,7 +77,7 @@ class HitomiParser : BaseImageListParser() {
         val downloadParams: MutableMap<String, String> = HashMap()
         downloadParams[HEADER_REFERER_KEY] = pageUrl
         val downloadParamsStr = serializeToJson<Map<String, String>>(downloadParams, MAP_STRINGS)
-        val galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.uniqueSiteId + ".js"
+        val galleryJsonUrl = "https://$DOMAIN/galleries/${onlineContent.uniqueSiteId}.js"
 
         // Get the gallery JSON
         val headers: MutableList<Pair<String, String>> = ArrayList()
