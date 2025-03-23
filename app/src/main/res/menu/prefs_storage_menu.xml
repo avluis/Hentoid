@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".activities.prefs.PreferencesStorageActivity"
-    tools:ignore="AlwaysShowAction"
-    tools:targetApi="o">
+    tools:ignore="AlwaysShowAction">
     <item
         android:id="@+id/action_help"
         android:icon="@drawable/ic_help_outline"

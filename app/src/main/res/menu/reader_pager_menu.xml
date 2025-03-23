@@ -2,8 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".activities.ReaderActivity"
-    tools:targetApi="o">
+    tools:context=".activities.ReaderActivity">
     <item
         android:id="@+id/action_slideshow"
         android:enabled="true"

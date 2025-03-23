@@ -23,8 +23,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/star_2"
@@ -41,8 +40,7 @@
         app:layout_constraintStart_toEndOf="@id/star_1"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/star_3"
@@ -59,8 +57,7 @@
         app:layout_constraintStart_toEndOf="@id/star_2"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/star_4"
@@ -77,8 +74,7 @@
         app:layout_constraintStart_toEndOf="@id/star_3"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/star_5"
@@ -95,8 +91,7 @@
         app:layout_constraintStart_toEndOf="@id/star_4"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/clear_rating_btn"

@@ -112,8 +112,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_non_favs_btn"
         app:layout_constraintTop_toBottomOf="@id/filters_divider"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_non_favs_btn"
@@ -125,8 +124,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_completed_btn"
         app:layout_constraintTop_toBottomOf="@id/filters_divider"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_completed_btn"
@@ -138,8 +136,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_not_completed_btn"
         app:layout_constraintTop_toBottomOf="@id/filters_divider"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_not_completed_btn"
@@ -151,8 +148,7 @@
         app:layout_constraintEnd_toEndOf="@id/filter_vertical_barrier"
         app:layout_constraintTop_toBottomOf="@id/filters_divider"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <!-- Rating buttons -->
 
@@ -166,8 +162,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_rating_1"
         app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_rating_1"
@@ -179,8 +174,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_rating_2"
         app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_rating_2"
@@ -192,8 +186,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_rating_3"
         app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_rating_3"
@@ -205,8 +198,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_rating_4"
         app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_rating_4"
@@ -218,8 +210,7 @@
         app:layout_constraintEnd_toStartOf="@id/filter_rating_5"
         app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/filter_rating_5"
@@ -232,7 +223,6 @@
         app:layout_constraintEnd_toEndOf="@id/list"
         app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

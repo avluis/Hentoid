@@ -11,8 +11,7 @@
     android:elevation="6dp"
     android:focusable="true"
     android:longClickable="true"
-    android:padding="4dp"
-    tools:targetApi="o">
+    android:padding="4dp">
 
     <ImageView
         android:id="@+id/ivCover"

@@ -8,8 +8,7 @@
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
-    android:longClickable="true"
-    tools:targetApi="o">
+    android:longClickable="true">
 
     <ImageView
         android:id="@+id/delete_btn"

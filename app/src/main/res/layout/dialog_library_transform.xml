@@ -286,8 +286,7 @@
             app:layout_constraintEnd_toStartOf="@id/next_page_btn"
             app:layout_constraintStart_toEndOf="@id/thumb"
             app:tint="?colorOnPrimary"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/next_page_btn"
@@ -304,8 +303,7 @@
             app:layout_constraintBottom_toBottomOf="@id/thumb"
             app:layout_constraintStart_toEndOf="@id/prev_page_btn"
             app:tint="?colorOnPrimary"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"

@@ -11,8 +11,7 @@
     android:clickable="true"
     android:elevation="6dp"
     android:focusable="true"
-    android:longClickable="true"
-    tools:targetApi="o">
+    android:longClickable="true">
 
     <ImageView
         android:id="@+id/ivCover"

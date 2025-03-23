@@ -6,8 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:theme="@style/Theme.Light.BottomSheetDialog"
-    tools:targetApi="o">
+    android:theme="@style/Theme.Light.BottomSheetDialog">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -115,8 +114,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_2"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/rating_2"
@@ -127,8 +125,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_3"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/rating_3"
@@ -139,8 +136,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_4"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/rating_4"
@@ -151,8 +147,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_5"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/rating_5"
@@ -164,8 +159,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toEndOf="@id/img_divider"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
+            tools:ignore="ContentDescription"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

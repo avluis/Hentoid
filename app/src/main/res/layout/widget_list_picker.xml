@@ -5,8 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="48dp"
     android:background="@color/item_highlight"
-    android:padding="4dp"
-    tools:targetApi="o">
+    android:padding="4dp">
 
     <TextView
         android:id="@+id/title"

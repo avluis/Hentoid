@@ -128,8 +128,7 @@
         app:layout_constraintTop_toBottomOf="@id/tvPagesSource"
         app:layout_constraintVertical_bias="1.0"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/ivFavourite"
@@ -142,8 +141,7 @@
         app:layout_constraintTop_toTopOf="@id/ivSite"
         app:layout_constraintVertical_bias="1.0"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/ivStorage"
@@ -156,8 +154,7 @@
         app:layout_constraintTop_toTopOf="@id/ivSite"
         app:layout_constraintVertical_bias="1.0"
         app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"
-        tools:targetApi="o" />
+        tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/tvScore"
