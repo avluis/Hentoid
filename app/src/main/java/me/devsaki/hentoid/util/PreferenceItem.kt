@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util
 import android.text.TextUtils
 import androidx.annotation.XmlRes
 import me.devsaki.hentoid.enums.Site
+import java.util.Locale
 
 class PreferenceItem {
     @JvmField
