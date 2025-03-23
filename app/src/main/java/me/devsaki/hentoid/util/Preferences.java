@@ -316,6 +316,7 @@ public final class Preferences {
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         static final String VERSION_KEY = "prefs_version";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
+        public static final String SOURCE_SPECIFICS = "pref_source_specifics";
         public static final String EXTERNAL_LIBRARY = "pref_external_library";
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         public static final String STORAGE_MANAGEMENT = "storage_mgt";

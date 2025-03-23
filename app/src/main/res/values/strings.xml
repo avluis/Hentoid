@@ -897,8 +897,11 @@
     <string name="update_success">Update successful!</string>
     <string name="starting_download">Starting download</string>
 
-    <!-- Edit drawer -->
+    <!-- Edit sources drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
+
+    <!-- Source specifics -->
+    <string name="title_activity_source_specifics">Source-specific settings</string>
 
     <!-- Duplicate detector -->
     <string name="title_activity_duplicate_detector">Duplicate detector</string>
