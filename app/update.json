@@ -32,6 +32,7 @@
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"762"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"777"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"786"},
+	  {"sourceName":"HITOMI", "status":"RED"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
