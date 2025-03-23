@@ -1,11 +1,14 @@
 package me.devsaki.hentoid.util
 
-import android.text.TextUtils
 import androidx.annotation.XmlRes
 import me.devsaki.hentoid.enums.Site
-import java.util.Locale
 
 class PreferenceItem {
+    enum class DataType { STRING, BOOL }
+
+    @JvmField
+    var dataType: DataType = DataType.STRING
+
     @JvmField
     var title: String? = null
 
@@ -16,7 +19,10 @@ class PreferenceItem {
     var key: String? = null
 
     @JvmField
-    var entries: String? = null
+    var entries: List<String> = emptyList()
+
+    @JvmField
+    var values: List<String> = emptyList()
 
     @JvmField
     var breadcrumbs: String? = null
@@ -26,6 +32,9 @@ class PreferenceItem {
 
     @JvmField
     var sites: MutableSet<Site> = HashSet()
+
+    @JvmField
+    var defaultValue: String? = null
 
     @JvmField
     var keyBreadcrumbs: ArrayList<String> = ArrayList<String>()
@@ -42,27 +51,6 @@ class PreferenceItem {
         return title != null || summary != null
     }
 
-    private val info: String
-        get() {
-            val infoBuilder = StringBuilder()
-            if (!TextUtils.isEmpty(title)) {
-                infoBuilder.append("ø").append(title)
-            }
-            if (!TextUtils.isEmpty(summary)) {
-                infoBuilder.append("ø").append(summary)
-            }
-            if (!TextUtils.isEmpty(entries)) {
-                infoBuilder.append("ø").append(entries)
-            }
-            if (!TextUtils.isEmpty(breadcrumbs)) {
-                infoBuilder.append("ø").append(breadcrumbs)
-            }
-            if (!TextUtils.isEmpty(keywords)) {
-                infoBuilder.append("ø").append(keywords)
-            }
-            return infoBuilder.toString()
-        }
-
     fun withKey(key: String?): PreferenceItem {
         this.key = key
         return this
@@ -78,7 +66,7 @@ class PreferenceItem {
         return this
     }
 
-    fun withEntries(entries: String?): PreferenceItem {
+    fun withEntries(entries: List<String>): PreferenceItem {
         this.entries = entries
         return this
     }

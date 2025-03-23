@@ -17,12 +17,16 @@ class ListPickerView : ConstraintLayout {
 
     private var onIndexChangeListener: ((Int) -> Unit)? = null
     private var onValueChangeListener: ((String) -> Unit)? = null
-    private var values: List<String> = emptyList()
 
     var entries: List<String> = emptyList()
         set(value) {
             field = value.toList()
             index = 0
+        }
+
+    var values: List<String> = emptyList()
+        set(value) {
+            field = value.toList()
         }
 
     var index: Int = -1

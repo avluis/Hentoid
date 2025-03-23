@@ -48,6 +48,7 @@
     <string name="none">None</string>
     <string name="help_generic">Help</string>
     <string name="actions_generic">Actions</string>
+    <string name="enabled_generic">Enabled</string>
     <string name="disabled_generic">Disabled</string>
     <string name="create_generic">Create</string>
     <string name="edit_generic">Edit</string>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.text.TextUtils
+import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.PictureEncoder
@@ -24,8 +25,8 @@ object Settings {
         if (sharedPreferences.contains(Key.VIEWER_FLING_FACTOR)) {
             val flingFactor =
                 sharedPreferences.getString(Key.VIEWER_FLING_FACTOR, "0")?.toInt() ?: 0
-            sharedPreferences.edit().putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0).apply()
-            sharedPreferences.edit().remove(Key.VIEWER_FLING_FACTOR).apply()
+            sharedPreferences.edit { putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0) }
+            sharedPreferences.edit { remove(Key.VIEWER_FLING_FACTOR) }
         }
         // PIN activation -> Lock type (v1.18.4)
         if (sharedPreferences.contains(Key.APP_LOCK)) {
@@ -34,7 +35,7 @@ object Settings {
         // Auto rotate switch -> Auto rotate direction (v1.20.6)
         if (sharedPreferences.contains(Key.VIEWER_AUTO_ROTATE_OLD)) {
             val autoRotate = sharedPreferences.getBoolean(Key.VIEWER_AUTO_ROTATE_OLD, false)
-            sharedPreferences.edit().remove(Key.VIEWER_AUTO_ROTATE_OLD).apply()
+            sharedPreferences.edit { remove(Key.VIEWER_AUTO_ROTATE_OLD) }
             readerAutoRotate =
                 if (autoRotate) Value.READER_AUTO_ROTATE_LEFT else Value.READER_AUTO_ROTATE_NONE
         }

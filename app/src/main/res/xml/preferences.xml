@@ -26,8 +26,7 @@
                 android:key="pref_library_display"
                 android:summary="@string/pref_library_display_summary"
                 android:title="@string/pref_library_display_title"
-                app:iconSpaceReserved="false"
-                app:tag="ANY" />
+                app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_endless_scroll_default"
                 android:disableDependentsState="true"

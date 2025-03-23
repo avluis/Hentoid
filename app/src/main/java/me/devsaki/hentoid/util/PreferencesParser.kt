@@ -111,12 +111,22 @@ class PreferencesParser internal constructor() {
         return getAttribute(xpp, namespace, attribute).isNotEmpty()
     }
 
+    private fun getType(xpp: XmlPullParser): PreferenceItem.DataType {
+        return when (xpp.name) {
+            "CheckBoxPreference" -> PreferenceItem.DataType.BOOL
+            else -> PreferenceItem.DataType.STRING
+        }
+    }
+
     private fun parseSearchResult(context: Context, xpp: XmlPullParser): PreferenceItem {
         val result = PreferenceItem()
+        result.dataType = getType(xpp)
         result.title = readString(context, getAttribute(xpp, "title"))
         result.summary = readString(context, getAttribute(xpp, "summary"))
         result.key = readString(context, getAttribute(xpp, "key"))
         result.entries = readStringArray(context, getAttribute(xpp, "entries"))
+        result.values = readStringArray(context, getAttribute(xpp, "entryValues"))
+        result.defaultValue = readString(context, getAttribute(xpp, "defaultValue"))
 
         val tags = readString(context, getAttribute(xpp, "tag"))
         if (!tags.isNullOrBlank()) {
@@ -129,20 +139,18 @@ class PreferencesParser internal constructor() {
         return result
     }
 
-    private fun readStringArray(context: Context, s: String?): String? {
-        if (s == null) {
-            return null
-        }
+    private fun readStringArray(context: Context, s: String?): List<String> {
+        if (s == null) return emptyList()
+
         if (s.startsWith("@")) {
             try {
                 val id = s.substring(1).toInt()
-                val elements = context.resources.getStringArray(id)
-                return TextUtils.join(",", elements)
+                return context.resources.getStringArray(id).toList()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-        return s
+        return emptyList()
     }
 
     private fun readString(context: Context, s: String?): String? {

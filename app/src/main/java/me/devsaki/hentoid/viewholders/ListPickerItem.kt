@@ -1,25 +1,37 @@
 package me.devsaki.hentoid.viewholders
 
-import android.graphics.Typeface
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.recyclerview.widget.ItemTouchHelper
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.adjustAlpha
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.getSelectablePressedBackground
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.views.ListPickerView
 
 class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
     val text: String
+    val entries: List<String>
+    val values: List<String>
+    val value: String
+    val onChanged: Consumer<String>
     private val mTag: T?
 
-    constructor(text: String, tag: T) : super() {
+    constructor(
+        text: String,
+        entries: List<String>,
+        values: List<String>,
+        value: String,
+        onChanged: Consumer<String>,
+        tag: T
+    ) : super() {
         this.text = text
+        this.entries = ArrayList(entries)
+        this.values = ArrayList(values)
+        this.value = value
+        this.onChanged = onChanged
         this.mTag = tag
         isSelectable = false
     }
@@ -50,6 +62,10 @@ class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
 
         override fun bindView(item: ListPickerItem<T>, payloads: List<Any>) {
             picker.title = item.text
+            picker.entries = item.entries
+            picker.values = item.values
+            picker.value = item.value
+            picker.setOnValueChangeListener { s -> item.onChanged.invoke(s) }
         }
 
         override fun unbindView(item: ListPickerItem<T>) {
