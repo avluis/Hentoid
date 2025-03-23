@@ -1,12 +1,12 @@
 package me.devsaki.hentoid.activities
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.SparseIntArray
 import android.view.View
 import android.widget.CheckBox
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView.AdapterDataObserver
@@ -22,6 +22,7 @@ import me.devsaki.hentoid.fragments.SearchBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.capitalizeString
 import me.devsaki.hentoid.viewmodels.SearchViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -45,6 +46,8 @@ class SearchActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyTheme()
+
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding!!.root)
 
@@ -52,9 +55,9 @@ class SearchActivity : BaseActivity() {
         var preSelectedCriteria: SearchCriteria? = null
         if (intent != null && intent.extras != null) {
             val parser = SearchActivityBundle(intent.extras!!)
-            val searchUri = Uri.parse(parser.uri)
+            val searchUri = parser.uri.toUri()
             excludeClicked = parser.excludeMode
-            if (searchUri != null) preSelectedCriteria = parseSearchUri(searchUri)
+            preSelectedCriteria = parseSearchUri(searchUri)
         }
         binding?.apply {
             toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
@@ -73,46 +76,30 @@ class SearchActivity : BaseActivity() {
             } // Everything but source !
             textCategoryAny.isEnabled = true
             textCategoryTag.setOnClickListener {
-                onAttrButtonClick(
-                    excludeClicked, AttributeType.TAG
-                )
+                onAttrButtonClick(excludeClicked, AttributeType.TAG)
             }
             textCategoryArtist.setOnClickListener {
-                onAttrButtonClick(
-                    excludeClicked, AttributeType.ARTIST, AttributeType.CIRCLE
-                )
+                onAttrButtonClick(excludeClicked, AttributeType.ARTIST, AttributeType.CIRCLE)
             }
             textCategorySeries.setOnClickListener {
-                onAttrButtonClick(
-                    excludeClicked, AttributeType.SERIE
-                )
+                onAttrButtonClick(excludeClicked, AttributeType.SERIE)
             }
             textCategoryCharacter.setOnClickListener {
-                onAttrButtonClick(
-                    excludeClicked, AttributeType.CHARACTER
-                )
+                onAttrButtonClick(excludeClicked, AttributeType.CHARACTER)
             }
             textCategoryLanguage.setOnClickListener {
-                onAttrButtonClick(
-                    excludeClicked, AttributeType.LANGUAGE
-                )
+                onAttrButtonClick(excludeClicked, AttributeType.LANGUAGE)
             }
             textCategorySource.setOnClickListener {
-                onAttrButtonClick(
-                    excludeClicked, AttributeType.SOURCE
-                )
+                onAttrButtonClick(excludeClicked, AttributeType.SOURCE)
             }
-            excludeCheckbox.setOnClickListener { view: View ->
-                onExcludeClick(view)
-            }
+            excludeCheckbox.setOnClickListener { onExcludeClick(it) }
             excludeCheckbox.isChecked = excludeClicked
             val llm =
                 LinearLayoutManager(this@SearchActivity, LinearLayoutManager.HORIZONTAL, false)
             searchTags.layoutManager = llm
             selectedAttributeAdapter = SelectedAttributeAdapter()
-            selectedAttributeAdapter.setOnClickListener { button: View ->
-                onSelectedAttributeClick(button)
-            }
+            selectedAttributeAdapter.setOnClickListener { onSelectedAttributeClick(it) }
             selectedAttributeAdapter.registerAdapterDataObserver(object : AdapterDataObserver() {
                 // Auto-Scroll to last added item
                 override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
@@ -181,19 +168,17 @@ class SearchActivity : BaseActivity() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         excludeClicked = savedInstanceState.getBoolean("exclude")
-        val searchUri = Uri.parse(SearchActivityBundle(savedInstanceState).uri)
-        if (searchUri != null) {
-            val (_, attributes, location, contentType) = parseSearchUri(searchUri)
-            if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes.toList())
-            binding?.apply {
-                if (location.value > 0) {
-                    viewModel.setLocation(location)
-                    locationPicker.index = location.value
-                }
-                if (contentType.value > 0) {
-                    viewModel.setContentType(contentType)
-                    typePicker.index = contentType.value
-                }
+        val searchUri = SearchActivityBundle(savedInstanceState).uri.toUri()
+        val (_, attributes, location, contentType) = parseSearchUri(searchUri)
+        if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes.toList())
+        binding?.apply {
+            if (location.value > 0) {
+                viewModel.setLocation(location)
+                locationPicker.index = location.value
+            }
+            if (contentType.value > 0) {
+                viewModel.setContentType(contentType)
+                typePicker.index = contentType.value
             }
         }
     }

@@ -1,12 +1,12 @@
 package me.devsaki.hentoid.fragments.preferences
 
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -201,7 +201,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     private fun onExternalFolderChanged() {
         val storageFolderPref: Preference? =
             findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
-        val uri = Uri.parse(Settings.externalLibraryUri)
+        val uri = Settings.externalLibraryUri.toUri()
         storageFolderPref?.summary = getFullPathFromUri(requireContext(), uri)
         // Enable/disable sub-prefs
         val deleteExternalLibrary: Preference? =

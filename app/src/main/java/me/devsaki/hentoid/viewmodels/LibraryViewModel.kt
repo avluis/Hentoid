@@ -76,7 +76,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     private val groupSearchManager: GroupSearchManager = GroupSearchManager(dao)
 
     // Cleanup for all work observers
-    private val workObservers: MutableList<Pair<UUID, Observer<WorkInfo>>> = ArrayList()
+    private val workObservers: MutableList<Pair<UUID, Observer<WorkInfo?>>> = ArrayList()
 
     // Content data
     private var currentSource: LiveData<PagedList<Content>>? = null
@@ -128,8 +128,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         dao.cleanup()
         if (workObservers.isEmpty()) {
             val workManager = WorkManager.getInstance(getApplication())
-            for (info in workObservers) workManager.getWorkInfoByIdLiveData(info.first)
-                .removeObserver(info.second)
+            for (info in workObservers)
+                workManager.getWorkInfoByIdLiveData(info.first).removeObserver(info.second)
         }
     }
 
@@ -753,10 +753,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
         workManager.enqueue(request)
         val workInfoObserver =
-            Observer { workInfo: WorkInfo ->
-                if (workInfo.state.isFinished) {
-                    onSuccess?.run()
-                    refreshAvailableGroupings()
+            Observer { workInfo: WorkInfo? ->
+                workInfo?.let {
+                    if (it.state.isFinished) {
+                        onSuccess?.run()
+                        refreshAvailableGroupings()
+                    }
                 }
             }
         workObservers.add(Pair(request.id, workInfoObserver))

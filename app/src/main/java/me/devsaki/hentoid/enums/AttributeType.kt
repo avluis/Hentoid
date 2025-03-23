@@ -92,7 +92,7 @@ enum class AttributeType(
         R.string.category_source,
         R.string.object_source,
         R.drawable.ic_attribute_source,
-        R.color.black
+        R.color.green
     ),
     UNDEFINED(
         99,

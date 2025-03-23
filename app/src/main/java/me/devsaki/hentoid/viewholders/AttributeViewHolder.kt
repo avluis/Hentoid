@@ -11,7 +11,7 @@ class AttributeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val badge: TextView = itemView.findViewById(R.id.badge)
 
     fun bindTo(attribute: Attribute) {
-        badge.text = AttributeItem.formatAttrBadge(
+        badge.text = formatAttrBadge(
             badge.context,
             attribute,
             attribute.count > 0,
