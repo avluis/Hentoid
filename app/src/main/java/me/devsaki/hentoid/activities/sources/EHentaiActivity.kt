@@ -15,7 +15,7 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.EhentaiContent
 import me.devsaki.hentoid.parsers.images.EHentaiParser
 import me.devsaki.hentoid.parsers.images.EHentaiParser.EhAuthState
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import timber.log.Timber
 
 class EHentaiActivity : BaseWebActivity() {
@@ -53,7 +53,7 @@ class EHentaiActivity : BaseWebActivity() {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             val authState = EHentaiParser.getAuthState(url)
-            if (Preferences.isDownloadEhHires() && authState != EhAuthState.LOGGED && !url.startsWith(
+            if (Settings.isDownloadEhHires && authState != EhAuthState.LOGGED && !url.startsWith(
                     "https://forums.e-hentai.org/index.php"
                 )
             ) {

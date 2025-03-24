@@ -19,7 +19,6 @@ import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment
 import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 
@@ -46,7 +45,7 @@ class IntroActivity : AppIntro2() {
         setSwipeLock(true)
 
         // Set default color theme, in case user skips the slide
-        Preferences.setColorTheme(Preferences.Default.COLOR_THEME)
+        Settings.colorTheme = Settings.Value.COLOR_THEME_LIGHT
         backgroundDrawable = ContextCompat.getDrawable(this, R.drawable.bg_pin_dialog)
     }
 
@@ -95,7 +94,7 @@ class IntroActivity : AppIntro2() {
     }
 
     fun setThemePrefs(pref: Int) {
-        Preferences.setColorTheme(pref)
+        Settings.colorTheme = pref
         applyTheme()
         goToNextSlide(false)
     }

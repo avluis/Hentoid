@@ -7,10 +7,13 @@ import android.text.TextUtils
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.util.Settings.Value.SEARCH_ORDER_ATTRIBUTES_COUNT
+import me.devsaki.hentoid.util.network.Source
 import kotlin.reflect.KProperty
 
 object Settings {
@@ -62,15 +65,15 @@ object Settings {
         settings.entries.forEach {
             it.value?.let { value ->
                 if (value is Int) {
-                    sharedPreferences.edit().putInt(it.key, value).apply()
+                    sharedPreferences.edit { putInt(it.key, value) }
                 } else if (value is String) {
-                    sharedPreferences.edit().putString(it.key, value).apply()
+                    sharedPreferences.edit { putString(it.key, value) }
                 } else if (value is Boolean) {
-                    sharedPreferences.edit().putBoolean(it.key, value).apply()
+                    sharedPreferences.edit { putBoolean(it.key, value) }
                 } else if (value is Float) {
-                    sharedPreferences.edit().putFloat(it.key, value).apply()
+                    sharedPreferences.edit { putFloat(it.key, value) }
                 } else if (value is Long) {
-                    sharedPreferences.edit().putLong(it.key, value).apply()
+                    sharedPreferences.edit { putLong(it.key, value) }
                 }
             }
         }
@@ -115,6 +118,11 @@ object Settings {
     val searchAttributesCount: Boolean by BoolSetting("pref_order_attribute_count", true)
 
     // DOWNLOADER
+    val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
+    val downloadThreadCount: Int by IntSettingStr(
+        Key.DL_THREADS_QUANTITY_LISTS,
+        Value.DOWNLOAD_THREAD_COUNT_AUTO
+    )
 
     // LOCK
     var lockType: Int by IntSettingStr(Key.LOCK_TYPE, 0)
@@ -157,12 +165,42 @@ object Settings {
     var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
 
     // BROWSER
+    val isWebViewOverview: Boolean by BoolSetting("pref_webview_override_overview_lists", false)
     var isBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
     var isAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
+    var webViewInitialZoom: Int by IntSettingStr(
+        "pref_webview_initial_zoom_lists",
+        Default.WEBVIEW_INITIAL_ZOOM
+    )
+    val isBrowserResumeLast: Boolean by BoolSetting("pref_browser_resume_last", false)
+    val isBrowserMarkDownloaded: Boolean by BoolSetting(Key.BROWSER_MARK_DOWNLOADED, false)
+    val isBrowserMarkMerged: Boolean by BoolSetting(Key.BROWSER_MARK_MERGED, false)
+    val isBrowserMarkQueued: Boolean by BoolSetting(Key.BROWSER_MARK_QUEUED, false)
+    val isBrowserMarkBlockedTags: Boolean by BoolSetting(Key.BROWSER_MARK_BLOCKED, false)
+
+    private val browserDlActionInt by IntSettingStr(Key.BROWSER_DL_ACTION, Value.DL_ACTION_DL_PAGES)
+    fun getBrowserDlAction(): DownloadMode {
+        return DownloadMode.Companion.fromValue(browserDlActionInt)
+    }
+
+    val isBrowserQuickDl: Boolean by BoolSetting(Key.BROWSER_QUICK_DL, true)
+    val browserQuickDlThreshold: Int by IntSettingStr(
+        Key.BROWSER_QUICK_DL_THRESHOLD,
+        1500 // 1.5s
+    )
+    val dnsOverHttps: Int by IntSettingStr(
+        Key.BROWSER_DNS_OVER_HTTPS,
+        Source.NONE.value // No DNS
+    )
+    val isBrowserNhentaiInvisibleBlacklist: Boolean by BoolSetting(
+        Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST,
+        false
+    )
+    val http429DefaultDelaySecs: Int by IntSettingStr(Key.DL_HTTP_429_DEFAULT_DELAY, 120)
 
     // READER
     var isReaderResumeLastLeft: Boolean by BoolSetting("pref_viewer_resume_last_left", true)
@@ -171,6 +209,7 @@ object Settings {
 
     var readerColorDepth: Int by IntSettingStr(Key.READER_COLOR_DEPTH, 0)
     private var reader2PagesMode: Boolean by BoolSetting(Key.READER_TWOPAGES, false)
+
     fun getContent2PagesMode(bookPrefs: Map<String, String>): Boolean {
         return bookPrefs.getOrDefault(Key.READER_TWOPAGES, reader2PagesMode.toString()).toBoolean()
     }
@@ -197,7 +236,10 @@ object Settings {
         return readerBrowseMode
     }
 
-    var readerBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
+    var readerBrowseMode: Int by IntSettingStr(
+        Key.VIEWER_BROWSE_MODE,
+        Value.VIEWER_BROWSE_NONE
+    ) // TODO site
 
     fun getContentDirection(bookPrefs: Map<String, String>?): Int {
         return if ((getContentBrowseMode(bookPrefs) == Value.VIEWER_BROWSE_RTL)) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR
@@ -353,6 +395,7 @@ object Settings {
     var arePlugReactionsOn: Boolean by BoolSetting("plug_reactions_on", true)
     val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
     val maxDbSizeKb: Long by LongSetting("db_max_size", 3L * 1024 * 1024) // 3GB
+    var colorTheme: Int by IntSettingStr(Key.COLOR_THEME, Value.COLOR_THEME_LIGHT)
 
 
     // Public Helpers
@@ -374,7 +417,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: ULong) {
-            sharedPreferences.edit().putString(key, value.toString()).apply()
+            sharedPreferences.edit { putString(key, value.toString()) }
         }
     }
 
@@ -384,7 +427,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Long) {
-            sharedPreferences.edit().putString(key, value.toString()).apply()
+            sharedPreferences.edit { putString(key, value.toString()) }
         }
     }
 
@@ -394,7 +437,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
-            sharedPreferences.edit().putString(key, value.toString()).apply()
+            sharedPreferences.edit { putString(key, value.toString()) }
         }
     }
 
@@ -404,7 +447,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Int) {
-            sharedPreferences.edit().putInt(key, value).apply()
+            sharedPreferences.edit { putInt(key, value) }
         }
     }
 
@@ -414,7 +457,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: Boolean) {
-            sharedPreferences.edit().putBoolean(key, value).apply()
+            sharedPreferences.edit { putBoolean(key, value) }
         }
     }
 
@@ -424,7 +467,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: String) {
-            sharedPreferences.edit().putString(key, value).apply()
+            sharedPreferences.edit { putString(key, value) }
         }
     }
 
@@ -438,7 +481,7 @@ object Settings {
         }
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: List<String>) {
-            sharedPreferences.edit().putString(key, TextUtils.join(",", value)).apply()
+            sharedPreferences.edit { putString(key, TextUtils.join(",", value)) }
         }
     }
 
@@ -455,7 +498,7 @@ object Settings {
 
         operator fun setValue(thisRef: Any?, property: KProperty<*>, value: List<Site>) {
             val codes = value.map { it.code }.distinct()
-            sharedPreferences.edit().putString(key, TextUtils.join(",", codes)).apply()
+            sharedPreferences.edit { putString(key, TextUtils.join(",", codes)) }
         }
     }
 
@@ -468,6 +511,7 @@ object Settings {
         const val ANALYTICS_PREFERENCE = "pref_analytics_preference"
         const val BROWSER_MODE = "browser_mode"
         const val FORCE_ENGLISH = "force_english"
+        const val COLOR_THEME = "pref_color_theme"
 
         const val IMPORT_QUEUE_EMPTY = "pref_import_queue_empty"
 
@@ -482,10 +526,23 @@ object Settings {
         const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
         const val ACHIEVEMENTS = "achievements"
         const val ACHIEVEMENTS_NB_AI_RESCALE = "ach_nb_ai_rescale"
+
         const val WEB_AUGMENTED_BROWSER = "pref_browser_augmented"
         const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
         const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
+        const val BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded"
+        const val BROWSER_MARK_MERGED = "browser_mark_merged"
+        const val BROWSER_MARK_QUEUED = "browser_mark_queued"
+        const val BROWSER_MARK_BLOCKED = "browser_mark_blocked"
+        const val BROWSER_DL_ACTION = "pref_browser_dl_action"
+        const val BROWSER_QUICK_DL = "pref_browser_quick_dl"
+        const val BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold"
+        const val BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https"
+        const val BROWSER_CLEAR_COOKIES = "pref_browser_clear_cookies"
+        const val BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist"
+        const val DL_HTTP_429_DEFAULT_DELAY = "pref_dl_http_429_default_delay"
+
         const val TEXT_SELECT_MENU = "TEXT_SELECT_MENU"
         const val APP_LOCK = "pref_app_lock"
         const val ENDLESS_SCROLL = "pref_endless_scroll"
@@ -497,6 +554,8 @@ object Settings {
         const val PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method"
         const val PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc"
         const val EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete"
+
+        const val DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists"
 
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val READER_TWOPAGES = "reader_two_pages"
@@ -525,6 +584,7 @@ object Settings {
     object Default {
         const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
         const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
+        const val WEBVIEW_INITIAL_ZOOM = 20
     }
 
     object Value {
@@ -541,6 +601,8 @@ object Settings {
             Site.DOUJINS
         )
         val ACTIVE_SITES: String = TextUtils.join(",", DEFAULT_SITES.map { it.code })
+
+        const val DOWNLOAD_THREAD_COUNT_AUTO = 0
 
         const val TARGET_FOLDER_DOWNLOADS = "downloads"
 
@@ -576,6 +638,10 @@ object Settings {
         const val FOLDER_NAMING_CONTENT_TITLE_ID = 1
         const val FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2
         const val FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3
+
+        const val DL_ACTION_DL_PAGES = 0
+        const val DL_ACTION_STREAM = 1
+        const val DL_ACTION_ASK = 2
 
         const val VIEWER_DISPLAY_FIT = 0
         const val VIEWER_DISPLAY_FILL = 1
@@ -641,5 +707,9 @@ object Settings {
         const val READER_AUTO_ROTATE_NONE = 0
         const val READER_AUTO_ROTATE_LEFT = 1
         const val READER_AUTO_ROTATE_RIGHT = 2
+
+        val COLOR_THEME_LIGHT = Theme.LIGHT.id
+        val COLOR_THEME_DARK = Theme.DARK.id
+        val COLOR_THEME_BLACK = Theme.BLACK.id
     }
 }

@@ -11,7 +11,7 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 @JsonClass(generateAdapter = true)
 data class JsonContent(
@@ -68,7 +68,7 @@ data class JsonContent(
         c.chaptersList.map { JsonChapter(it) },
         c.errorList.map { JsonErrorRecord(it) },
         c.groupItemList.filter {
-            it.linkedGroup?.run { grouping == Grouping.CUSTOM || hasCustomBookOrder } ?: false
+            it.linkedGroup?.run { grouping == Grouping.CUSTOM || hasCustomBookOrder } == true
         }.map { JsonGroupItem(it) },
         c.isFrozen
     )
@@ -84,15 +84,15 @@ data class JsonContent(
             downloadCompletionDate = if ((downloadCompletionDate ?: 0) > 0) downloadCompletionDate
                 ?: 0 else downloadDate,
             status = status,
-            favourite = favourite ?: false,
+            favourite = favourite == true,
             rating = rating ?: 0,
-            completed = completed ?: false,
+            completed = completed == true,
             reads = reads ?: 0,
             lastReadDate = lastReadDate ?: 0,
             lastReadPageIndex = lastReadPageIndex ?: 0,
             bookPreferences = bookPreferences ?: HashMap(),
             downloadMode = DownloadMode.fromValue(
-                downloadMode ?: Preferences.Constant.DL_ACTION_DL_PAGES
+                downloadMode ?: Settings.Value.DL_ACTION_DL_PAGES
             ),
             manuallyMerged = manuallyMerged == true
         )

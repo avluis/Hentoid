@@ -14,7 +14,7 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.pause
 import timber.log.Timber
@@ -35,7 +35,7 @@ class CloudflareHelper {
         handler.post {
             this.webView = try {
                 CloudflareWebView(HentoidApp.getInstance())
-            } catch (e: Resources.NotFoundException) {
+            } catch (_: Resources.NotFoundException) {
                 // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
                 // Creating with the application Context fixes this, but is not generally recommended for view creation
                 CloudflareWebView(getFixedContext(HentoidApp.getInstance()))
@@ -125,7 +125,7 @@ class CloudflareHelper {
                 it.loadWithOverviewMode = true
             }
             if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
-            client = CloudflareWebViewClient(Preferences.getDnsOverHttps() > -1)
+            client = CloudflareWebViewClient(Settings.dnsOverHttps > -1)
             webViewClient = client
         }
 

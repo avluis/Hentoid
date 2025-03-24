@@ -9,7 +9,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.network.getOnlineResource
 import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
@@ -111,7 +111,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
 
         // TODO optimize, factorize
         private fun sendRequest(request: WebResourceRequest): WebResourceResponse? {
-            if (Preferences.getDnsOverHttps() > -1) {
+            if (Settings.dnsOverHttps > -1) {
                 // Query resource using OkHttp
                 val urlStr = request.url.toString()
                 val requestHeadersList =

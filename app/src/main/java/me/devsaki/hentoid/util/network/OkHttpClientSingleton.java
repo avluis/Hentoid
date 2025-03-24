@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.core.HentoidApp;
-import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.Settings;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -96,7 +96,7 @@ public class OkHttpClientSingleton {
                 .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS);
 
         // Add DNS over HTTPS if needed
-        Source doHSource = Source.Companion.fromValue(Preferences.getDnsOverHttps());
+        Source doHSource = Source.Companion.fromValue(Settings.INSTANCE.getDnsOverHttps());
         if (doHSource != Source.NONE) {
             DnsOverHttps dns = new DnsOverHttps.Builder()
                     .client(primaryClient)

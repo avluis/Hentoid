@@ -873,7 +873,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         Timber.v("Prefs change detected : %s", key)
         AchievementsManager.checkPrefs()
         when (key) {
-            Preferences.Key.COLOR_THEME,
+            Settings.Key.COLOR_THEME,
             Settings.Key.LIBRARY_DISPLAY,
             Settings.Key.LIBRARY_DISPLAY_GRID_STORAGE,
             Settings.Key.LIBRARY_DISPLAY_GRID_LANG,

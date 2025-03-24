@@ -6,13 +6,7 @@ import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import me.devsaki.hentoid.database.domains.DownloadMode;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.enums.Theme;
-import me.devsaki.hentoid.util.network.Source;
 import timber.log.Timber;
 
 /**
@@ -61,63 +55,6 @@ public final class Preferences {
 
 
     // ======= PROPERTIES GETTERS / SETTERS
-    public static int getWebViewInitialZoom() {
-        return getIntPref(Key.WEBVIEW_INITIAL_ZOOM_LISTS, Default.WEBVIEW_INITIAL_ZOOM);
-    }
-
-    public static boolean getWebViewOverview() {
-        return getBoolPref(Key.WEBVIEW_OVERRIDE_OVERVIEW_LISTS, Default.WEBVIEW_OVERRIDE_OVERVIEW);
-    }
-
-    public static boolean isBrowserResumeLast() {
-        return getBoolPref(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST);
-    }
-
-    public static boolean isBrowserMarkDownloaded() {
-        return getBoolPref(Key.BROWSER_MARK_DOWNLOADED, Default.BROWSER_MARK_DOWNLOADED);
-    }
-
-    public static boolean isBrowserMarkMerged() {
-        return getBoolPref(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_MERGED);
-    }
-
-    public static boolean isBrowserMarkQueued() {
-        return getBoolPref(Key.BROWSER_MARK_QUEUED, Default.BROWSER_MARK_QUEUED);
-    }
-
-    public static boolean isBrowserMarkBlockedTags() {
-        return getBoolPref(Key.BROWSER_MARK_BLOCKED, Default.BROWSER_MARK_BLOCKED);
-    }
-
-    public static DownloadMode getBrowserDlAction() {
-        return DownloadMode.Companion.fromValue(getIntPref(Key.BROWSER_DL_ACTION, Default.BROWSER_DL_ACTION));
-    }
-
-    public static boolean isBrowserQuickDl() {
-        return getBoolPref(Key.BROWSER_QUICK_DL, Default.BROWSER_QUICK_DL);
-    }
-
-    public static int getBrowserQuickDlThreshold() {
-        return getIntPref(Key.BROWSER_QUICK_DL_THRESHOLD, Default.BROWSER_QUICK_DL_THRESHOLD);
-    }
-
-    public static int getDnsOverHttps() {
-        return getIntPref(Key.BROWSER_DNS_OVER_HTTPS, Default.BROWSER_DNS_OVER_HTTPS);
-    }
-
-    public static boolean isBrowserNhentaiInvisibleBlacklist() {
-        return getBoolPref(Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST, Default.BROWSER_NHENTAI_INVISIBLE_BLACKLIST);
-    }
-
-    public static int getDownloadThreadCount() {
-        return getIntPref(Key.DL_THREADS_QUANTITY_LISTS, Default.DL_THREADS_QUANTITY);
-    }
-
-    public static int getHttp429DefaultDelaySecs() {
-        return getIntPref(Key.DL_HTTP_429_DEFAULT_DELAY, Default.DL_HTTP_429_DEFAULT_DELAY);
-    }
-
-
     public static int getLastKnownAppVersionCode() {
         return getIntPref(Key.LAST_KNOWN_APP_VERSION_CODE, 0);
     }
@@ -170,13 +107,6 @@ public final class Preferences {
         return getIntPref(Key.DL_BLOCKED_TAG_BEHAVIOUR, Default.DL_BLOCKED_TAGS_BEHAVIOUR);
     }
 
-    public static int getColorTheme() {
-        return getIntPref(Key.COLOR_THEME, Default.COLOR_THEME);
-    }
-
-    public static void setColorTheme(int colorTheme) {
-        sharedPreferences.edit().putString(Key.COLOR_THEME, Integer.toString(colorTheme)).apply();
-    }
 
     public static boolean isLockOnAppRestore() {
         return getBoolPref(Key.LOCK_ON_APP_RESTORE, Default.LOCK_ON_APP_RESTORE);
@@ -302,10 +232,6 @@ public final class Preferences {
         sharedPreferences.edit().putBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, value).apply();
     }
 
-    public static boolean isDownloadEhHires() {
-        return getBoolPref(Key.DL_EH_HIRES, Default.DL_EH_HIRES);
-    }
-
 
     public static final class Key {
 
@@ -320,21 +246,7 @@ public final class Preferences {
         public static final String EXTERNAL_LIBRARY = "pref_external_library";
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         public static final String STORAGE_MANAGEMENT = "storage_mgt";
-        static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
-        static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
-        static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
-        public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
-        public static final String BROWSER_MARK_MERGED = "browser_mark_merged";
-        public static final String BROWSER_MARK_QUEUED = "browser_mark_queued";
-        public static final String BROWSER_MARK_BLOCKED = "browser_mark_blocked";
-        public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
-        public static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
-        public static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
-        public static final String BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https";
-        public static final String BROWSER_CLEAR_COOKIES = "pref_browser_clear_cookies";
-        public static final String BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
-        public static final String COLOR_THEME = "pref_color_theme";
         static final String QUEUE_AUTOSTART = "pref_queue_autostart";
         static final String QUEUE_NEW_DOWNLOADS_POSITION = "pref_queue_new_position";
         static final String QUEUE_WIFI_ONLY = "pref_queue_wifi_only";
@@ -346,9 +258,6 @@ public final class Preferences {
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
         public static final String DL_SPEED_CAP = "dl_speed_cap";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
-        static final String DL_EH_HIRES = "pref_dl_eh_hires";
-        public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
-        public static final String DL_HTTP_429_DEFAULT_DELAY = "pref_dl_http_429_default_delay";
         public static final String ACTIVE_SITES = "active_sites";
         static final String LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
         static final String LOCK_TIMER = "pref_lock_timer";
@@ -377,21 +286,6 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
-        public static final int WEBVIEW_INITIAL_ZOOM = 20;
-        static final boolean BROWSER_RESUME_LAST = false;
-        static final boolean BROWSER_MARK_DOWNLOADED = false;
-        static final boolean BROWSER_MARK_MERGED = false;
-        static final boolean BROWSER_MARK_QUEUED = false;
-        static final boolean BROWSER_MARK_BLOCKED = false;
-        static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
-        static final boolean BROWSER_QUICK_DL = true;
-        static final int BROWSER_QUICK_DL_THRESHOLD = 1500; // 1.5s
-        static final int BROWSER_DNS_OVER_HTTPS = Source.NONE.getValue(); // No DNS
-        static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
-        static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
-        static final int DL_HTTP_429_DEFAULT_DELAY = 120;
-        public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;
         public static final int QUEUE_NEW_DOWNLOADS_POSITION = Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
         static final boolean QUEUE_WIFI_ONLY = false;
@@ -401,7 +295,6 @@ public final class Preferences {
         static final boolean DL_RETRIES_ACTIVE = false;
         static final int DL_RETRIES_NUMBER = 5;
         static final int DL_RETRIES_MEM_LIMIT = 100;
-        static final boolean DL_EH_HIRES = false;
         static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         // Default menu in v1.9.x
@@ -432,8 +325,6 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
-
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
 
         public static final int QUEUE_NEW_DOWNLOADS_POSITION_TOP = 0;
@@ -443,19 +334,11 @@ public final class Preferences {
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
 
-        public static final int DL_ACTION_DL_PAGES = 0;
-        public static final int DL_ACTION_STREAM = 1;
-        public static final int DL_ACTION_ASK = 2;
-
         public static final int DL_SPEED_CAP_NONE = -1;
         public static final int DL_SPEED_CAP_100 = 0;
         public static final int DL_SPEED_CAP_200 = 1;
         public static final int DL_SPEED_CAP_400 = 2;
         public static final int DL_SPEED_CAP_800 = 3;
-
-        public static final int COLOR_THEME_LIGHT = Theme.LIGHT.getId();
-        public static final int COLOR_THEME_DARK = Theme.DARK.getId();
-        public static final int COLOR_THEME_BLACK = Theme.BLACK.getId();
 
         public static final int LOCK_TIMER_OFF = 0;
         public static final int LOCK_TIMER_10S = 1;

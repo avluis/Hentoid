@@ -233,7 +233,7 @@ object AppStartup {
         Timber.i("Send Firebase stats : start")
         try {
             FirebaseAnalytics.getInstance(context).setUserProperty(
-                "color_theme", Preferences.getColorTheme().toString()
+                "color_theme", Settings.colorTheme.toString()
             )
             FirebaseAnalytics.getInstance(context).setUserProperty(
                 "endless", Settings.endlessScroll.toString()

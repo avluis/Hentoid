@@ -11,6 +11,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +33,6 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.selectX
 import me.devsaki.hentoid.util.AdBlocker
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
@@ -126,11 +126,11 @@ open class CustomWebViewClient : WebViewClient {
     val adBlocker: AdBlocker
 
     // Faster access to Preferences settings
-    private val markDownloaded = AtomicBoolean(Preferences.isBrowserMarkDownloaded())
-    private val markMerged = AtomicBoolean(Preferences.isBrowserMarkMerged())
-    private val markQueued = AtomicBoolean(Preferences.isBrowserMarkQueued())
-    private val markBlockedTags = AtomicBoolean(Preferences.isBrowserMarkBlockedTags())
-    private val dnsOverHttpsEnabled = AtomicBoolean(Preferences.getDnsOverHttps() > -1)
+    private val markDownloaded = AtomicBoolean(Settings.isBrowserMarkDownloaded)
+    private val markMerged = AtomicBoolean(Settings.isBrowserMarkMerged)
+    private val markQueued = AtomicBoolean(Settings.isBrowserMarkQueued)
+    private val markBlockedTags = AtomicBoolean(Settings.isBrowserMarkBlockedTags)
+    private val dnsOverHttpsEnabled = AtomicBoolean(Settings.dnsOverHttps > -1)
 
 
     // List of elements (CSS selector) to be removed before displaying the page
@@ -346,7 +346,7 @@ open class CustomWebViewClient : WebViewClient {
      */
     fun seekResultsUrl(url: String, pageNum: Int): String {
         return if (null == resultsUrlRewriter || !isResultsPage(url) || isGalleryPage(url)) url
-        else resultsUrlRewriter!!.invoke(Uri.parse(url), pageNum)
+        else resultsUrlRewriter!!.invoke(url.toUri(), pageNum)
     }
 
     /**
@@ -393,7 +393,7 @@ open class CustomWebViewClient : WebViewClient {
                 }
             }
         }
-        val host = Uri.parse(url).host
+        val host = url.toUri().host
         return host != null && isHostNotInRestrictedDomains(host)
     }
 
@@ -524,7 +524,7 @@ open class CustomWebViewClient : WebViewClient {
                 && (getExtensionFromUri(url).isEmpty()
                         || getExtensionFromUri(url).equals("html", ignoreCase = true))
             ) {
-                val host = Uri.parse(url).host
+                val host = url.toUri().host
                 if (host != null && !isHostNotInRestrictedDomains(host))
                     return parseResponse(
                         url,
@@ -617,7 +617,7 @@ open class CustomWebViewClient : WebViewClient {
             )
         } catch (e: MalformedURLException) {
             Timber.e(e, "Malformed URL : %s", url)
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             // If fast method occurred timeout, reconnect with non-fast method
             Timber.d("Timeout; Reconnect with non-fast method : %s", url)
             try {
@@ -921,12 +921,12 @@ open class CustomWebViewClient : WebViewClient {
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
                             for (i in 0 until site.bookCardDepth - 1)
-                                if (imgParent != null) imgParent = imgParent!!.parent()
+                                if (imgParent != null) imgParent = imgParent.parent()
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
                         }
-                        markedElement!!.addClass("watermarked")
+                        markedElement.addClass("watermarked")
                         break
                     }
                 }
@@ -937,12 +937,12 @@ open class CustomWebViewClient : WebViewClient {
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
                             for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent!!.parent()
+                                imgParent.parent()
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
                         }
-                        markedElement!!.addClass("watermarked-merged")
+                        markedElement.addClass("watermarked-merged")
                         break
                     }
                 }
@@ -953,12 +953,12 @@ open class CustomWebViewClient : WebViewClient {
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
                             for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent!!.parent()
+                                imgParent.parent()
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
                         }
-                        markedElement!!.addClass("watermarked-queued")
+                        markedElement.addClass("watermarked-queued")
                         break
                     }
                 }

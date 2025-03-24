@@ -18,7 +18,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.getSavedCookieStr
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.JSON_MIME_TYPE
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
@@ -103,7 +103,7 @@ class EHentaiParser : ImageListParser {
             var imageUrl = imageMetadata.url
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains(LIMIT_509_URL)) throw LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry")
-            if (Preferences.isDownloadEhHires()) {
+            if (Settings.isDownloadEhHires) {
                 // Check if the user is logged in
                 if (getAuthState(site.url) != EhAuthState.LOGGED)
                     throw EmptyResultException("You need to be logged in to download full-size images.")
@@ -131,7 +131,7 @@ class EHentaiParser : ImageListParser {
                 // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                 if (imageUrl.contains(LIMIT_509_URL)) throw LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry")
                 val backupUrl: String?
-                if (Preferences.isDownloadEhHires()) {
+                if (Settings.isDownloadEhHires) {
                     // Check if the user is logged in
                     if (getAuthState(site.url) != EhAuthState.LOGGED)
                         throw EmptyResultException("You need to be logged in to download full-size images.")
@@ -493,7 +493,7 @@ class EHentaiParser : ImageListParser {
                         useWebviewAgent,
                         progress
                     )
-                } catch (e: EmptyResultException) {
+                } catch (_: EmptyResultException) {
                     loadClassic(
                         content,
                         galleryDoc,

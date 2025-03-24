@@ -40,11 +40,11 @@ import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -242,10 +242,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
         Preferences.registerPrefsChangedListener(listener)
-        if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls()
-        if (Preferences.isBrowserMarkMerged()) updateMergedBooksUrls()
-        if (Preferences.isBrowserMarkQueued()) updateQueuedBooksUrls()
-        if (Preferences.isBrowserMarkBlockedTags()) updatePrefBlockedTags()
+        if (Settings.isBrowserMarkDownloaded) updateDownloadedBooksUrls()
+        if (Settings.isBrowserMarkMerged) updateMergedBooksUrls()
+        if (Settings.isBrowserMarkQueued) updateQueuedBooksUrls()
+        if (Settings.isBrowserMarkBlockedTags) updatePrefBlockedTags()
         Timber.d("Loading site: %s", getStartSite())
 
         // Toolbar
@@ -291,7 +291,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val bottomAlertCloseButton = findViewById<View>(R.id.bottom_alert_close_btn)
         bottomAlertCloseButton.setOnClickListener { onBottomAlertCloseClick() }
         downloadIcon =
-            if (Preferences.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
+            if (Settings.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
         if (Settings.isBrowserMode) downloadIcon = R.drawable.ic_forbidden_disabled
         binding?.actionButton?.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon))
         displayTopAlertBanner()
@@ -332,7 +332,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
 
             // Priority 2 : Last viewed position, if option enabled
-            if (Preferences.isBrowserResumeLast()) {
+            if (Settings.isBrowserResumeLast) {
                 val siteHistory = dao.selectHistory(getStartSite())
                 if (siteHistory.url.isNotEmpty()) return siteHistory.url
             }
@@ -510,14 +510,14 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 }
             }
         }
-        val bWebViewOverview = Preferences.getWebViewOverview()
-        val webViewInitialZoom = Preferences.getWebViewInitialZoom()
+        val bWebViewOverview = Settings.isWebViewOverview
+        val webViewInitialZoom = Settings.webViewInitialZoom
         if (bWebViewOverview) {
             webView.settings.loadWithOverviewMode = false
             webView.setInitialScale(webViewInitialZoom)
             Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom)
         } else {
-            webView.setInitialScale(Preferences.Default.WEBVIEW_INITIAL_ZOOM)
+            webView.setInitialScale(Settings.Default.WEBVIEW_INITIAL_ZOOM)
             webView.settings.loadWithOverviewMode = true
         }
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
@@ -525,11 +525,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         webView.webViewClient = webClient
 
         // Download immediately on long click on a link / image link
-        if (Preferences.isBrowserQuickDl()) {
+        if (Settings.isBrowserQuickDl) {
             webView.setOnLongTapListener { x: Int, y: Int ->
                 onLongTap(x, y)
             }
-            webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold())
+            webView.setLongClickThreshold(Settings.browserQuickDlThreshold)
         }
         val cookieManager = CookieManager.getInstance()
         cookieManager.setAcceptThirdPartyCookies(webView, true)
@@ -546,7 +546,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         xhrHandler?.let { webView.addJavascriptInterface(XhrHandler(it), "xhrHandler") }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             webSettings.isAlgorithmicDarkeningAllowed =
-                (!Settings.isBrowserForceLightMode && Preferences.getColorTheme() != Constant.COLOR_THEME_LIGHT)
+                (!Settings.isBrowserForceLightMode && Settings.colorTheme != Settings.Value.COLOR_THEME_LIGHT)
         }
     }
 
@@ -1085,7 +1085,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     )
                 )
                 currentContent!!.setErrorLog(errors)
-                currentContent!!.downloadMode = Preferences.getBrowserDlAction()
+                currentContent!!.downloadMode = Settings.getBrowserDlAction()
                 currentContent!!.status = StatusContent.ERROR
                 if (isReplaceDuplicate) currentContent!!.setContentIdToReplace(duplicateId)
                 dao.insertContent(currentContent!!)
@@ -1096,7 +1096,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         val replacementTitleFinal = replacementTitle
         // No reason to block or ignore -> actually add to the queue
-        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == DownloadMode.ASK) {
+        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Settings.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this, webView, this
             ) { position1, _ ->
@@ -1119,12 +1119,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ) { position, _ ->
                 addToQueue(
                     if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
-                    Preferences.getBrowserDlAction(),
+                    Settings.getBrowserDlAction(),
                     isReplaceDuplicate,
                     replacementTitleFinal
                 )
             }
-        } else if (Preferences.getBrowserDlAction() == DownloadMode.ASK) {
+        } else if (Settings.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this,
                 webView, this,
@@ -1140,7 +1140,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } else {
             addToQueue(
                 QueuePosition.entries.first { it.value == Preferences.getQueueNewDownloadPosition() },
-                Preferences.getBrowserDlAction(),
+                Settings.getBrowserDlAction(),
                 isReplaceDuplicate,
                 replacementTitleFinal
             )
@@ -1335,7 +1335,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
             if (null == currentContent) currentContent = onlineContent
             if (isInCollection) {
-                if (!quickDownload) searchForExtraImages(contentDB!!, onlineContent)
+                if (!quickDownload) searchForExtraImages(contentDB, onlineContent)
                 return ContentStatus.IN_COLLECTION
             }
             return if (isInQueue) ContentStatus.IN_QUEUE else ContentStatus.UNKNOWN
@@ -1501,8 +1501,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             // Retrieve the URLs of stored pages
             val storedUrls: MutableSet<String> = HashSet()
             storedContent.imageFiles.let {
-                storedUrls.addAll(it
-                    .filter { isInLibrary(it.status) }.map { it.url }.toList()
+                storedUrls.addAll(
+                    it
+                        .filter { isInLibrary(it.status) }.map { it.url }.toList()
                 )
             }
             // Memorize the title of the online content (to update title of stored book later)
@@ -1719,10 +1720,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     private fun computeCustomCss(): String {
         if (null == m_customCss) {
             val sb = StringBuilder()
-            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged() || Preferences.isBrowserMarkQueued() || Preferences.isBrowserMarkBlockedTags()) getAssetAsString(
+            if (Settings.isBrowserMarkDownloaded || Settings.isBrowserMarkMerged || Settings.isBrowserMarkQueued || Settings.isBrowserMarkBlockedTags) getAssetAsString(
                 assets, "downloaded.css", sb
             )
-            if (getStartSite() == Site.NHENTAI && Preferences.isBrowserNhentaiInvisibleBlacklist()) getAssetAsString(
+            if (getStartSite() == Site.NHENTAI && Settings.isBrowserNhentaiInvisibleBlacklist) getAssetAsString(
                 assets, "nhentai_invisible_blacklist.css", sb
             )
             if (getStartSite() == Site.IMHENTAI) getAssetAsString(
@@ -1750,45 +1751,45 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun onSharedPreferenceChanged(key: String?) {
         var reload = false
-        if (Preferences.Key.BROWSER_DL_ACTION == key) {
+        if (Settings.Key.BROWSER_DL_ACTION == key) {
             downloadIcon =
-                if (Preferences.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
+                if (Settings.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
             setActionMode(actionButtonMode)
-        } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED == key) {
+        } else if (Settings.Key.BROWSER_MARK_DOWNLOADED == key) {
             m_customCss = null
-            webClient.setMarkDownloaded(Preferences.isBrowserMarkDownloaded())
+            webClient.setMarkDownloaded(Settings.isBrowserMarkDownloaded)
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls() else clearDownloadedBooksUrls()
             reload = true
-        } else if (Preferences.Key.BROWSER_MARK_MERGED == key) {
+        } else if (Settings.Key.BROWSER_MARK_MERGED == key) {
             m_customCss = null
-            webClient.setMarkMerged(Preferences.isBrowserMarkMerged())
+            webClient.setMarkMerged(Settings.isBrowserMarkMerged)
             if (webClient.isMarkMerged()) updateMergedBooksUrls() else clearMergedBooksUrls()
             reload = true
-        } else if (Preferences.Key.BROWSER_MARK_QUEUED == key) {
+        } else if (Settings.Key.BROWSER_MARK_QUEUED == key) {
             m_customCss = null
-            webClient.setMarkQueued(Preferences.isBrowserMarkQueued())
+            webClient.setMarkQueued(Settings.isBrowserMarkQueued)
             if (webClient.isMarkQueued()) updateQueuedBooksUrls() else clearQueueBooksUrls()
             reload = true
-        } else if (Preferences.Key.BROWSER_MARK_BLOCKED == key) {
+        } else if (Settings.Key.BROWSER_MARK_BLOCKED == key) {
             m_customCss = null
-            webClient.setMarkBlockedTags(Preferences.isBrowserMarkBlockedTags())
+            webClient.setMarkBlockedTags(Settings.isBrowserMarkBlockedTags)
             if (webClient.isMarkBlockedTags()) updatePrefBlockedTags() else clearPrefBlockedTags()
             reload = true
         } else if (Settings.Key.DL_BLOCKED_TAGS == key) {
             updatePrefBlockedTags()
             reload = true
-        } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST == key) {
+        } else if (Settings.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST == key) {
             m_customCss = null
             reload = true
-        } else if (Preferences.Key.BROWSER_DNS_OVER_HTTPS == key) {
-            webClient.setDnsOverHttpsEnabled(Preferences.getDnsOverHttps() > -1)
+        } else if (Settings.Key.BROWSER_DNS_OVER_HTTPS == key) {
+            webClient.setDnsOverHttpsEnabled(Settings.dnsOverHttps > -1)
             reload = true
-        } else if (Preferences.Key.BROWSER_QUICK_DL == key) {
-            if (Preferences.isBrowserQuickDl()) webView.setOnLongTapListener { x: Int, y: Int ->
+        } else if (Settings.Key.BROWSER_QUICK_DL == key) {
+            if (Settings.isBrowserQuickDl) webView.setOnLongTapListener { x: Int, y: Int ->
                 onLongTap(x, y)
             } else webView.setOnLongTapListener(null)
-        } else if (Preferences.Key.BROWSER_QUICK_DL_THRESHOLD == key) {
-            webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold())
+        } else if (Settings.Key.BROWSER_QUICK_DL_THRESHOLD == key) {
+            webView.setLongClickThreshold(Settings.browserQuickDlThreshold)
         } else if (Settings.Key.WEB_ADBLOCKER == key) {
             if (Settings.isAdBlockerOn && !Settings.isBrowserAugmented)
                 Settings.isBrowserAugmented = true

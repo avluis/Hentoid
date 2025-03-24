@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util.download
 import android.app.ActivityManager
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +11,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.HentoidApp
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton
 import me.devsaki.hentoid.util.pause
 import timber.log.Timber
@@ -191,7 +192,7 @@ class RequestQueueManager private constructor(
             synchronized(waitingRequestQueue) {
                 Timber.d(
                     "Requests queue ::: request executed for host %s - current total (%d active + %d waiting)",
-                    Uri.parse(order.url).host,
+                    order.url.toUri().host,
                     nbActiveRequests,
                     waitingRequestQueue.size
                 )
@@ -209,7 +210,7 @@ class RequestQueueManager private constructor(
             activeRequests.remove(request)
             Timber.v(
                 "Global requests queue ::: request removed for host %s - current total %s",
-                Uri.parse(request.url).host,
+                request.url.toUri().host,
                 nbActiveRequests
             )
         }
@@ -246,8 +247,8 @@ class RequestQueueManager private constructor(
      * @return Number of parallel downloads (download thread count) chosen by the user
      */
     private fun getPreferredThreadCount(context: Context): Int {
-        var result = Preferences.getDownloadThreadCount()
-        if (result == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+        var result = Settings.downloadThreadCount
+        if (result == Settings.Value.DOWNLOAD_THREAD_COUNT_AUTO) {
             result = getSuggestedThreadCount(context)
         }
         return result

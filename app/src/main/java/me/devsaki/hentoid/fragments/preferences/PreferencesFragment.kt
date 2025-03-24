@@ -110,7 +110,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
         // Numbers-only on delay input
         val editTextPreference =
-            preferenceManager.findPreference<EditTextPreference>(Preferences.Key.DL_HTTP_429_DEFAULT_DELAY)
+            preferenceManager.findPreference<EditTextPreference>(Settings.Key.DL_HTTP_429_DEFAULT_DELAY)
         editTextPreference?.setOnBindEditTextListener { editText ->
             editText.inputType = InputType.TYPE_CLASS_NUMBER
         }
@@ -119,15 +119,15 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     override fun onSharedPreferenceChanged(sp: SharedPreferences?, key: String?) {
         if (null == key) return
         when (key) {
-            Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
-            Preferences.Key.DL_THREADS_QUANTITY_LISTS,
+            Settings.Key.COLOR_THEME -> onPrefColorThemeChanged()
+            Settings.Key.DL_THREADS_QUANTITY_LISTS,
             Settings.Key.APP_PREVIEW,
             Settings.Key.FORCE_ENGLISH,
             Settings.Key.TEXT_SELECT_MENU,
             Settings.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
 
             Settings.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
-            Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
+            Settings.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
             Settings.Key.WEB_AUGMENTED_BROWSER -> onAugmentedBrowserChanged()
         }
     }
@@ -164,7 +164,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.BROWSER_CLEAR_COOKIES -> {
+            Settings.Key.BROWSER_CLEAR_COOKIES -> {
                 onClearCookies()
                 true
             }
@@ -223,7 +223,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onDoHChanged() {
-        if (Preferences.getDnsOverHttps() > -1 && listView != null) {
+        if (Settings.dnsOverHttps > -1 && listView != null) {
             val snack = Snackbar.make(
                 listView,
                 R.string.doh_warning,

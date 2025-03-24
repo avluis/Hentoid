@@ -18,7 +18,7 @@ private val colorCache: MutableMap<String, Int> = HashMap()
  * Apply the app's current color theme to the given activity
  */
 fun AppCompatActivity.applyTheme() {
-    val theme = searchById(Preferences.getColorTheme())
+    val theme = searchById(Settings.colorTheme)
     applyTheme(theme)
 }
 
@@ -74,7 +74,7 @@ private fun Activity.getThemeName(): String {
         // PackageManager.GET_META_DATA instead of plain 0 ?
         val themeResourceId = packageManager.getActivityInfo(this.componentName, 0).themeResource
         getThemeName(themeResourceId)
-    } catch (e: PackageManager.NameNotFoundException) {
+    } catch (_: PackageManager.NameNotFoundException) {
         ""
     }
 }
@@ -127,7 +127,7 @@ private fun Context.getColorId(colorName: String): Int {
  * @return Renamed theme according to the app's current color theme
  */
 private fun renameThemeToCurrentTheme(themeName: String): String {
-    val targetTheme = searchById(Preferences.getColorTheme())
+    val targetTheme = searchById(Settings.colorTheme)
     return renameTheme(themeName, targetTheme)
 }
 
@@ -157,7 +157,7 @@ private fun renameTheme(themeName: String, targetTheme: Theme): String {
  * @return Renamed color according to the app's current color theme
  */
 private fun renameColorToCurrentTheme(colorName: String): String {
-    val targetTheme = searchById(Preferences.getColorTheme())
+    val targetTheme = searchById(Settings.colorTheme)
     return renameColorToTheme(colorName, targetTheme)
 }
 
@@ -192,7 +192,7 @@ private fun renameColorToTheme(colorName: String, targetTheme: Theme): String {
  * @return Given color converted to @ColorInt, according to the app's current color theme
  */
 fun Context.getThemedColor(@ColorRes colorId: Int): Int {
-    val key = Preferences.getColorTheme().toString() + "." + colorId
+    val key = Settings.colorTheme.toString() + "." + colorId
     if (colorCache.containsKey(key)) {
         val result = colorCache[key]
         return result ?: 0

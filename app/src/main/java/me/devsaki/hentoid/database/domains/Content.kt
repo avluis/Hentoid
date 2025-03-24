@@ -50,7 +50,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.Site.SiteConverter
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.formatBookAuthor
@@ -65,9 +65,9 @@ import java.io.IOException
 import java.util.Objects
 
 enum class DownloadMode(val value: Int) {
-    DOWNLOAD(Preferences.Constant.DL_ACTION_DL_PAGES), // Download images
-    STREAM(Preferences.Constant.DL_ACTION_STREAM), // Saves the book for on-demande viewing
-    ASK(Preferences.Constant.DL_ACTION_ASK); // Saves the book for on-demande viewing)
+    DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images
+    STREAM(Settings.Value.DL_ACTION_STREAM), // Saves the book for on-demande viewing
+    ASK(Settings.Value.DL_ACTION_ASK); // Saves the book for on-demande viewing)
 
     companion object {
         fun fromValue(v: Int): DownloadMode {

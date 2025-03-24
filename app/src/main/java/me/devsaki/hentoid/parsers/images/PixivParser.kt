@@ -14,7 +14,7 @@ import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_NB_CHAPTERS
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.setRateLimit
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.take
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -231,7 +231,7 @@ class PixivParser : BaseImageListParser() {
             PixivServer.api.getUserIllusts(userId, cookieStr, acceptAll, userAgent).execute()
         if (waitBlocking429(
                 userIllustResp,
-                Preferences.getHttp429DefaultDelaySecs() * 1000
+                Settings.http429DefaultDelaySecs * 1000
             )
         ) {
             waited++
@@ -283,7 +283,7 @@ class PixivParser : BaseImageListParser() {
                     .execute()
             while (waitBlocking429(
                     illustResp,
-                    Preferences.getHttp429DefaultDelaySecs() * 1000
+                    Settings.http429DefaultDelaySecs * 1000
                 ) && waited < 2
             ) {
                 waited++
