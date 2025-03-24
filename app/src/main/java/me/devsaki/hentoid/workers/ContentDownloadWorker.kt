@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.computeAndSaveCoverHash
 import me.devsaki.hentoid.util.download.ContentQueueManager
@@ -473,20 +474,28 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD, content))
 
         // Set up downloader constraints
-        if (content.site.parallelDownloadCap > 0 &&
-            (requestQueueManager.downloadThreadCap > content.site.parallelDownloadCap
+        val siteSoftCap = Settings.getDownloadThreadCount(content.site)
+        val siteHardCap = content.site.parallelDownloadCap
+        if (siteHardCap > 0 &&
+            (requestQueueManager.downloadThreadCap > siteHardCap
                     || -1 == requestQueueManager.downloadThreadCap)
         ) {
-            Timber.d("Setting parallel downloads count to %s", content.site.parallelDownloadCap)
+            Timber.d("Setting parallel downloads count to %s")
             requestQueueManager.initUsingDownloadThreadCount(
                 applicationContext,
-                content.site.parallelDownloadCap,
+                siteHardCap,
+                siteSoftCap,
                 true
             )
         }
-        if (0 == content.site.parallelDownloadCap && requestQueueManager.downloadThreadCap > -1) {
-            Timber.d("Resetting parallel downloads count to default")
-            requestQueueManager.initUsingDownloadThreadCount(applicationContext, -1, true)
+        if (0 == siteHardCap && requestQueueManager.downloadThreadCap > -1) {
+            Timber.d("Resetting parallel downloads count to default ($siteSoftCap)")
+            requestQueueManager.initUsingDownloadThreadCount(
+                applicationContext,
+                -1,
+                siteSoftCap,
+                true
+            )
         }
         requestQueueManager.setNbRequestsPerSecond(content.site.requestsCapPerSecond)
         requestQueueManager.start()

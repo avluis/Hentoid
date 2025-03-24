@@ -45,7 +45,7 @@ class RequestQueueManager private constructor(
 
 
     init {
-        downloadThreadCount = getPreferredThreadCount(context)
+        downloadThreadCount = getPreferredThreadCount(context, -1)
         init(resetActiveRequests = false, cancelQueue = true)
     }
 
@@ -70,14 +70,21 @@ class RequestQueueManager private constructor(
     /**
      * Initialize the request queue
      *
-     * @param ctx         Context to use
-     * @param nbDlThreads Number of parallel downloads to use; -1 to use automated recommendation
-     * @param cancelQueue True if queued requests should be canceled; false if it should be kept intact
+     * @param ctx               Context to use
+     * @param nbDlThreads       Number of parallel downloads to use; -1 to use automated recommendation
+     * @param siteDlThreadCount Number of parallel downloads set on site level
+     * @param cancelQueue       True if queued requests should be canceled; false if it should be kept intact
      */
-    fun initUsingDownloadThreadCount(ctx: Context, nbDlThreads: Int, cancelQueue: Boolean) {
+    fun initUsingDownloadThreadCount(
+        ctx: Context,
+        nbDlThreads: Int,
+        siteDlThreadCount: Int,
+        cancelQueue: Boolean
+    ) {
         downloadThreadCap = nbDlThreads
         downloadThreadCount = nbDlThreads
-        if (-1 == downloadThreadCap) downloadThreadCount = getPreferredThreadCount(ctx)
+        if (-1 == downloadThreadCap) downloadThreadCount =
+            getPreferredThreadCount(ctx, siteDlThreadCount)
         init(false, cancelQueue)
     }
 
@@ -246,8 +253,8 @@ class RequestQueueManager private constructor(
      * @param context Context to use
      * @return Number of parallel downloads (download thread count) chosen by the user
      */
-    private fun getPreferredThreadCount(context: Context): Int {
-        var result = Settings.downloadThreadCount
+    private fun getPreferredThreadCount(context: Context, siteDlThreadCount: Int): Int {
+        var result = siteDlThreadCount
         if (result == Settings.Value.DOWNLOAD_THREAD_COUNT_AUTO) {
             result = getSuggestedThreadCount(context)
         }

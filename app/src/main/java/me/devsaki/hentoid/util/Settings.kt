@@ -119,7 +119,23 @@ object Settings {
 
     // DOWNLOADER
     val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
-    val downloadThreadCount: Int by IntSettingStr(
+    fun getDownloadThreadCount(site: Site): Int {
+        return (sharedPreferences.getString(
+            Key.DL_THREADS_QUANTITY_LISTS + "." + site.name,
+            appDownloadThreadCount.toString()
+        ) + "").toInt()
+    }
+
+    fun setDownloadThreadCount(site: Site, value: Int) {
+        sharedPreferences.edit {
+            putString(
+                Key.DL_THREADS_QUANTITY_LISTS + "." + site.name,
+                value.toString()
+            )
+        }
+    }
+
+    private val appDownloadThreadCount: Int by IntSettingStr(
         Key.DL_THREADS_QUANTITY_LISTS,
         Value.DOWNLOAD_THREAD_COUNT_AUTO
     )
@@ -166,12 +182,16 @@ object Settings {
 
     // BROWSER
     val isWebViewOverview: Boolean by BoolSetting("pref_webview_override_overview_lists", false)
+
+    // TODO site
     var isBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
     var isAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
+
+    // TODO site
     var webViewInitialZoom: Int by IntSettingStr(
         "pref_webview_initial_zoom_lists",
         Default.WEBVIEW_INITIAL_ZOOM
@@ -236,10 +256,8 @@ object Settings {
         return readerBrowseMode
     }
 
-    var readerBrowseMode: Int by IntSettingStr(
-        Key.VIEWER_BROWSE_MODE,
-        Value.VIEWER_BROWSE_NONE
-    ) // TODO site
+    // TODO site
+    var readerBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
 
     fun getContentDirection(bookPrefs: Map<String, String>?): Int {
         return if ((getContentBrowseMode(bookPrefs) == Value.VIEWER_BROWSE_RTL)) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR

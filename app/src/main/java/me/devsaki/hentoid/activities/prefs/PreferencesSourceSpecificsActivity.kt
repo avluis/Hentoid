@@ -91,6 +91,7 @@ class PreferencesSourceSpecificsActivity : BaseActivity() {
     }
 
     private fun onChanged(prefs: SharedPreferences, item: PreferenceItem, value: String) {
+        // TODO edit site (key.Site.Name)
         if (item.dataType == PreferenceItem.DataType.BOOL)
             prefs.edit { putBoolean(item.key, value.toBoolean()) }
         else
