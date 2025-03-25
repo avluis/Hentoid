@@ -360,7 +360,7 @@ open class CustomWebViewClient : WebViewClient {
      * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
      */
     private fun canUseSingleOkHttpRequest(): Boolean {
-        return (Settings.isBrowserAugmented && (getChromeVersion() < 45 || getChromeVersion() > 71))
+        return (Settings.isBrowserAugmented(site) && (getChromeVersion() < 45 || getChromeVersion() > 71))
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -372,7 +372,7 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldOverrideUrlLoadingInternal(
         view: WebView, url: String, headers: Map<String, String>?, isMainPage: Boolean
     ): Boolean {
-        if (Settings.isBrowserAugmented
+        if (Settings.isBrowserAugmented(site)
             && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
             || !url.startsWith("http")
         ) return true
@@ -486,7 +486,7 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldInterceptRequestInternal(
         url: String, headers: Map<String, String>?, isMainPage: Boolean
     ): WebResourceResponse? {
-        return if (Settings.isBrowserAugmented
+        return if (Settings.isBrowserAugmented(site)
             && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
             || !url.startsWith("http")
         ) {
@@ -856,7 +856,7 @@ open class CustomWebViewClient : WebViewClient {
             doc.head().appendElement("style").attr("type", "text/css").appendText(customCss)
 
         // Remove ad spaces
-        if (Settings.isAdBlockerOn && removableElements != null)
+        if (Settings.isAdBlockerOn(site) && removableElements != null)
             for (s in removableElements)
                 for (e in doc.selectX(s)) {
                     Timber.d("[%s] Removing node %s", baseUri, e.toString())
@@ -864,7 +864,7 @@ open class CustomWebViewClient : WebViewClient {
                 }
 
         // Remove scripts
-        if (Settings.isAdBlockerOn && jsContentBlacklist != null) {
+        if (Settings.isAdBlockerOn(site) && jsContentBlacklist != null) {
             for (e in doc.select("script")) {
                 val scriptContent = e.toString().lowercase(Locale.getDefault())
                 for (s in jsContentBlacklist) {

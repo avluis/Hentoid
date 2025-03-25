@@ -295,7 +295,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (Settings.isBrowserMode) downloadIcon = R.drawable.ic_forbidden_disabled
         binding?.actionButton?.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon))
         displayTopAlertBanner()
-        updateAdblockButton(Settings.isAdBlockerOn)
+        updateAdblockButton(Settings.isAdBlockerOn(getStartSite()))
 
         addCustomBackControl()
     }
@@ -816,7 +816,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "Adblocker" button
      */
     private fun onAdblockClick() {
-        Settings.isAdBlockerOn = !Settings.isAdBlockerOn
+        Settings.setAdBlockerOn(getStartSite(), !Settings.isAdBlockerOn(getStartSite()))
     }
 
     /**
@@ -1735,9 +1735,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (getStartSite() == Site.KSK) getAssetAsString(
                 assets, "ksk.css", sb
             )
-            if (getStartSite() == Site.PIXIV && Settings.isBrowserAugmented) getAssetAsString(
-                assets, "pixiv.css", sb
-            )
+            if (getStartSite() == Site.PIXIV && Settings.isBrowserAugmented(getStartSite()))
+                getAssetAsString(assets, "pixiv.css", sb)
             m_customCss = sb.toString()
         }
         return m_customCss!!
@@ -1791,10 +1790,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } else if (Settings.Key.BROWSER_QUICK_DL_THRESHOLD == key) {
             webView.setLongClickThreshold(Settings.browserQuickDlThreshold)
         } else if (Settings.Key.WEB_ADBLOCKER == key) {
-            if (Settings.isAdBlockerOn && !Settings.isBrowserAugmented)
-                Settings.isBrowserAugmented = true
-            updateAdblockButton(Settings.isAdBlockerOn)
-            webClient.adBlocker.setActive(Settings.isAdBlockerOn)
+            if (Settings.isAdBlockerOn(getStartSite()) && !Settings.isBrowserAugmented(getStartSite()))
+                Settings.setBrowserAugmented(getStartSite(), true)
+            updateAdblockButton(Settings.isAdBlockerOn(getStartSite()))
+            webClient.adBlocker.setActive(Settings.isAdBlockerOn(getStartSite()))
             webView.reload()
         }
         if (reload && !webClient.isLoading()) webView.reload()

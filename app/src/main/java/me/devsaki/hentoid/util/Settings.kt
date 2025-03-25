@@ -182,10 +182,26 @@ object Settings {
 
     // BROWSER
     val isWebViewOverview: Boolean by BoolSetting("pref_webview_override_overview_lists", false)
-
-    // TODO site
-    var isBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
-    var isAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
+    fun isBrowserAugmented(site: Site): Boolean {
+        return (sharedPreferences.getString(
+            Key.WEB_AUGMENTED_BROWSER + "." + site.name,
+            isAppBrowserAugmented.toString()
+        ) + "").toBoolean()
+    }
+    fun setBrowserAugmented(site: Site, value : Boolean) {
+        sharedPreferences.edit { putBoolean(Key.WEB_AUGMENTED_BROWSER + "." + site.name, value) }
+    }
+    var isAppBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
+    fun isAdBlockerOn(site: Site): Boolean {
+        return (sharedPreferences.getString(
+            Key.WEB_ADBLOCKER + "." + site.name,
+            isAppAdBlockerOn.toString()
+        ) + "").toBoolean()
+    }
+    fun setAdBlockerOn(site: Site, value : Boolean) {
+        sharedPreferences.edit { putBoolean(Key.WEB_ADBLOCKER + "." + site.name, value) }
+    }
+    var isAppAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")

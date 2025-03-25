@@ -253,6 +253,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onAugmentedBrowserChanged() {
-        Settings.isAdBlockerOn = Settings.isBrowserAugmented
+        Settings.isAppAdBlockerOn = Settings.isAppBrowserAugmented
     }
 }
