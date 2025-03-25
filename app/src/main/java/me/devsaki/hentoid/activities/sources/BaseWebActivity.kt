@@ -511,7 +511,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
         }
         val bWebViewOverview = Settings.isWebViewOverview
-        val webViewInitialZoom = Settings.webViewInitialZoom
+        val webViewInitialZoom = Settings.getWebViewInitialZoom(getStartSite())
         if (bWebViewOverview) {
             webView.settings.loadWithOverviewMode = false
             webView.setInitialScale(webViewInitialZoom)

@@ -188,9 +188,11 @@ object Settings {
             isAppBrowserAugmented.toString()
         ) + "").toBoolean()
     }
-    fun setBrowserAugmented(site: Site, value : Boolean) {
+
+    fun setBrowserAugmented(site: Site, value: Boolean) {
         sharedPreferences.edit { putBoolean(Key.WEB_AUGMENTED_BROWSER + "." + site.name, value) }
     }
+
     var isAppBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
     fun isAdBlockerOn(site: Site): Boolean {
         return (sharedPreferences.getString(
@@ -198,20 +200,30 @@ object Settings {
             isAppAdBlockerOn.toString()
         ) + "").toBoolean()
     }
-    fun setAdBlockerOn(site: Site, value : Boolean) {
+
+    fun setAdBlockerOn(site: Site, value: Boolean) {
         sharedPreferences.edit { putBoolean(Key.WEB_ADBLOCKER + "." + site.name, value) }
     }
+
     var isAppAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
+    fun getWebViewInitialZoom(site: Site): Int {
+        return (sharedPreferences.getString(
+            Key.BROWSER_ZOOM + "." + site.name,
+            appWebViewInitialZoom.toString()
+        ) + "").toInt()
+    }
 
-    // TODO site
-    var webViewInitialZoom: Int by IntSettingStr(
-        "pref_webview_initial_zoom_lists",
-        Default.WEBVIEW_INITIAL_ZOOM
-    )
+    fun setWebViewInitialZoom(site: Site, value: Int) {
+        sharedPreferences.edit {
+            putString(Key.BROWSER_ZOOM + "." + site.name, value.toString())
+        }
+    }
+
+    var appWebViewInitialZoom: Int by IntSettingStr(Key.BROWSER_ZOOM, Default.WEBVIEW_INITIAL_ZOOM)
     val isBrowserResumeLast: Boolean by BoolSetting("pref_browser_resume_last", false)
     val isBrowserMarkDownloaded: Boolean by BoolSetting(Key.BROWSER_MARK_DOWNLOADED, false)
     val isBrowserMarkMerged: Boolean by BoolSetting(Key.BROWSER_MARK_MERGED, false)
@@ -565,6 +577,7 @@ object Settings {
         const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
         const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
+        const val BROWSER_ZOOM = "pref_webview_initial_zoom_lists"
         const val BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded"
         const val BROWSER_MARK_MERGED = "browser_mark_merged"
         const val BROWSER_MARK_QUEUED = "browser_mark_queued"
