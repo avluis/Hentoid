@@ -161,7 +161,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
     private val listener =
         OnSharedPreferenceChangeListener { _, key: String? ->
-            onSharedPreferenceChanged(key)
+            onSharedPreferenceChanged(key ?: "")
         }
 
     // === UI
@@ -252,9 +252,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Top toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         tryShowMenuIcons(this, toolbar.menu)
-        toolbar.setOnMenuItemClickListener { item ->
-            this.onMenuItemSelected(item)
-        }
+        toolbar.setOnMenuItemClickListener { this.onMenuItemSelected(it) }
         toolbar.title = getStartSite().description
         toolbar.setOnClickListener { loadUrl(getStartSite().url) }
 
@@ -1748,7 +1746,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      *
      * @param key   Key that has been changed
      */
-    private fun onSharedPreferenceChanged(key: String?) {
+    private fun onSharedPreferenceChanged(key: String) {
         var reload = false
         if (Settings.Key.BROWSER_DL_ACTION == key) {
             downloadIcon =
@@ -1789,7 +1787,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             } else webView.setOnLongTapListener(null)
         } else if (Settings.Key.BROWSER_QUICK_DL_THRESHOLD == key) {
             webView.setLongClickThreshold(Settings.browserQuickDlThreshold)
-        } else if (Settings.Key.WEB_ADBLOCKER == key) {
+        } else if (key.startsWith(Settings.Key.WEB_ADBLOCKER)) {
             if (Settings.isAdBlockerOn(getStartSite()) && !Settings.isBrowserAugmented(getStartSite()))
                 Settings.setBrowserAugmented(getStartSite(), true)
             updateAdblockButton(Settings.isAdBlockerOn(getStartSite()))

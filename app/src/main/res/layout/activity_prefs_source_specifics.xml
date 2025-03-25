@@ -15,11 +15,10 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/prefs_source_specifics_menu"
         app:navigationIcon="@drawable/ic_close" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/drawer_edit_list"
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"

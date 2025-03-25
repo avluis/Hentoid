@@ -195,10 +195,7 @@ object Settings {
 
     var isAppBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
     fun isAdBlockerOn(site: Site): Boolean {
-        return (sharedPreferences.getString(
-            Key.WEB_ADBLOCKER + "." + site.name,
-            isAppAdBlockerOn.toString()
-        ) + "").toBoolean()
+        return sharedPreferences.getBoolean(Key.WEB_ADBLOCKER + "." + site.name, isAppAdBlockerOn)
     }
 
     fun setAdBlockerOn(site: Site, value: Boolean) {
@@ -262,7 +259,7 @@ object Settings {
         return bookPrefs.getOrDefault(Key.READER_TWOPAGES, reader2PagesMode.toString()).toBoolean()
     }
 
-    fun getContentDisplayMode(site : Site, bookPrefs: Map<String, String>): Int {
+    fun getContentDisplayMode(site: Site, bookPrefs: Map<String, String>): Int {
         if (Value.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(site, bookPrefs)) {
             if (bookPrefs.containsKey(Key.VIEWER_IMAGE_DISPLAY)) {
                 val value = bookPrefs[Key.VIEWER_IMAGE_DISPLAY]
@@ -299,12 +296,20 @@ object Settings {
 
     var appReaderBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
 
-    fun getContentDirection(site : Site, bookPrefs: Map<String, String>?): Int {
-        return if ((getContentBrowseMode(site, bookPrefs) == Value.VIEWER_BROWSE_RTL)) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR
+    fun getContentDirection(site: Site, bookPrefs: Map<String, String>?): Int {
+        return if ((getContentBrowseMode(
+                site,
+                bookPrefs
+            ) == Value.VIEWER_BROWSE_RTL)
+        ) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR
     }
 
-    private fun getContentOrientation(site : Site, bookPrefs: Map<String, String>): Int {
-        return if ((getContentBrowseMode(site, bookPrefs) == Value.VIEWER_BROWSE_TTB)) Value.VIEWER_ORIENTATION_VERTICAL else Value.VIEWER_ORIENTATION_HORIZONTAL
+    private fun getContentOrientation(site: Site, bookPrefs: Map<String, String>): Int {
+        return if ((getContentBrowseMode(
+                site,
+                bookPrefs
+            ) == Value.VIEWER_BROWSE_TTB)
+        ) Value.VIEWER_ORIENTATION_VERTICAL else Value.VIEWER_ORIENTATION_HORIZONTAL
     }
 
     fun isContentSmoothRendering(bookPrefs: Map<String, String>): Boolean {

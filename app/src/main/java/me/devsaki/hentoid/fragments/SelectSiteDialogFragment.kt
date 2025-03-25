@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
@@ -27,6 +29,17 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
         private const val UNIQUE_ID_ONLY = "UNIQUE_ID_ONLY"
         private const val ALT_SITES = "ALT_SITES"
         private const val TITLE = "TITLE"
+
+        fun invoke(
+            activity: FragmentActivity,
+            title: String,
+            includedSiteCodes: List<Int> = emptyList(),
+            uniqueIdOnly: Boolean = false,
+            showAltSites: Boolean = false,
+        ): DialogFragment {
+            val args = getArgs(title, includedSiteCodes, uniqueIdOnly, showAltSites)
+            return invoke(activity, SelectSiteDialogFragment(), args, isCancelable = true)
+        }
 
         fun invoke(
             fragment: Fragment,
@@ -59,9 +72,9 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogSelectSiteBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {

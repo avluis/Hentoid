@@ -21,17 +21,14 @@ private val INVISIBLE_SITES = setOf(
     Site.FAKKU2,  // Dropped after Fakku decided to flag downloading accounts and IPs
     Site.ASMHENTAI_COMICS,  // Does not work directly
     Site.PANDA,  // Dropped; kept for retrocompatibility
+    Site.ANY, // Technical fallback
     Site.NONE // Technical fallback
 )
 
 enum class Site(val code: Int, val description: String, val url: String, val ico: Int) {
     // NOTE : to maintain compatiblity with saved JSON files and prefs, do _not_ edit either existing names or codes
-    FAKKU(
-        0,
-        "Fakku",
-        "https://www.fakku.net",
-        R.drawable.ic_site_fakku
-    ), // Legacy support for old fakku archives
+    // Legacy support for old fakku archives
+    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_site_fakku),
     PURURIN(1, "Pururin", "https://pururin.me", R.drawable.ic_site_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_site_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_site_nhentai),
@@ -83,8 +80,12 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     HIPERDEX(34, "Hiperdex", "https://hiperdex.com/", R.drawable.ic_site_hiperdex),
     NOVELCROW(35, "Novelcrow", "https://novelcrow.com/", R.drawable.ic_site_novelcrow),
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
-    ANY(97, "any", "", R.drawable.ic_attribute_source), // Used for associating attributes to sites in Preferences
-    NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
+
+    // Used for associating attributes to sites in Preferences
+    ANY(97, "any", "", R.drawable.ic_attribute_source),
+
+    // External library; fallback site
+    NONE(98, "none", "", R.drawable.ic_attribute_source),
     PANDA(
         99,
         "panda",

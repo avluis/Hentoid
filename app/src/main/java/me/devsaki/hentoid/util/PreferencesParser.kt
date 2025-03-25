@@ -89,7 +89,6 @@ class PreferencesParser internal constructor() {
 
     private fun getAttribute(xpp: XmlPullParser, namespace: String?, attribute: String): String {
         for (i in 0..<xpp.attributeCount) {
-            Timber.tag("ns").d(xpp.getAttributeNamespace(i))
             if (attribute == xpp.getAttributeName(i) &&
                 (namespace == null || namespace == xpp.getAttributeNamespace(i))
             ) {
