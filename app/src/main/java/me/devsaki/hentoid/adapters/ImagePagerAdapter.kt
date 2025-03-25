@@ -256,8 +256,8 @@ class ImagePagerAdapter(context: Context) :
         if (content != null) {
             val bookPreferences = content.bookPreferences
             return ReaderPagerFragment.DisplayParams(
-                Settings.getContentBrowseMode(bookPreferences),
-                Settings.getContentDisplayMode(bookPreferences),
+                Settings.getContentBrowseMode(content.site, bookPreferences),
+                Settings.getContentDisplayMode(content.site, bookPreferences),
                 Settings.getContent2PagesMode(bookPreferences),
                 Settings.isContentSmoothRendering(bookPreferences),
                 false

@@ -89,7 +89,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
      * @param content Current book
      */
     fun onContentChanged(content: Content) {
-        val direction = Settings.getContentDirection(content.bookPreferences)
+        val direction = Settings.getContentDirection(content.site, content.bookPreferences)
         nextFunctionalButton =
             if (VIEWER_DIRECTION_LTR == direction) binding?.nextBookBtn else binding?.prevBookBtn
         prevFunctionalButton =

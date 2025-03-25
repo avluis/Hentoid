@@ -27,9 +27,9 @@ class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialog
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogReaderBrowseModeChooserBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -54,7 +54,7 @@ class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialog
     }
 
     private fun chooseBrowseMode(browseMode: Int) {
-        Settings.readerBrowseMode = browseMode
+        Settings.appReaderBrowseMode = browseMode
         parent?.onBrowseModeChange()
         dismiss()
     }

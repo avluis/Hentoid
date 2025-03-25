@@ -262,8 +262,8 @@ object Settings {
         return bookPrefs.getOrDefault(Key.READER_TWOPAGES, reader2PagesMode.toString()).toBoolean()
     }
 
-    fun getContentDisplayMode(bookPrefs: Map<String, String>): Int {
-        if (Value.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs)) {
+    fun getContentDisplayMode(site : Site, bookPrefs: Map<String, String>): Int {
+        if (Value.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(site, bookPrefs)) {
             if (bookPrefs.containsKey(Key.VIEWER_IMAGE_DISPLAY)) {
                 val value = bookPrefs[Key.VIEWER_IMAGE_DISPLAY]
                 if (value != null) return value.toInt()
@@ -274,25 +274,37 @@ object Settings {
 
     val readerDisplayMode: Int by IntSettingStr(Key.VIEWER_IMAGE_DISPLAY, Value.VIEWER_DISPLAY_FIT)
 
-    fun getContentBrowseMode(bookPrefs: Map<String, String>?): Int {
+    fun getContentBrowseMode(site: Site, bookPrefs: Map<String, String>?): Int {
         bookPrefs?.let {
             if (it.containsKey(Key.VIEWER_BROWSE_MODE)) {
                 val value = it[Key.VIEWER_BROWSE_MODE]
                 if (value != null) return value.toInt()
             }
         }
-        return readerBrowseMode
+        return geReaderBrowseMode(site)
     }
 
-    // TODO site
-    var readerBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
-
-    fun getContentDirection(bookPrefs: Map<String, String>?): Int {
-        return if ((getContentBrowseMode(bookPrefs) == Value.VIEWER_BROWSE_RTL)) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR
+    fun geReaderBrowseMode(site: Site): Int {
+        return (sharedPreferences.getString(
+            Key.VIEWER_BROWSE_MODE + "." + site.name,
+            appReaderBrowseMode.toString()
+        ) + "").toInt()
     }
 
-    private fun getContentOrientation(bookPrefs: Map<String, String>): Int {
-        return if ((getContentBrowseMode(bookPrefs) == Value.VIEWER_BROWSE_TTB)) Value.VIEWER_ORIENTATION_VERTICAL else Value.VIEWER_ORIENTATION_HORIZONTAL
+    fun setReaderBrowseMode(site: Site, value: Int) {
+        sharedPreferences.edit {
+            putString(Key.VIEWER_BROWSE_MODE + "." + site.name, value.toString())
+        }
+    }
+
+    var appReaderBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
+
+    fun getContentDirection(site : Site, bookPrefs: Map<String, String>?): Int {
+        return if ((getContentBrowseMode(site, bookPrefs) == Value.VIEWER_BROWSE_RTL)) Value.VIEWER_DIRECTION_RTL else Value.VIEWER_DIRECTION_LTR
+    }
+
+    private fun getContentOrientation(site : Site, bookPrefs: Map<String, String>): Int {
+        return if ((getContentBrowseMode(site, bookPrefs) == Value.VIEWER_BROWSE_TTB)) Value.VIEWER_ORIENTATION_VERTICAL else Value.VIEWER_ORIENTATION_HORIZONTAL
     }
 
     fun isContentSmoothRendering(bookPrefs: Map<String, String>): Boolean {

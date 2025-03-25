@@ -50,6 +50,7 @@ import me.devsaki.hentoid.adapters.ImagePagerAdapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.reader.ReaderBrowseModeDialogFragment.Companion.invoke
@@ -122,6 +123,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     // Properties
     // Preferences of current book; to feed the book prefs dialog
     private var bookPreferences: Map<String, String>? = null
+    private var bookSite: Site = Site.NONE
 
     // True if current content is an archive
     private var isContentArchive = false
@@ -332,7 +334,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             // System bars are visible only if HUD is visible
             setSystemBarsVisible(controlsOverlay.root.isVisible)
         }
-        if (Settings.Value.VIEWER_BROWSE_NONE == Settings.readerBrowseMode) invoke(this)
+        if (Settings.Value.VIEWER_BROWSE_NONE == Settings.appReaderBrowseMode) invoke(this)
         navigator.updatePageControls()
     }
 
@@ -525,7 +527,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onBookSettingsClick() {
         currentImg?.let {
             it.linkedContent?.apply {
-                invoke(this@ReaderPagerFragment, bookPreferences)
+                invoke(this@ReaderPagerFragment, this.site, bookPreferences)
             }
         }
     }
@@ -753,12 +755,13 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         Timber.v("Content changed")
         bookPreferences = content.bookPreferences
+        bookSite = content.site
         isContentArchive = content.isArchive
         isContentDynamic = content.isDynamic
         isContentFavourite = content.favourite
         // Wait for starting index only if content actually changes
         if (content.id != contentId) {
-            adjustDisplay(content.bookPreferences)
+            adjustDisplay(content.site, content.bookPreferences)
             startingIndexLoaded = false
         }
         contentId = content.id
@@ -869,7 +872,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
         currentImg?.let {
             it.linkedContent?.apply {
-                adjustDisplay(bookPreferences, absImageIndex)
+                adjustDisplay(this.site, bookPreferences, absImageIndex)
             }
         }
         if (VIEWER_ORIENTATION_VERTICAL == displayParams?.orientation)
@@ -967,11 +970,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
     }
 
-    private fun adjustDisplay(bookPreferences: Map<String, String>, absImageIndex: Int = -1) {
+    private fun adjustDisplay(
+        site: Site,
+        bookPreferences: Map<String, String>,
+        absImageIndex: Int = -1
+    ) {
         lifecycleScope.launch {
             val newDisplayParams = DisplayParams(
-                Settings.getContentBrowseMode(bookPreferences),
-                Settings.getContentDisplayMode(bookPreferences),
+                Settings.getContentBrowseMode(site, bookPreferences),
+                Settings.getContentDisplayMode(site, bookPreferences),
                 Settings.getContent2PagesMode(bookPreferences),
                 Settings.isContentSmoothRendering(bookPreferences),
                 if (absImageIndex > -1) adapter.getSSivAtPosition(absImageIndex) else true
@@ -1206,7 +1213,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             if (View.VISIBLE == controlsOverlay.imagePreviewCenter.visibility) {
                 val previousImageView: ImageView
                 val nextImageView: ImageView
-                if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(bookPreferences)) {
+                if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(
+                        bookSite,
+                        bookPreferences
+                    )
+                ) {
                     previousImageView = controlsOverlay.imagePreviewLeft
                     nextImageView = controlsOverlay.imagePreviewRight
                 } else {
@@ -1289,7 +1300,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         // Side-tapping disabled when disabled in preferences
         if (!Settings.isReaderTapToTurn) return
-        if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(bookPreferences)) previousPage() else nextPage()
+        if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(
+                bookSite,
+                bookPreferences
+            )
+        ) previousPage() else nextPage()
     }
 
     /**
@@ -1311,7 +1326,11 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         }
         // Side-tapping disabled when disabled in preferences
         if (!Settings.isReaderTapToTurn) return
-        if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(bookPreferences)) nextPage() else previousPage()
+        if (VIEWER_DIRECTION_LTR == Settings.getContentDirection(
+                bookSite,
+                bookPreferences
+            )
+        ) nextPage() else previousPage()
     }
 
     /**
