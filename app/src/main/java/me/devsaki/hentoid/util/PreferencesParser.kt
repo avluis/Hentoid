@@ -20,15 +20,10 @@ class PreferencesParser internal constructor() {
         allEntries.addAll(parseFile(context, item))
     }
 
-    fun addPreferenceItems(preferenceItems: ArrayList<PreferenceItem>) {
-        allEntries.addAll(preferenceItems)
-    }
-
     private fun parseFile(context: Context, item: SearchIndexItem): ArrayList<PreferenceItem> {
         val results = ArrayList<PreferenceItem>()
         val xpp: XmlPullParser = context.resources.getXml(item.resId)
 
-        //        List<String> bannedKeys = item.getSearchConfiguration().getBannedKeys();
         try {
             xpp.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true)
             xpp.setFeature(XmlPullParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES, true)
@@ -42,7 +37,6 @@ class PreferencesParser internal constructor() {
                     result.resId = item.resId
 
                     if (result.sites.isNotEmpty()) {
-                        // TODO smart filter
                         result.breadcrumbs = joinBreadcrumbs(breadcrumbs)
                         result.keyBreadcrumbs = cleanupKeyBreadcrumbs(keyBreadcrumbs)
                         results.add(result)
@@ -78,7 +72,7 @@ class PreferencesParser internal constructor() {
     }
 
     private fun joinBreadcrumbs(breadcrumbs: ArrayList<String>): String {
-        var result: String = ""
+        var result = ""
         for (crumb in breadcrumbs) {
             if (!TextUtils.isEmpty(crumb)) {
                 result = Breadcrumb.concat(result, crumb)

@@ -26,6 +26,8 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
     private var binding: ActivityPrefsSourceSpecificsBinding? = null
     private lateinit var recyclerView: RecyclerView
     private var site = Site.ANY // TODO init upon calling
+    private val preferenceItems: MutableList<PreferenceItem> = ArrayList()
+
     private val itemAdapter = ItemAdapter<ListPickerItem<PreferenceItem>>()
     private val fastAdapter: FastAdapter<ListPickerItem<PreferenceItem>> =
         FastAdapter.with(itemAdapter)
@@ -55,47 +57,54 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
             this@PreferencesSourceSpecificsActivity.recyclerView = recyclerView
         }
 
+        val prefsParser = PreferencesParser()
+        prefsParser.addResourceFile(this, R.xml.preferences)
+
+        preferenceItems.addAll(prefsParser.allEntries)
+
         refreshItems()
     }
 
     private fun refreshItems() {
+        val items: MutableList<ListPickerItem<PreferenceItem>> = ArrayList()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
 
-        val items: MutableList<ListPickerItem<PreferenceItem>> = ArrayList()
-        val prefsParser = PreferencesParser()
-        prefsParser.addResourceFile(this, R.xml.preferences)
+        preferenceItems.forEach {
+            if (it.sites.contains(Site.ANY) || it.sites.contains(site)) {
+                val category = it.breadcrumbs?.split(">")[0]?.trim() ?: ""
 
-        prefsParser.allEntries.forEach {
-            val category = it.breadcrumbs?.split(">")[0]?.trim() ?: ""
+                val key =
+                    if (site == Site.NONE || site == Site.ANY) it.key else it.key + "." + site.name
+                val value = if (it.dataType == PreferenceItem.DataType.BOOL)
+                    sharedPreferences.getBoolean(key, it.defaultValue.toBoolean()).toString()
+                else
+                    sharedPreferences.getString(key, it.defaultValue)
 
-            val key =
-                if (site == Site.NONE || site == Site.ANY) it.key else it.key + "." + site.name
-            val value = if (it.dataType == PreferenceItem.DataType.BOOL)
-                sharedPreferences.getBoolean(key, it.defaultValue.toBoolean()).toString()
-            else
-                sharedPreferences.getString(key, it.defaultValue)
+                val entries = if (it.dataType == PreferenceItem.DataType.BOOL)
+                    listOf(
+                        getString(R.string.enabled_generic),
+                        getString(R.string.disabled_generic)
+                    )
+                else
+                    it.entries
 
-            val entries = if (it.dataType == PreferenceItem.DataType.BOOL)
-                listOf(getString(R.string.enabled_generic), getString(R.string.disabled_generic))
-            else
-                it.entries
+                val values = if (it.dataType == PreferenceItem.DataType.BOOL)
+                    listOf("true", "false")
+                else
+                    it.values
 
-            val values = if (it.dataType == PreferenceItem.DataType.BOOL)
-                listOf("true", "false")
-            else
-                it.values
-
-            items.add(
-                // Icons ?
-                ListPickerItem<PreferenceItem>(
-                    category + " : " + (it.title ?: ""),
-                    entries,
-                    values,
-                    value ?: "",
-                    { s: String -> onChanged(sharedPreferences, it, site, s) },
-                    it
+                items.add(
+                    // Icons ?
+                    ListPickerItem<PreferenceItem>(
+                        category + " : " + (it.title ?: ""),
+                        entries,
+                        values,
+                        value ?: "",
+                        { s: String -> onChanged(sharedPreferences, it, site, s) },
+                        it
+                    )
                 )
-            )
+            }
         }
 
         itemAdapter.clear()
