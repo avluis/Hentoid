@@ -99,13 +99,13 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         val browseModes = resources.getStringArray(R.array.pref_viewer_browse_mode_entries)
         val browseItems = ArrayList<String>()
 
-        // App pref
-        browseItems.add(
-            res.getString(R.string.use_app_prefs, browseModes[Settings.appReaderBrowseMode])
-        )
-        // Site pref, if different
+        // Site pref, if exists
         if (hasSiteBrowseMode)
             browseItems.add(res.getString(R.string.use_source_prefs, browseModes[siteBrowseMode]))
+        else // App pref
+            browseItems.add(
+                res.getString(R.string.use_app_prefs, browseModes[Settings.appReaderBrowseMode])
+            )
         // Available prefs
         browseItems.addAll(listOf(*browseModes))
 
@@ -130,10 +130,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         // Available prefs
         for (i in renderingModes.indices) {
             renderingItems.add(
-                renderingModes[i].replace(
-                    " (" + getString(R.string._default) + ")",
-                    ""
-                )
+                renderingModes[i].replace(" (" + getString(R.string._default) + ")", "")
             )
         }
         binding?.apply {

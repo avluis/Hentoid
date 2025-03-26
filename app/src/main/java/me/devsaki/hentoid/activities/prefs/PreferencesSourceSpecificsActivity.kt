@@ -25,7 +25,7 @@ import me.devsaki.hentoid.viewholders.ListPickerItem
 class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
     private var binding: ActivityPrefsSourceSpecificsBinding? = null
     private lateinit var recyclerView: RecyclerView
-    private var site = Site.ANY // TODO init upon calling
+    private var site = Site.ANY // TODO init upon calling; ANY or NONE should be disabled entirely
     private val preferenceItems: MutableList<PreferenceItem> = ArrayList()
 
     private val itemAdapter = ItemAdapter<ListPickerItem<PreferenceItem>>()
@@ -73,17 +73,16 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
             if (it.sites.contains(Site.ANY) || it.sites.contains(site)) {
                 val category = it.breadcrumbs?.split(">")[0]?.trim() ?: ""
 
-                val key = Settings.makeSiteKey(it.key ?: "", site)
-
-                val value = if (it.dataType == PreferenceItem.DataType.BOOL)
-                    sharedPrefs.getBoolean(key, it.defaultValue.toBoolean()).toString()
-                else
-                    sharedPrefs.getString(key, it.defaultValue)
-
                 val appValue = if (it.dataType == PreferenceItem.DataType.BOOL)
                     sharedPrefs.getBoolean(it.key ?: "", it.defaultValue.toBoolean()).toString()
                 else
                     sharedPrefs.getString(it.key ?: "", it.defaultValue) ?: ""
+
+                val key = Settings.makeSiteKey(it.key ?: "", site)
+                val value = if (it.dataType == PreferenceItem.DataType.BOOL)
+                    sharedPrefs.getBoolean(key, appValue.toBoolean()).toString()
+                else
+                    sharedPrefs.getString(key, appValue)
 
                 val values = if (it.dataType == PreferenceItem.DataType.BOOL)
                     listOf("true", "false")

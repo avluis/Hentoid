@@ -42,9 +42,6 @@ class PreferenceItem {
     @JvmField
     var resId: Int = 0
 
-    private val lastScore = 0f
-    private var lastKeyword: String? = null
-
     internal constructor()
 
     fun hasData(): Boolean {
