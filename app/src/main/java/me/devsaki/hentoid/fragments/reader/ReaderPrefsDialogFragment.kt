@@ -27,6 +27,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         const val BROWSE_MODE = "browse_mode"
         const val TWOPAGES_MODE = "twopages_mode"
         const val DISPLAY_MODE = "display_mode"
+        const val SITE = "site"
 
         fun invoke(parent: Fragment, site: Site, bookPrefs: Map<String, String>) {
             val args = Bundle()
@@ -46,6 +47,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
                 DISPLAY_MODE,
                 Settings.getContentDisplayMode(site, bookPrefs)
             )
+            args.putInt(SITE, site.code)
             invoke(parent, ReaderPrefsDialogFragment(), args)
         }
     }
@@ -54,19 +56,24 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
     private var binding: DialogReaderBookPrefsBinding? = null
 
     // === VARIABLES
-    private var renderingMode = 0
-    private var browseMode = 0
-    private var displayMode = 0
-    private var twoPagesMode = false
+    private var bookRenderingMode = 0
+    private var bookBrowseMode = 0
+    private var bookDisplayMode = 0
+    private var bookTwoPagesMode = false
+    private var hasSiteBrowseMode = false
+    private var siteBrowseMode = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         requireNotNull(arguments) { "No arguments found" }
-        renderingMode = requireArguments().getInt(RENDERING_MODE, -1)
-        browseMode = requireArguments().getInt(BROWSE_MODE, -1)
-        displayMode = requireArguments().getInt(DISPLAY_MODE, -1)
-        twoPagesMode = requireArguments().getBoolean(TWOPAGES_MODE, false)
+        bookRenderingMode = requireArguments().getInt(RENDERING_MODE, -1)
+        bookBrowseMode = requireArguments().getInt(BROWSE_MODE, -1)
+        bookDisplayMode = requireArguments().getInt(DISPLAY_MODE, -1)
+        bookTwoPagesMode = requireArguments().getBoolean(TWOPAGES_MODE, false)
+        val site = Site.searchByCode(requireArguments().getInt(SITE, Site.ANY.code).toLong())
+        siteBrowseMode = Settings.getReaderBrowseMode(site)
+        hasSiteBrowseMode = siteBrowseMode != Settings.appReaderBrowseMode
     }
 
     override fun onCreateView(
@@ -91,21 +98,22 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         // == Dropdown lists
         val browseModes = resources.getStringArray(R.array.pref_viewer_browse_mode_entries)
         val browseItems = ArrayList<String>()
+
         // App pref
         browseItems.add(
-            res.getString(
-                R.string.use_app_prefs,
-                browseModes[Settings.appReaderBrowseMode]
-            )
+            res.getString(R.string.use_app_prefs, browseModes[Settings.appReaderBrowseMode])
         )
+        // Site pref, if different
+        if (hasSiteBrowseMode)
+            browseItems.add(res.getString(R.string.use_source_prefs, browseModes[siteBrowseMode]))
         // Available prefs
         browseItems.addAll(listOf(*browseModes))
 
         binding?.apply {
             browsePicker.entries = browseItems
-            browsePicker.index = min(browseMode + 1, browsePicker.entries.size - 1)
+            browsePicker.index = min(bookBrowseMode + 1, browsePicker.entries.size - 1)
             browsePicker.setOnIndexChangeListener { refreshValues() }
-            twoPagesSwitch.isChecked = twoPagesMode
+            twoPagesSwitch.isChecked = bookTwoPagesMode
         }
 
         val renderingModes = resources.getStringArray(R.array.pref_viewer_rendering_entries)
@@ -130,7 +138,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         }
         binding?.apply {
             renderingPicker.entries = renderingItems
-            renderingPicker.index = renderingMode + 1
+            renderingPicker.index = bookRenderingMode + 1
         }
 
         val displayModes = resources.getStringArray(R.array.pref_viewer_display_mode_entries)
@@ -148,7 +156,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         }
         binding?.apply {
             displayPicker.entries = displayItems
-            displayPicker.index = displayMode + 1
+            displayPicker.index = bookDisplayMode + 1
         }
 
         // == Bottom buttons

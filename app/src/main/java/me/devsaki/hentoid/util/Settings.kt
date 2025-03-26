@@ -79,6 +79,11 @@ object Settings {
         }
     }
 
+    fun makeSiteKey(key: String, site: Site): String {
+        return if (site == Site.ANY || site == Site.NONE) key
+        else "$key.${site.name}"
+    }
+
     /**
      * FIELDS
      */
@@ -121,7 +126,7 @@ object Settings {
     val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
     fun getDownloadThreadCount(site: Site): Int {
         return (sharedPreferences.getString(
-            Key.DL_THREADS_QUANTITY_LISTS + "." + site.name,
+            makeSiteKey(Key.DL_THREADS_QUANTITY_LISTS, site),
             appDownloadThreadCount.toString()
         ) + "").toInt()
     }
@@ -175,22 +180,22 @@ object Settings {
     val isWebViewOverview: Boolean by BoolSetting("pref_webview_override_overview_lists", false)
     fun isBrowserAugmented(site: Site): Boolean {
         return (sharedPreferences.getString(
-            Key.WEB_AUGMENTED_BROWSER + "." + site.name,
+            makeSiteKey(Key.WEB_AUGMENTED_BROWSER, site),
             isAppBrowserAugmented.toString()
         ) + "").toBoolean()
     }
 
     fun setBrowserAugmented(site: Site, value: Boolean) {
-        sharedPreferences.edit { putBoolean(Key.WEB_AUGMENTED_BROWSER + "." + site.name, value) }
+        sharedPreferences.edit { putBoolean(makeSiteKey(Key.WEB_AUGMENTED_BROWSER, site), value) }
     }
 
     var isAppBrowserAugmented: Boolean by BoolSetting(Key.WEB_AUGMENTED_BROWSER, true)
     fun isAdBlockerOn(site: Site): Boolean {
-        return sharedPreferences.getBoolean(Key.WEB_ADBLOCKER + "." + site.name, isAppAdBlockerOn)
+        return sharedPreferences.getBoolean(makeSiteKey(Key.WEB_ADBLOCKER, site), isAppAdBlockerOn)
     }
 
     fun setAdBlockerOn(site: Site, value: Boolean) {
-        sharedPreferences.edit { putBoolean(Key.WEB_ADBLOCKER + "." + site.name, value) }
+        sharedPreferences.edit { putBoolean(makeSiteKey(Key.WEB_ADBLOCKER, site), value) }
     }
 
     var isAppAdBlockerOn: Boolean by BoolSetting(Key.WEB_ADBLOCKER, true)
@@ -200,7 +205,7 @@ object Settings {
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
     fun getWebViewInitialZoom(site: Site): Int {
         return (sharedPreferences.getString(
-            Key.BROWSER_ZOOM + "." + site.name,
+            makeSiteKey(Key.BROWSER_ZOOM, site),
             appWebViewInitialZoom.toString()
         ) + "").toInt()
     }
@@ -263,12 +268,12 @@ object Settings {
                 if (value != null) return value.toInt()
             }
         }
-        return geReaderBrowseMode(site)
+        return getReaderBrowseMode(site)
     }
 
-    fun geReaderBrowseMode(site: Site): Int {
+    fun getReaderBrowseMode(site: Site): Int {
         return (sharedPreferences.getString(
-            Key.VIEWER_BROWSE_MODE + "." + site.name,
+            makeSiteKey(Key.VIEWER_BROWSE_MODE, site),
             appReaderBrowseMode.toString()
         ) + "").toInt()
     }
