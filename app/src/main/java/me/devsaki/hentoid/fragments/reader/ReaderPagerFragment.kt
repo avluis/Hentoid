@@ -898,8 +898,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
         Timber.v("Prefs change detected : %s", key)
+        if (key.startsWith(VIEWER_BROWSE_MODE)) onBrowseModeChange()
         when (key) {
-            VIEWER_BROWSE_MODE, VIEWER_HOLD_TO_ZOOM, Settings.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
+            VIEWER_HOLD_TO_ZOOM, Settings.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
             Settings.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
             Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE
                 -> onUpdateImageDisplay(true)

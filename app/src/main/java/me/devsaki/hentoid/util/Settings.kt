@@ -126,15 +126,6 @@ object Settings {
         ) + "").toInt()
     }
 
-    fun setDownloadThreadCount(site: Site, value: Int) {
-        sharedPreferences.edit {
-            putString(
-                Key.DL_THREADS_QUANTITY_LISTS + "." + site.name,
-                value.toString()
-            )
-        }
-    }
-
     private val appDownloadThreadCount: Int by IntSettingStr(
         Key.DL_THREADS_QUANTITY_LISTS,
         Value.DOWNLOAD_THREAD_COUNT_AUTO
@@ -214,12 +205,6 @@ object Settings {
         ) + "").toInt()
     }
 
-    fun setWebViewInitialZoom(site: Site, value: Int) {
-        sharedPreferences.edit {
-            putString(Key.BROWSER_ZOOM + "." + site.name, value.toString())
-        }
-    }
-
     var appWebViewInitialZoom: Int by IntSettingStr(Key.BROWSER_ZOOM, Default.WEBVIEW_INITIAL_ZOOM)
     val isBrowserResumeLast: Boolean by BoolSetting("pref_browser_resume_last", false)
     val isBrowserMarkDownloaded: Boolean by BoolSetting(Key.BROWSER_MARK_DOWNLOADED, false)
@@ -286,12 +271,6 @@ object Settings {
             Key.VIEWER_BROWSE_MODE + "." + site.name,
             appReaderBrowseMode.toString()
         ) + "").toInt()
-    }
-
-    fun setReaderBrowseMode(site: Site, value: Int) {
-        sharedPreferences.edit {
-            putString(Key.VIEWER_BROWSE_MODE + "." + site.name, value.toString())
-        }
     }
 
     var appReaderBrowseMode: Int by IntSettingStr(Key.VIEWER_BROWSE_MODE, Value.VIEWER_BROWSE_NONE)
