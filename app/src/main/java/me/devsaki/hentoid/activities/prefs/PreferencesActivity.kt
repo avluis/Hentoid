@@ -8,6 +8,7 @@ import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
 import me.devsaki.hentoid.util.toast
@@ -19,6 +20,7 @@ import org.greenrobot.eventbus.ThreadMode
 class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
 
     private lateinit var fragment: PreferencesFragment
+    private lateinit var site: Site
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,7 +32,8 @@ class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
             isDownloaderPrefs() -> rootKey = "downloader"
             isStoragePrefs() -> rootKey = "storage"
         }
-        fragment = PreferencesFragment.newInstance(rootKey)
+        site = getSiteFromIntent()
+        fragment = PreferencesFragment.newInstance(rootKey, site)
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
         }
@@ -69,6 +72,13 @@ class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
             val parser = PrefsBundle(intent.extras!!)
             parser.isStoragePrefs
         } else false
+    }
+
+    private fun getSiteFromIntent(): Site {
+        return if (intent.extras != null) {
+            val parser = PrefsBundle(intent.extras!!)
+            Site.searchByCode(parser.site.toLong())
+        } else Site.NONE
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

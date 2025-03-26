@@ -23,6 +23,7 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fadeScrollbars="false"
+        android:divider="@color/dark_gray"
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
@@ -32,6 +33,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
-        tools:listitem="@layout/item_drawer_edit" />
+        tools:listitem="@layout/item_listpicker" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

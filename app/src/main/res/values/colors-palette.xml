@@ -22,10 +22,12 @@
     <color name="dark_gray">#FF444444</color>
     <color name="black_opacity_12">#1F000000</color>
     <color name="black_opacity_25">#40000000</color>
+    <color name="black_opacity_33">#54000000</color>
     <color name="black_opacity_50">#80000000</color>
     <color name="black_opacity_87">#DE000000</color>
     <color name="white_opacity_12">#1FFFFFFF</color>
     <color name="white_opacity_25">#40FFFFFF</color>
+    <color name="white_opacity_33">#54FFFFFF</color>
     <color name="white_opacity_50">#80FFFFFF</color>
     <color name="white_opacity_66">#AAFFFFFF</color>
     <color name="white_opacity_87">#DEFFFFFF</color>

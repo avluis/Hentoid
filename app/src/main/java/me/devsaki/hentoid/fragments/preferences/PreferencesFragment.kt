@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.preferences
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
@@ -25,12 +26,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.PrefsSourceSpecificsBundle
 import me.devsaki.hentoid.activities.prefs.PreferencesPinActivity
 import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
 import me.devsaki.hentoid.activities.prefs.PreferencesSourceSpecificsActivity
 import me.devsaki.hentoid.activities.prefs.PreferencesStorageActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
@@ -53,15 +56,18 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
+    var site = Site.NONE
 
     companion object {
         private const val KEY_ROOT = "root"
+        private const val KEY_SITE = "site"
 
-        fun newInstance(rootKey: String?): PreferencesFragment {
+        fun newInstance(rootKey: String?, site: Site): PreferencesFragment {
             val fragment = PreferencesFragment()
             if (rootKey != null) {
                 val args = Bundle()
                 args.putCharSequence(KEY_ROOT, rootKey)
+                args.putInt(KEY_SITE, site.code)
                 fragment.arguments = args
             }
             return fragment
@@ -72,9 +78,13 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         super.onCreate(savedInstanceState)
 
         val arguments = arguments
-        if (arguments != null && arguments.containsKey(KEY_ROOT)) {
-            val root = arguments.getCharSequence(KEY_ROOT)
-            if (root != null) preferenceScreen = findPreference(root)
+        if (arguments != null) {
+            if (arguments.containsKey(KEY_ROOT)) {
+                val root = arguments.getCharSequence(KEY_ROOT)
+                if (root != null) preferenceScreen = findPreference(root)
+            }
+            if (arguments.containsKey(KEY_SITE))
+                site = Site.searchByCode(arguments.getInt(KEY_SITE).toLong())
         }
     }
 
@@ -140,7 +150,11 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             }
 
             Preferences.Key.SOURCE_SPECIFICS -> {
-                requireContext().startLocalActivity<PreferencesSourceSpecificsActivity>()
+                val intent = Intent(context, PreferencesSourceSpecificsActivity::class.java)
+                val outBundle = PrefsSourceSpecificsBundle()
+                outBundle.site = site.code
+                intent.putExtras(outBundle.bundle)
+                requireContext().startActivity(intent)
                 true
             }
 

@@ -5,11 +5,11 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
+import me.devsaki.hentoid.activities.bundles.PrefsSourceSpecificsBundle
 import me.devsaki.hentoid.databinding.ActivityPrefsSourceSpecificsBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
@@ -24,8 +24,7 @@ import me.devsaki.hentoid.viewholders.ListPickerItem
  */
 class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
     private var binding: ActivityPrefsSourceSpecificsBinding? = null
-    private lateinit var recyclerView: RecyclerView
-    private var site = Site.ANY // TODO init upon calling; ANY or NONE should be disabled entirely
+    private lateinit var site: Site
     private val preferenceItems: MutableList<PreferenceItem> = ArrayList()
 
     private val itemAdapter = ItemAdapter<ListPickerItem<PreferenceItem>>()
@@ -37,15 +36,22 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
         super.onCreate(savedInstanceState)
         applyTheme()
 
+        if (null == intent || null == intent.extras) throw IllegalArgumentException("Required intent not found")
+
+        val parser = PrefsSourceSpecificsBundle(intent.extras!!)
+        val validSites = Site.entries.filter { it.isVisible }
+        site = Site.searchByCode(parser.site.toLong())
+        if (!site.isVisible) site = validSites.first()
+
         binding = ActivityPrefsSourceSpecificsBinding.inflate(layoutInflater)
         binding?.apply {
             setContentView(root)
 
             // Toolbar
-            toolbar.title = site.name // TODO icon
+            toolbar.title = site.name
             toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
             toolbar.setOnClickListener {
-                val codesToShow = Site.entries.filter { it.isVisible }.map { it.code }
+                val codesToShow = validSites.map { it.code }
                 SelectSiteDialogFragment.invoke(
                     this@PreferencesSourceSpecificsActivity,
                     getString(R.string.bookmark_change_site),
@@ -54,7 +60,6 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
             }
             recyclerView.adapter = fastAdapter
             recyclerView.setHasFixedSize(true)
-            this@PreferencesSourceSpecificsActivity.recyclerView = recyclerView
         }
 
         val prefsParser = PreferencesParser()
@@ -98,9 +103,9 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
                     it.entries.mapIndexed { i, s -> flagAppDefault(s, i, values, appValue) }
 
                 items.add(
-                    // TODO icons
                     ListPickerItem<PreferenceItem>(
                         category + " : " + (it.title ?: ""),
+                        site.ico,
                         entries,
                         values,
                         value ?: "",

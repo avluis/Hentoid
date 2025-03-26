@@ -5,18 +5,16 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.webkit.WebView
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.getFixedContext
@@ -34,7 +32,7 @@ import java.util.Locale
  * @param url Url to be opened
  */
 fun Context.startBrowserActivity(url: String) {
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
     try {
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
@@ -56,13 +54,13 @@ fun Context.clearWebviewCache(callback: Consumer<Boolean>?) {
             try {
                 webView = NestedScrollWebView(this)
                 callback?.accept(true)
-            } catch (nfe: Resources.NotFoundException) {
+            } catch (_: Resources.NotFoundException) {
                 // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
                 // Creating with the application Context fixes this, but is not generally recommended for view creation
                 webView = NestedScrollWebView(getFixedContext(this))
                 callback?.accept(true)
             }
-            webView?.clearCache(true)
+            webView.clearCache(true)
         } else {
             callback?.accept(false)
         }

@@ -169,7 +169,7 @@
     <string name="download_eh_hires_title">Download hi-res pictures</string>
     <string name="pref_dl_eh_hires_on">Download hi-res pictures when available\nCAUTION:Enabling this option will consume your E-hentai/Exhentai image view limit much faster</string>
     <string name="pref_dl_eh_hires_off">Download pictures that are displayed on the website</string>
-    <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
+    <string name="pref_dl_threads_quantity_title">Parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
     <string name="pref_dl_speed_cap_title">Download speed limit</string>
     <string name="pref_dl_http_429_default_delay_title">HTTP 429 default delay (seconds)</string>

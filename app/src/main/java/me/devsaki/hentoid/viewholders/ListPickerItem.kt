@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.viewholders
 
 import android.view.View
+import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils.adjustAlpha
@@ -13,6 +15,8 @@ import me.devsaki.hentoid.views.ListPickerView
 
 class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
     val text: String
+    @DrawableRes
+    val icon: Int
     val entries: List<String>
     val values: List<String>
     val value: String
@@ -21,6 +25,7 @@ class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
 
     constructor(
         text: String,
+        @DrawableRes icon: Int,
         entries: List<String>,
         values: List<String>,
         value: String,
@@ -28,6 +33,7 @@ class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
         tag: T
     ) : super() {
         this.text = text
+        this.icon = icon
         this.entries = ArrayList(entries)
         this.values = ArrayList(values)
         this.value = value
@@ -50,8 +56,9 @@ class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
     override val type: Int
         get() = R.id.list_picker
 
-    class ViewHolder<T> internal constructor(private val root: View) :
+    class ViewHolder<T> internal constructor(root: View) :
         FastAdapter.ViewHolder<ListPickerItem<T>>(root) {
+        private val icon: ImageView = root.requireById(R.id.icon)
         private val picker: ListPickerView = root.requireById(R.id.list_picker)
 
         init {
@@ -61,6 +68,7 @@ class ListPickerItem<T> : AbstractItem<ListPickerItem.ViewHolder<T>> {
         }
 
         override fun bindView(item: ListPickerItem<T>, payloads: List<Any>) {
+            icon.setImageResource(item.icon)
             picker.title = item.text
             picker.entries = item.entries
             picker.values = item.values

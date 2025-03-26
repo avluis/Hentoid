@@ -1689,6 +1689,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val intent = Intent(this, PreferencesActivity::class.java)
         val prefsBundle = PrefsBundle()
         prefsBundle.isBrowserPrefs = true
+        prefsBundle.site = getStartSite().code
         intent.putExtras(prefsBundle.bundle)
         startActivity(intent)
     }

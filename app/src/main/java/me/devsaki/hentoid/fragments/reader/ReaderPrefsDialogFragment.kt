@@ -62,6 +62,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
     private var bookTwoPagesMode = false
     private var hasSiteBrowseMode = false
     private var siteBrowseMode = 0
+    private var site = Site.NONE
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,7 +72,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         bookBrowseMode = requireArguments().getInt(BROWSE_MODE, -1)
         bookDisplayMode = requireArguments().getInt(DISPLAY_MODE, -1)
         bookTwoPagesMode = requireArguments().getBoolean(TWOPAGES_MODE, false)
-        val site = Site.searchByCode(requireArguments().getInt(SITE, Site.ANY.code).toLong())
+        site = Site.searchByCode(requireArguments().getInt(SITE, Site.ANY.code).toLong())
         siteBrowseMode = Settings.getReaderBrowseMode(site)
         hasSiteBrowseMode = siteBrowseMode != Settings.appReaderBrowseMode
     }
@@ -161,6 +162,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
             val intent = Intent(requireActivity(), PreferencesActivity::class.java)
             val prefsBundle = PrefsBundle()
             prefsBundle.isViewerPrefs = true
+            prefsBundle.site = site.code
             intent.putExtras(prefsBundle.bundle)
             requireContext().startActivity(intent)
         }
