@@ -213,6 +213,11 @@
         android:icon="@drawable/ic_attribute_source"
         android:key="browser"
         android:title="@string/pref_screen_browser">
+        <Preference
+            android:key="pref_source_specifics"
+            android:summary="@string/title_activity_source_specifics"
+            android:title="@string/title_activity_source_specifics"
+            app:iconSpaceReserved="false" />
         <PreferenceCategory
             android:title="@string/pref_browser_behaviour"
             app:iconSpaceReserved="false">
