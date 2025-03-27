@@ -39,7 +39,7 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
         if (null == intent || null == intent.extras) throw IllegalArgumentException("Required intent not found")
 
         val parser = PrefsSourceSpecificsBundle(intent.extras!!)
-        val validSites = Site.entries.filter { it.isVisible }
+        val validSites = Site.entries.filter { it.isVisible }.sortedBy { it.name }
         site = Site.searchByCode(parser.site.toLong())
         if (!site.isVisible) site = validSites.first()
 
