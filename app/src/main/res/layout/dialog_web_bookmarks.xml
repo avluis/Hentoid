@@ -27,6 +27,7 @@
         android:nestedScrollingEnabled="false"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
+        android:minHeight="60dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:maxHeight="@dimen/dialog_max_height"

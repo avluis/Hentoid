@@ -254,7 +254,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         tryShowMenuIcons(this, toolbar.menu)
         toolbar.setOnMenuItemClickListener { this.onMenuItemSelected(it) }
         toolbar.title = getStartSite().description
-        toolbar.setOnClickListener { loadUrl(getStartSite().url) }
+        toolbar.setOnClickListener { loadUrl(getStartUrl(true)) }
 
         refreshStopMenu = toolbar.menu.findItem(R.id.web_menu_refresh_stop)
         bookmarkMenu = toolbar.menu.findItem(R.id.web_menu_bookmark)
@@ -319,20 +319,22 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      *
      * @return URL to load at startup
      */
-    private fun getStartUrl(): String {
+    private fun getStartUrl(homepageOnly: Boolean = false): String {
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
-            // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
-            if (intent.extras != null) {
-                val bundle = BaseWebActivityBundle(intent.extras!!)
-                val intentUrl = bundle.url
-                if (intentUrl.isNotEmpty()) return intentUrl
-            }
+            if (!homepageOnly) {
+                // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
+                if (intent.extras != null) {
+                    val bundle = BaseWebActivityBundle(intent.extras!!)
+                    val intentUrl = bundle.url
+                    if (intentUrl.isNotEmpty()) return intentUrl
+                }
 
-            // Priority 2 : Last viewed position, if option enabled
-            if (Settings.isBrowserResumeLast) {
-                val siteHistory = dao.selectHistory(getStartSite())
-                if (siteHistory.url.isNotEmpty()) return siteHistory.url
+                // Priority 2 : Last viewed position, if option enabled
+                if (Settings.isBrowserResumeLast) {
+                    val siteHistory = dao.selectHistory(getStartSite())
+                    if (siteHistory.url.isNotEmpty()) return siteHistory.url
+                }
             }
 
             // Priority 3 : Homepage, if manually set through bookmarks

@@ -42,6 +42,8 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
+private const val HOME_UNICODE = "\uD83C\uDFE0"
+
 class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
     ItemTouchCallback,
     SelectSiteDialogFragment.Parent {
@@ -119,9 +121,9 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogWebBookmarksBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -209,15 +211,19 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     }
 
     private fun reloadBookmarks(dao: CollectionDAO): List<SiteBookmark> {
+        // Fetch custom bookmarks
         val bookmarks = dao.selectBookmarks(site).toMutableList()
         // Add site home as 1st bookmark
-        bookmarks.add(
-            0,
+        val siteHome =
             SiteBookmark(site = site, title = getString(R.string.bookmark_homepage), url = site.url)
-        )
-        itemAdapter.set(bookmarks.mapIndexed { index, b ->
+        // Mark as homepage if no custom homepage has been set
+        if (!bookmarks.any { it.isHomepage }) siteHome.isHomepage = true
+        bookmarks.add(0, siteHome)
+        // Convert to items
+        val items = bookmarks.mapIndexed { index, b ->
+            val prefix = if (b.isHomepage) "$HOME_UNICODE " else ""
             TextItem(
-                b.title,
+                "$prefix${b.title}",
                 b,
                 draggable = index > 0,
                 reformatCase = true,
@@ -226,7 +232,8 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 touchHelper = touchHelper,
                 index > 0
             )
-        })
+        }
+        itemAdapter.set(items)
         return bookmarks
     }
 
