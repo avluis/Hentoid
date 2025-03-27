@@ -508,16 +508,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 }
             }
         }
-        val bWebViewOverview = Settings.isWebViewOverview
-        val webViewInitialZoom = Settings.getWebViewInitialZoom(getStartSite())
-        if (bWebViewOverview) {
-            webView.settings.loadWithOverviewMode = false
-            webView.setInitialScale(webViewInitialZoom)
-            Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom)
-        } else {
-            webView.setInitialScale(Settings.Default.WEBVIEW_INITIAL_ZOOM)
-            webView.settings.loadWithOverviewMode = true
-        }
+
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
         webClient = createWebClient()
         webView.webViewClient = webClient

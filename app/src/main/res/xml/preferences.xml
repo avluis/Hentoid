@@ -363,23 +363,6 @@
                 android:title="@string/pref_browser_nhentai_invisible_blacklist_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
-                android:defaultValue="@string/pref_browser_override_overview_default"
-                android:key="pref_webview_override_overview_lists"
-                android:summaryOff="@string/pref_browser_override_overview_summary_off"
-                android:summaryOn="@string/pref_browser_override_overview_summary_on"
-                android:title="@string/pref_browser_override_overview_title"
-                app:iconSpaceReserved="false" />
-            <ListPreference
-                android:defaultValue="@string/pref_browser_initial_zoom_default"
-                android:dependency="pref_webview_override_overview_lists"
-                android:entries="@array/pref_webview_initial_zoom_entries"
-                android:entryValues="@array/pref_webview_initial_zoom_values"
-                android:key="pref_webview_initial_zoom_lists"
-                android:summary="@string/pref_browser_initial_zoom_summary"
-                android:title="@string/pref_browser_initial_zoom_title"
-                app:iconSpaceReserved="false"
-                app:tag="ANY" />
-            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_force_lightmode_default"
                 android:key="WEB_FORCE_LIGHTMODE"
                 android:summaryOff="@string/pref_browser_force_lightmode_off"

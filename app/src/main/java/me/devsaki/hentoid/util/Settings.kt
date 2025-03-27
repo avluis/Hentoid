@@ -177,7 +177,6 @@ object Settings {
     var isArchiveDeleteOnSuccess: Boolean by BoolSetting("ARCHIVE_DELETE_ON_SUCCESS", false)
 
     // BROWSER
-    val isWebViewOverview: Boolean by BoolSetting("pref_webview_override_overview_lists", false)
     fun isBrowserAugmented(site: Site): Boolean {
         return (sharedPreferences.getString(
             makeSiteKey(Key.WEB_AUGMENTED_BROWSER, site),
@@ -203,14 +202,6 @@ object Settings {
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
-    fun getWebViewInitialZoom(site: Site): Int {
-        return (sharedPreferences.getString(
-            makeSiteKey(Key.BROWSER_ZOOM, site),
-            appWebViewInitialZoom.toString()
-        ) + "").toInt()
-    }
-
-    var appWebViewInitialZoom: Int by IntSettingStr(Key.BROWSER_ZOOM, Default.WEBVIEW_INITIAL_ZOOM)
     val isBrowserResumeLast: Boolean by BoolSetting("pref_browser_resume_last", false)
     val isBrowserMarkDownloaded: Boolean by BoolSetting(Key.BROWSER_MARK_DOWNLOADED, false)
     val isBrowserMarkMerged: Boolean by BoolSetting(Key.BROWSER_MARK_MERGED, false)
@@ -578,7 +569,6 @@ object Settings {
         const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
         const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
-        const val BROWSER_ZOOM = "pref_webview_initial_zoom_lists"
         const val BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded"
         const val BROWSER_MARK_MERGED = "browser_mark_merged"
         const val BROWSER_MARK_QUEUED = "browser_mark_queued"
@@ -632,7 +622,6 @@ object Settings {
     object Default {
         const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
         const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
-        const val WEBVIEW_INITIAL_ZOOM = 20
     }
 
     object Value {
