@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Sources -->
+    <string name="pref_screen_sources">Sources</string>
+    <string name="pref_drawer_sources_title">Manage sources</string>
+    <string name="title_activity_source_specifics">Source-specific settings</string>
+
     <!-- Interface -->
     <string name="pref_screen_interface">Interface &amp; Navigation</string>
     <string name="pref_cat_library">Library</string>
-    <string name="pref_drawer_sources_title">Manage sources</string>
     <string name="pref_drawer_sources_summary">Enable, disable and reorganize sites appearing on the left navigation drawer</string>
     <string name="pref_library_display_title">Display type</string>
     <string name="pref_library_display_summary">Type of display for books and groups\nCurrent: <x:g example="List" id="display_type">%s</x:g></string>

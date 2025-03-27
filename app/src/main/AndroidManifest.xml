@@ -195,7 +195,7 @@
         </activity>
         <activity
             android:name=".activities.prefs.PreferencesSourceSelectActivity"
-            android:label="@string/title_activity_drawer_edit"
+            android:label="@string/pref_drawer_sources_title"
             tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.prefs.PreferencesSourceSpecificsActivity"

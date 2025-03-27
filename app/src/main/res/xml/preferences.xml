@@ -3,22 +3,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <com.bytehamster.lib.preferencesearch.SearchPreference android:key="searchPreference" />
     <PreferenceScreen
+        android:icon="@drawable/ic_attribute_source"
+        android:key="sources"
+        android:title="@string/pref_screen_sources">
+        <Preference
+            android:key="pref_drawer_sources"
+            android:summary="@string/pref_drawer_sources_summary"
+            android:title="@string/pref_drawer_sources_title"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="pref_source_specifics"
+            android:summary="@string/title_activity_source_specifics"
+            android:title="@string/title_activity_source_specifics"
+            app:iconSpaceReserved="false" />
+    </PreferenceScreen>
+    <PreferenceScreen
         android:icon="@drawable/ic_ui"
         android:key="interface"
         android:title="@string/pref_screen_interface">
         <PreferenceCategory
             android:title="@string/pref_cat_library"
             app:iconSpaceReserved="false">
-            <Preference
-                android:key="pref_drawer_sources"
-                android:summary="@string/pref_drawer_sources_summary"
-                android:title="@string/pref_drawer_sources_title"
-                app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_source_specifics"
-                android:summary="@string/title_activity_source_specifics"
-                android:title="@string/title_activity_source_specifics"
-                app:iconSpaceReserved="false" />
             <ListPreference
                 android:defaultValue="@string/pref_library_display_default"
                 android:entries="@array/pref_library_display_entries"
