@@ -24,13 +24,6 @@ object Settings {
     }
 
     fun performHousekeeping() {
-        // Fling factor -> Swipe to fling (v1.9.0)
-        if (sharedPreferences.contains(Key.VIEWER_FLING_FACTOR)) {
-            val flingFactor =
-                sharedPreferences.getString(Key.VIEWER_FLING_FACTOR, "0")?.toInt() ?: 0
-            sharedPreferences.edit { putBoolean(Key.VIEWER_SWIPE_TO_FLING, flingFactor > 0) }
-            sharedPreferences.edit { remove(Key.VIEWER_FLING_FACTOR) }
-        }
         // PIN activation -> Lock type (v1.18.4)
         if (sharedPreferences.contains(Key.APP_LOCK)) {
             if (!appLockPin.isEmpty()) lockType = 1
