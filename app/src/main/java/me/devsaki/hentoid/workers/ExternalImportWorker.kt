@@ -209,7 +209,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             delta.first.forEach { deltaPlus ->
                 val deltaPlusRoot = deltaPlus.first
                 FileExplorer(context, deltaPlusRoot).use { explorer ->
-                    scanAddedContent(context, explorer, deltaPlusRoot, deltaPlus, dao)
+                    scanAddedContentBH(context, explorer, deltaPlusRoot, deltaPlus, dao)
                 } // explorer
             } // deltaPlus roots
 
@@ -236,7 +236,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private fun scanAddedContent(
+    private fun scanAddedContentBH(
         context: Context,
         explorer: FileExplorer,
         deltaPlusRoot: DocumentFile,
@@ -281,7 +281,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     parentNames,
                     logs,
                     isCanceled = this::isStopped
-                ) { c -> onContentFound2(context, explorer, dao, deltaPlusRoot, c) }
+                ) { c -> onContentFoundBH(context, explorer, dao, deltaPlusRoot, c) }
             }
         }
         Timber.d("  addedContent ${addedContent.size}")
@@ -289,7 +289,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     // Write JSON file for every found book and persist it in the DB
-    private fun onContentFound2(
+    private fun onContentFoundBH(
         context: Context,
         explorer: FileExplorer,
         dao: CollectionDAO,
@@ -374,11 +374,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             )
             eventProgress(STEP_3_BOOKS, booksOK, progress.getGlobalProgress())
         }
-    }
-
-    private fun eventProcessed(step: Int, name: String) {
-        EventBus.getDefault()
-            .post(ProcessEvent(ProcessEvent.Type.PROGRESS, R.id.import_external, step, name))
     }
 
     private fun eventComplete(

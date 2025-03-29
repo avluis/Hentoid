@@ -74,6 +74,7 @@ import java.util.regex.Pattern
 private const val EXTERNAL_LIB_TAG = "external-library"
 
 val ENDS_WITH_NUMBER: Pattern = Pattern.compile(".*\\d+(\\.\\d+)?$")
+val BRACKETS = "\\[[^(\\[\\])]*]".toRegex()
 
 enum class PickerResult {
     OK,  // OK - Returned a valid URI
@@ -780,6 +781,8 @@ fun scanBookFolder(
 ): Content {
     Timber.d(">>>> scan book folder %s", bookFolder.uri)
     val now = Instant.now().toEpochMilli()
+    val isExternal = (targetStatus == StatusContent.EXTERNAL)
+
     var result: Content? = null
     if (jsonFile != null) {
         try {
@@ -797,41 +800,17 @@ fun scanBookFolder(
             Timber.w(e)
         }
     }
-    if (null == result) { // JSON can't be used
-        Timber.d(">>>> recreating metadata from scratch")
-        var title = cleanTitle(bookFolder.name)
-        // Tachiyomi downloads - include parent folder name as title
-        if (title.lowercase(Locale.getDefault())
-                .startsWith("chapter") && parentNames.isNotEmpty()
-        ) {
-            // Single chapter
-            title =
-                if ("chapter".equals(title, ignoreCase = true))
-                    cleanTitle(parentNames[parentNames.size - 1]) else  // Multiple chapters
-                    cleanTitle(parentNames[parentNames.size - 1]) + " " + title
-        }
-        result = Content(title = title)
-        var site = Site.NONE
-        if (parentNames.isNotEmpty()) {
-            for (parent in parentNames)
-                for (s in Site.entries)
-                    if (parent.equals(s.folder, ignoreCase = true)
-                    ) {
-                        site = s
-                        break
-                    }
-        }
-        result.site = site
-        result.downloadDate = bookFolder.lastModified()
-        result.downloadCompletionDate = now
-        result.addAttributes(parentNamesAsTags(parentNames))
-    }
-    if (targetStatus == StatusContent.EXTERNAL) result.addAttributes(newExternalAttribute())
+
+    // JSON can't be used
+    if (null == result) result =
+        createContentFromDocumentFile(bookFolder, parentNames, now, isExternal)
+
+    if (isExternal) result.addAttributes(newExternalAttribute())
     result.status = targetStatus
     result.setStorageDoc(bookFolder)
     if (null != parentFolder) result.parentStorageUri = parentFolder.uri.toString()
     if (0L == result.downloadDate) result.downloadDate = now
-    if (StatusContent.EXTERNAL == targetStatus) result.downloadCompletionDate = now
+    if (isExternal) result.downloadCompletionDate = now
     result.lastEditDate = now
     val images: MutableList<ImageFile> = ArrayList()
     scanFolderImages(
@@ -871,7 +850,7 @@ private fun cleanTitle(s: String?): String {
     var result = s ?: ""
     result = result.replace("_", " ")
     // Remove expressions between []'s
-    result = result.replace("\\[[^(\\[\\])]*]".toRegex(), "")
+    result = result.replace(BRACKETS, "")
     return result.trim()
 }
 
@@ -897,6 +876,8 @@ fun scanChapterFolders(
     jsonFile: DocumentFile?
 ): Content {
     Timber.d(">>>> scan chapter folder %s", parent.uri)
+    val now = Instant.now().toEpochMilli()
+
     var result: Content? = null
     if (jsonFile != null) {
         try {
@@ -914,19 +895,13 @@ fun scanChapterFolders(
             Timber.w(e)
         }
     }
-    if (null == result) {
-        result = Content(
-            site = Site.NONE,
-            title = parent.name ?: "",
-            dbUrl = "",
-            downloadDate = parent.lastModified()
-        )
-        result.addAttributes(parentNamesAsTags(parentNames))
-    }
+
+    // JSON can't be used
+    if (null == result) result = createContentFromDocumentFile(parent, parentNames, now)
+
     result.addAttributes(newExternalAttribute())
     result.status = StatusContent.EXTERNAL
     result.setStorageDoc(parent)
-    val now = Instant.now().toEpochMilli()
     if (0L == result.downloadDate) result.downloadDate = now
     result.downloadCompletionDate = now
     result.lastEditDate = Instant.now().toEpochMilli()
@@ -1191,6 +1166,7 @@ fun scanArchivePdf(
     content: Content?
 ): Pair<Int, Content?> {
     val isPdf = doc.getExtension().equals("pdf", true)
+    val now = Instant.now().toEpochMilli()
 
     var entries = emptyList<ArchiveEntry>()
     try {
@@ -1224,22 +1200,15 @@ fun scanArchivePdf(
 
     // Create content envelope
     var result = content
-    if (null == result) {
-        result = Content(
-            site = Site.NONE,
-            title = if (null == doc.name) ""
-            else getFileNameWithoutExtension(doc.name!!),
-            dbUrl = "",
-            downloadDate = doc.lastModified()
-        )
-        result.addAttributes(parentNamesAsTags(parentNames))
-        result.addAttributes(newExternalAttribute())
-    }
+
+    // JSON can't be used
+    if (null == result) result = createContentFromDocumentFile(doc, parentNames, now)
+
     result.apply {
+        addAttributes(newExternalAttribute())
         status = targetStatus
         setStorageDoc(doc) // Here storage URI is a file URI, not a folder
         parentStorageUri = parentFolder.uri.toString()
-        val now = Instant.now().toEpochMilli()
         if (0L == downloadDate) downloadDate = now
         downloadCompletionDate = now
         lastEditDate = now
@@ -1267,9 +1236,7 @@ fun importBookmarks(dao: CollectionDAO, bookmarks: List<SiteBookmark>): Int {
     // Don't import bookmarks that have the same URL as existing ones
     val existingBookmarkUrls: Set<SiteBookmark> = HashSet(dao.selectAllBookmarks())
     val bookmarksToImport = HashSet(bookmarks).filterNot { o: SiteBookmark ->
-        existingBookmarkUrls.contains(
-            o
-        )
+        existingBookmarkUrls.contains(o)
     }.toList()
     dao.insertBookmarks(bookmarksToImport)
     return bookmarksToImport.size
@@ -1304,6 +1271,70 @@ fun getFileWithName(files: List<DocumentFile>, name: String): DocumentFile? {
             .equals(targetBareName, ignoreCase = true)
     }
     return file
+}
+
+private fun createContentFromDocumentFile(
+    doc: DocumentFile,
+    parentNames: List<String>,
+    now: Long,
+    isExternal: Boolean = true
+): Content {
+    Timber.v(
+        ">> Creating metadata from scratch : ${
+            URLDecoder.decode(doc.uri.toString(), "UTF-8")
+        }"
+    )
+    var title = getFileNameWithoutExtension(doc.name ?: "")
+    var artist = ""
+
+    val namingPattern = Settings.getImportExtNamePattern()
+    if (isExternal && namingPattern != Settings.Default.IMPORT_NAME_PATTERN) {
+        val res = Settings.importExtRgx
+        Timber.v("> ?match $title")
+        val matcher = res.first.matcher(title)
+        if (matcher.find()) {
+            if (res.second) matcher.group("title")?.let { title = it.trim() }
+            if (res.third) matcher.group("artist")?.let { artist = it.trim() }
+            Timber.v("> !match $title $artist")
+        }
+    } else {
+        title = cleanTitle(title)
+    }
+
+    // Tachiyomi downloads - include parent folder name as title
+    if (parentNames.isNotEmpty()
+        && (title.lowercase(Locale.getDefault()).startsWith("chapter")
+                ||
+                title.lowercase(Locale.getDefault()).startsWith("chap.")
+                )
+    ) {
+        title = cleanTitle(parentNames[parentNames.size - 1]) + " " + title
+    }
+
+    val result = Content(
+        site = findSiteInParentNames(parentNames),
+        title = title,
+        dbUrl = "",
+        downloadDate = doc.lastModified()
+    )
+    result.downloadCompletionDate = now
+
+    if (artist.isNotBlank())
+        result.addAttributes(
+            listOf(Attribute(AttributeType.ARTIST, artist, artist, Site.NONE))
+        )
+
+    result.addAttributes(parentNamesAsTags(parentNames))
+    return result
+}
+
+private fun findSiteInParentNames(parentNames: List<String>): Site {
+    parentNames.forEach { pn ->
+        Site.entries.forEach { s ->
+            if (pn.equals(s.folder, ignoreCase = true)) return s
+        }
+    }
+    return Site.NONE
 }
 
 fun createJsonFileFor(
@@ -1450,4 +1481,34 @@ fun jsonToContent(
  */
 fun getContentJsonNamesFilter(): NameFilter {
     return hentoidContentJson
+}
+
+fun patternToRegex(pattern: String): Triple<Pattern, Boolean, Boolean> {
+    var hasTitle = pattern.contains("%t")
+    var hasArtist = pattern.contains("%a")
+
+    var regexp =
+        pattern.replace("\\", "\\\\")
+            .replace("[", "\\[").replace("]", "\\]")
+            .replace("(", "\\(").replace(")", "\\)")
+            .replace("{", "\\{").replace("}", "\\}")
+            .replace("?", "\\?").replace("*", "\\*")
+            .replace("+", "\\+")
+            .replace(".", "\\.").replace("|", "\\|")
+            .replace("$", "\\$").replace("^", "\\^")
+
+    // Turn patterns into capturing groups
+    val commonWords = "\\w':/`’\\|&\\-_!? %"
+    if (hasTitle) regexp = regexp.replace("%t", "(?<title>[$commonWords]+)")
+    if (hasArtist) regexp = regexp.replace("%a", "(?<artist>[$commonWords]+)")
+
+    // Turn free patterns into non-capturing groups
+    for (i in 0 until 9) {
+        if (regexp.contains("%$i")) regexp = regexp.replace("%$i", "(?:[$commonWords]+)")
+    }
+
+    Timber.v("regexp : $regexp")
+
+    // Compile regex with unicode support
+    return Triple(regexp.toPattern(Pattern.UNICODE_CASE), hasTitle, hasArtist)
 }

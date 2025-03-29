@@ -12,8 +12,7 @@ import me.devsaki.hentoid.core.setOnTextChangedListener
 import me.devsaki.hentoid.databinding.DialogPrefsImportNamePatternBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
-import timber.log.Timber
-import java.util.regex.Pattern
+import me.devsaki.hentoid.util.patternToRegex
 
 
 class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
@@ -66,7 +65,7 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
                 }
             }
             // Disable sample selectors when editing text
-            pattern.editText?.setText(Settings.importExtNamePattern)
+            pattern.editText?.setText(Settings.getImportExtNamePattern())
             pattern.editText?.setOnTextChangedListener(lifecycleScope)
             {
                 selector.clearChecked()
@@ -98,50 +97,30 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun testFile(input: String, patternInput: String) {
-        Timber.d("TESTING $input $patternInput")
-        var pattern = if (patternInput.isBlank()) "%t" else patternInput
+        var pattern = patternInput
+        if (pattern.isBlank()) pattern = Settings.Default.IMPORT_NAME_PATTERN
 
         // Visual warnings
-        var hasTitle = true
-        var hasArtist = true
-        if (!pattern.contains("%t")) {
+        val res = patternToRegex(pattern)
+
+        var hasTitle = res.second
+        var hasArtist = res.third
+        if (!hasTitle) {
             binding?.apply {
                 titleVal.text = getString(R.string.import_ext_test_title_warning)
             }
-            hasTitle = false
         }
-        if (!pattern.contains("%a")) {
+        if (!hasArtist) {
             binding?.apply {
                 artistVal.text = getString(R.string.import_ext_test_artist_warning)
             }
-            hasArtist = false
         }
-
-        // Turn into regexp
-        // Unescape special chars
-        var regexp =
-            pattern.replace("\\", "\\\\")
-                .replace("[", "\\[").replace("]", "\\]")
-                .replace("(", "\\(").replace(")", "\\)")
-                .replace("{", "\\{").replace("}", "\\}")
-                .replace("?", "\\?").replace("*", "\\*").replace("+", "\\+").replace(".", "\\.")
-
-        // Turn patterns into capturing groups
-        if (hasTitle) regexp = regexp.replace("%t", "(?<title>[\\w\\-_%]+)")
-        if (hasArtist) regexp = regexp.replace("%a", "(?<artist>[\\w\\-_%]+)")
-        // Turn free patterns into non-capturing groups
-        for (i in 0 until 9) {
-            if (regexp.contains("%$i")) regexp = regexp.replace("%$i", "(?:[\\w\\-_%]+)")
-        }
-        Timber.d("RGX $regexp")
-        // Compile regex with unicode support
-        val rgx = regexp.toPattern(Pattern.UNICODE_CASE)
 
         // Test input against newly compiled pattern
         var theTitle = getString(R.string.import_ext_test_title_not_found)
         var theArtist = getString(R.string.import_ext_test_artist_not_found)
-        val matcher = rgx.matcher(input)
-        if (matcher.matches()) {
+        val matcher = res.first.matcher(input)
+        if (matcher.find()) {
             if (hasTitle) matcher.group("title")?.let { theTitle = it }
             if (hasArtist) matcher.group("artist")?.let { theArtist = it }
         }
@@ -152,9 +131,11 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun onActionClick() {
-        // TODO signal if no %t set ?
         binding?.apply {
-            Settings.importExtNamePattern = pattern.editText?.text?.toString() ?: ""
+            var result = pattern.editText?.text?.toString() ?: Settings.Default.IMPORT_NAME_PATTERN
+            if (result.isBlank()) result = Settings.Default.IMPORT_NAME_PATTERN
+            if (!result.contains("%t")) result = Settings.Default.IMPORT_NAME_PATTERN
+            Settings.setImportExtNamePattern(result)
         }
         dismissAllowingStateLoss()
     }

@@ -2,9 +2,20 @@
 
 package me.devsaki.hentoid.core
 
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.reflect.KProperty
+
 typealias BiConsumer<T, U> = (T, U) -> Unit
 typealias Consumer<T> = (T) -> Unit
 typealias SuspendRunnable = suspend () -> Unit
+
+fun <T> lazyWithReset(initializer: () -> T): ResetLazy<T> = ResetLazy(initializer)
+
+class ResetLazy<T>(private val initializer: () -> T) {
+    private val lazy: AtomicReference<Lazy<T>> = AtomicReference(lazy(initializer))
+    operator fun getValue(ref: Any?, property: KProperty<*>): T = lazy.get().getValue(ref, property)
+    fun reset(): Unit = lazy.set(lazy(initializer))
+}
 
 const val DEFAULT_PRIMARY_FOLDER_OLD = "Hentoid"
 const val DEFAULT_PRIMARY_FOLDER = ".Hentoid"

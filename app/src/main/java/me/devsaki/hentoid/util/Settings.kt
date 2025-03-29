@@ -7,13 +7,15 @@ import android.text.TextUtils
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.core.ResetLazy
+import me.devsaki.hentoid.core.lazyWithReset
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.enums.Theme
-import me.devsaki.hentoid.util.Settings.Value.SEARCH_ORDER_ATTRIBUTES_COUNT
 import me.devsaki.hentoid.util.network.Source
+import java.util.regex.Pattern
 import kotlin.reflect.KProperty
 
 object Settings {
@@ -82,10 +84,27 @@ object Settings {
      */
     // IMPORT
     val isImportQueueEmptyBooks: Boolean by BoolSetting(Key.IMPORT_QUEUE_EMPTY, false)
-    var importExtNamePattern: String by StringSetting("import_external_name_pattern", "%t")
+
+    private val importExtRgxLazyHandler: ResetLazy<Triple<Pattern, Boolean, Boolean>> =
+        lazyWithReset { patternToRegex(m_importExtNamePattern) }
+    val importExtRgx: Triple<Pattern, Boolean, Boolean> by importExtRgxLazyHandler
+
+    fun setImportExtNamePattern(value: String) {
+        m_importExtNamePattern = value
+        importExtRgxLazyHandler.reset()
+    }
+
+    fun getImportExtNamePattern(): String {
+        return m_importExtNamePattern
+    }
+
+    private var m_importExtNamePattern: String by StringSetting(
+        "import_external_name_pattern",
+        Default.IMPORT_NAME_PATTERN
+    )
 
     // LIBRARY
-    var libraryDisplay: Int by IntSettingStr(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)
+    var libraryDisplay: Int by IntSettingStr(Key.LIBRARY_DISPLAY, Default.LIBRARY_DISPLAY)
     var libraryDisplayGridFav: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_FAV, true)
     var libraryDisplayGridRating: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_RATING, true)
     var libraryDisplayGridSource: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_SOURCE, true)
@@ -112,7 +131,7 @@ object Settings {
     // ADV SEARCH
     val searchAttributesSortOrder: Int by IntSettingStr(
         "pref_order_attribute_lists",
-        SEARCH_ORDER_ATTRIBUTES_COUNT
+        Value.SEARCH_ORDER_ATTRIBUTES_COUNT
     )
     val searchAttributesCount: Boolean by BoolSetting("pref_order_attribute_count", true)
 
@@ -609,13 +628,14 @@ object Settings {
         const val VIEWER_DELETE_TARGET = "viewer_delete_target"
 
         // Deprecated values kept for housekeeping/migration
-        const val VIEWER_FLING_FACTOR = "pref_viewer_fling_factor"
         const val VIEWER_AUTO_ROTATE_OLD = "pref_viewer_auto_rotate"
     }
 
     object Default {
         const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
         const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
+        const val LIBRARY_DISPLAY = Value.LIBRARY_DISPLAY_LIST
+        const val IMPORT_NAME_PATTERN = "%t"
     }
 
     object Value {
@@ -639,7 +659,6 @@ object Settings {
 
         const val LIBRARY_DISPLAY_LIST = 0
         const val LIBRARY_DISPLAY_GRID = 1
-        const val LIBRARY_DISPLAY_DEFAULT = LIBRARY_DISPLAY_LIST
 
         const val SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0
         const val SEARCH_ORDER_ATTRIBUTES_COUNT = 1
