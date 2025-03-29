@@ -55,15 +55,15 @@
             android:hint="@string/import_ext_name_pattern"
             app:endIconMode="clear_text"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/selector"
-            tools:visibility="visible">
+            app:layout_constraintTop_toBottomOf="@id/selector">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:cursorVisible="true"
                 android:gravity="start"
                 android:imeOptions="flagNoPersonalizedLearning"
-                android:inputType="text"
+                android:inputType="textNoSuggestions|textVisiblePassword"
                 android:lines="1"
                 android:maxLines="1"
                 tools:text="[%a] %t" />
@@ -116,19 +116,19 @@
                 android:hint="@string/import_ext_test_file_name"
                 app:endIconMode="clear_text"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/drop_bar_txt"
-                tools:visibility="visible">
+                app:layout_constraintTop_toBottomOf="@id/drop_bar_txt">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:cursorVisible="true"
                     android:gravity="start"
                     android:imeOptions="flagNoPersonalizedLearning"
-                    android:inputType="text"
+                    android:inputType="textNoSuggestions|textVisiblePassword"
                     android:lines="1"
                     android:maxLines="1"
+                    android:text="@string/import_ext_test_file_name"
                     android:textSize="12sp"
-                    android:text="File title"
                     tools:text="[the artist] the title" />
 
             </com.google.android.material.textfield.TextInputLayout>

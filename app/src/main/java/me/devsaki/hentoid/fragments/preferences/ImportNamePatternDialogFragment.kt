@@ -129,8 +129,11 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
         // Turn patterns into capturing groups
         if (hasTitle) regexp = regexp.replace("%t", "(?<title>[\\w\\-_%]+)")
         if (hasArtist) regexp = regexp.replace("%a", "(?<artist>[\\w\\-_%]+)")
+        // Turn free patterns into non-capturing groups
+        for (i in 0 until 9) {
+            if (regexp.contains("%$i")) regexp = regexp.replace("%$i", "(?:[\\w\\-_%]+)")
+        }
         Timber.d("RGX $regexp")
-        // TODO Turn free patterns into non-capturing groups
         // Compile regex with unicode support
         val rgx = regexp.toPattern(Pattern.UNICODE_CASE)
 
