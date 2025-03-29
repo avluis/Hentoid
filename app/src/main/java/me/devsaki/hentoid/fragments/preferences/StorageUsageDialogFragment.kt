@@ -36,9 +36,9 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogPrefsStorageBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -147,10 +147,10 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     private fun onDetailsClick() {
         binding?.apply {
             if (View.VISIBLE == memoryDetailsTable.visibility) {
-                memoryDetailsIcon.setImageResource(R.drawable.ic_drop_down)
+                dropBarIcon.setImageResource(R.drawable.ic_drop_down)
                 memoryDetailsTable.visibility = View.GONE
             } else {
-                memoryDetailsIcon.setImageResource(R.drawable.ic_drop_up)
+                dropBarIcon.setImageResource(R.drawable.ic_drop_up)
                 memoryDetailsTable.visibility = View.VISIBLE
             }
         }

@@ -154,7 +154,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:background="@color/dark_gray"
+        android:background="@color/black_opacity_25"
         android:clickable="true"
         android:focusable="true"
         android:padding="4dp"
@@ -162,7 +162,7 @@
         app:layout_constraintTop_toBottomOf="@id/graph_free">
 
         <ImageView
-            android:id="@+id/memory_details_icon"
+            android:id="@+id/drop_bar_icon"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:adjustViewBounds="true"
@@ -174,16 +174,16 @@
             tools:ignore="ContentDescription" />
 
         <TextView
-            android:id="@+id/memory_details_txt"
+            android:id="@+id/drop_bar_txt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
             android:duplicateParentState="true"
             android:text="@string/memory_details"
             android:textSize="@dimen/text_body_1"
-            app:layout_constraintBottom_toBottomOf="@id/memory_details_icon"
+            app:layout_constraintBottom_toBottomOf="@id/drop_bar_icon"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/memory_details_icon" />
+            app:layout_constraintTop_toTopOf="@id/drop_bar_icon" />
 
         <TableLayout
             android:id="@+id/memory_details_table"
@@ -191,7 +191,7 @@
             android:layout_height="wrap_content"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/memory_details_txt" />
+            app:layout_constraintTop_toBottomOf="@id/drop_bar_txt" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

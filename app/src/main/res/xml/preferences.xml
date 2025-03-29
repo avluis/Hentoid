@@ -206,6 +206,10 @@
                 android:summaryOn="@string/pref_external_library_delete_on"
                 android:title="@string/pref_external_library_delete_title"
                 app:iconSpaceReserved="false" />
+            <Preference
+                android:key="ext_import_pattern"
+                android:title="@string/pref_external_library_ext_name_pattern"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
 

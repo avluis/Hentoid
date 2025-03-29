@@ -1,15 +1,15 @@
 package me.devsaki.hentoid.fragments.metadata
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.setOnTextChangedListener
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -107,38 +107,8 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
 
         binding?.apply {
             attributeType.setOnIndexChangeListener { updateNewBtnStates() }
-
-            sourceName.editText?.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    if (s != null) updateNewBtnStates()
-                }
-
-                override fun beforeTextChanged(
-                    s: CharSequence?, start: Int, count: Int, after: Int
-                ) {
-                }
-
-                override fun onTextChanged(
-                    s: CharSequence?, start: Int, before: Int, count: Int
-                ) {
-                }
-            })
-
-            targetName.editText?.addTextChangedListener(object : TextWatcher {
-                override fun afterTextChanged(s: Editable?) {
-                    if (s != null) updateNewBtnStates()
-                }
-
-                override fun beforeTextChanged(
-                    s: CharSequence?, start: Int, count: Int, after: Int
-                ) {
-                }
-
-                override fun onTextChanged(
-                    s: CharSequence?, start: Int, before: Int, count: Int
-                ) {
-                }
-            })
+            sourceName.editText?.setOnTextChangedListener(lifecycleScope) { updateNewBtnStates() }
+            targetName.editText?.setOnTextChangedListener(lifecycleScope) { updateNewBtnStates() }
 
             attributeType.visibility = if (isCreateMode) View.VISIBLE else View.GONE
             actionNew.visibility = if (isCreateMode) View.VISIBLE else View.GONE

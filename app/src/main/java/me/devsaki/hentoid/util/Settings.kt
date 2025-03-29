@@ -82,6 +82,7 @@ object Settings {
      */
     // IMPORT
     val isImportQueueEmptyBooks: Boolean by BoolSetting(Key.IMPORT_QUEUE_EMPTY, false)
+    var importExtNamePattern: String by StringSetting("import_external_name_pattern", "%t")
 
     // LIBRARY
     var libraryDisplay: Int by IntSettingStr(Key.LIBRARY_DISPLAY, Value.LIBRARY_DISPLAY_DEFAULT)

@@ -69,6 +69,7 @@
     <string name="pref_external_library_delete_title">Allow deleting external content</string>
     <string name="pref_external_library_delete_on">Hentoid can delete books and pages in the external library</string>
     <string name="pref_external_library_delete_off">Hentoid can\'t delete books nor pages in the external library</string>
+    <string name="pref_external_library_ext_name_pattern">File naming pattern</string>
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
     <string name="pref_cat_eh">E-hentai / ExHentai</string>

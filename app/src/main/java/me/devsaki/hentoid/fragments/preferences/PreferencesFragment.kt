@@ -179,7 +179,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             }
 
             Settings.Key.BROWSER_CLEAR_COOKIES -> {
-                onClearCookies()
+                CookiesDialogFragment.invoke(this)
+                true
+            }
+
+            "ext_import_pattern" -> {
+                ImportNamePatternDialogFragment.invoke(this)
                 true
             }
 
@@ -260,10 +265,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 DeviantArtServer.init()
             }
         }
-    }
-
-    private fun onClearCookies() {
-        CookiesDialogFragment.invoke(this)
     }
 
     private fun onAugmentedBrowserChanged() {

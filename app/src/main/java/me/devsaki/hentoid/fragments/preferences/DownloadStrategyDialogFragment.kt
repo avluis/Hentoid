@@ -27,9 +27,9 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogPrefsDlStrategyBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {

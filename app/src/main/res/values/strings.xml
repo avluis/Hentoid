@@ -277,6 +277,16 @@
     <string name="storage_set_strategy">Set download strategy</string>
     <string name="storage_stats">Statistics</string>
     <string name="storage_stats_view">View usage statistics</string>
+    <string name="import_ext_name_pattern">Name pattern</string>
+    <string name="import_ext_name_pattern_a">[Artist] Title</string>
+    <string name="import_ext_name_pattern_b">Artist - Title</string>
+    <string name="import_ext_name_pattern_c">Title (Artist)</string>
+    <string name="import_ext_test_pattern">Test pattern</string>
+    <string name="import_ext_test_file_name">File name</string>
+    <string name="import_ext_test_title_warning">WARNING : No title pattern set</string>
+    <string name="import_ext_test_artist_warning">WARNING : No artist pattern set</string>
+    <string name="import_ext_test_title_not_found">No title found</string>
+    <string name="import_ext_test_artist_not_found">No artist found</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh location</string>

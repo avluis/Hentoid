@@ -126,17 +126,14 @@
         app:constraint_referenced_ids="refresh_options_rename, refresh_options_renumber_pages, refresh_options_remove_1, refresh_options_remove_2"
         tools:visibility="visible" />
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/action_button"
         style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/refresh_title"
-        android:textColor="?colorSecondary"
-        android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_cache"
-        app:iconTint="?colorSecondary"
         app:layout_constraintTop_toBottomOf="@id/refresh_renumber_warning_txt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
