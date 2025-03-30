@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.annotation.DrawableRes
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -161,7 +162,7 @@ enum class Type(val value: Int) {
 const val KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters"
 const val KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames"
 
-private const val UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]"
+private val UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]".toRegex()
 private val libraryStatus = intArrayOf(
     StatusContent.DOWNLOADED.code,
     StatusContent.MIGRATED.code,
@@ -762,7 +763,7 @@ fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
     dao.deleteImageFiles(images)
 
     // Remove the pages from disk
-    for (image in images) removeFile(context, Uri.parse(image.fileUri))
+    for (image in images) removeFile(context, image.fileUri.toUri())
 
     // Lists all relevant content
     val contents = images.map { it.content.targetId }.distinct()
@@ -880,8 +881,8 @@ fun formatBookFolderName(
         formatBookFolderName(content, cleanFileName(title), cleanFileName(author)),
         formatBookFolderName(
             content,
-            title.replace(UNAUTHORIZED_CHARS.toRegex(), "_"),
-            author.replace(UNAUTHORIZED_CHARS.toRegex(), "_")
+            title.replace(UNAUTHORIZED_CHARS, "_"),
+            author.replace(UNAUTHORIZED_CHARS, "_")
         )
     )
 }
@@ -2154,7 +2155,7 @@ suspend fun mergeContents(
                             )
                         }
                         val unarchivedFiles = context.extractArchiveEntriesBlocking(
-                            Uri.parse(c.storageUri),
+                            c.storageUri.toUri(),
                             tempFolder,
                             toExtract
                         )
@@ -2211,7 +2212,7 @@ suspend fun mergeContents(
                     if (isInLibrary(newImg.status)) {
                         val newUri = copyFile(
                             context,
-                            Uri.parse(img.fileUri),
+                            img.fileUri.toUri(),
                             targetFolder,
                             newImg.mimeType,
                             newImg.name + "." + getExtensionFromUri(img.fileUri),

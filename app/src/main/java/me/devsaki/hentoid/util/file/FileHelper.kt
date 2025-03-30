@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util.file
 
-import android.annotation.TargetApi
 import android.app.usage.StorageStatsManager
 import android.content.ActivityNotFoundException
 import android.content.ContentResolver
@@ -21,7 +20,9 @@ import android.system.Os
 import android.text.TextUtils
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
@@ -58,7 +59,7 @@ private const val TEST_FILE_NAME = "delete.me"
 const val DEFAULT_MIME_TYPE = "application/octet-steam"
 
 // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
-private const val ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"
+private val ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]".toRegex()
 
 const val URI_ELEMENTS_SEPARATOR = "%3A"
 
@@ -74,7 +75,7 @@ const val FILE_IO_BUFFER_SIZE = 64 * 1024
  */
 fun getFileFromSingleUriString(context: Context, uriStr: String): DocumentFile? {
     if (uriStr.isEmpty()) return null
-    return getFileFromSingleUri(context, Uri.parse(uriStr))
+    return getFileFromSingleUri(context, uriStr.toUri())
 }
 
 fun getFileFromSingleUri(context: Context, uri: Uri): DocumentFile? {
@@ -92,7 +93,7 @@ fun getFileFromSingleUri(context: Context, uri: Uri): DocumentFile? {
  */
 fun getDocumentFromTreeUriString(context: Context, treeUriStr: String): DocumentFile? {
     if (treeUriStr.isEmpty()) return null
-    return getDocumentFromTreeUri(context, Uri.parse(treeUriStr))
+    return getDocumentFromTreeUri(context, treeUriStr.toUri())
 }
 
 fun getDocumentFromTreeUri(context: Context, treeUri: Uri): DocumentFile? {
@@ -225,7 +226,7 @@ private fun getVolumePath(storageVolume: Any): String {
 private fun getVolumeIdFromUri(uri: Uri): String {
     val docId = try {
         DocumentsContract.getDocumentId(uri)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         DocumentsContract.getTreeDocumentId(uri)
     }
 
@@ -243,7 +244,7 @@ private fun getVolumeIdFromUri(uri: Uri): String {
 private fun getDocumentPathFromUri(uri: Uri): String? {
     val docId = try {
         DocumentsContract.getDocumentId(uri)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         DocumentsContract.getTreeDocumentId(uri)
     }
 
@@ -624,10 +625,10 @@ private fun tryOpenFile(context: Context, uri: Uri, fileName: String, isDirector
         if (isDirectory) {
             try {
                 openFileWithIntent(context, uri, DocumentsContract.Document.MIME_TYPE_DIR)
-            } catch (e1: ActivityNotFoundException) {
+            } catch (_: ActivityNotFoundException) {
                 try {
                     openFileWithIntent(context, uri, "resource/folder")
-                } catch (e2: ActivityNotFoundException) {
+                } catch (_: ActivityNotFoundException) {
                     context.toast(R.string.select_file_manager)
                     openFileWithIntent(context, uri, "*/*")
                     // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
@@ -987,7 +988,7 @@ private fun openNewDownloadOutputStreamLegacy(fileName: String): OutputStream {
  * @return Opened OutputStream in a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
-@TargetApi(29)
+@RequiresApi(29)
 @Throws(IOException::class)
 private fun openNewDownloadOutputStreamQ(
     context: Context,
@@ -1394,7 +1395,7 @@ fun getParent(context: Context, root: Uri, doc: DocumentFile): Uri? {
  * @return Cleaned string
  */
 fun cleanFileName(fileName: String): String {
-    return fileName.replace(ILLEGAL_FILENAME_CHARS.toRegex(), "")
+    return fileName.replace(ILLEGAL_FILENAME_CHARS, "")
 }
 
 /**
@@ -1479,12 +1480,12 @@ private fun deleteQuietly(file: File?): Boolean {
         if (file.isDirectory) {
             tryCleanDirectory(file)
         }
-    } catch (ignored: java.lang.Exception) {
+    } catch (_: java.lang.Exception) {
     }
 
     return try {
         file.delete()
-    } catch (ignored: java.lang.Exception) {
+    } catch (_: java.lang.Exception) {
         false
     }
 }
