@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.tools
+package me.devsaki.hentoid.fragments.queue
 
 import android.content.Context
 import android.net.Uri
@@ -23,7 +23,6 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
-import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -32,7 +31,7 @@ import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.getInputStream
-import me.devsaki.hentoid.util.isNumeric
+import me.devsaki.hentoid.util.readUrls
 import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.workers.DownloadsImportWorker
 import me.devsaki.hentoid.workers.data.DownloadsImportData
@@ -40,7 +39,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
-import java.io.InputStreamReader
 
 /**
  * Dialog for the downloads list import feature
@@ -50,24 +48,6 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
     companion object {
         fun invoke(fragment: Fragment) {
             invoke(fragment, DownloadsImportDialogFragment())
-        }
-
-        fun readFile(context: Context, file: DocumentFile): List<String> {
-            var lines: List<String>
-            getInputStream(context, file).use { inputStream ->
-                InputStreamReader(inputStream).use {
-                    lines = it.readLines()
-                }
-            }
-            return lines
-                .map { s -> s.trim().lowercase() }
-                .filterNot { s -> s.isEmpty() }
-                .filter { s ->
-                    isNumeric(s) ||
-                            (s.startsWith("http")
-                                    && Site.searchByUrl(s) != Site.NONE
-                                    )
-                }
         }
     }
 
@@ -85,10 +65,10 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogQueueDownloadsImportBinding.inflate(inflater, container, false)
         EventBus.getDefault().register(this)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -147,7 +127,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
                     try {
                         return@withContext readFile(requireContext(), file)
                     } catch (e: Exception) {
-                        Timber.w(e)
+                        Timber.Forest.w(e)
                         errorFileName = file.name ?: ""
                     }
                     return@withContext emptyList<String>()
@@ -163,6 +143,13 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
                     }
                 }
             }
+        }
+    }
+
+    private fun readFile(context: Context, file: DocumentFile): List<String> {
+        getInputStream(context, file).use {
+            val urls = readUrls(it)
+            return urls.map { it.first }
         }
     }
 
@@ -199,14 +186,12 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
         val queuePosition = Preferences.getQueueNewDownloadPosition()
         if (queuePosition == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.let { bdg ->
-                AddQueueMenu.show(
-                    requireContext(),
-                    bdg.root,
-                    this
-                ) { position, _ ->
+                AddQueueMenu.Companion.show(requireContext(), bdg.root, this)
+                { position, _ ->
                     runImport(
                         fileUri,
-                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP
+                        else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
                     )
                 }
             }
@@ -232,7 +217,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
             importProgressBar.isIndeterminate = true
             importProgressText.visibility = View.VISIBLE
             importProgressBar.visibility = View.VISIBLE
-            val workManager = WorkManager.getInstance(requireContext())
+            val workManager = WorkManager.Companion.getInstance(requireContext())
             workManager.enqueueUniqueWork(
                 R.id.downloads_import_service.toString(),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,

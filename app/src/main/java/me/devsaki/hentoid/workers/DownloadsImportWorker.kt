@@ -14,7 +14,6 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.readFile
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
@@ -23,12 +22,14 @@ import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.parseFromScratch
+import me.devsaki.hentoid.util.readUrls
 import me.devsaki.hentoid.workers.data.DownloadsImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -89,7 +90,10 @@ class DownloadsImportWorker(
             trace(Log.ERROR, "Couldn't find downloads file at %s", fileUri)
             return@withContext
         }
-        val downloads = readFile(context, file)
+        val downloads = getInputStream(context, file).use {
+            val urls = readUrls(it)
+            urls.map { it.first }
+        }
         if (downloads.isEmpty()) {
             trace(Log.ERROR, "Downloads file %s is empty", fileUri)
             return@withContext
@@ -117,7 +121,7 @@ class DownloadsImportWorker(
         queuePosition: QueuePosition,
         importAsStreamed: Boolean,
         hasPassedCf: Boolean,
-        dao : CollectionDAO
+        dao: CollectionDAO
     ) {
         val site = Site.searchByUrl(url)
         if (null == site || Site.NONE == site) {
@@ -126,7 +130,7 @@ class DownloadsImportWorker(
             return
         }
         val existingContent =
-            dao!!.selectContentByUrlOrCover(site, Content.transformRawUrl(site, url), null)
+            dao.selectContentByUrlOrCover(site, Content.transformRawUrl(site, url), null)
         if (existingContent != null) {
             val location =
                 if (isInQueue(existingContent.status)) "queue" else "library"
@@ -143,7 +147,7 @@ class DownloadsImportWorker(
                 trace(Log.INFO, "Added content @ %s", url)
                 content.downloadMode =
                     if (importAsStreamed) DownloadMode.STREAM else DownloadMode.DOWNLOAD
-                dao!!.addContentToQueue(
+                dao.addContentToQueue(
                     content,
                     null,
                     null,

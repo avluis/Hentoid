@@ -62,9 +62,12 @@ import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.data.ExternalImportData
 import me.devsaki.hentoid.workers.data.PrimaryImportData
+import org.jsoup.Jsoup
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 import java.net.URLDecoder
 import java.time.Instant
 import java.util.Locale
@@ -1511,4 +1514,36 @@ fun patternToRegex(pattern: String): Triple<Pattern, Boolean, Boolean> {
 
     // Compile regex with unicode support
     return Triple(regexp.toPattern(Pattern.UNICODE_CASE), hasTitle, hasArtist)
+}
+
+fun readUrls(input: InputStream): List<Pair<String, String>> {
+    val result: MutableList<Pair<String, String>> = ArrayList()
+    val streams = duplicateInputStream(input, 2)
+    InputStreamReader(streams[0]).use {
+        var index = 0
+        it.forEachLine { line ->
+            if (0 == index) {
+                // Bookmark export
+                if (line.startsWith("<!DOCTYPE NETSCAPE-Bookmark")) {
+                    val doc = Jsoup.parse(streams[1], null, "")
+                    result.addAll(
+                        doc.select("A")
+                            .map { Pair(it.attr("href").trim().lowercase(), it.text()) }
+                            .filter { it.first.startsWith("http") }
+                    )
+                    return@forEachLine
+                }
+            }
+            // Regular file
+            val l = line.trim().lowercase()
+            if (l.isNotBlank()) {
+                if (isNumeric(l) ||
+                    (l.startsWith("http")
+                            && Site.Companion.searchByUrl(l) != Site.NONE)
+                ) result.add(Pair(l, ""))
+            }
+            index++
+        }
+    }
+    return result
 }

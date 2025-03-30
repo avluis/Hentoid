@@ -451,7 +451,7 @@ fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
     return true
 }
 
-fun logException(t: Throwable, context : Context? = null) {
+fun logException(t: Throwable, context: Context? = null) {
     val log: MutableList<LogEntry> = ArrayList()
     log.add(LogEntry(t.message ?: ""))
     log.add(LogEntry(getStackTraceString(t)))
@@ -571,5 +571,5 @@ fun getScreenDimensionsPx(context: Context): Point {
     }
 }
 
-inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean)
-        = mapIndexedNotNull{ index, elem -> index.takeIf{ predicate(elem) } }
+inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) =
+    mapIndexedNotNull { index, elem -> index.takeIf { predicate(elem) } }

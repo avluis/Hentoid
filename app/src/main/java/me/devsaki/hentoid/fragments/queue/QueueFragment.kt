@@ -58,7 +58,7 @@ import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
-import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment.Companion.invoke
+import me.devsaki.hentoid.fragments.queue.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
