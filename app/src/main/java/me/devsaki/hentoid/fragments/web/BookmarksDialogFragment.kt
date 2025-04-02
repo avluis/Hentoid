@@ -34,6 +34,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
+import me.devsaki.hentoid.util.InnerNameNumberBookmarkComparator
 import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
@@ -83,6 +84,8 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private lateinit var site: Site
     private lateinit var title: String
     private lateinit var url: String
+
+    private var sortAscending = true
 
     // Bookmark ID of the current webpage
     private var bookmarkId: Long = -1
@@ -199,28 +202,41 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         super.onDestroyView()
     }
 
-    private fun reloadBookmarks(): List<SiteBookmark> {
+    private fun reloadBookmarks(sortAsc: Boolean? = null): List<SiteBookmark> {
         val bookmarks: List<SiteBookmark>
         val dao: CollectionDAO = ObjectBoxDAO()
         bookmarks = try {
-            reloadBookmarks(dao)
+            reloadBookmarks(dao, sortAsc)
         } finally {
             dao.cleanup()
         }
         return bookmarks
     }
 
-    private fun reloadBookmarks(dao: CollectionDAO): List<SiteBookmark> {
+    private fun reloadBookmarks(dao: CollectionDAO, sortAsc: Boolean? = null): List<SiteBookmark> {
         // Fetch custom bookmarks
-        val bookmarks = dao.selectBookmarks(site).toMutableList()
+        var bookmarks = dao.selectBookmarks(site)
+
+        // Apply sort if needed
+        if (sortAsc != null) {
+            bookmarks = bookmarks.sortedWith(InnerNameNumberBookmarkComparator())
+            if (!sortAsc) bookmarks = bookmarks.reversed()
+
+            // Renumber and save new order
+            bookmarks.forEachIndexed { i, b -> b.order = i }
+            dao.insertBookmarks(bookmarks)
+        }
+
         // Add site home as 1st bookmark
         val siteHome =
             SiteBookmark(site = site, title = getString(R.string.bookmark_homepage), url = site.url)
         // Mark as homepage if no custom homepage has been set
         if (!bookmarks.any { it.isHomepage }) siteHome.isHomepage = true
-        bookmarks.add(0, siteHome)
+        val bookmarksWithHome = bookmarks.toMutableList()
+        bookmarksWithHome.add(0, siteHome)
+
         // Convert to items
-        val items = bookmarks.mapIndexed { index, b ->
+        val items = bookmarksWithHome.mapIndexed { index, b ->
             val prefix = if (b.isHomepage) "$HOME_UNICODE " else ""
             TextItem(
                 "$prefix${b.title}",
@@ -336,6 +352,20 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     @SuppressLint("NonConstantResourceId")
     private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
+            R.id.action_sort -> {
+                reloadBookmarks(sortAscending)
+                sortAscending = !sortAscending
+            }
+
+            R.id.action_import -> {
+                SelectSiteDialogFragment.invoke(
+                    this,
+                    getString(R.string.bookmark_change_site),
+                    getBookmarkedSites().map { it.code },
+                    showAltSites = false
+                )
+            }
+
             R.id.action_home -> {
                 SelectSiteDialogFragment.invoke(
                     this,

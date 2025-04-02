@@ -5,6 +5,18 @@
     tools:context=".activities.sources.BaseWebActivity"
     tools:ignore="AlwaysShowAction">
     <item
+        android:id="@+id/action_sort"
+        android:icon="@drawable/ic_menu_sort_123"
+        android:title="@string/menu_sort"
+        android:tooltipText="@string/menu_sort"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_import"
+        android:icon="@drawable/ic_action_import"
+        android:title="@string/import_downloads"
+        android:tooltipText="@string/import_downloads"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_home"
         android:icon="@drawable/ic_hentoid_shape"
         android:title="@string/bookmark_homepage"

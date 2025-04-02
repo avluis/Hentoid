@@ -35,6 +35,7 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
@@ -2325,6 +2326,16 @@ private class InnerNameNumberArchiveComparator : Comparator<ArchiveEntry> {
  */
 class InnerNameNumberContentComparator : Comparator<Content> {
     override fun compare(c1: Content, c2: Content): Int {
+        return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
+            .compare(c1.title, c2.title)
+    }
+}
+
+/**
+ * Comparator to be used to sort Bookmarks according to their titles
+ */
+class InnerNameNumberBookmarkComparator : Comparator<SiteBookmark> {
+    override fun compare(c1: SiteBookmark, c2: SiteBookmark): Int {
         return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
             .compare(c1.title, c2.title)
     }
