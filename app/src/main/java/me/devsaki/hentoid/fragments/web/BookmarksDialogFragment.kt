@@ -47,7 +47,8 @@ private const val HOME_UNICODE = "\uD83C\uDFE0"
 
 class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
     ItemTouchCallback,
-    SelectSiteDialogFragment.Parent {
+    SelectSiteDialogFragment.Parent,
+    BookmarksImportDialogFragment.Parent {
 
     companion object {
         private const val KEY_SITE = "site"
@@ -358,12 +359,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             }
 
             R.id.action_import -> {
-                SelectSiteDialogFragment.invoke(
-                    this,
-                    getString(R.string.bookmark_change_site),
-                    getBookmarkedSites().map { it.code },
-                    showAltSites = false
-                )
+                BookmarksImportDialogFragment.invoke(this, site)
             }
 
             R.id.action_home -> {
@@ -577,6 +573,10 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
     override fun itemTouchStopDrag(viewHolder: RecyclerView.ViewHolder) {
         // Nothing
+    }
+
+    override fun onLoaded() {
+        reloadBookmarks()
     }
 
     interface Parent {

@@ -219,6 +219,14 @@
     <string name="import_streamed">Import as streamed books</string>
     <string name="importing_downloads">Importing downloads…</string>
 
+    <!-- Import bookmarks -->
+    <string name="import_bookmarks_title">Import bookmarks</string>
+    <plurals name="import_bookmarks_found">
+        <item quantity="one"><x:g example="1" id="downloads">%d</x:g> valid bookmark found</item>
+        <item quantity="other"><x:g example="2" id="downloads">%d</x:g> valid bookmarks found</item>
+    </plurals>
+    <string name="import_current_site">Only import %s bookmarks</string>
+
     <!-- TextViews -->
     <string name="work_series">Series: <x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">Artist: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>

@@ -1516,8 +1516,8 @@ fun patternToRegex(pattern: String): Triple<Pattern, Boolean, Boolean> {
     return Triple(regexp.toPattern(Pattern.UNICODE_CASE), hasTitle, hasArtist)
 }
 
-fun readUrls(input: InputStream): List<Pair<String, String>> {
-    val result: MutableList<Pair<String, String>> = ArrayList()
+fun parseBookmarks(input: InputStream): List<SiteBookmark> {
+    val result: MutableList<SiteBookmark> = ArrayList()
     val streams = duplicateInputStream(input, 2)
     InputStreamReader(streams[0]).use {
         var index = 0
@@ -1528,10 +1528,17 @@ fun readUrls(input: InputStream): List<Pair<String, String>> {
                     val doc = Jsoup.parse(streams[1], null, "")
                     result.addAll(
                         doc.select("A")
-                            .map { Pair(it.attr("href").trim().lowercase(), it.text()) }
-                            .filter { it.first.startsWith("http") }
-                            .filter { Site.searchByUrl(it.first) != Site.NONE }
-                            .filter { Site.searchByUrl(it.first)?.isVisible == true }
+                            .map {
+                                val url = it.attr("href").trim().lowercase()
+                                SiteBookmark(
+                                    url = url,
+                                    title = it.text(),
+                                    site = Site.searchByUrl(url) ?: Site.NONE
+                                )
+                            }
+                            .filter { it.url.startsWith("http") }
+                            .filter { it.site != Site.NONE }
+                            .filter { it.site.isVisible }
                     )
                     return@forEachLine
                 }
@@ -1539,12 +1546,14 @@ fun readUrls(input: InputStream): List<Pair<String, String>> {
             // Regular file
             val l = line.trim().lowercase()
             if (l.isNotBlank()) {
-                if (isNumeric(l) ||
-                    (l.startsWith("http")
-                            && Site.searchByUrl(l) != Site.NONE
-                            && Site.searchByUrl(l)?.isVisible == true
-                            )
-                ) result.add(Pair(l, ""))
+                var site = Site.NONE
+                if (isNumeric(l)) site = Site.NHENTAI
+                else if (l.startsWith("http")) {
+                    site = Site.searchByUrl(l) ?: Site.NONE
+                }
+                if (site != Site.NONE && site.isVisible) result.add(
+                    SiteBookmark(url = l, title = "", site = site)
+                )
             }
             index++
         }

@@ -28,8 +28,8 @@ import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.parseBookmarks
 import me.devsaki.hentoid.util.parseFromScratch
-import me.devsaki.hentoid.util.readUrls
 import me.devsaki.hentoid.workers.data.DownloadsImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
@@ -91,8 +91,8 @@ class DownloadsImportWorker(
             return@withContext
         }
         val downloads = getInputStream(context, file).use {
-            val urls = readUrls(it)
-            urls.map { it.first }
+            val urls = parseBookmarks(it)
+            urls.map { it.url }
         }
         if (downloads.isEmpty()) {
             trace(Log.ERROR, "Downloads file %s is empty", fileUri)

@@ -31,7 +31,7 @@ import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.file.getInputStream
-import me.devsaki.hentoid.util.readUrls
+import me.devsaki.hentoid.util.parseBookmarks
 import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.workers.DownloadsImportWorker
 import me.devsaki.hentoid.workers.data.DownloadsImportData
@@ -148,8 +148,8 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
 
     private fun readFile(context: Context, file: DocumentFile): List<String> {
         getInputStream(context, file).use {
-            val urls = readUrls(it)
-            return urls.map { it.first }
+            val urls = parseBookmarks(it)
+            return urls.map { it.url }
         }
     }
 
