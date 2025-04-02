@@ -186,7 +186,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
         val queuePosition = Preferences.getQueueNewDownloadPosition()
         if (queuePosition == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.let { bdg ->
-                AddQueueMenu.Companion.show(requireContext(), bdg.root, this)
+                AddQueueMenu.show(requireContext(), bdg.root, this)
                 { position, _ ->
                     runImport(
                         fileUri,
@@ -217,7 +217,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
             importProgressBar.isIndeterminate = true
             importProgressText.visibility = View.VISIBLE
             importProgressBar.visibility = View.VISIBLE
-            val workManager = WorkManager.Companion.getInstance(requireContext())
+            val workManager = WorkManager.getInstance(requireContext())
             workManager.enqueueUniqueWork(
                 R.id.downloads_import_service.toString(),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
