@@ -1531,6 +1531,7 @@ fun readUrls(input: InputStream): List<Pair<String, String>> {
                             .map { Pair(it.attr("href").trim().lowercase(), it.text()) }
                             .filter { it.first.startsWith("http") }
                             .filter { Site.searchByUrl(it.first) != Site.NONE }
+                            .filter { Site.searchByUrl(it.first)?.isVisible == true }
                     )
                     return@forEachLine
                 }
@@ -1540,7 +1541,9 @@ fun readUrls(input: InputStream): List<Pair<String, String>> {
             if (l.isNotBlank()) {
                 if (isNumeric(l) ||
                     (l.startsWith("http")
-                            && Site.searchByUrl(l) != Site.NONE)
+                            && Site.searchByUrl(l) != Site.NONE
+                            && Site.searchByUrl(l)?.isVisible == true
+                            )
                 ) result.add(Pair(l, ""))
             }
             index++
