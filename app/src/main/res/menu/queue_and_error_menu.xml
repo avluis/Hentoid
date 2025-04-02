@@ -33,7 +33,7 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_import_downloads"
-        android:icon="@drawable/ic_simple_arrow_up"
+        android:icon="@drawable/ic_action_import"
         android:title="@string/import_downloads"
         android:tooltipText="@string/import_downloads"
         app:showAsAction="never" />

@@ -83,7 +83,7 @@
         android:textColor="@color/secondary_color_selector"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"
-        app:icon="@drawable/ic_simple_arrow_up"
+        app:icon="@drawable/ic_action_import"
         app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
