@@ -65,10 +65,10 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogToolsMetaImportBinding.inflate(inflater, container, false)
         EventBus.getDefault().register(this)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {

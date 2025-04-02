@@ -47,9 +47,9 @@ class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogToolsSettingsImportBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
@@ -159,6 +159,6 @@ class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
 
         // Dismiss after 3s, for the user to be able to see the snackbar
         dismissHandler = Handler(Looper.getMainLooper())
-        dismissHandler!!.postDelayed({ dismiss() }, 3000)
+        dismissHandler?.postDelayed({ dismiss() }, 3000)
     }
 }
