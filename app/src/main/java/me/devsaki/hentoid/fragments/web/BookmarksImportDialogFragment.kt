@@ -36,6 +36,8 @@ import timber.log.Timber
 class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
 
     private lateinit var site: Site
+    private var nbBookmarks = 0
+    private var nbSiteBookmarks = 0
 
     companion object {
         private const val KEY_SITE = "site"
@@ -82,7 +84,20 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
         super.onViewCreated(rootView, savedInstanceState)
         binding?.apply {
             importCurrentSite.text = getString(R.string.import_current_site, site.description)
+            importCurrentSite.setOnCheckedChangeListener { _, isChecked ->
+                refreshNbBookmarks(isChecked)
+            }
             importSelectFileBtn.setOnClickListener { pickFile.launch(0) }
+        }
+    }
+
+    private fun refreshNbBookmarks(siteOnly: Boolean) {
+        binding?.apply {
+            val qty = if (siteOnly) nbSiteBookmarks else nbBookmarks
+            importFileValidText.text = resources.getQuantityString(
+                R.plurals.import_bookmarks_found, qty, qty
+            )
+            importRunBtn.isEnabled = qty > 0
         }
     }
 
@@ -155,6 +170,8 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
         bookmarks: List<SiteBookmark>,
         jsonFile: DocumentFile
     ) {
+        nbBookmarks = bookmarks.size
+        nbSiteBookmarks = bookmarks.count { it.site == site }
         binding?.apply {
             importFileInvalidText.visibility = View.GONE
             if (bookmarks.isEmpty()) {
@@ -164,11 +181,7 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
             } else {
                 importSelectFileBtn.visibility = View.GONE
                 importFileInvalidText.visibility = View.GONE
-                importFileValidText.text = resources.getQuantityString(
-                    R.plurals.import_bookmarks_found,
-                    bookmarks.size,
-                    bookmarks.size
-                )
+                refreshNbBookmarks(importCurrentSite.isChecked)
                 importFileValidText.visibility = View.VISIBLE
                 importRunBtn.visibility = View.VISIBLE
                 importRunBtn.setOnClickListener {
@@ -195,6 +208,7 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
                         dao.cleanup()
                     }
                 }
+                parent?.onLoaded()
                 dismissAllowingStateLoss()
             }
         }
