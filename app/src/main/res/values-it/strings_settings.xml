@@ -225,5 +225,5 @@
   <string name="pref_display_grid_rating_title">Imposta voto</string>
   <string name="pref_display_grid_source_title">Guarda fonte</string>
   <string name="pref_display_grid_storage_title">Informazioni memoria</string>
-  <string name="pref_grid_card_width">Book display width</string>
+  <string name="pref_grid_card_width_title">Book display width</string>
 </resources>

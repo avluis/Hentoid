@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.image.loadStill
 
@@ -128,8 +129,17 @@ class GroupDisplayItem(
             }
 
             val items = item.group.getItems()
-            val numberStr =
-                if (items.isEmpty()) title.context.getString(R.string.empty) else items.size.toString() + ""
+            val numberStr = when (Settings.libraryDisplayGroupFigure) {
+                Settings.Value.LIBRARY_DISPLAY_GROUP_NB_BOOKS ->
+                    if (items.isEmpty()) title.context.getString(R.string.empty)
+                    else items.size.toString() + ""
+
+                else -> {
+                    val size =
+                        if (items.isEmpty()) 0L else items.sumOf { it.linkedContent?.size ?: 0 }
+                    formatHumanReadableSizeInt(size, title.resources)
+                }
+            }
             title.text = String.format("%s (%s)", item.group.name, numberStr)
 
             ivFavourite?.let {

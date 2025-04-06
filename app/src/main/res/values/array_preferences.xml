@@ -3,6 +3,9 @@
     <!-- Choice for "Display type" setting -->
     <string name="pref_library_display_entries_1">List (default)</string>
     <string name="pref_library_display_entries_2">Grid</string>
+    <!-- Choice for "Group figures" setting -->
+    <string name="library_display_group_figure_entries_1">Number of books (default)</string>
+    <string name="library_display_group_figure_entries_2">Total size</string>
     <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_1">No alert</string>
     <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">on 90% full</string>

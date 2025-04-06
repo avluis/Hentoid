@@ -225,5 +225,5 @@
     <string name="pref_display_grid_rating_title">평점 설정</string>
     <string name="pref_display_grid_source_title">브라우저에서 보기</string>
     <string name="pref_display_grid_storage_title">저장공간 정보</string>
-    <string name="pref_grid_card_width">작품 표시 너비</string>
+    <string name="pref_grid_card_width_title">작품 표시 너비</string>
 </resources>

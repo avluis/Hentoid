@@ -225,5 +225,5 @@
   <string name="pref_display_grid_rating_title">Valoración</string>
   <string name="pref_display_grid_source_title">Fuente</string>
   <string name="pref_display_grid_storage_title">Información de almacenamiento</string>
-  <string name="pref_grid_card_width">Tamaño de la portada</string>
+  <string name="pref_grid_card_width_title">Tamaño de la portada</string>
 </resources>

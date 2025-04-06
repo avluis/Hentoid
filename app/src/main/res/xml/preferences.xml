@@ -93,12 +93,20 @@
                 android:title="@string/pref_display_grid_storage_title"
                 app:iconSpaceReserved="false" />
             <ListPreference
+                android:defaultValue="@string/library_display_group_figure_default"
+                android:entries="@array/library_display_group_figure_entries"
+                android:entryValues="@array/library_display_group_figure_values"
+                android:key="library_display_group_figure"
+                android:summary="@string/pref_attributes_list_order_summary"
+                android:title="@string/library_display_group_figure_title"
+                app:iconSpaceReserved="false" />
+            <ListPreference
                 android:defaultValue="@string/pref_grid_card_width_default"
                 android:entries="@array/pref_grid_card_width_entries"
                 android:entryValues="@array/pref_grid_card_width_values"
                 android:key="grid_card_width"
                 android:summary="@string/pref_attributes_list_order_summary"
-                android:title="@string/pref_grid_card_width"
+                android:title="@string/pref_grid_card_width_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
 

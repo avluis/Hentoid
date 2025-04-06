@@ -115,6 +115,10 @@ object Settings {
     var libraryDisplayGridTitle: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_TITLE, true)
     var libraryDisplayGridLanguage: Boolean by BoolSetting(Key.LIBRARY_DISPLAY_GRID_LANG, true)
     var libraryGridCardWidthDP: Int by IntSettingStr(Key.LIBRARY_GRID_CARD_WIDTH, 150)
+    var libraryDisplayGroupFigure: Int by IntSettingStr(
+        Key.LIBRARY_DISPLAY_GROUP_FIGURE,
+        Value.LIBRARY_DISPLAY_GROUP_NB_BOOKS
+    )
     var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
     var contentSortField: Int by IntSetting(
         "pref_order_content_field",
@@ -575,6 +579,7 @@ object Settings {
         const val LIBRARY_DISPLAY_GRID_TITLE = "LIBRARY_DISPLAY_GRID_TITLE"
         const val LIBRARY_DISPLAY_GRID_LANG = "LIBRARY_DISPLAY_GRID_LANG"
         const val LIBRARY_GRID_CARD_WIDTH = "grid_card_width"
+        const val LIBRARY_DISPLAY_GROUP_FIGURE = "library_display_group_figure"
         const val ACHIEVEMENTS = "achievements"
         const val ACHIEVEMENTS_NB_AI_RESCALE = "ach_nb_ai_rescale"
 
@@ -659,6 +664,9 @@ object Settings {
 
         const val LIBRARY_DISPLAY_LIST = 0
         const val LIBRARY_DISPLAY_GRID = 1
+
+        const val LIBRARY_DISPLAY_GROUP_NB_BOOKS = 0
+        const val LIBRARY_DISPLAY_GROUP_SIZE = 1
 
         const val SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0
         const val SEARCH_ORDER_ATTRIBUTES_COUNT = 1

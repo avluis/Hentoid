@@ -56,6 +56,14 @@
         <item>80</item>
         <item>100</item>
     </string-array>
+    <string-array name="library_display_group_figure_entries" translatable="false">
+        <item>@string/library_display_group_figure_entries_1</item>
+        <item>@string/library_display_group_figure_entries_2</item>
+    </string-array>
+    <string-array name="library_display_group_figure_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
     <string-array name="pref_grid_card_width_entries" translatable="false">
         <item>S</item>
         <item>M</item>
@@ -512,6 +520,7 @@
     <string name="pref_grid_display_source_default" translatable="false">true</string>
     <string name="pref_grid_display_storage_default" translatable="false">true</string>
     <string name="pref_grid_card_width_default" translatable="false">150</string>
+    <string name="library_display_group_figure_default" translatable="false">0</string>
 
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary" translatable="false">%s</string>

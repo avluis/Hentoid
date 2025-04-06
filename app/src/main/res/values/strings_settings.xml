@@ -26,7 +26,8 @@
     <string name="pref_display_grid_rating_title">Set rating</string>
     <string name="pref_display_grid_source_title">View source</string>
     <string name="pref_display_grid_storage_title">Storage information</string>
-    <string name="pref_grid_card_width">Book display width</string>
+    <string name="pref_grid_card_width_title">Book display width</string>
+    <string name="library_display_group_figure_title">Group figure</string>
     <string name="pref_cat_search">Advanced search</string>
     <string name="pref_attributes_list_order_title">Sorting order of displayed metadata</string>
     <string name="pref_attributes_list_count_title">Count available books</string>

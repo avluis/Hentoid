@@ -22,7 +22,7 @@
     <string name="pref_display_grid_rating_title">Betygsätt</string>
     <string name="pref_display_grid_source_title">Visa källa</string>
     <string name="pref_display_grid_storage_title">Lagringsinformation</string>
-    <string name="pref_grid_card_width">Bokomslagsbredd</string>
+    <string name="pref_grid_card_width_title">Bokomslagsbredd</string>
     <string name="pref_cat_search">Avancerad sök</string>
     <string name="pref_attributes_list_order_title">Sorteringsordning av visad metadata</string>
     <string name="pref_attributes_list_count_title">Räkna tillgängliga böcker</string>
