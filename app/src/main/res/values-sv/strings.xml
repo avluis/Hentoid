@@ -370,7 +370,7 @@
     <string name="export_title">Exportera metadata</string>
     <string name="export_question">Önskar du överföra ditt bibliotek till en annan telefon?</string>
 
-    <string name="export_answer_yes">Den här funktionen gjordes inte för att låta dig överföra din samling till en annan telefon. Det fungerar i vissa fall men nägra av dina böcker kanske blir omöjliga att åternerladda!</string>
+    <string name="export_answer_yes">Den här funktionen gjordes inte för att låta dig överföra din samling till en annan telefon. Det fungerar i vissa fall men några av dina böcker kanske blir omöjliga att åternerladda!</string>
     <string name="export_transfer_tutorial"><u>Kika gärna på vår Github-wiki angående biblioteksöverföringar</u></string>
 
     <plurals name="export_file_library">
