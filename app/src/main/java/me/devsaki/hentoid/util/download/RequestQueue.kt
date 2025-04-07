@@ -33,7 +33,7 @@ class RequestQueue(
 
     fun stop() {
         Timber.d("Aborting %d download requests", downloadsQueue.size)
-        while (downloadsQueue.size > 0) {
+        while (downloadsQueue.isNotEmpty()) {
             downloadsQueue.poll()?.let {
                 it.killSwitch.set(true)
                 Timber.v("Aborting download request %s", it.url)
