@@ -31,8 +31,10 @@ class RequestQueueManager private constructor(
     private var mRequestQueue: RequestQueue? = null
 
     // Maximum number of allowed parallel download threads (-1 = not capped)
+    /*
     var downloadThreadCap = -1
         private set
+     */
 
     // Actual number of allowed parallel download threads
     private var downloadThreadCount = 0
@@ -45,7 +47,7 @@ class RequestQueueManager private constructor(
 
 
     init {
-        downloadThreadCount = getPreferredThreadCount(context, -1)
+        downloadThreadCount = getPreferredThreadCount(context, Settings.Value.DOWNLOAD_THREAD_COUNT_AUTO)
         init(resetActiveRequests = false, cancelQueue = true)
     }
 
@@ -71,20 +73,15 @@ class RequestQueueManager private constructor(
      * Initialize the request queue
      *
      * @param ctx               Context to use
-     * @param nbDlThreads       Number of parallel downloads to use; -1 to use automated recommendation
-     * @param siteDlThreadCount Number of parallel downloads set on site level
+     * @param nbDlThreads       Number of parallel downloads to use; 0 to use automated recommendation
      * @param cancelQueue       True if queued requests should be canceled; false if it should be kept intact
      */
     fun initUsingDownloadThreadCount(
         ctx: Context,
         nbDlThreads: Int,
-        siteDlThreadCount: Int,
         cancelQueue: Boolean
     ) {
-        downloadThreadCap = nbDlThreads
-        downloadThreadCount = nbDlThreads
-        if (-1 == downloadThreadCap) downloadThreadCount =
-            getPreferredThreadCount(ctx, siteDlThreadCount)
+        downloadThreadCount = getPreferredThreadCount(ctx, nbDlThreads)
         init(false, cancelQueue)
     }
 

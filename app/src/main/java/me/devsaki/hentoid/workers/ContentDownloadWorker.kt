@@ -476,27 +476,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Set up downloader constraints
         val siteSoftCap = Settings.getDownloadThreadCount(content.site)
         val siteHardCap = content.site.parallelDownloadCap
-        if (siteHardCap > 0 &&
-            (requestQueueManager.downloadThreadCap > siteHardCap
-                    || -1 == requestQueueManager.downloadThreadCap)
-        ) {
-            Timber.d("Setting parallel downloads count to %s")
-            requestQueueManager.initUsingDownloadThreadCount(
-                applicationContext,
-                siteHardCap,
-                siteSoftCap,
-                true
-            )
-        }
-        if (0 == siteHardCap && requestQueueManager.downloadThreadCap > -1) {
-            Timber.d("Resetting parallel downloads count to default ($siteSoftCap)")
-            requestQueueManager.initUsingDownloadThreadCount(
-                applicationContext,
-                -1,
-                siteSoftCap,
-                true
-            )
-        }
+        val siteCap = siteSoftCap.coerceIn(0, siteHardCap)
+
+        Timber.d("Setting parallel downloads count to $siteCap")
+        requestQueueManager.initUsingDownloadThreadCount(
+            applicationContext,
+            siteCap,
+            true
+        )
+
         requestQueueManager.setNbRequestsPerSecond(content.site.requestsCapPerSecond)
         requestQueueManager.start()
 
