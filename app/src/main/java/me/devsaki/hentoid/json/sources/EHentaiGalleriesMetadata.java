@@ -29,18 +29,24 @@ public class EHentaiGalleriesMetadata {
         private String token;
         private String posted;
         private String title;
+        private String category;
         private String thumb;
         private String filecount;
         private List<String> tags;
 
 
         public Content update(@NonNull Content content, @NonNull String url, @NonNull Site site, boolean updatePages) {
+            AttributeMap attributes = new AttributeMap();
+
             content.setSite(site);
 
             content.setUrl("/" + gid + "/" + token); // The rest will not be useful anyway because of temporary keys
             content.setCoverImageUrl(thumb);
             content.setTitle(cleanup(title));
             content.setStatus(StatusContent.SAVED);
+
+            if (category != null && !category.isBlank())
+                attributes.add(new Attribute(AttributeType.CATEGORY, category.trim(), "category/" + category.trim(), site));
 
             if (posted != null && !posted.isEmpty())
                 content.setUploadDate(Long.parseLong(posted) * 1000);
@@ -51,7 +57,6 @@ public class EHentaiGalleriesMetadata {
                 content.setImageFiles(Collections.emptyList());
             }
 
-            AttributeMap attributes = new AttributeMap();
             String[] tagParts;
             AttributeType type;
             String name;
