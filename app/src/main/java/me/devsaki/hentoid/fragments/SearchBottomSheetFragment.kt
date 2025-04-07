@@ -12,7 +12,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -129,7 +128,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = IncludeSearchBottomPanelBinding.inflate(inflater, container, false)
         val mainAttr = selectedAttributeTypes[0]
 
@@ -150,13 +149,13 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
             tagSuggestion.layoutManager = layoutManager
             attributeAdapter = AvailableAttributeAdapter()
             attributeAdapter.setOnScrollToEndListener { loadMore() }
-            attributeAdapter.setOnClickListener { button -> onAttributeChosen(button) }
+            attributeAdapter.setOnClickListener { onAttributeChosen(it) }
             tagSuggestion.adapter = attributeAdapter
 
             tagFilter.setSearchableInfo(getSearchableInfo(requireActivity())) // Associate searchable configuration with the SearchView
             val attrTypesNames = selectedAttributeTypes
-                .map { at -> at.accusativeName }
-                .map { resId -> getString(resId) }
+                .map { it.accusativeName }
+                .map { getString(it) }
             tagFilter.queryHint =
                 resources.getString(R.string.search_prompt, TextUtils.join(", ", attrTypesNames))
             tagFilter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -172,7 +171,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
                 }
             })
         }
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -332,7 +331,7 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
             searchBottomSheetFragment.arguments = builder.bundle
             context.setStyle(
                 searchBottomSheetFragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
             searchBottomSheetFragment.show(fragmentManager, "searchBottomSheetFragment")

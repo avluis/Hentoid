@@ -71,7 +71,8 @@ class SearchActivity : BaseActivity() {
                     AttributeType.CIRCLE,
                     AttributeType.SERIE,
                     AttributeType.CHARACTER,
-                    AttributeType.LANGUAGE
+                    AttributeType.LANGUAGE,
+                    AttributeType.CATEGORY
                 )
             } // Everything but source !
             textCategoryAny.isEnabled = true
@@ -89,6 +90,9 @@ class SearchActivity : BaseActivity() {
             }
             textCategoryLanguage.setOnClickListener {
                 onAttrButtonClick(excludeClicked, AttributeType.LANGUAGE)
+            }
+            textCategoryCategory.setOnClickListener {
+                onAttrButtonClick(excludeClicked, AttributeType.CATEGORY)
             }
             textCategorySource.setOnClickListener {
                 onAttrButtonClick(excludeClicked, AttributeType.SOURCE)
@@ -200,6 +204,9 @@ class SearchActivity : BaseActivity() {
             )
             updateAttributeTypeButton(
                 textCategoryLanguage, attrCount, AttributeType.LANGUAGE
+            )
+            updateAttributeTypeButton(
+                textCategoryCategory, attrCount, AttributeType.CATEGORY
             )
             updateAttributeTypeButton(textCategorySource, attrCount, AttributeType.SOURCE)
         }
