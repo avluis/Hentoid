@@ -83,7 +83,7 @@ enum class AttributeType(
         R.string.category_category,
         R.string.object_category,
         R.drawable.ic_hentoid_shape,
-        R.color.black
+        R.color.dark_gray
     ),
 
     // Attributes displayed on screen and stored elsewhere
