@@ -515,10 +515,14 @@ data class Content(
     val cover: ImageFile
         get() {
             val images = imageList
+            if (images.isEmpty()) {
+                val makeupCover = fromImageUrl(0, coverImageUrl, StatusContent.ONLINE, 1)
+                makeupCover.imageHash = Long.MIN_VALUE // Makeup cover is unhashable
+                return makeupCover
+            }
             for (img in images) if (img.isCover) return img
-            val makeupCover = fromImageUrl(0, coverImageUrl, StatusContent.ONLINE, 1)
-            makeupCover.imageHash = Long.MIN_VALUE // Makeup cover is unhashable
-            return makeupCover
+            // If nothing found, get 1st page as cover
+            return imageList.first()
         }
 
     val errorList: List<ErrorRecord>
