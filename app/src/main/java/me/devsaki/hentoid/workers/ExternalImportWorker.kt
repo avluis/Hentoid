@@ -128,6 +128,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                         ArrayList(),
                         logs,
                         isCanceled = this::isStopped,
+                        { f -> Beholder.registerRoot(context, f.uri) },
                         { c -> onContentFound(context, explorer, dao, progress, addedContent, c) }
                     )
                 } finally {
@@ -185,7 +186,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             addedContent[parentUri] = entry
             content.getStorageDoc()?.let { it -> entry.add(Pair(it, content.id)) }
         }
-
         booksOK++
 
         newContentEvent(content, explorer.root, progress)
@@ -242,9 +242,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         deltaPlusRoot: DocumentFile,
         deltaPlus: Pair<DocumentFile, List<DocumentFile>>,
         dao: CollectionDAO
-    ): List<Content> {
-        val addedContent: MutableList<Content> = ArrayList()
-        if (isStopped) return addedContent
+    ) {
+        if (isStopped) return
         if (BuildConfig.DEBUG)
             Timber.d("delta+ root has ${deltaPlus.second.size} documents : ${deltaPlusRoot.uri}")
 
@@ -261,7 +260,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         Timber.d("  parents : $parentNames")
 
         deltaPlusPairs.values.forEach { docs ->
-            if (isStopped) return addedContent
+            if (isStopped) return
             if (BuildConfig.DEBUG) docs.forEach { Timber.d("delta+ => ${it.uri}") }
             val archivePdf = docs.firstOrNull { it.isFile && isSupportedArchivePdf(it.name ?: "") }
             val folder = docs.firstOrNull { it.isDirectory }
@@ -269,7 +268,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             // Import new archive
             if (archivePdf != null) {
                 importArchivePdf(context, docs, deltaPlusRoot, archivePdf, dao)
-                    ?.let { addedContent.add(it) }
+                    ?.let { onContentFoundBH(context, explorer, dao, deltaPlusRoot, it) }
             } else if (folder != null) { // Import new folder
                 scanFolderRecursive(
                     context,
@@ -280,12 +279,12 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     null,
                     parentNames,
                     logs,
-                    isCanceled = this::isStopped
-                ) { c -> onContentFoundBH(context, explorer, dao, deltaPlusRoot, c) }
+                    isCanceled = this::isStopped,
+                    { f -> Beholder.registerRoot(context, f.uri) },
+                    { c -> onContentFoundBH(context, explorer, dao, deltaPlusRoot, c) }
+                )
             }
         }
-        Timber.d("  addedContent ${addedContent.size}")
-        return addedContent
     }
 
     // Write JSON file for every found book and persist it in the DB

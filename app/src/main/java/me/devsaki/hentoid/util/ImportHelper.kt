@@ -609,7 +609,8 @@ fun runExternalImport(
  * @param parentNames Names of all parent folders
  * @param log Log to write to (optional)
  * @param isCanceled Returns true if the process has been canceled upstream
- * @param onFound Callback when a Content has been found
+ * @param onFolderFound Callback when a folder has been found
+ * @param onContentFound Callback when a Content has been found
  */
 fun scanFolderRecursive(
     context: Context,
@@ -621,7 +622,8 @@ fun scanFolderRecursive(
     parentNames: List<String>,
     log: MutableList<LogEntry>? = null,
     isCanceled: (() -> Boolean)? = null,
-    onFound: (Content) -> Unit,
+    onFolderFound: (DocumentFile) -> Unit,
+    onContentFound: (Content) -> Unit,
 ) {
     assertNonUiThread()
     if (isCanceled?.invoke() == true) return
@@ -634,6 +636,8 @@ fun scanFolderRecursive(
     val archivesPdf: MutableList<DocumentFile> = ArrayList()
     val jsons: MutableList<DocumentFile> = ArrayList()
     val contentJsons: MutableList<DocumentFile> = ArrayList()
+
+    onFolderFound(toScan)
 
     // Look for the interesting stuff
     for (file in files) {
@@ -667,7 +671,7 @@ fun scanFolderRecursive(
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
             if (nbPicturesInside > 1) {
                 val json = getFileWithName(jsons, JSON_FILE_NAME_V2)
-                onFound(
+                onContentFound(
                     scanChapterFolders(
                         context, toScan, subFolders, explorer, parentNames, dao, json
                     )
@@ -684,7 +688,7 @@ fun scanFolderRecursive(
                     parentNames,
                     dao,
                     true
-                ).forEach { onFound(it) }
+                ).forEach { onContentFound(it) }
             }
         }
     }
@@ -697,7 +701,7 @@ fun scanFolderRecursive(
                 context, toScan, archive, parentNames, StatusContent.EXTERNAL, content
             )
             // Valid archive
-            if (0 == c.first) onFound(c.second!!)
+            if (0 == c.first) onContentFound(c.second!!)
             else {
                 // Invalid archive
                 val message = when (c.first) {
@@ -720,7 +724,7 @@ fun scanFolderRecursive(
     // We've got a regular book
     if (images.size > 2 || contentJsons.isNotEmpty()) {
         val json = getFileWithName(contentJsons, JSON_FILE_NAME_V2)
-        onFound(
+        onContentFound(
             scanBookFolder(
                 context,
                 parent,
@@ -752,7 +756,8 @@ fun scanFolderRecursive(
             newParentNames,
             log,
             isCanceled,
-            onFound
+            onFolderFound,
+            onContentFound
         )
     }
 }
@@ -1293,12 +1298,10 @@ private fun createContentFromDocumentFile(
     val namingPattern = Settings.getImportExtNamePattern()
     if (isExternal && namingPattern != Settings.Default.IMPORT_NAME_PATTERN) {
         val res = Settings.importExtRgx
-        Timber.v("> ?match $title")
         val matcher = res.first.matcher(title)
         if (matcher.find()) {
             if (res.second) matcher.group("title")?.let { title = it.trim() }
             if (res.third) matcher.group("artist")?.let { artist = it.trim() }
-            Timber.v("> !match $title $artist")
         }
     } else {
         title = cleanTitle(title)

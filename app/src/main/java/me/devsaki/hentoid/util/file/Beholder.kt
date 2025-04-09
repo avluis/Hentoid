@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.file
 
 import android.content.Context
+import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import timber.log.Timber
@@ -115,6 +116,15 @@ object Beholder {
      */
     fun ignoreFolder(folder: DocumentFile) {
         ignoreList.add(folder.uri.toString())
+    }
+
+    fun registerRoot(
+        ctx: Context,
+        rootUri: Uri
+    ) {
+        val map = HashMap<String, List<Pair<DocumentFile, Long>>>()
+        map[rootUri.toString()] = listOf()
+        registerContent(ctx, map)
     }
 
     fun registerContent(
