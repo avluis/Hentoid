@@ -3,14 +3,12 @@ package me.devsaki.hentoid.customssiv.util
 import android.content.Context
 import android.graphics.Point
 import android.os.Build
-import android.os.Looper
 import android.view.WindowManager
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.ByteBuffer
 import kotlin.math.abs
-import kotlin.math.min
 
 /**
  * Copy all data from the given InputStream to the given OutputStream
@@ -65,17 +63,4 @@ internal fun getScreenDimensionsPx(context: Context): Point {
         wMgr.defaultDisplay.getRealSize(result)
         return result
     }
-}
-
-/**
- * Inclusively coerce the given value between the given min and max values
- *
- * @param value Value to coerce
- * @param min   Min limit (inclusive)
- * @param max   Max limit (inclusive)
- * @return Given value inclusively coerced between the given min and max
- */
-fun coerceIn(value: Float, min: Float, max: Float): Float {
-    return if (value < min) min
-    else min(value, max)
 }

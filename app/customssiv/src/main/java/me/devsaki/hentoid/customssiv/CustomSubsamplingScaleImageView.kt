@@ -32,13 +32,11 @@ import androidx.exifinterface.media.ExifInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView.Orientation.entries
 import me.devsaki.hentoid.customssiv.decoder.ImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder
 import me.devsaki.hentoid.customssiv.util.Debouncer
-import me.devsaki.hentoid.customssiv.util.coerceIn
 import me.devsaki.hentoid.customssiv.util.getScreenDimensionsPx
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
@@ -608,10 +606,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             readySent = false
             imageLoadedSent = false
             bitmapIsCached = false
-            singleImage.rawWidth = -1
-            singleImage.rawHeight = -1
-            singleImage.scale = 1f
-            if (!singleImage.loading) bitmap = null
+            singleImage.reset()
+            bitmap = null
         }
         tileMap?.let { tm ->
             for ((_, value) in tm) {
@@ -2063,22 +2059,31 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     class SingleImage {
-        var location: String = ""
+        var location = ""
         var targetScale = 1f
 
         var scale = 1f
         var rawWidth = -1
         var rawHeight = -1
 
-        var loading: Boolean = false
+        var loading = false
+
+        fun reset() {
+            location = ""
+            targetScale = 1f
+            scale = 1f
+            rawWidth = -1
+            rawHeight = -1
+            loading = false
+        }
     }
 
     class Tile {
         var sRect: Rect? = null
-        var sampleSize: Int = 0
+        var sampleSize = 0
         var bitmap: Bitmap? = null
-        var loading: Boolean = false
-        var visible: Boolean = false
+        var loading = false
+        var visible = false
 
         // Volatile fields instantiated once then updated before use to reduce GC.
         var vRect: RectF? = null
@@ -2450,7 +2455,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val min = minScale()
         // Sometimes minScale gets higher than maxScale => align both
         val max = if (min < maxScale) maxScale else min
-        return coerceIn(targetScale, min, max)
+        return if (max > 0) targetScale.coerceIn(min, max) else max(targetScale, min)
     }
 
     /**
