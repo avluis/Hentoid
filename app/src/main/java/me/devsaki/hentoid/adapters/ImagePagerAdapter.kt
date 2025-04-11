@@ -50,7 +50,6 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_ORIENTATION_VERTICAL
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_LARGE
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_MEDIUM
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_SMALL
-import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.getScreenDimensionsPx
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
@@ -171,36 +170,26 @@ class ImagePagerAdapter(context: Context) :
     private fun getImageType(context: Context, img: ImageFile): ImageType {
         if (img.fileUri.isBlank()) return ImageType.IMG_TYPE_OTHER
 
-        getInputStream(context, img.fileUri.toUri()).use { input ->
-            val header = ByteArray(400)
-            if (input.read(header) > 0) {
-                val mime = getMimeTypeFromPictureBinary(header)
-                val isAnimated = isImageAnimated(header)
-                if (isAnimated) {
-                    if (mime == MIME_IMAGE_PNG) return ImageType.IMG_TYPE_APNG
-                    else if (mime == MIME_IMAGE_WEBP) return ImageType.IMG_TYPE_AWEBP
-                    else if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
-                } else {
-                    if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
-                    else if (mime == MIME_IMAGE_JXL) return ImageType.IMG_TYPE_JXL
+        try {
+            getInputStream(context, img.fileUri.toUri()).use { input ->
+                val header = ByteArray(400)
+                if (input.read(header) > 0) {
+                    val mime = getMimeTypeFromPictureBinary(header)
+                    val isAnimated = isImageAnimated(header)
+                    if (isAnimated) {
+                        if (mime == MIME_IMAGE_PNG) return ImageType.IMG_TYPE_APNG
+                        else if (mime == MIME_IMAGE_WEBP) return ImageType.IMG_TYPE_AWEBP
+                        else if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
+                    } else {
+                        if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
+                        else if (mime == MIME_IMAGE_JXL) return ImageType.IMG_TYPE_JXL
+                    }
                 }
             }
+        } catch (e: Exception) {
+            Timber.w(e, "Unable to open image file")
         }
         return ImageType.IMG_TYPE_OTHER
-    }
-
-    private fun guessImageType(img: ImageFile?): ImageType {
-        if (null == img) return ImageType.IMG_TYPE_OTHER
-        val extension = getExtension(img.fileUri)
-        if ("gif".equals(extension, ignoreCase = true) || img.mimeType.contains("gif")) {
-            return ImageType.IMG_TYPE_GIF
-        }
-        if ("apng".equals(extension, ignoreCase = true) || img.mimeType.contains("apng")) {
-            return ImageType.IMG_TYPE_APNG
-        }
-        return if ("jxl".equals(extension, ignoreCase = true) || img.mimeType.contains("jxl")) {
-            return ImageType.IMG_TYPE_JXL
-        } else ImageType.IMG_TYPE_OTHER
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ImageViewHolder {
@@ -731,14 +720,10 @@ class ImagePagerAdapter(context: Context) :
         override fun onImageLoadError(e: Throwable) {
             Timber.d(
                 e,
-                "Picture %d : SSIV loading failed; reloading on ImageView : %s",
+                "Picture %d : SSIV loading failed: %s",
                 absoluteAdapterPosition,
                 img!!.fileUri
             )
-            // Fall back to ImageView
-//            forceImageView()
-            // Reload adapter
-            notifyItemChanged(layoutPosition)
         }
 
         override fun onTileLoadError(e: Throwable) {
