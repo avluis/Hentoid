@@ -574,14 +574,12 @@ class ReaderViewModel(
             val updateReads = readPageNumbers.size >= readThresholdPosition || theContent.reads > 0
             val markAsComplete = readPageNumbers.size >= completedThresholdPosition
 
-            withContext(Dispatchers.IO) {
-                try {
-                    doLeaveBook(theContent.id, indexToSet, updateReads, markAsComplete)
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                } finally {
-                    dao.cleanup()
-                }
+            try {
+                doLeaveBook(theContent.id, indexToSet, updateReads, markAsComplete)
+            } catch (t: Throwable) {
+                Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
         }
     }
@@ -594,15 +592,15 @@ class ReaderViewModel(
      * @param updateReads     True if number of reads have to be updated; false if not
      * @param markAsCompleted True if the book has to be marked as completed
      */
-    private fun doLeaveBook(
+    private suspend fun doLeaveBook(
         contentId: Long, indexToSet: Int, updateReads: Boolean, markAsCompleted: Boolean
-    ) {
+    ) = withContext(Dispatchers.IO) {
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             // Get a fresh version of current content in case it has been updated since the initial load
             // (that can be the case when viewing a book that is being downloaded)
-            val savedContent = dao.selectContent(contentId) ?: return
+            val savedContent = dao.selectContent(contentId) ?: return@withContext
             val theImages = savedContent.imageFiles
 
             // Update image read status with the cached read statuses

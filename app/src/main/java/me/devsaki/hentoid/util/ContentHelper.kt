@@ -414,19 +414,19 @@ fun openReader(
  * @param updateReads             True to increment the reads counter and to set the last read date to now
  * @param markAsCompleted         True to mark as completed
  */
-fun updateContentReadStats(
+suspend fun updateContentReadStats(
     context: Context,
     dao: CollectionDAO,
     content: Content,
-    images: List<ImageFile?>,
+    images: List<ImageFile>,
     targetLastReadPageIndex: Int,
     updateReads: Boolean,
     markAsCompleted: Boolean
-) {
+) = withContext(Dispatchers.IO) {
     content.lastReadPageIndex = targetLastReadPageIndex
     if (updateReads) content.increaseReads().lastReadDate = Instant.now().toEpochMilli()
     if (markAsCompleted) content.completed = true
-    dao.replaceImageList(content.id, images.filterNotNull())
+    dao.replaceImageList(content.id, images)
     dao.insertContentCore(content)
     persistJson(context, content)
 }

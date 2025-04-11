@@ -674,15 +674,8 @@ data class Content(
 
     class DownloadModeConverter : PropertyConverter<DownloadMode, Int> {
         override fun convertToEntityProperty(databaseValue: Int?): DownloadMode {
-            if (databaseValue == null) {
-                return DownloadMode.DOWNLOAD
-            }
-            for (entry in DownloadMode.entries) {
-                if (entry.value == databaseValue) {
-                    return entry
-                }
-            }
-            return DownloadMode.DOWNLOAD
+            if (databaseValue == null) return DownloadMode.DOWNLOAD
+            return DownloadMode.fromValue(databaseValue)
         }
 
         override fun convertToDatabaseValue(entityProperty: DownloadMode): Int {
