@@ -1509,7 +1509,6 @@ fun fetchImageURLs(
  * Remove all files from the given Content's folder.
  * The folder itself is left empty except if JSON and cover are to be kept.
  *
- *
  * NB : "Thanks to" Android SAF, it is faster to :
  * 1/ copy kept files to temp storage
  * 2/ delete the whole folder and its entire content
@@ -1523,10 +1522,13 @@ fun fetchImageURLs(
  * @param content     Content to remove files from
  * @param removeJson  True to remove the Hentoid JSON file; false to keep it
  * @param removeCover True to remove the cover picture; false to keep it
+ * @return Nothing, but content.storageUri, content.storageDoc and content.jsonUri are updated
  */
 fun purgeFiles(
     context: Context,
-    content: Content, removeJson: Boolean, removeCover: Boolean
+    content: Content,
+    removeJson: Boolean,
+    removeCover: Boolean
 ) {
     var bookFolder = getDocumentFromTreeUriString(context, content.storageUri)
     if (bookFolder != null) {

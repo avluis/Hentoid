@@ -268,8 +268,20 @@ abstract class BaseDeleteWorker(
         } else content
 
         if (res != null) {
-            dao.selectContent(res.id)?.let {
+            // Use an updated content from the DB
+            val updatedContent = dao.selectContent(res.id)?.let {
                 purgeFiles(applicationContext, it, removeJson = false, removeCover = false)
+                it
+            }
+            // Use an updated content from the DB again
+            dao.selectContent(res.id)?.let {
+                // Apply changes from the purge
+                updatedContent?.let { up ->
+                    up.getStorageDoc()?.let { doc ->
+                        it.setStorageDoc(doc)
+                    }
+                    it.jsonUri = up.jsonUri
+                }
                 // Update content folder and JSON Uri's after purging
                 it.downloadMode = DownloadMode.STREAM
                 dao.insertContentCore(it)
@@ -300,8 +312,18 @@ abstract class BaseDeleteWorker(
         progressItem(content, DeleteProgressNotification.ProgressType.PURGE_BOOKS)
         try {
             purgeFiles(applicationContext, content, false, removeCover)
-            // Update content folder and JSON Uri's after purging
-            dao.insertContentCore(content)
+
+            // Use an updated content from the DB
+            dao.selectContent(content.id)?.let { freshC ->
+                // Apply changes from the purge
+                content.getStorageDoc()?.let { doc ->
+                    freshC.setStorageDoc(doc)
+                }
+                freshC.jsonUri = content.jsonUri
+
+                // Update content folder and JSON Uri's after purging
+                dao.insertContentCore(freshC)
+            }
             trace(Log.INFO, "Purged item: %s.", content.title)
         } catch (e: Exception) {
             nbError++
