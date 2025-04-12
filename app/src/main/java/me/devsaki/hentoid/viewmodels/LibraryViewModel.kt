@@ -615,15 +615,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 dao.insertImageFiles(it.imageList)
                             }
 
+                            dao.addContentToQueue(
+                                it, sourceImageStatus, targetImageStatus, position, -1, null,
+                                isQueueActive(getApplication())
+                            )
                             // Non-blocking performance bottleneck; run in a dedicated worker
                             if (reparseImages) purgeContent(
                                 getApplication(),
                                 it,
                                 keepCover = false
-                            )
-                            dao.addContentToQueue( // TODO check files status here
-                                it, sourceImageStatus, targetImageStatus, position, -1, null,
-                                isQueueActive(getApplication())
                             )
                         } ?: run { // Undownloadable book => cancel operation
                             dao.updateContentProcessedFlag(c.id, false)
