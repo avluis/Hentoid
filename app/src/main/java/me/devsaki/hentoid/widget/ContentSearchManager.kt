@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.widget
 
-import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
@@ -113,7 +113,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
     }
 
     fun getLibrary(): LiveData<PagedList<Content>> {
-        val tags = parseSearchUri(Uri.parse(values.attributes)).attributes
+        val tags = parseSearchUri(values.attributes.toUri()).attributes
         return when {
             // Universal search
             values.query.isNotEmpty() -> dao.searchBooksUniversal(values)
@@ -131,7 +131,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
     companion object {
         fun searchContentIds(data: ContentSearchBundle, dao: CollectionDAO): List<Long> {
-            val tags = parseSearchUri(Uri.parse(data.attributes)).attributes
+            val tags = parseSearchUri(data.attributes.toUri()).attributes
             return when {
                 // Universal search
                 data.query.isNotEmpty() -> dao.searchBookIdsUniversal(data)
@@ -163,13 +163,13 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
         var filterRating by bundle.int(default = -1)
 
-        var query by bundle.string(default = "")
+        var query: String by bundle.string(default = "")
 
         var sortField by bundle.int(default = Settings.contentSortField)
 
         var sortDesc by bundle.boolean(default = Settings.isContentSortDesc)
 
-        var attributes by bundle.string(default = "") // Stored using a search URI for convenience
+        var attributes: String by bundle.string(default = "") // Stored using a search URI for convenience
 
         var location by bundle.int(default = 0)
 
@@ -179,7 +179,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
 
         fun isFilterActive(): Boolean {
-            val tags = parseSearchUri(Uri.parse(attributes)).attributes
+            val tags = parseSearchUri(attributes.toUri()).attributes
             return query.isNotEmpty()
                     || tags.isNotEmpty()
                     || location > 0

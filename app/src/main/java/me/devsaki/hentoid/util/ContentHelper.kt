@@ -96,6 +96,7 @@ import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.util.string_similarity.Cosine
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
+import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
@@ -2283,12 +2284,13 @@ fun getLocation(content: Content): StorageLocation {
 
 fun purgeContent(
     context: Context,
-    content: Content, keepCover: Boolean, isDownloadPrepurge: Boolean
+    content: Content,
+    keepCover: Boolean
 ) {
     val builder = DeleteData.Builder()
-    builder.setContentPurgeIds(listOf(content.id))
+    builder.setOperation(BaseDeleteWorker.Operation.PURGE)
+    builder.setContentIds(listOf(content.id))
     builder.setContentPurgeKeepCovers(keepCover)
-    builder.setDownloadPrepurge(isDownloadPrepurge)
 
     val workManager = WorkManager.getInstance(context)
     workManager.enqueueUniqueWork(

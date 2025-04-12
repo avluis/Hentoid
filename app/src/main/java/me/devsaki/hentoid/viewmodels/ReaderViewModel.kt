@@ -73,6 +73,7 @@ import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.setAndSaveContentCover
 import me.devsaki.hentoid.util.updateContentReadStats
 import me.devsaki.hentoid.widget.ContentSearchManager
+import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.ReorderWorker
 import me.devsaki.hentoid.workers.SplitMergeType
@@ -775,6 +776,7 @@ class ReaderViewModel(
             currentImageSource?.let { databaseImages.removeSource(it) }
 
             val builder = DeleteData.Builder()
+            builder.setOperation(BaseDeleteWorker.Operation.DELETE)
             builder.setQueueIds(listOf(loadedContentId))
 
             val workManager = WorkManager.getInstance(getApplication())
@@ -1600,8 +1602,7 @@ class ReaderViewModel(
                         // Non-blocking performance bottleneck; run in a dedicated worker
                         purgeContent(
                             getApplication(), it,
-                            keepCover = false,
-                            isDownloadPrepurge = true
+                            keepCover = false
                         )
                         dao.addContentToQueue(
                             it,
@@ -1906,6 +1907,7 @@ class ReaderViewModel(
                     }
                     // User worker to delete ImageFiles and associated files
                     val builder = DeleteData.Builder()
+                    builder.setOperation(BaseDeleteWorker.Operation.DELETE)
                     builder.setImageIds(imageIdsToDelete)
                     val workManager = WorkManager.getInstance(getApplication())
                     workManager.enqueue(

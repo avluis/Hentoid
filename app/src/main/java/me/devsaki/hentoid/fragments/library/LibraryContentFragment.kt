@@ -360,7 +360,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         initUI(binding!!.root)
 
-        activity.get()?.initFragmentToolbars(selectExtension!!,
+        activity.get()?.initFragmentToolbars(
+            selectExtension!!,
             { menuItem: MenuItem -> onToolbarItemClicked(menuItem) }
         ) { menuItem: MenuItem -> onSelectionToolbarItemClicked(menuItem) }
 
@@ -794,7 +795,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 this
             ) { position: Int, _ ->
                 if (0 == position) redownloadFromScratch(contents) // Redownload images
-                else viewModel.downloadContent(contents, // Update metadata only
+                else viewModel.downloadContent(
+                    contents, // Update metadata only
                     reparseContent = true,
                     reparseImages = false,
                     position = QueuePosition.TOP,
@@ -907,7 +909,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             ) { dialog1, _ ->
                 dialog1.dismiss()
                 leaveSelectionMode()
-                stream(contents) { t: Throwable -> onStreamError(t) }
+                viewModel.streamContent(contents) { t: Throwable -> onStreamError(t) }
             }
             .setNegativeButton(
                 R.string.no
@@ -1632,7 +1634,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun redownloadFromScratch(contentList: List<Content>, addMode: QueuePosition) {
         topItemPosition = getTopItemPosition()
         binding?.recyclerView?.let {
-            viewModel.downloadContent(contentList,
+            viewModel.downloadContent(
+                contentList,
                 reparseContent = true,
                 reparseImages = true,
                 position = addMode,
@@ -1696,10 +1699,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 onError = onError
             )
         }
-    }
-
-    private fun stream(contentList: List<Content>, onError: Consumer<Throwable>) {
-        viewModel.streamContent(contentList, onError)
     }
 
     /**

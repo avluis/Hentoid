@@ -43,7 +43,6 @@ import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.EmptyResultException
-import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -55,6 +54,7 @@ import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
+import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.MergeWorker
 import me.devsaki.hentoid.workers.SplitMergeType
@@ -595,7 +595,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             }
                             res?.let {
                                 it.setChapters(chaps)
-                                it.setImageFiles(chaps.flatMap { ch -> ch.imageList })
+                                it.setImageFiles(chaps.flatMap { it.imageList })
                             }
                         } else { // Classic content
                             val isDownloadable = isDownloadable(c)
@@ -619,10 +619,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             if (reparseImages) purgeContent(
                                 getApplication(),
                                 it,
-                                keepCover = false,
-                                isDownloadPrepurge = true
+                                keepCover = false
                             )
-                            dao.addContentToQueue(
+                            dao.addContentToQueue( // TODO check files status here
                                 it, sourceImageStatus, targetImageStatus, position, -1, null,
                                 isQueueActive(getApplication())
                             )
@@ -649,90 +648,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
     }
 
-    fun streamContent(
-        contentList: List<Content>,
-        onError: Consumer<Throwable>
-    ) {
-        if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.invoke(
-                EmptyResultException(
-                    getApplication<Application>().getString(R.string.stream_updating_webview)
-                )
-            ) else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.stream_missing_webview)))
-            return
-        }
-
-        // Flag the content as "being deleted" (triggers blink animation)
-        dao.updateContentsProcessedFlag(contentList, true)
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    contentList.forEach { c ->
-                        Timber.d("Checking pages availability")
-                        // Reparse content from scratch if images KO
-                        val res = if (!isDownloadable(c)) {
-                            Timber.d("Pages unreachable; reparsing content")
-                            // Reparse content itself
-                            val newContent = reparseFromScratch(c)
-                            if (null == newContent) {
-                                dao.updateContentProcessedFlag(c.id, false)
-                                null
-                            } else {
-                                // Reparse pages
-                                val newImages =
-                                    fetchImageURLs(
-                                        newContent,
-                                        newContent.galleryUrl,
-                                        StatusContent.ONLINE
-                                    )
-                                newContent.setImageFiles(newImages)
-                                // Associate new pages' cover with current cover file (that won't be deleted)
-                                newContent.cover.status = StatusContent.DOWNLOADED
-                                newContent.cover.fileUri = c.cover.fileUri
-                                // Save everything
-                                dao.replaceImageList(newContent.id, newImages)
-                                newContent
-                            }
-                        } else c
-
-                        if (res != null) {
-                            dao.selectContent(res.id)?.let {
-                                // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                                purgeContent(
-                                    getApplication(),
-                                    res,
-                                    keepCover = true,
-                                    isDownloadPrepurge = true
-                                )
-                                it.downloadMode = DownloadMode.STREAM
-                                val imgs: List<ImageFile> = it.imageList
-                                for (img in imgs) {
-                                    img.fileUri = ""
-                                    img.size = 0
-                                    img.status = StatusContent.ONLINE
-                                }
-                                dao.insertImageFiles(imgs)
-                                it.size = 0
-                                it.isBeingProcessed = false
-                                dao.insertContent(it)
-                                updateJson(getApplication(), it)
-                            }
-                        } else {
-                            onError.invoke(
-                                EmptyResultException(
-                                    getApplication<Application>().getString(R.string.stream_canceled)
-                                )
-                            )
-                        }
-                    }
-                    dao.cleanup()
-                } // Dispatchers.IO
-            } catch (t: Throwable) {
-                onError.invoke(t)
-            }
-        }
-    }
-
     /**
      * Delete the given list of content
      *
@@ -745,6 +660,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         onSuccess: Runnable?
     ) {
         val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
         if (contents.isNotEmpty()) builder.setContentIds(contents.map { it.id })
         if (groups.isNotEmpty()) builder.setGroupIds(groups.map { it.id })
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
@@ -763,6 +679,37 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             }
         workObservers.add(Pair(request.id, workInfoObserver))
         workManager.getWorkInfoByIdLiveData(request.id).observeForever(workInfoObserver)
+    }
+
+    /**
+     * Stream the given list of content
+     *
+     * @param contents List of content to be streamed
+     */
+    fun streamContent(
+        contents: List<Content>,
+        onError: Consumer<Throwable>
+    ) {
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) onError.invoke(
+                EmptyResultException(
+                    getApplication<Application>().getString(R.string.stream_updating_webview)
+                )
+            ) else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.stream_missing_webview)))
+            return
+        }
+
+        val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.STREAM)
+        if (contents.isNotEmpty()) builder.setContentIds(contents.map { it.id })
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.delete_service_stream.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(
+                DeleteWorker::class.java
+            ).setInputData(builder.data).build()
+        )
     }
 
     fun setGroupCoverContent(groupId: Long, coverContent: Content) {
@@ -973,7 +920,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param targetRating Rating to set
      */
     private fun doRateGroup(groupId: Long, targetRating: Int): Group {
-        assertNonUiThread()
 
         // Check if given content still exists in DB
         val theGroup = dao.selectGroup(groupId)

@@ -12,6 +12,7 @@
     <item name="transform_service" type="id" />
     <item name="delete_service_delete" type="id" />
     <item name="delete_service_purge" type="id" />
+    <item name="delete_service_stream" type="id" />
     <item name="archive_service" type="id" />
     <item name="duplicate_detector_service" type="id" />
     <item name="split_service" type="id" />

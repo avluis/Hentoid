@@ -45,6 +45,7 @@ import me.devsaki.hentoid.util.getSystemHeapBytes
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.toast
+import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import okhttp3.internal.format
@@ -292,10 +293,14 @@ class ToolsFragment : PreferenceFragmentCompat(),
         )
 
         val builder = DeleteData.Builder()
-        builder.setMassFilter(contentSearchBundle ?: Bundle())
-        builder.setMassOperation(operation.ordinal)
-        builder.setMassInvertScope(invertScope)
-        builder.setMassKeepFavGroups(keepGroupPrefs)
+        builder.setContentFilter(contentSearchBundle ?: Bundle())
+        val op = when (operation) {
+            ToolsActivity.MassOperation.DELETE -> BaseDeleteWorker.Operation.DELETE
+            ToolsActivity.MassOperation.STREAM -> BaseDeleteWorker.Operation.STREAM
+        }
+        builder.setOperation(op)
+        builder.setInvertFilterScope(invertScope)
+        builder.setKeepFavGroups(keepGroupPrefs)
 
         val workManager = WorkManager.getInstance(requireContext())
         workManager.enqueueUniqueWork(

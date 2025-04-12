@@ -511,6 +511,7 @@
     <string name="delete_progress">Deleting books</string>
     <string name="delete_pages_progress">Deleting pages</string>
     <string name="purge_progress">Purging books</string>
+    <string name="stream_progress">Streaming books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
     <plurals name="delete_success_books">
         <item quantity="one"><x:g example="1" id="count">%d</x:g> book</item>
@@ -1050,12 +1051,14 @@
     <string name="notif_delete_title">Content deletion</string>
     <string name="notif_delete_complete">Deletion complete</string>
     <string name="notif_delete_prepurge_complete">Redownload/Stream pre-purge complete</string>
+    <string name="notif_stream_complete">Streaming complete</string>
     <plurals name="notif_process_complete_details">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> book processed successfully</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> books processed successfully</item>
     </plurals>
     <string name="notif_delete_fail">Deletion failed</string>
     <string name="notif_delete_prepurge_fail">Redownload/Stream pre-purge failed</string>
+    <string name="notif_stream_fail">Streaming failed</string>
     <plurals name="notif_delete_fail_details">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> item failed</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> items failed</item>

@@ -23,6 +23,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.mergeContents
+import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -154,6 +155,7 @@ class DuplicateViewModel(
     fun remove(contentList: List<Long>) {
         val builder = DeleteData.Builder()
         if (contentList.isNotEmpty()) builder.setContentIds(contentList)
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueue(
             OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()

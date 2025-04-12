@@ -31,6 +31,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.removeQueuedContent
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateQueueJson
+import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -99,7 +100,7 @@ class QueueViewModel(
         currentQueueSource =
             if (query.isNullOrEmpty() && (null == source || Site.NONE == source)) dao.selectQueueLive()
             else dao.selectQueueLive(query, source)
-        queue.addSource(currentQueueSource!!) { value -> queue.setValue(value) }
+        queue.addSource(currentQueueSource!!) { value -> queue.value = value }
         newSearch.value = true
     }
 
@@ -108,7 +109,7 @@ class QueueViewModel(
         currentErrorsSource =
             if (query.isNullOrEmpty() && (null == source || Site.NONE == source)) dao.selectErrorContentLive()
             else dao.selectErrorContentLive(query, source)
-        errors.addSource(currentErrorsSource!!) { value -> errors.setValue(value) }
+        errors.addSource(currentErrorsSource!!) { value -> errors.value = value }
         newSearch.value = true
     }
 
@@ -229,8 +230,9 @@ class QueueViewModel(
 
     fun remove(contentList: List<Content>) {
         val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
         if (contentList.isNotEmpty()) builder.setQueueIds(
-            contentList.map { c -> c.id }.filter { id -> id > 0 }
+            contentList.map { it.id }.filter { it > 0 }
         )
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
@@ -243,8 +245,8 @@ class QueueViewModel(
 
     private fun purgeItem(content: Content) {
         val builder = DeleteData.Builder()
-        builder.setContentPurgeIds(listOf(content.id))
-        builder.setDownloadPrepurge(true)
+        builder.setOperation(BaseDeleteWorker.Operation.PURGE)
+        builder.setContentIds(listOf(content.id))
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
             R.id.delete_service_purge.toString(),
@@ -256,9 +258,10 @@ class QueueViewModel(
     fun cancelAll() {
         val localQueue = dao.selectQueue()
         if (localQueue.isEmpty()) return
-        val contentIdList = localQueue.map { qr -> qr.content.targetId }.filter { id -> id > 0 }
+        val contentIdList = localQueue.map { it.content.targetId }.filter { it > 0 }
         EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
         val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
         if (contentIdList.isNotEmpty()) builder.setQueueIds(contentIdList)
         builder.setDeleteAllQueueRecords(true)
         val workManager = WorkManager.getInstance(getApplication())

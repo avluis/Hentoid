@@ -20,8 +20,8 @@ import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
@@ -358,17 +358,15 @@ fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?,
     // Check for download folder existence, available free space and credentials
     var dir: DocumentFile? = null
     var location: StorageLocation = StorageLocation.NONE
-    // Folder already set (e.g. resume paused download)
+    // Folder already set (e.g. resume paused download, redownload from library)
     if (content.storageUri.isNotEmpty()) {
         // Reset storage URI if unreachable (will be re-created later in the method)
         val rootFolder = getDocumentFromTreeUriString(context, content.storageUri)
         if (null == rootFolder) content.clearStorageDoc()
         else {
             if (!testDownloadFolder(context, content.storageUri)) return null
-            dir = getDocumentFromTreeUriString(
-                context,
-                content.storageUri
-            ) // Will come out null if invalid
+            // Will come out null if invalid
+            dir = getDocumentFromTreeUriString(context, content.storageUri)
         }
     }
     // Auto-select location according to storage management strategy
