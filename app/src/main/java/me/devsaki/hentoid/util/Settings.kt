@@ -195,10 +195,10 @@ object Settings {
 
     // BROWSER
     fun isBrowserAugmented(site: Site): Boolean {
-        return (sharedPreferences.getString(
+        return sharedPreferences.getBoolean(
             makeSiteKey(Key.WEB_AUGMENTED_BROWSER, site),
-            isAppBrowserAugmented.toString()
-        ) + "").toBoolean()
+            isAppBrowserAugmented
+        )
     }
 
     fun setBrowserAugmented(site: Site, value: Boolean) {
