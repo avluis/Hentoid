@@ -145,6 +145,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private var mergeMenu: MenuItem? = null
     private var splitMenu: MenuItem? = null
     private var transformMenu: MenuItem? = null
+    private var exportMetaMenu: MenuItem? = null
 
     private var pagerAdapter: FragmentStateAdapter? = null
 
@@ -862,6 +863,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 mergeMenu = findItem(R.id.action_merge)
                 splitMenu = findItem(R.id.action_split)
                 transformMenu = findItem(R.id.action_transform)
+                exportMetaMenu = findItem(R.id.action_export_metadata)
             }
         }
     }
@@ -1110,6 +1112,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             mergeMenu?.isVisible = false
             splitMenu?.isVisible = false
             transformMenu?.isVisible = false
+            exportMetaMenu?.isVisible = selectedTotalCount > 0
         } else { // Flat view
             editMenu?.isVisible = !hasProcessed
             deleteMenu?.isVisible =
@@ -1136,6 +1139,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 !hasProcessed && !isMultipleSelection && 1L == selectedLocalCount
             transformMenu?.isVisible =
                 !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchivePdfExternalCount
+            exportMetaMenu?.isVisible = false
         }
     }
 

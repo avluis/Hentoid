@@ -27,6 +27,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.whitfin.siphash.SipHasher
 import me.devsaki.hentoid.R
@@ -39,6 +41,12 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.file.FILE_IO_BUFFER_SIZE
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getDownloadsFolder
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
+import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
+import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -502,6 +510,11 @@ fun setMargins(view: View, left: Int, top: Int, right: Int, bottom: Int) {
     }
 }
 
+/**
+ * Get the given view's center, as relative coordinates taking its margin into account
+ *
+ * @param view  View to get the center from
+ */
 fun getCenter(view: View): Point? {
     if (view.layoutParams is MarginLayoutParams) {
         val p = view.layoutParams as MarginLayoutParams
@@ -510,6 +523,10 @@ fun getCenter(view: View): Point? {
     return null
 }
 
+/**
+ * Get the 0-based index of the given value in the given's StringArray preferences
+ * @return 0-based indes of the given value if found; -1 if not found
+ */
 fun getPrefsIndex(res: Resources, valuesRes: Int, value: String): Int {
     val values = res.getStringArray(valuesRes)
     for ((index, `val`) in values.withIndex()) {
@@ -568,6 +585,66 @@ fun getScreenDimensionsPx(context: Context): Point {
         val result = Point()
         wMgr.defaultDisplay.getRealSize(result)
         return result
+    }
+}
+
+/**
+ * Export the given data to the device's Downloads folder, using the given file name
+ * @param fileName  Name of the file to create, extension included
+ * @param view      View to display feedback using a snackbar; optional
+ */
+fun exportToDownloadsFolder(
+    context: Context,
+    data: ByteArray,
+    fileName: String,
+    view: View?
+) {
+    val ext = getExtension(fileName)
+    // Use a timestamp to avoid erasing older files by mistake
+    val targetFileName =
+        getFileNameWithoutExtension(fileName) + "_" + formatEpochToDate(
+            Instant.now().toEpochMilli(), "yyyyMMdd-hhmmss"
+        ) + ".$ext"
+
+    try {
+        openNewDownloadOutputStream(
+            context,
+            targetFileName,
+            getMimeTypeFromFileName(fileName)
+        )?.use { newFile ->
+            ByteArrayInputStream(data)
+                .use { input -> copy(input, newFile) }
+        }
+        view?.let {
+            Snackbar.make(
+                it,
+                R.string.copy_download_folder_success,
+                BaseTransientBottomBar.LENGTH_LONG
+            )
+                .setAction(R.string.open_folder) {
+                    openFile(
+                        context,
+                        getDownloadsFolder()
+                    )
+                }
+                .show()
+        }
+    } catch (_: IOException) {
+        view?.let {
+            Snackbar.make(
+                it,
+                R.string.copy_download_folder_fail,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+        }
+    } catch (_: IllegalArgumentException) {
+        view?.let {
+            Snackbar.make(
+                it,
+                R.string.copy_download_folder_fail,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+        }
     }
 }
 

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
@@ -122,7 +123,7 @@ class ReaderCopyImgDialogFragment : BaseDialogFragment<ReaderCopyImgDialogFragme
                     resources.getString(R.string.folder_other)
                 )
                 if (Settings.latestReaderTargetFolderUri.isNotEmpty()) {
-                    val uri = Uri.parse(Settings.latestReaderTargetFolderUri)
+                    val uri = Settings.latestReaderTargetFolderUri.toUri()
                     if (getDocumentFromTreeUriString(
                             requireContext(),
                             uri.toString()
@@ -132,7 +133,7 @@ class ReaderCopyImgDialogFragment : BaseDialogFragment<ReaderCopyImgDialogFragme
                             1,
                             getFullPathFromUri(
                                 requireContext(),
-                                Uri.parse(Settings.latestReaderTargetFolderUri)
+                                Settings.latestReaderTargetFolderUri.toUri()
                             )
                         )
                     }
@@ -179,7 +180,7 @@ class ReaderCopyImgDialogFragment : BaseDialogFragment<ReaderCopyImgDialogFragme
             val prefix = it.linkedContent?.uniqueSiteId ?: it.contentId.toString()
             val targetFileName = prefix + "-" + it.name + "." + getExtension(it.fileUri)
             try {
-                val fileUri = Uri.parse(it.fileUri)
+                val fileUri = it.fileUri.toUri()
                 if (!fileExists(requireContext(), fileUri)) return
 
                 val targets = getTargets(targetFileName, it.mimeType)
@@ -192,7 +193,7 @@ class ReaderCopyImgDialogFragment : BaseDialogFragment<ReaderCopyImgDialogFragme
                 val file = targets.third
                 val msg = if (null == docFile && file != null) R.string.copy_download_folder_success
                 else R.string.copy_target_folder_success
-                parent?.feedback(msg, if (docFile != null) docFile else file)
+                parent?.feedback(msg, docFile ?: file)
             } catch (_: IOException) {
                 parent?.feedback(R.string.copy_target_folder_fail)
             } catch (_: IllegalArgumentException) {

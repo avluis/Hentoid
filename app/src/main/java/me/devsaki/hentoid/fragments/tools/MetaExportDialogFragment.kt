@@ -28,18 +28,11 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
-import me.devsaki.hentoid.util.JSON_MIME_TYPE
-import me.devsaki.hentoid.util.copy
-import me.devsaki.hentoid.util.file.getDownloadsFolder
-import me.devsaki.hentoid.util.file.openFile
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.exportToDownloadsFolder
 import me.devsaki.hentoid.util.getPathRoot
-import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
-import java.io.ByteArrayInputStream
-import java.io.IOException
 import java.nio.charset.StandardCharsets
 
 class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
@@ -62,9 +55,9 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogToolsMetaExportBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -306,51 +299,20 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
         exportQueue: Boolean,
         exportBookmarks: Boolean
     ) {
-        // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = getRandomInt(9999).toString() + ".json"
-        if (exportBookmarks) targetFileName = "bkmks-$targetFileName"
-        if (exportQueue) targetFileName = "queue-$targetFileName"
-        if (exportLibrary && !exportFavsOnly) targetFileName =
-            "library-$targetFileName" else if (exportLibrary) targetFileName =
-            "favs-$targetFileName"
-        targetFileName = "export-$targetFileName"
-        try {
-            openNewDownloadOutputStream(
-                requireContext(),
-                targetFileName,
-                JSON_MIME_TYPE
-            )?.use { newDownload ->
-                ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
-                    .use { input -> copy(input, newDownload) }
-            }
-            binding?.let {
-                Snackbar.make(
-                    it.root,
-                    R.string.copy_download_folder_success,
-                    BaseTransientBottomBar.LENGTH_LONG
-                )
-                    .setAction(R.string.open_folder) {
-                        openFile(requireContext(), getDownloadsFolder())
-                    }
-                    .show()
-            }
-        } catch (e: IOException) {
-            binding?.let {
-                Snackbar.make(
-                    it.root,
-                    R.string.copy_download_folder_fail,
-                    BaseTransientBottomBar.LENGTH_LONG
-                ).show()
-            }
-        } catch (e: IllegalArgumentException) {
-            binding?.let {
-                Snackbar.make(
-                    it.root,
-                    R.string.copy_download_folder_fail,
-                    BaseTransientBottomBar.LENGTH_LONG
-                ).show()
-            }
-        }
+        var targetFileName = "export-"
+        if (exportBookmarks) targetFileName += "bkmks"
+        if (exportQueue) targetFileName += "queue"
+        if (exportLibrary && !exportFavsOnly) targetFileName += "library"
+        else if (exportLibrary) targetFileName += "favs"
+        targetFileName += ".json"
+
+        exportToDownloadsFolder(
+            requireContext(),
+            json.toByteArray(StandardCharsets.UTF_8),
+            targetFileName,
+            binding?.root
+        )
+
         dao.cleanup()
         // Dismiss after 3s, for the user to be able to see and use the snackbar
         Handler(Looper.getMainLooper()).postDelayed({ this.dismissAllowingStateLoss() }, 3000)

@@ -13,8 +13,6 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -30,17 +28,12 @@ import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
-import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.copy
+import me.devsaki.hentoid.util.exportToDownloadsFolder
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
-import me.devsaki.hentoid.util.file.getDownloadsFolder
-import me.devsaki.hentoid.util.file.openFile
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.getAppHeapBytes
 import me.devsaki.hentoid.util.getAppTotalRamBytes
-import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.getSystemHeapBytes
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.serializeToJson
@@ -50,8 +43,6 @@ import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import okhttp3.internal.format
 import timber.log.Timber
-import java.io.ByteArrayInputStream
-import java.io.IOException
 import java.nio.charset.StandardCharsets
 
 
@@ -223,7 +214,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                 return@withContext ""
             }
             coroutineScope {
-                if (result.isNotEmpty()) onJsonSerialized(result)
+                if (result.isNotEmpty()) onSettingsJsonSerialized(result)
             }
         }
     }
@@ -236,49 +227,13 @@ class ToolsFragment : PreferenceFragmentCompat(),
         return jsonSettings
     }
 
-    private fun onJsonSerialized(json: String) {
-        // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = getRandomInt(9999).toString() + ".json"
-        targetFileName = "settings-$targetFileName"
-
-        rootView?.let {
-            try {
-                openNewDownloadOutputStream(
-                    requireContext(),
-                    targetFileName,
-                    JSON_MIME_TYPE
-                )?.use { newDownload ->
-                    ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
-                        .use { input ->
-                            copy(input, newDownload)
-                        }
-                }
-                Snackbar.make(
-                    it,
-                    R.string.copy_download_folder_success,
-                    BaseTransientBottomBar.LENGTH_LONG
-                )
-                    .setAction(R.string.open_folder) {
-                        openFile(
-                            requireContext(),
-                            getDownloadsFolder()
-                        )
-                    }
-                    .show()
-            } catch (_: IOException) {
-                Snackbar.make(
-                    it,
-                    R.string.copy_download_folder_fail,
-                    BaseTransientBottomBar.LENGTH_LONG
-                ).show()
-            } catch (_: IllegalArgumentException) {
-                Snackbar.make(
-                    it,
-                    R.string.copy_download_folder_fail,
-                    BaseTransientBottomBar.LENGTH_LONG
-                ).show()
-            }
-        }
+    private fun onSettingsJsonSerialized(json: String) {
+        exportToDownloadsFolder(
+            requireContext(),
+            json.toByteArray(StandardCharsets.UTF_8),
+            "settings.json",
+            rootView
+        )
     }
 
     override fun onMassProcess(

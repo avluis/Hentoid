@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
@@ -68,7 +69,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         requireNotNull(arguments) { "No arguments found" }
         val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
         require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
-        contentIds = contentIdArg!!
+        contentIds = contentIdArg
     }
 
     override fun onCreateView(
@@ -137,7 +138,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                     resources.getString(R.string.folder_other)
                 )
                 if (Settings.latestArchiveTargetFolderUri.isNotEmpty()) {
-                    val uri = Uri.parse(Settings.latestArchiveTargetFolderUri)
+                    val uri = Settings.latestArchiveTargetFolderUri.toUri()
                     if (getDocumentFromTreeUriString(
                             requireContext(),
                             uri.toString()
@@ -147,7 +148,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
                             1,
                             getFullPathFromUri(
                                 requireContext(),
-                                Uri.parse(Settings.latestArchiveTargetFolderUri)
+                                Settings.latestArchiveTargetFolderUri.toUri()
                             )
                         )
                     }

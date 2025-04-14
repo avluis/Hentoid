@@ -103,6 +103,12 @@
         android:tooltipText="@string/transform"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_export_metadata"
+        android:icon="@drawable/ic_action_export"
+        android:title="@string/export_title"
+        android:tooltipText="@string/export_title"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_select_all"
         android:icon="@drawable/ic_action_select_all"
         android:title="@string/menu_select_all"

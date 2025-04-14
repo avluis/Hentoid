@@ -39,12 +39,14 @@ import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.OnMenuItemClickListener
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
@@ -55,14 +57,17 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
+import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
+import me.devsaki.hentoid.util.exportToDownloadsFolder
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.launchBrowserFor
+import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.GroupDisplayItem
@@ -80,6 +85,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import java.nio.charset.StandardCharsets
 import java.util.Collections
 import java.util.Locale
 import kotlin.math.max
@@ -289,6 +295,7 @@ class LibraryGroupsFragment : Fragment(),
             R.id.action_delete -> deleteSelectedItems()
             R.id.action_rate -> onMassRateClick()
             R.id.action_archive -> archiveSelectedItems()
+            R.id.action_export_metadata -> exportSelectedItems()
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
@@ -543,12 +550,52 @@ class LibraryGroupsFragment : Fragment(),
     private fun archiveSelectedItems() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val selectedContent = selectedItems
-            .map { obj -> obj.group }
-            .flatMap { g -> viewModel.getGroupContents(g) }
-            .filterNot { c -> c.storageUri.isEmpty() }
+            .map { it.group }
+            .flatMap { viewModel.getGroupContents(it) }
+            .filterNot { it.storageUri.isEmpty() }
             .toList()
         if (selectedContent.isNotEmpty()) activity.get()!!
             .askArchiveItems(selectedContent, selectExtension!!)
+    }
+
+    /**
+     * Callback for the "export metadata" action button
+     */
+    private fun exportSelectedItems() {
+        val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
+        val selectedGroups = selectedItems.map { it.group }
+        if (selectedGroups.isEmpty()) return
+
+        val collection = JsonContentCollection()
+        // Add Content
+        selectedGroups
+            .flatMap { viewModel.getGroupContents(it) }
+            .forEach { collection.addToLibrary(it) }
+        // Add Groups
+        collection.replaceGroups(Preferences.getGroupingDisplay(), selectedGroups)
+
+        // Serialize and save
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val data = serializeToJson(collection, JsonContentCollection::class.java)
+                    .toByteArray(StandardCharsets.UTF_8)
+                exportToDownloadsFolder(
+                    requireContext(),
+                    data,
+                    "groups.json",
+                    binding?.root
+                )
+            } catch (e: Exception) {
+                binding?.root?.let {
+                    Snackbar.make(
+                        it,
+                        R.string.export_failed,
+                        BaseTransientBottomBar.LENGTH_LONG
+                    ).show()
+                }
+                Timber.w(e)
+            }
+        }
     }
 
     /**
@@ -556,10 +603,8 @@ class LibraryGroupsFragment : Fragment(),
      */
     private fun onMassRateClick() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
-        val selectedIds = selectedItems.map { gi -> gi.group }.map { g -> g.id }
-        if (selectedIds.isNotEmpty()) {
-            invoke(this, selectedIds.toLongArray(), 0)
-        }
+        val selectedIds = selectedItems.map { it.group }.map { it.id }
+        if (selectedIds.isNotEmpty()) invoke(this, selectedIds.toLongArray(), 0)
     }
 
     /**
@@ -567,12 +612,12 @@ class LibraryGroupsFragment : Fragment(),
      */
     private fun editSelectedItemName() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
-        val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
+        val g = selectedItems.firstNotNullOfOrNull { it.group }
         if (g != null) {
             invokeInputDialog(
                 requireActivity(),
                 R.string.group_edit_name,
-                { newName: String -> onEditName(newName) },
+                { onEditName(it) },
                 g.name
             ) { leaveSelectionMode() }
         }
@@ -580,12 +625,12 @@ class LibraryGroupsFragment : Fragment(),
 
     private fun onEditName(newName: String) {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
-        val g = selectedItems.firstNotNullOfOrNull { gi -> gi.group }
+        val g = selectedItems.firstNotNullOfOrNull { it.group }
         if (g != null) {
             viewModel.renameGroup(g, newName, { stringIntRes ->
                 toast(stringIntRes)
                 editSelectedItemName()
-            }) { selectExtension!!.selectOnLongClick = true }
+            }) { selectExtension?.selectOnLongClick = true }
         }
     }
 
