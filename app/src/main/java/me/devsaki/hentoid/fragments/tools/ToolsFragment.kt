@@ -26,6 +26,9 @@ import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
+import me.devsaki.hentoid.database.CollectionDAO
+import me.devsaki.hentoid.database.ObjectBoxDAO
+import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.Settings
@@ -205,11 +208,14 @@ class ToolsFragment : PreferenceFragmentCompat(),
     private fun onExportSettings() {
         lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
+                val dao = ObjectBoxDAO()
                 try {
-                    val settings = getExportedSettings()
+                    val settings = getExportedSettings(dao)
                     return@withContext serializeToJson(settings, JsonSettings::class.java)
                 } catch (e: Exception) {
                     Timber.w(e)
+                } finally {
+                    dao.cleanup()
                 }
                 return@withContext ""
             }
@@ -219,10 +225,11 @@ class ToolsFragment : PreferenceFragmentCompat(),
         }
     }
 
-    private fun getExportedSettings(): JsonSettings {
+    private fun getExportedSettings(dao: CollectionDAO): JsonSettings {
         val jsonSettings = JsonSettings()
 
         jsonSettings.settings = Settings.extractPortableInformation()
+        jsonSettings.replaceRenamingRules(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
 
         return jsonSettings
     }

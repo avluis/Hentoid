@@ -16,12 +16,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogToolsSettingsImportBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.importRenamingRules
 import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
@@ -145,6 +147,22 @@ class SettingsImportDialogFragment : BaseDialogFragment<Nothing>() {
     private fun runImport(settings: JsonSettings) {
         isCancelable = false
         Settings.importInformation(settings.settings)
+
+        val rules = settings.getEntityRenamingRules()
+        if (rules.isNotEmpty()) {
+            lifecycleScope.launch {
+                withContext(Dispatchers.IO) {
+                    val dao = ObjectBoxDAO()
+                    try {
+                        importRenamingRules(dao, rules)
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                    } finally {
+                        dao.cleanup()
+                    }
+                }
+            }
+        }
         finish()
     }
 
