@@ -56,12 +56,6 @@
     <string name="pref_cat_advanced">Speciális</string>
     <string name="pref_refresh_library_title">Könyvtár újratöltése</string>
     <string name="pref_refresh_library_summary">A könyvtár tartalmának kézi frissítése</string>
-    <string name="pref_delete_all_except_favs_title">Minden könyv törlése a kedvencek kivételével</string>
-    <string name="pref_delete_all_except_favs_summary">A könyvtár kiürítése; csak a kedvenc könyvek megtartása\nNB: Ez nem vonatkozik a külső könyvtárra.</string>
-    <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one"><x:g example="1" id="count">%d</x:g> könyv törlése\?</item>
-        <item quantity="other"><x:g example="2" id="count">%d</x:g> könyv törlése\?</item>
-    </plurals>
 <string name="pref_screen_browser">Böngésző</string>
     <string name="pref_browser_behaviour">Viselkedés</string>
     <string name="pref_browser_resume_last_title">Folytatás a legutóbb megtekintett oldalon</string>

@@ -71,10 +71,6 @@
     <string name="pref_refresh_library_summary">Manuellt fräscha upp biblioteksinnehåll</string>
     <string name="mass_operations_title">Masshandlingar</string>
     <string name="mass_operations_summary">Masshandlingar för biblioteket</string>
-    <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Ta bort <x:g example="1" id="count">%d</x:g> bok\?</item>
-        <item quantity="other">Ta bort <x:g example="2" id="count">%d</x:g> böcker\?</item>
-    </plurals>
 
     <!-- Browser -->
     <string name="pref_screen_browser">Webbläsare</string>

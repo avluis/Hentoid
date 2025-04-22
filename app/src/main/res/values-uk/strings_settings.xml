@@ -7,12 +7,12 @@
     <string name="pref_drawer_sources_title">Керування джерелами</string>
     <string name="pref_drawer_sources_summary">Вмикайте, вимикайте та реорганізовуйте джерела, що відображаються в лівому меню</string>
     <string name="pref_library_display_title">Спосіб відображення</string>
-    <string name="pref_library_display_summary">Вид відображення книг та груп\nПоточний: <x:g id="display_type" example="Список">%s</x:g></string>
+    <string name="pref_library_display_summary">Вид відображення книг та груп\nПоточний: <x:g example="Список" id="display_type">%s</x:g></string>
     <string name="pref_endless_scroll_title">Нескінченна прокрутка</string>
     <string name="pref_endless_scroll_summary_off">Включає нескінченне прокручування у списку завантажень\nВимикає поділ на сторінки</string>
     <string name="pref_endless_scroll_summary_on">Прокручуйте, скільки вашій душі завгодно</string>
     <string name="pref_quantity_per_page_title">Кількість елементів на сторінці</string>
-    <string name="pref_quantity_per_page_summary">Визначає, скільки елементів відображається на одній сторінці у списку завантажень\nЗараз: <x:g id="count" example="10">%s</x:g> елементів</string>
+    <string name="pref_quantity_per_page_summary">Визначає, скільки елементів відображається на одній сторінці у списку завантажень\nЗараз: <x:g example="10" id="count">%s</x:g> елементів</string>
     <string name="pref_top_fab_title">Кнопка переходу наверх</string>
     <string name="pref_top_fab_summary_off">Вимкнена</string>
     <string name="pref_top_fab_summary_on">Увімкнена</string>
@@ -23,7 +23,7 @@
     <string name="pref_attributes_list_count_off">Кількість доступних книг не відображається</string>
     <string name="pref_cat_theme">Тема додатка</string>
     <string name="pref_color_theme_title">Схема кольорів</string>
-    <string name="pref_color_theme_summary">Поточна тема: <x:g id="theme_name" example="Темно-червона">%s</x:g></string>
+    <string name="pref_color_theme_summary">Поточна тема: <x:g example="Темно-червона" id="theme_name">%s</x:g></string>
     <string name="pref_misc">Інше</string>
     <string name="pref_cat_language">Мова інтерфейсу</string>
     <string name="pref_force_english_title">Примусово використовувати англійську</string>
@@ -39,14 +39,14 @@
     <string name="pref_import_queue_empty_on">Порожні імпортовані книги будуть додані в чергу як помилки завантаження</string>
     <string name="pref_import_queue_empty_off">Порожні імпортовані книги будуть додані до бібліотеки</string>
     <string name="pref_folder_naming_content_title">Назви папок</string>
-    <string name="pref_folder_naming_content_summary">Спосіб найменування папок:\n<x:g id="convention" example="Назва - ID">%s</x:g></string>
+    <string name="pref_folder_naming_content_summary">Спосіб найменування папок:\n<x:g example="Назва - ID" id="convention">%s</x:g></string>
     <string name="pref_import_running">Імпортування вже запущено</string>
     <string name="prefs_ask_detach_external_library">Вимкнути зовнішню бібліотеку\?</string>
     <string name="prefs_external_library_detached">Зовнішня бібліотека вимкнена</string>
     <string name="pref_folder_trunc_title">Скорочувати назви папок</string>
-    <string name="pref_folder_trunc_summary">Урізання назв папок\nЗараз: <x:g id="chars" example="80 символів">%s</x:g></string>
+    <string name="pref_folder_trunc_summary">Урізання назв папок\nЗараз: <x:g example="80 символів" id="chars">%s</x:g></string>
     <string name="pref_memory_usage_title">Використання пам\'яті</string>
-    <string name="pref_memory_usage_summary">Вільне місце: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (натисніть для подробиць)</string>
+    <string name="pref_memory_usage_summary">Вільне місце: <x:g example="13.37%" id="percentage">%.2f%%</x:g> (натисніть для подробиць)</string>
     <string name="pref_memory_alert_title">Попереджати при майже повному заповненні пам\'яті</string>
     <string name="pref_cat_external">Зовнішня бібліотека</string>
     <string name="pref_external_library_title">Зовнішня бібліотека</string>
@@ -59,13 +59,6 @@
     <string name="pref_cat_advanced">Додатково</string>
     <string name="pref_refresh_library_title">Оновити бібліотеку</string>
     <string name="pref_refresh_library_summary">Вручну оновити вміст бібліотеки</string>
-    <string name="pref_delete_all_except_favs_title">Видалити всі книги, крім обраних</string>
-    <string name="pref_delete_all_except_favs_summary">Очистити бібліотеку і залишити лише обрані книги\nУвага: не відноситься до зовнішньої бібліотеки</string>
-    <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Видалити <x:g id="count" example="1">%d</x:g> книгу\?</item>
-        <item quantity="few">Видалити <x:g id="count" example="2">%d</x:g> книги\?</item>
-        <item quantity="many">Видалити <x:g id="count" example="5">%d</x:g> книг\?</item>
-    </plurals>
 
     <!-- Browser -->
     <string name="pref_screen_browser">Браузер</string>
@@ -80,7 +73,7 @@
     <string name="pref_browser_nhentai_invisible_blacklist_off">Відображаються з розмиттям</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Не відображаються</string>
     <string name="pref_browser_quick_dl_threshold_title">Поріг довгого натискання для швидкого завантаження</string>
-    <string name="pref_browser_quick_dl_threshold_summary">Не відпускайте палець протягом цього часу після натискання, щоб почати швидке завантаження\nЗараз: <x:g id="time" example="1 с">%s</x:g></string>
+    <string name="pref_browser_quick_dl_threshold_summary">Не відпускайте палець протягом цього часу після натискання, щоб почати швидке завантаження\nЗараз: <x:g example="1 с" id="time">%s</x:g></string>
     <string name="pref_browser_duplicate_ask_title">Перевірка на дублікати</string>
     <string name="pref_browser_duplicate_ask_off">Ні: завжди завантажувати</string>
     <string name="pref_browser_duplicate_ask_on">Так: запитувати перед завантаженням</string>
@@ -98,7 +91,7 @@
     <string name="pref_browser_override_overview_summary_off">Внизу ви можете виставити бажаний рівень масштабу за замовчуванням</string>
     <string name="pref_browser_override_overview_summary_on">Скористайтеся налаштуванням внизу для визначення бажаного рівня масштабу за замовчуванням\nПримітка: Працює лише на hitomi та e-hentai</string>
     <string name="pref_browser_initial_zoom_title">Масштаб за замовчуванням</string>
-    <string name="pref_browser_initial_zoom_summary">Рівень масштабу під час завантаження сторінки\nЗараз: <x:g id="percentage" example="20%">%s%%</x:g></string>
+    <string name="pref_browser_initial_zoom_summary">Рівень масштабу під час завантаження сторінки\nЗараз: <x:g example="20%" id="percentage">%s%%</x:g></string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
     <string name="pref_browser_clear_cookies">Очистити cookies браузера</string>
     <string name="pref_browser_clear_cookies_ok">Cookies видалені успішно</string>
@@ -131,7 +124,7 @@
     <string name="pref_dl_blocked_tags_summary">Книги з певними теґами не завантажуватимуться\nПідказка: теґи розділяються комами</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Погані теґи має…</string>
     <string name="pref_dl_threads_quantity_title">Кількість паралельних завантажень</string>
-    <string name="pref_dl_threads_quantity_summary">Кількість зображень, що завантажуються одночасно\nЗараз: <x:g id="number" example="5">%s</x:g></string>
+    <string name="pref_dl_threads_quantity_summary">Кількість зображень, що завантажуються одночасно\nЗараз: <x:g example="5" id="number">%s</x:g></string>
 
     <!-- Privacy -->
     <string name="pref_screen_privacy">Конфіденційність</string>

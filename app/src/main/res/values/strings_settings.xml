@@ -79,10 +79,6 @@
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
     <string name="mass_operations_title">Mass operations</string>
     <string name="mass_operations_summary">Mass operations on the library</string>
-    <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Delete <x:g example="1" id="count">%d</x:g> book\?</item>
-        <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> books\?</item>
-    </plurals>
 
     <!-- Browser -->
     <string name="pref_screen_browser">Browser</string>
