@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.database
 
-import android.net.Uri
 import android.util.SparseIntArray
+import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.paging.DataSource
@@ -185,7 +185,7 @@ class ObjectBoxDAO : CollectionDAO {
         // See https://github.com/objectbox/objectbox-java/issues/776
         val livedata = ObjectBoxLiveData(ObjectBoxDB.selectVisibleContentQ())
         val result = MediatorLiveData<Int>()
-        result.addSource(livedata) { v -> result.setValue(v.size) }
+        result.addSource(livedata) { result.value = it.size }
         return result
     }
 
@@ -212,7 +212,7 @@ class ObjectBoxDAO : CollectionDAO {
             )
         )
         val result = MediatorLiveData<Int>()
-        result.addSource(livedata) { v -> result.setValue(v.size) }
+        result.addSource(livedata) { result.value = it.size }
         return result
     }
 
@@ -448,7 +448,7 @@ class ObjectBoxDAO : CollectionDAO {
         // See https://github.com/objectbox/objectbox-java/issues/776
         val livedata = ObjectBoxLiveData(ObjectBoxDB.selectAllQueueBooksQ())
         val result = MediatorLiveData<Int>()
-        result.addSource(livedata) { result.setValue(it.size) }
+        result.addSource(livedata) { result.value = it.size }
         return result
     }
 
@@ -532,14 +532,14 @@ class ObjectBoxDAO : CollectionDAO {
             val livedata2 = MediatorLiveData<List<Group>>()
             livedata2.addSource(livedata) { groups ->
                 val enrichedWithItems =
-                    groups.map { g ->
+                    groups.map {
                         enrichGroupWithItemsByDlDate(
-                            g,
-                            g.propertyMin,
-                            g.propertyMax
+                            it,
+                            it.propertyMin,
+                            it.propertyMax
                         )
                     }.toList()
-                livedata2.setValue(enrichedWithItems)
+                livedata2.value = enrichedWithItems
             }
             workingData = livedata2
         }
@@ -551,8 +551,8 @@ class ObjectBoxDAO : CollectionDAO {
             val livedata2 = MediatorLiveData<List<Group>>()
             livedata2.addSource(livedata) { groups ->
                 val enrichedWithItems =
-                    groups.map { g -> enrichGroupWithItemsByQuery(g) }
-                livedata2.setValue(enrichedWithItems)
+                    groups.map { enrichGroupWithItemsByQuery(it) }
+                livedata2.value = enrichedWithItems
             }
             workingData = livedata2
         }
@@ -562,10 +562,8 @@ class ObjectBoxDAO : CollectionDAO {
         if (grouping == Grouping.CUSTOM.id) {
             val livedata2 = MediatorLiveData<List<Group>>()
             livedata2.addSource(livedata) { groups ->
-                val enrichedWithItems = groups.map { g ->
-                    enrichCustomGroups(g)
-                }
-                livedata2.setValue(enrichedWithItems)
+                val enrichedWithItems = groups.map { enrichCustomGroups(it) }
+                livedata2.value = enrichedWithItems
             }
             workingData = livedata2
         }
@@ -728,7 +726,7 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     private fun selectGroupItemsByQuery(group: Group): List<GroupItem> {
-        val criteria = parseSearchUri(Uri.parse(group.searchUri))
+        val criteria = parseSearchUri(group.searchUri.toUri())
         val bundle = fromSearchCriteria(criteria)
         val contentResult = searchContentIds(bundle, this)
         return contentResult.map { c -> GroupItem(c, group, -1) }
@@ -870,7 +868,7 @@ class ObjectBoxDAO : CollectionDAO {
         // See https://github.com/objectbox/objectbox-java/issues/776
         val livedata = ObjectBoxLiveData(ObjectBoxDB.selectAllFavouritePagesQ())
         val result = MediatorLiveData<Int>()
-        result.addSource(livedata) { v -> result.setValue(v.size) }
+        result.addSource(livedata) { result.value = it.size }
         return result
     }
 

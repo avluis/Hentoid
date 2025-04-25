@@ -653,6 +653,7 @@
     <string name="groups_by_dl_date">By Download date (processed)</string>
     <string name="groups_dynamic">Saved searches</string>
     <string name="groups_custom">Custom groups</string>
+    <string name="groups_folders">Folders</string>
     <string name="no_artist_group_name">[no artist]</string>
 
     <!-- Sort / filter bottom panel -->

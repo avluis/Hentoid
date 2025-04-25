@@ -19,6 +19,7 @@ class CommunicationEvent(val type: Type, val recipient: Recipient, val message: 
         ALL,
         GROUPS,
         CONTENTS,
+        FOLDERS,
         QUEUE,
         ERRORS,
         DRAWER,

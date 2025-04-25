@@ -1,0 +1,230 @@
+package me.devsaki.hentoid.viewholders
+
+import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import coil3.dispose
+import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.drag.IExtendedDraggable
+import com.mikepenz.fastadapter.items.AbstractItem
+import com.mikepenz.fastadapter.listeners.TouchEventHook
+import com.mikepenz.fastadapter.swipe.IDrawerSwipeableViewHolder
+import com.mikepenz.fastadapter.swipe.ISwipeable
+import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.ContentItemBundle
+import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.ui.BlinkAnimation
+import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.hash64
+import timber.log.Timber
+
+class FileItem : AbstractItem<FileItem.ViewHolder>,
+    IExtendedDraggable<FileItem.ViewHolder>, ISwipeable {
+
+    val doc: DisplayFile
+
+    private val showDragHandle: Boolean
+    private val isEmpty: Boolean
+    private var deleteAction: Consumer<FileItem>? = null
+
+    // Drag, drop & swipe
+    override val touchHelper: ItemTouchHelper?
+    override val isSwipeable: Boolean
+
+    // Constructor for split
+    constructor(d: DisplayFile) {
+        doc = d
+        touchHelper = null
+        showDragHandle = false
+        isSwipeable = false
+        isEmpty = false
+        identifier = hash64(doc.uri.toString().toByteArray())
+    }
+
+    override fun getViewHolder(v: View): ViewHolder {
+        return ViewHolder(v)
+    }
+
+    override val layoutRes: Int
+        get() = R.layout.item_library_folder
+
+    override val type: Int
+        get() = R.id.folder
+
+    override val isDraggable: Boolean
+        get() = false
+
+    override fun isDirectionSupported(direction: Int): Boolean {
+        return ItemTouchHelper.LEFT == direction
+    }
+
+    override fun getDragView(viewHolder: ViewHolder): View? {
+        return viewHolder.ivReorder
+    }
+
+
+    class ViewHolder internal constructor(view: View) :
+        FastAdapter.ViewHolder<FileItem>(view), IDraggableViewHolder, IDrawerSwipeableViewHolder,
+        ISwipeableViewHolder {
+        // Common elements
+        private val baseLayout: View = view.requireById(R.id.item)
+        private val tvTitle: TextView = view.requireById(R.id.tvTitle)
+        private val ivCover: ImageView = view.requireById(R.id.ivCover)
+        private val ivFlag: ImageView? = view.findViewById(R.id.ivFlag)
+        private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
+        private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
+        private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
+        private val tvPages: TextView? = view.findViewById(R.id.tvPages)
+        private val ivError: ImageView? = view.findViewById(R.id.ivError)
+        private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
+        override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
+        private val deleteButton: View? = view.findViewById(R.id.delete_btn)
+
+        // Specific to library content
+        private var ivNew: View? = view.findViewById(R.id.lineNew)
+        private var tvTags: TextView? = view.findViewById(R.id.tvTags)
+        private var tvSeries: TextView? = view.findViewById(R.id.tvSeries)
+        private var ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
+        private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
+        private var ivExternal: ImageView? = view.findViewById(R.id.ivExternal)
+        private var readingProgress: CircularProgressIndicator? =
+            view.findViewById(R.id.reading_progress)
+        private var ivCompleted: ImageView? = view.findViewById(R.id.ivCompleted)
+        private var ivChapters: ImageView? = view.findViewById(R.id.ivChapters)
+        private var tvChapters: TextView? = view.findViewById(R.id.tvChapters)
+        private var ivStorage: ImageView? = view.findViewById(R.id.ivStorage)
+        private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
+        private var selectionBorder: View? = view.findViewById(R.id.selection_border)
+
+        // Specific to Queued content
+        var topButton: View? = view.findViewById(R.id.queueTopBtn)
+        var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
+        var ivReorder: View? = view.findViewById(R.id.ivReorder)
+        var downloadButton: View? = view.findViewById(R.id.ivRedownload)
+
+        private var deleteActionRunnable: Runnable? = null
+
+        // Extra info to display in stacktraces
+        private var debugStr = "[no data]"
+
+
+        override fun bindView(item: FileItem, payloads: List<Any>) {
+            if (item.isEmpty) {
+                debugStr = "empty item"
+                return  // Ignore placeholders from PagedList
+            }
+
+            // Payloads are set when the content stays the same but some properties alone change
+            if (payloads.isNotEmpty()) {
+                val bundle = payloads[0] as Bundle
+                val bundleParser = ContentItemBundle(bundle)
+                // TODO
+                /*
+                var boolValue = bundleParser.isBeingDeleted
+                if (boolValue != null) item.content?.isBeingProcessed = boolValue
+                */
+            }
+
+            item.deleteAction?.apply {
+                deleteActionRunnable = Runnable { invoke(item) }
+            }
+
+            // Important to trigger the ViewHolder's global onClick/onLongClick events
+            swipeableView.setOnClickListener { v: View -> if (v.parent is View) (v.parent as View).performClick() }
+            swipeableView.setOnLongClickListener { v: View ->
+                if (v.parent is View) return@setOnLongClickListener (v.parent as View).performLongClick()
+                false
+            }
+
+            updateLayoutVisibility(item, item.doc)
+            attachCover(item.doc)
+            attachTitle(item.doc)
+            attachMetrics(item.doc)
+            attachButtons(item)
+        }
+
+        private fun updateLayoutVisibility(item: FileItem, doc: DisplayFile) {
+            baseLayout.isVisible = !item.isEmpty
+            selectionBorder?.isVisible = item.isSelected
+
+            if (doc.isBeingProcessed)
+                baseLayout.startAnimation(BlinkAnimation(500, 250))
+            else baseLayout.clearAnimation()
+
+            if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED ${doc.name}")
+        }
+
+        private fun attachCover(doc: DisplayFile) {
+            // TODO
+        }
+
+        private fun attachTitle(doc: DisplayFile) {
+            // TODO
+        }
+
+        private fun attachMetrics(doc: DisplayFile) {
+            // TODO
+        }
+
+        private fun attachButtons(item: FileItem) {
+            // TODO
+        }
+
+        override fun unbindView(item: FileItem) {
+            deleteActionRunnable = null
+            debugStr = "[no data]"
+            swipeableView.translationX = 0f
+            ivCover.dispose()
+        }
+
+        override fun onDragged() {
+            // TODO fix incorrect visual behaviour when dragging an item to 1st position
+            //bookCard.setBackgroundColor(ThemeHelper.getColor(bookCard.getContext(), R.color.white_opacity_25));
+        }
+
+        override fun onDropped() {
+            // TODO fix incorrect visual behaviour when dragging an item to 1st position
+            //bookCard.setBackground(bookCard.getContext().getDrawable(R.drawable.bg_book_card));
+        }
+
+        override fun onSwiped() {
+            // Nothing
+        }
+
+        override fun onUnswiped() {
+            // Nothing
+        }
+
+        override fun toString(): String {
+            return super.toString() + " " + debugStr
+        }
+    }
+
+    class DragHandlerTouchEvent(private val action: Consumer<Int>) : TouchEventHook<FileItem>() {
+        override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+            return if (viewHolder is ViewHolder) viewHolder.ivReorder else null
+        }
+
+        override fun onTouch(
+            v: View,
+            event: MotionEvent,
+            position: Int,
+            fastAdapter: FastAdapter<FileItem>,
+            item: FileItem
+        ): Boolean {
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                action.invoke(position)
+                return true
+            }
+            return false
+        }
+    }
+}

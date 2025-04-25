@@ -75,9 +75,9 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = IncludeLibraryGroupsBottomPanelBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -123,6 +123,7 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
         result.add(createFromGrouping(Grouping.DL_DATE))
         if (isDynamicGroupingAvailable) result.add(createFromGrouping(Grouping.DYNAMIC))
         if (isCustomGroupingAvailable) result.add(createFromGrouping(Grouping.CUSTOM))
+        result.add(createFromGrouping(Grouping.FOLDERS))
         return result
     }
 

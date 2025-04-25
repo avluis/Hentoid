@@ -57,6 +57,7 @@ import me.devsaki.hentoid.fragments.library.LibraryArchiveDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
+import me.devsaki.hentoid.fragments.library.LibraryFoldersFragment
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
@@ -502,7 +503,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             it.recyclerView.adapter = gridSizefastAdapter
             val labels = resources.getStringArray(R.array.pref_grid_card_width_entries)
             val values =
-                resources.getStringArray(R.array.pref_grid_card_width_values).map { s -> s.toInt() }
+                resources.getStringArray(R.array.pref_grid_card_width_values).map { it.toInt() }
             val gridSizePref = Settings.libraryGridCardWidthDP
             labels.forEachIndexed { index, s ->
                 val item = TextItem(
@@ -568,6 +569,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         pagerAdapter?.notifyDataSetChanged()
         if (targetGroupingId == Grouping.FLAT.id) { // Display books right away
             binding?.libraryPager?.currentItem = 1
+        } else if (targetGroupingId == Grouping.FOLDERS.id) { // Display folders
+            binding?.libraryPager?.currentItem = 2
         }
         enableCurrentFragment()
     }
@@ -915,11 +918,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 Settings.groupSortField = Settings.Default.ORDER_GROUP_FIELD
             }
 
-            // Go back to groups tab if we're not
-            if (targetGroupingId != Grouping.FLAT.id) goBackToGroups()
+            // Go back to groups tab if needed
+            if (targetGroupingId != Grouping.FLAT.id && targetGroupingId != Grouping.FOLDERS.id) goBackToGroups()
 
-            // Update screen display if needed (flat <-> the rest)
-            if (grouping == Grouping.FLAT || targetGroupingId == Grouping.FLAT.id)
+            // Update screen display if needed
+            if (grouping == Grouping.FLAT || grouping == Grouping.FOLDERS || targetGroupingId == Grouping.FLAT.id || targetGroupingId == Grouping.FOLDERS.id)
                 updateDisplay(targetGroupingId)
 
             grouping = targetGrouping
@@ -1012,6 +1015,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun isGroupDisplayed(): Boolean {
         return 0 == binding?.libraryPager?.currentItem
+    }
+
+    private fun isFoldersDisplayed(): Boolean {
+        return 2 == binding?.libraryPager?.currentItem
     }
 
     fun goBackToGroups() {
@@ -1239,7 +1246,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         EventBus.getDefault().post(
             CommunicationEvent(
                 eventType,
-                if (0 == fragmentIndex) CommunicationEvent.Recipient.GROUPS else CommunicationEvent.Recipient.CONTENTS,
+                when (fragmentIndex) {
+                    1 -> CommunicationEvent.Recipient.CONTENTS
+                    2 -> CommunicationEvent.Recipient.FOLDERS
+                    else -> CommunicationEvent.Recipient.GROUPS
+                },
                 message
             )
         )
@@ -1257,15 +1268,28 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         EventBus.getDefault().post(
             CommunicationEvent(
                 CommunicationEvent.Type.ENABLE,
-                if (0 == fragmentIndex) CommunicationEvent.Recipient.GROUPS else CommunicationEvent.Recipient.CONTENTS
+                when (fragmentIndex) {
+                    1 -> CommunicationEvent.Recipient.CONTENTS
+                    2 -> CommunicationEvent.Recipient.FOLDERS
+                    else -> CommunicationEvent.Recipient.GROUPS
+                },
             )
         )
-        EventBus.getDefault().post(
-            CommunicationEvent(
-                CommunicationEvent.Type.DISABLE,
-                if (0 == fragmentIndex) CommunicationEvent.Recipient.CONTENTS else CommunicationEvent.Recipient.GROUPS
-            )
-        )
+        binding?.apply {
+            for (i in 0..libraryPager.childCount) {
+                if (fragmentIndex != i)
+                    EventBus.getDefault().post(
+                        CommunicationEvent(
+                            CommunicationEvent.Type.DISABLE,
+                            when (i) {
+                                1 -> CommunicationEvent.Recipient.CONTENTS
+                                2 -> CommunicationEvent.Recipient.FOLDERS
+                                else -> CommunicationEvent.Recipient.GROUPS
+                            },
+                        )
+                    )
+            }
+        }
     }
 
     private fun saveSearchAsGroup() {
@@ -1321,15 +1345,15 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private class LibraryPagerAdapter(fa: FragmentActivity) :
         FragmentStateAdapter(fa) {
         override fun createFragment(position: Int): Fragment {
-            return if (0 == position) {
-                LibraryGroupsFragment()
-            } else {
-                LibraryContentFragment()
+            return when (position) {
+                1 -> LibraryContentFragment()
+                2 -> LibraryFoldersFragment()
+                else -> LibraryGroupsFragment()
             }
         }
 
         override fun getItemCount(): Int {
-            return 2
+            return 3
         }
     }
 

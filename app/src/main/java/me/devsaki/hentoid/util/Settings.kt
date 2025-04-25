@@ -145,6 +145,10 @@ object Settings {
         "artist_group_visibility",
         Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
     )
+    var folderSortField: Int by IntSetting("pref_order_folder_field", Default.ORDER_FOLDER_FIELD)
+    var isFolderSortDesc: Boolean by BoolSetting("pref_order_folder_desc", false)
+    var libraryFoldersRoots: List<String> by ListStringSetting("library_folders_roots")
+    var libraryFoldersRoot: String by StringSetting("library_folders_current_root", "")
 
     // ADV SEARCH
     val searchAttributesSortOrder: Int by IntSettingStr(
@@ -490,7 +494,10 @@ object Settings {
     val duplicateBrowserUseTitle: Boolean by BoolSetting("duplicate_browser_use_title", true)
     val duplicateBrowserUseArtist: Boolean by BoolSetting("duplicate_browser_use_artist", true)
     val duplicateBrowserUseCover: Boolean by BoolSetting("duplicate_browser_use_cover", true)
-    val duplicateBrowserUseSameLanguage: Boolean by BoolSetting("duplicate_browser_use_same_language", false)
+    val duplicateBrowserUseSameLanguage: Boolean by BoolSetting(
+        "duplicate_browser_use_same_language",
+        false
+    )
 
 
     // APP-WIDE
@@ -699,6 +706,7 @@ object Settings {
     object Default {
         const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
         const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
+        const val ORDER_FOLDER_FIELD = Value.ORDER_FIELD_TITLE
         const val LIBRARY_DISPLAY = Value.LIBRARY_DISPLAY_LIST
         const val QUEUE_NEW_DOWNLOADS_POSITION = Value.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
         const val IMPORT_NAME_PATTERN = "%t"
