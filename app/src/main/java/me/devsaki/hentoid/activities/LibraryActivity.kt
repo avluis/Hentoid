@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.content.pm.PackageManager
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +15,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.isVisible
@@ -184,7 +184,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private var group: Group? = null
 
     // Current grouping
-    private var grouping = Preferences.getGroupingDisplay()
+    private var grouping = Settings.getGroupingDisplayG()
 
     // Current Content search query
     private var contentSearchBundle: Bundle? = null
@@ -319,7 +319,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 WindowManager.LayoutParams.FLAG_SECURE
             )
         }
-        Preferences.registerPrefsChangedListener(prefsListener)
         Settings.registerPrefsChangedListener(prefsListener)
         pagerAdapter = LibraryPagerAdapter(this)
         initToolbar()
@@ -340,7 +339,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     override fun onDestroy() {
-        Preferences.unregisterPrefsChangedListener(prefsListener)
         Settings.unregisterPrefsChangedListener(prefsListener)
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
 
@@ -498,7 +496,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 })
                 adapter = pagerAdapter
             }
-            updateDisplay(Preferences.getGroupingDisplay().id)
+            updateDisplay(Settings.groupingDisplay)
         }
         // Grid size choice
         binding?.gridSizeBanner?.let {
@@ -767,7 +765,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 setOnMenuItemClickListener { _, (_, _, _, _, _, tag): PowerMenuItem ->
                     if (tag != null) { // Tap on search record
                         (tag as SearchRecord?)?.let {
-                            val searchUri = Uri.parse(it.searchString)
+                            val searchUri = it.searchString.toUri()
                             setAdvancedSearchCriteria(SearchActivityBundle.parseSearchUri(searchUri))
                             if (getSearchCriteria().isEmpty()) { // Universal search
                                 if (getQuery().isNotEmpty())
@@ -1057,7 +1055,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun updateToolbar() {
-        val currentGrouping = Preferences.getGroupingDisplay()
+        val currentGrouping = Settings.getGroupingDisplayG()
         displayTypeMenu?.isVisible = !editMode
         searchMenu?.isVisible = !editMode
         actionSearchView?.queryHint =
@@ -1096,7 +1094,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         )
         if (isGroupDisplayed()) {
             editMenu?.isVisible = !hasProcessed && !isMultipleSelection
-                    && Preferences.getGroupingDisplay().canReorderGroups
+                    && Settings.getGroupingDisplayG().canReorderGroups
             deleteMenu?.isVisible = !hasProcessed
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false
@@ -1128,7 +1126,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             downloadStreamedMenu?.isVisible = !hasProcessed && selectedStreamedCount > 0
             streamMenu?.isVisible = !hasProcessed && selectedDownloadedCount > 0
             groupCoverMenu?.isVisible =
-                !isMultipleSelection && Preferences.getGroupingDisplay() != Grouping.FLAT
+                !isMultipleSelection && Settings.getGroupingDisplayG() != Grouping.FLAT
             // Can only merge downloaded, streamed or non-archive external content together
             mergeMenu?.isVisible = !hasProcessed && (
                     selectedLocalCount > 1 && 0L == selectedStreamedCount && 0L == selectedExternalCount

@@ -59,7 +59,6 @@ import me.devsaki.hentoid.fragments.reader.ReaderDeleteDialogFragment.Companion.
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_AUTO_ROTATE
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_BROWSE_MODE
@@ -197,7 +196,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         zoomLevelDebouncer = Debouncer(lifecycleScope, 500) {
             hideZoomLevel()
         }
-        Preferences.registerPrefsChangedListener(prefsListener)
         Settings.registerPrefsChangedListener(prefsListener)
     }
 
@@ -348,7 +346,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     override fun onDestroy() {
-        Preferences.unregisterPrefsChangedListener(prefsListener)
         Settings.unregisterPrefsChangedListener(prefsListener)
         if (this::adapter.isInitialized) {
             adapter.setRecyclerView(null)

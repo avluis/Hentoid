@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -17,7 +16,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
 import me.devsaki.hentoid.databinding.IncludeLibraryGroupsBottomPanelBinding
 import me.devsaki.hentoid.enums.Grouping
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
@@ -51,7 +50,7 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
             libraryBottomSheetFragment.arguments = builder.bundle
             context.setStyle(
                 libraryBottomSheetFragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
             libraryBottomSheetFragment.show(fragmentManager, "libraryBottomSheetFragment")
@@ -108,9 +107,9 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
             updateArtistVisibility()
             artistDisplayGrp.addOnButtonCheckedListener { _, _, _ ->
                 val code =
-                    if (artistDisplayArtists.isChecked && artistDisplayGroups.isChecked) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
-                    else if (artistDisplayArtists.isChecked) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS
-                Preferences.setArtistGroupVisibility(code)
+                    if (artistDisplayArtists.isChecked && artistDisplayGroups.isChecked) Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
+                    else if (artistDisplayArtists.isChecked) Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS else Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS
+                Settings.artistGroupVisibility = code
                 updateArtistVisibility()
                 viewModel.searchGroup()
             }
@@ -132,21 +131,21 @@ class LibraryBottomGroupsFragment : BottomSheetDialogFragment() {
             resources.getString(grouping.displayName),
             grouping.id,
             true,
-            Preferences.getGroupingDisplay().id == grouping.id
+            Settings.groupingDisplay == grouping.id
         )
     }
 
     private fun updateArtistVisibility() {
         binding?.apply {
             val visibility =
-                if (Preferences.getGroupingDisplay() == Grouping.ARTIST) View.VISIBLE else View.INVISIBLE
+                if (Settings.getGroupingDisplayG() == Grouping.ARTIST) View.VISIBLE else View.INVISIBLE
             artistDisplayTxt.visibility = visibility
             artistDisplayGrp.visibility = visibility
-            val code = Preferences.getArtistGroupVisibility()
+            val code = Settings.artistGroupVisibility
             artistDisplayArtists.isChecked =
-                Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS == code || Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS == code
+                Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS == code || Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS == code
             artistDisplayGroups.isChecked =
-                Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS == code || Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS == code
+                Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS == code || Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS == code
         }
     }
 

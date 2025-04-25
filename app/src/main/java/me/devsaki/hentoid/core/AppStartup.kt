@@ -45,7 +45,6 @@ import me.devsaki.hentoid.notification.transform.TransformNotificationChannel
 import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.findFile
@@ -197,10 +196,10 @@ object AppStartup {
 
     private fun processAppUpdate(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Process app update : start")
-        if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
+        if (Settings.lastKnownAppVersionCode < BuildConfig.VERSION_CODE) {
             Timber.d(
                 "Process app update : update detected from %s to %s",
-                Preferences.getLastKnownAppVersionCode(),
+                Settings.lastKnownAppVersionCode,
                 BuildConfig.VERSION_CODE
             )
             Timber.d("Process app update : Clearing webview cache")
@@ -210,7 +209,7 @@ object AppStartup {
             DiskCache.init(context)
             Timber.d("Process app update : Complete")
             EventBus.getDefault().postSticky(AppUpdatedEvent())
-            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE)
+            Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
         }
         Timber.i("Process app update : done")
     }

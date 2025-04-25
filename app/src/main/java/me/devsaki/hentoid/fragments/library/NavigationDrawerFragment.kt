@@ -18,12 +18,12 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.LibraryActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.activities.bundles.ToolsBundle
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Grouping
@@ -31,7 +31,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.json.core.UpdateInfo
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
@@ -80,7 +79,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     override fun onDestroy() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        Preferences.unregisterPrefsChangedListener(prefsListener)
+        Settings.unregisterPrefsChangedListener(prefsListener)
         binding = null
         super.onDestroy()
     }
@@ -103,7 +102,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
             drawerList.adapter = fastAdapter
         }
 
-        Preferences.registerPrefsChangedListener(prefsListener)
+        Settings.registerPrefsChangedListener(prefsListener)
 
         return binding?.root
     }
@@ -271,6 +270,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
      */
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
-        if (Preferences.Key.ACTIVE_SITES == key) updateItems()
+        if (Settings.Key.ACTIVE_SITES == key) updateItems()
     }
 }

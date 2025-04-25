@@ -5,7 +5,6 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.Application
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Bundle
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -49,8 +48,8 @@ class HentoidApp : Application() {
         Settings.performHousekeeping()
 
         // Init version number
-        if (0 == Preferences.getLastKnownAppVersionCode())
-            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE)
+        if (0 == Settings.lastKnownAppVersionCode)
+            Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
 
         // Firebase
         val isAnalyticsEnabled = Settings.isAnalyticsEnabled
@@ -128,7 +127,7 @@ class HentoidApp : Application() {
     class LifeCycleListener : DefaultLifecycleObserver, LifecycleObserver {
         override fun onStop(owner: LifecycleOwner) {
             Timber.d("App moving to background")
-            if (enabled && isUnlocked && Settings.lockType > 0 && Preferences.isLockOnAppRestore()
+            if (enabled && isUnlocked && Settings.lockType > 0 && Settings.lockOnAppRestore
             ) {
                 setUnlocked(false)
                 setLockInstant(Instant.now().toEpochMilli())

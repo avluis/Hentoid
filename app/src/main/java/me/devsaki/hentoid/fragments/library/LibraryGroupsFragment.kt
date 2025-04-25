@@ -60,7 +60,6 @@ import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companio
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
@@ -342,7 +341,7 @@ class LibraryGroupsFragment : Fragment(),
             requireActivity(), R.string.new_group_name,
             { groupName: String ->
                 viewModel.newGroup(
-                    Preferences.getGroupingDisplay(),
+                    Settings.getGroupingDisplayG(),
                     groupName, null
                 ) { onNewGroupNameExists() }
             }
@@ -395,14 +394,14 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     selectedContent = contentToDelete.toMutableList()
                     // Rebuild the groups list from the remaining contents if needed
-                    if (Preferences.getGroupingDisplay().canDeleteGroups) selectedGroups =
+                    if (Settings.getGroupingDisplayG().canDeleteGroups) selectedGroups =
                         selectedContent.flatMap { it.groupItems }
                             .mapNotNull { it.linkedGroup }
                             .toMutableList()
                 }
             }
             // Don't remove non-deletable groups
-            if (!Preferences.getGroupingDisplay().canDeleteGroups) selectedGroups.clear()
+            if (!Settings.getGroupingDisplayG().canDeleteGroups) selectedGroups.clear()
             if (selectedContent.isNotEmpty() || selectedGroups.isNotEmpty()) {
                 val powerMenuBuilder = PowerMenu.Builder(requireContext())
                     .setOnDismissListener { leaveSelectionMode() }
@@ -423,7 +422,7 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                     .setAutoDismiss(true)
-                if (!Preferences.getGroupingDisplay().canDeleteGroups) {
+                if (!Settings.getGroupingDisplayG().canDeleteGroups) {
                     // Delete books only
                     powerMenuBuilder.addItem(
                         PowerMenuItem(
@@ -441,7 +440,7 @@ class LibraryGroupsFragment : Fragment(),
                     )
                 } else {
                     // Delete group only
-                    if (Preferences.getGroupingDisplay().canReorderGroups)
+                    if (Settings.getGroupingDisplayG().canReorderGroups)
                         powerMenuBuilder.addItem(
                             PowerMenuItem(
                                 resources.getQuantityString(
@@ -572,7 +571,7 @@ class LibraryGroupsFragment : Fragment(),
             .flatMap { viewModel.getGroupContents(it) }
             .forEach { collection.addToLibrary(it) }
         // Add Groups
-        collection.replaceGroups(Preferences.getGroupingDisplay(), selectedGroups)
+        collection.replaceGroups(Settings.getGroupingDisplayG(), selectedGroups)
 
         // Serialize and save
         lifecycleScope.launch(Dispatchers.IO) {

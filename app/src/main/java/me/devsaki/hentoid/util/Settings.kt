@@ -10,6 +10,7 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.ResetLazy
 import me.devsaki.hentoid.core.lazyWithReset
 import me.devsaki.hentoid.database.domains.DownloadMode
+import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
@@ -47,7 +48,7 @@ object Settings {
         result.remove(Key.WELCOME_DONE)
         result.remove(Key.PRIMARY_STORAGE_URI)
         result.remove(Key.EXTERNAL_LIBRARY_URI)
-        result.remove(Preferences.Key.LAST_KNOWN_APP_VERSION_CODE)
+        result.remove(Key.LAST_KNOWN_APP_VERSION_CODE)
         result.remove(Key.REFRESH_JSON_1_DONE)
         result.remove(Key.LOCK_TYPE)
         result.remove(Key.ACHIEVEMENTS)
@@ -119,7 +120,7 @@ object Settings {
         Key.LIBRARY_DISPLAY_GROUP_FIGURE,
         Value.LIBRARY_DISPLAY_GROUP_NB_BOOKS
     )
-    var activeSites: List<Site> by ListSiteSetting("active_sites", Value.ACTIVE_SITES)
+    var activeSites: List<Site> by ListSiteSetting(Key.ACTIVE_SITES, Value.ACTIVE_SITES)
     var contentSortField: Int by IntSetting(
         "pref_order_content_field",
         Default.ORDER_CONTENT_FIELD
@@ -128,9 +129,17 @@ object Settings {
     var groupSortField: Int by IntSetting("pref_order_group_field", Default.ORDER_GROUP_FIELD)
     var isGroupSortDesc: Boolean by BoolSetting("pref_order_group_desc", false)
     var contentPageQuantity: Int by IntSettingStr("pref_quantity_per_page_lists", 20)
-    var appLockPin: String by StringSetting(Key.APP_LOCK, "")
     val endlessScroll: Boolean by BoolSetting(Key.ENDLESS_SCROLL, true)
     var topFabEnabled: Boolean by BoolSetting(Key.TOP_FAB, true)
+    var groupingDisplay: Int by IntSettingStr("grouping_display", Grouping.FLAT.id)
+    fun getGroupingDisplayG(): Grouping {
+        return Grouping.Companion.searchById(groupingDisplay)
+    }
+
+    var artistGroupVisibility: Int by IntSettingStr(
+        "artist_group_visibility",
+        Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
+    )
 
     // ADV SEARCH
     val searchAttributesSortOrder: Int by IntSettingStr(
@@ -141,6 +150,9 @@ object Settings {
 
     // LOCK
     var lockType: Int by IntSettingStr(Key.LOCK_TYPE, 0)
+    var appLockPin: String by StringSetting(Key.APP_LOCK, "")
+    var lockOnAppRestore: Boolean by BoolSetting("pref_lock_on_app_restore", false)
+    var lockTimer: Int by IntSettingStr("pref_lock_timer", Value.LOCK_TIMER_30S)
 
     // MASS OPERATIONS
     var massOperation: Int by IntSettingStr("MASS_OPERATION", 0)
@@ -250,13 +262,22 @@ object Settings {
     val isQueueWifiOnly: Boolean by BoolSetting("pref_queue_wifi_only", false)
     val isDownloadLargeOnlyWifi: Boolean by BoolSetting("pref_dl_size_wifi", false)
     val downloadLargeOnlyWifiThresholdMB: Int by IntSettingStr("pref_dl_size_wifi_threshold", 40)
-    val downloadLargeOnlyWifiThresholdPages: Int by IntSettingStr("pref_dl_pages_wifi_threshold", 999999)
+    val downloadLargeOnlyWifiThresholdPages: Int by IntSettingStr(
+        "pref_dl_pages_wifi_threshold",
+        999999
+    )
     val isDlRetriesActive: Boolean by BoolSetting("pref_dl_retries_active", false)
     val dlRetriesNumber: Int by IntSettingStr("pref_dl_retries_number", 5)
     val dlRetriesMemLimit: Int by IntSettingStr("pref_dl_retries_mem_limit", 100)
     val dlSpeedCap: Int by IntSettingStr(Key.DL_SPEED_CAP, Value.DL_SPEED_CAP_NONE)
-    val queueNewDownloadPosition: Int by IntSettingStr("pref_queue_new_position", Default.QUEUE_NEW_DOWNLOADS_POSITION)
-    val tagBlockingBehaviour: Int by IntSettingStr("pref_dl_blocked_tags_behaviour", Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE)
+    val queueNewDownloadPosition: Int by IntSettingStr(
+        "pref_queue_new_position",
+        Default.QUEUE_NEW_DOWNLOADS_POSITION
+    )
+    val tagBlockingBehaviour: Int by IntSettingStr(
+        "pref_dl_blocked_tags_behaviour",
+        Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE
+    )
 
     // READER
     var isReaderResumeLastLeft: Boolean by BoolSetting("pref_viewer_resume_last_left", true)
@@ -454,6 +475,7 @@ object Settings {
     // APP-WIDE
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
     var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
+    var lastKnownAppVersionCode: Int by IntSettingStr(Key.LAST_KNOWN_APP_VERSION_CODE, 0)
     var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
     val isAnalyticsEnabled: Boolean by BoolSetting(Key.ANALYTICS_PREFERENCE, true)
     val isAutomaticUpdateEnabled: Boolean by BoolSetting("pref_check_updates", true)
@@ -575,11 +597,13 @@ object Settings {
     object Key {
         const val FIRST_RUN = "pref_first_run"
         const val WELCOME_DONE = "pref_welcome_done"
+        const val LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code"
         const val REFRESH_JSON_1_DONE = "refresh_json_1_done"
         const val ANALYTICS_PREFERENCE = "pref_analytics_preference"
         const val BROWSER_MODE = "browser_mode"
         const val FORCE_ENGLISH = "force_english"
         const val COLOR_THEME = "pref_color_theme"
+        const val ACTIVE_SITES = "active_sites"
 
         const val IMPORT_QUEUE_EMPTY = "pref_import_queue_empty"
 
@@ -658,6 +682,7 @@ object Settings {
         const val IMPORT_NAME_PATTERN = "%t"
     }
 
+    // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
     object Value {
         private val DEFAULT_SITES = arrayOf(
             Site.NHENTAI,
@@ -794,6 +819,18 @@ object Settings {
         const val READER_AUTO_ROTATE_NONE = 0
         const val READER_AUTO_ROTATE_LEFT = 1
         const val READER_AUTO_ROTATE_RIGHT = 2
+
+        val ORDER_CONTENT_FAVOURITE = -2 // Artificial order created for clarity purposes
+
+        const val LOCK_TIMER_OFF = 0
+        const val LOCK_TIMER_10S = 1
+        const val LOCK_TIMER_30S = 2
+        const val LOCK_TIMER_1M = 3
+        const val LOCK_TIMER_2M = 4
+
+        const val ARTIST_GROUP_VISIBILITY_ARTISTS = 0
+        const val ARTIST_GROUP_VISIBILITY_GROUPS = 1
+        const val ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS = 2
 
         val COLOR_THEME_LIGHT = Theme.LIGHT.id
         val COLOR_THEME_DARK = Theme.DARK.id

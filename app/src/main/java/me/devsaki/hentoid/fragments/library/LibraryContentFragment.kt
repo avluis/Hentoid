@@ -80,7 +80,6 @@ import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
@@ -354,7 +353,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     ): View {
         binding = FragmentLibraryContentBinding.inflate(inflater, container, false)
 
-        Preferences.registerPrefsChangedListener(prefsListener)
+        Settings.registerPrefsChangedListener(prefsListener)
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
 
@@ -1021,7 +1020,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     override fun onDestroy() {
-        Preferences.unregisterPrefsChangedListener(prefsListener)
+        Settings.unregisterPrefsChangedListener(prefsListener)
         EventBus.getDefault().unregister(this)
         binding = null
         callback?.remove()
@@ -1039,7 +1038,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         activity.get()?.apply {
             if (!collapseSearchMenu() && !closeLeftDrawer()) {
                 // If none of the above and we're into a grouping, go back to the groups view
-                if (Grouping.FLAT != Preferences.getGroupingDisplay()) {
+                if (Grouping.FLAT != Settings.getGroupingDisplayG()) {
                     // Load an empty list to avoid having the image of the current list appear
                     // on screen next time the activity's ViewPager2 switches back to LibraryContentFragment
                     viewModel.clearContent()
@@ -1443,7 +1442,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     @OptIn(ExperimentalPagedSupport::class)
     private fun onLibraryChanged(result: PagedList<Content>) {
         Timber.i(">> Library changed ! Size=%s enabled=%s", result.size, enabled)
-        if (!enabled && Preferences.getGroupingDisplay() != Grouping.FLAT) return
+        if (!enabled && Settings.getGroupingDisplayG() != Grouping.FLAT) return
         activity.get()?.updateTitle(result.size.toLong(), totalContentCount.toLong())
 
         // Reshuffle on swipe is only enabled when sort order is random
@@ -1804,7 +1803,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * - when the current grouping is not flat (because the app needs to refresh the display when moving books out of/into the currently displayed group)
      */
     private fun refreshIfNeeded() {
-        if (Grouping.FLAT != Preferences.getGroupingDisplay() || Settings.contentSortField == Settings.Value.ORDER_FIELD_CUSTOM)
+        if (Grouping.FLAT != Settings.getGroupingDisplayG() || Settings.contentSortField == Settings.Value.ORDER_FIELD_CUSTOM)
             viewModel.searchContent(false)
     }
 

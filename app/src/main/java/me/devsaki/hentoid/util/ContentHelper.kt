@@ -639,7 +639,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                         if (null == group) {
                             group = Group(Grouping.ARTIST, a.name, ++nbGroups)
                             group.subtype =
-                                if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS
+                                if (a.type == AttributeType.ARTIST) Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS else Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS
                             if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
                         }
                         addContentToAttributeGroup(group, a, content, dao)

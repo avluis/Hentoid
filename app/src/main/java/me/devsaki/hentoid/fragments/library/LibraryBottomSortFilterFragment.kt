@@ -24,7 +24,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
 import me.devsaki.hentoid.databinding.IncludeLibrarySortFilterBottomPanelBinding
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.setStyle
@@ -79,7 +78,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             libraryBottomSheetFragment.arguments = builder.bundle
             context.setStyle(
                 libraryBottomSheetFragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
             libraryBottomSheetFragment.show(fragmentManager, "libraryBottomSheetFragment")
@@ -269,7 +268,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_READS))
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_SIZE))
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_READ_PROGRESS))
-            if (Preferences.getGroupingDisplay().canReorderBooks && !isUngroupedGroupDisplayed
+            if (Settings.getGroupingDisplayG().canReorderBooks && !isUngroupedGroupDisplayed
             ) result.add(
                 createFromFieldCode(
                     Settings.Value.ORDER_FIELD_CUSTOM

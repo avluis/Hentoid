@@ -33,7 +33,6 @@ import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
@@ -153,7 +152,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
-        if (Preferences.getGroupingDisplay() == Grouping.FLAT) contentSearchManager.setGroup(null)
+        if (Settings.getGroupingDisplayG() == Grouping.FLAT) contentSearchManager.setGroup(null)
         currentSource?.let {
             libraryPaged.removeSource(it)
         }
@@ -224,8 +223,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Settings.groupSortField)
         groupSearchManager.setSortDesc(Settings.isGroupSortDesc)
-        groupSearchManager.setGrouping(Preferences.getGroupingDisplay())
-        groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility())
+        groupSearchManager.setGrouping(Settings.getGroupingDisplayG())
+        groupSearchManager.setArtistGroupVisibility(Settings.artistGroupVisibility)
         currentGroupsSource?.let { groups.removeSource(it) }
         currentGroupsSource = groupSearchManager.getGroups()
         currentGroupsSource?.let { groups.addSource(it) { v -> groups.value = v } }
@@ -321,9 +320,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun setGrouping(groupingId: Int) {
-        val currentGrouping = Preferences.getGroupingDisplay().id
+        val currentGrouping = Settings.groupingDisplay
         if (groupingId != currentGrouping) {
-            Preferences.setGroupingDisplay(groupingId)
+            Settings.groupingDisplay = groupingId
             if (groupingId == Grouping.FLAT.id) doSearchContent()
             doSearchGroup()
         }

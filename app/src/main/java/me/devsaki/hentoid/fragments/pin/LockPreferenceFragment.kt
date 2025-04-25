@@ -13,7 +13,6 @@ import me.devsaki.hentoid.core.BiometricsHelper
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.core.startBiometric
 import me.devsaki.hentoid.databinding.FragmentPinPreferenceOnBinding
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.snack
 
@@ -47,7 +46,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
                     position: Int,
                     id: Long
                 ) {
-                    Preferences.setLockTimer(position)
+                    Settings.lockTimer = position
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -71,10 +70,10 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
             textResetPin.isVisible = (1 == newLockType)
             lockType.index = newLockType
             initialLockType = newLockType
-            val lockOnAppRestoredEnabled = Preferences.isLockOnAppRestore()
+            val lockOnAppRestoredEnabled = Settings.lockOnAppRestore
             switchLockOnRestore.isChecked = lockOnAppRestoredEnabled
             lockTimer.isVisible = (newLockType > 0 && lockOnAppRestoredEnabled)
-            lockTimer.setSelection(Preferences.getLockTimer())
+            lockTimer.setSelection(Settings.lockTimer)
         }
     }
 
@@ -152,7 +151,7 @@ class LockPreferenceFragment : Fragment(), DeactivatePinDialogFragment.Parent,
     }
 
     private fun onLockOnAppRestoreClick(newValue: Boolean) {
-        Preferences.setLockOnAppRestore(newValue)
+        Settings.lockOnAppRestore = newValue
         binding?.lockTimer?.isVisible = newValue
     }
 

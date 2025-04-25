@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.enums.Grouping
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.int
@@ -64,7 +63,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
 
     fun clearFilters() {
         setQuery("")
-        setArtistGroupVisibility(Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
+        setArtistGroupVisibility(Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
         setFilterFavourites(false)
         setFilterNonFavourites(false)
         setFilterRating(-1)
@@ -89,7 +88,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
             "",
             values.sortField,
             values.sortDesc,
-            Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
+            Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
             false,
             false,
             -1
@@ -104,11 +103,11 @@ class GroupSearchManager(val dao: CollectionDAO) {
 
         var filterRating by bundle.int(default = -1)
 
-        var artistGroupVisibility by bundle.int(default = Preferences.getArtistGroupVisibility())
+        var artistGroupVisibility by bundle.int(default = Settings.artistGroupVisibility)
 
         var query by bundle.string(default = "")
 
-        var groupingId by bundle.int(default = Preferences.getGroupingDisplay().id)
+        var groupingId by bundle.int(default = Settings.groupingDisplay)
 
         var sortField by bundle.int(default = Settings.groupSortField)
 
@@ -116,7 +115,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
 
         fun isFilterActive(): Boolean {
             return query.isNotEmpty()
-                    || artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
+                    || artistGroupVisibility != Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
                     || filterFavourites
                     || filterNonFavourites
                     || filterRating > -1

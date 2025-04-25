@@ -16,7 +16,6 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.isInLibrary
@@ -387,7 +386,7 @@ object DatabaseMaintenance {
                         for (a in artists) {
                             val group = Group(Grouping.ARTIST, a.name, order++)
                             group.subtype =
-                                if (a.type == AttributeType.ARTIST) Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS else Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS
+                                if (a.type == AttributeType.ARTIST) Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS else Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS
                             if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
                             bookInsertCount += a.contents.size
                             toInsert.add(

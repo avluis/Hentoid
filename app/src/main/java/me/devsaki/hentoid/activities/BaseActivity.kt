@@ -24,7 +24,7 @@ import me.devsaki.hentoid.events.AchievementEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.lockType
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
@@ -62,13 +62,13 @@ abstract class BaseActivity : AppCompatActivity {
 
     override fun onRestart() {
         // If locked and PIN enabled, display the PIN
-        if (!isUnlocked() && lockType > 0 && Preferences.isLockOnAppRestore()) {
+        if (!isUnlocked() && lockType > 0 && Settings.lockOnAppRestore) {
             // Evaluate if any set delay has passed; if so, the app gets locked
-            val lockDelaySec = when (Preferences.getLockTimer()) {
-                Preferences.Constant.LOCK_TIMER_10S -> 10
-                Preferences.Constant.LOCK_TIMER_30S -> 30
-                Preferences.Constant.LOCK_TIMER_1M -> 60
-                Preferences.Constant.LOCK_TIMER_2M -> 120
+            val lockDelaySec = when (Settings.lockTimer) {
+                Settings.Value.LOCK_TIMER_10S -> 10
+                Settings.Value.LOCK_TIMER_30S -> 30
+                Settings.Value.LOCK_TIMER_1M -> 60
+                Settings.Value.LOCK_TIMER_2M -> 120
                 else -> 0
             }
             if ((Instant.now().toEpochMilli() - getLockInstant()) / 1000 > lockDelaySec) {

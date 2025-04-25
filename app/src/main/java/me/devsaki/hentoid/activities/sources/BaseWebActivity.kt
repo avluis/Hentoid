@@ -240,7 +240,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             return
         }
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-        Preferences.registerPrefsChangedListener(listener)
+        Settings.registerPrefsChangedListener(listener)
         if (Settings.isBrowserMarkDownloaded) updateDownloadedBooksUrls()
         if (Settings.isBrowserMarkMerged) updateMergedBooksUrls()
         if (Settings.isBrowserMarkQueued) updateQueuedBooksUrls()
@@ -462,7 +462,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             removeAllViews()
             destroy()
         }
-        Preferences.unregisterPrefsChangedListener(listener)
+        Settings.unregisterPrefsChangedListener(listener)
 
         // Cancel any previous extra page load
         EventBus.getDefault().post(

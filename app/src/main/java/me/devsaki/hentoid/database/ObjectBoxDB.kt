@@ -47,7 +47,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.RandomSeed.getSeed
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
@@ -673,7 +672,7 @@ object ObjectBoxDB {
             metadataMap.containsKey(AttributeType.SOURCE) && !sources.isNullOrEmpty()
         val hasTagFilter = metadataMap.keys.size > if (hasSiteFilter) 1 else 0
         var qc = initContentQC(searchBundle, dynamicGroupContentIds, statuses)
-        if (hasSiteFilter) qc = qc.and(Content_.site.oneOf(getIdsFromAttributes(sources!!)))
+        if (hasSiteFilter) qc = qc.and(Content_.site.oneOf(getIdsFromAttributes(sources)))
         if (hasTitleFilter) qc = qc.and(
             Content_.title.contains(
                 searchBundle.query,
@@ -729,7 +728,7 @@ object ObjectBoxDB {
 
         // Get linked Content
         val contentQuery = query.link(GroupItem_.content)
-        if (hasSiteFilter) contentQuery.`in`(Content_.site, getIdsFromAttributes(sources!!))
+        if (hasSiteFilter) contentQuery.`in`(Content_.site, getIdsFromAttributes(sources))
         if (searchBundle.filterBookFavourites) contentQuery.equal(
             Content_.favourite,
             true
@@ -1890,7 +1889,7 @@ object ObjectBoxDB {
 
         // Subtype filtering for artists groups
         if (subType > -1) {
-            if (grouping == Grouping.ARTIST.id && subType != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS) {
+            if (grouping == Grouping.ARTIST.id && subType != Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS) {
                 qb.equal(Group_.subtype, subType.toLong())
             }
             // Subtype filtering for custom groups
