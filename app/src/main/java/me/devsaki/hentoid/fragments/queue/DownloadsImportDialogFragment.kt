@@ -29,7 +29,7 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.parseBookmarks
 import me.devsaki.hentoid.widget.AddQueueMenu
@@ -183,15 +183,15 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun askRun(fileUri: Uri) {
-        val queuePosition = Preferences.getQueueNewDownloadPosition()
-        if (queuePosition == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+        val queuePosition = Settings.queueNewDownloadPosition
+        if (queuePosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.let { bdg ->
                 AddQueueMenu.show(requireContext(), bdg.root, this)
                 { position, _ ->
                     runImport(
                         fileUri,
-                        if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP
-                        else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                        if (0 == position) Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_TOP
+                        else Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
                     )
                 }
             }

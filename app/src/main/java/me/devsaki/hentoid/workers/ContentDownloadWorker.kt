@@ -40,7 +40,6 @@ import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.computeAndSaveCoverHash
@@ -152,7 +151,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             context, this::onRequestSuccess, this::onRequestError
         )
         userActionNotificationManager = NotificationManager(context, R.id.user_action_notification)
-        setSpeedLimitKbps(prefsSpeedCapToKbps(Preferences.getDlSpeedCap()))
+        setSpeedLimitKbps(prefsSpeedCapToKbps(Settings.dlSpeedCap))
     }
 
     override fun getStartNotification(): BaseNotification {
@@ -224,7 +223,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
 
         // Check for wifi if wifi-only mode is on
-        if (Preferences.isQueueWifiOnly() && Connectivity.WIFI != connectivity) {
+        if (Settings.isQueueWifiOnly && Connectivity.WIFI != connectivity) {
             Timber.i("No wi-fi connection available. Queue paused.")
             EventBus.getDefault()
                 .post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_WIFI))
@@ -774,9 +773,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
 
             // If the "skip large downloads on mobile data" is on, skip if needed
-            if (Preferences.isDownloadLargeOnlyWifi() &&
-                (estimateBookSizeMB > Preferences.getDownloadLargeOnlyWifiThresholdMB()
-                        || totalPages > Preferences.getDownloadLargeOnlyWifiThresholdPages())
+            if (Settings.isDownloadLargeOnlyWifi &&
+                (estimateBookSizeMB > Settings.downloadLargeOnlyWifiThresholdMB
+                        || totalPages > Settings.downloadLargeOnlyWifiThresholdPages)
             ) {
                 val connectivity = applicationContext.getConnectivity()
                 if (Connectivity.WIFI != connectivity) {
@@ -899,10 +898,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
-            if (pagesKO > 0 && Preferences.isDlRetriesActive() && content.numberDownloadRetries < Preferences.getDlRetriesNumber()) {
+            if (pagesKO > 0 && Settings.isDlRetriesActive && content.numberDownloadRetries < Settings.dlRetriesNumber) {
                 val freeSpaceRatio =
                     MemoryUsageFigures(applicationContext, dir).freeUsageRatio100
-                if (freeSpaceRatio < Preferences.getDlRetriesMemLimit()) {
+                if (freeSpaceRatio < Settings.dlRetriesMemLimit) {
                     Timber.i(
                         "Initiating auto-retry #%s for content %s (%s%% free space)",
                         content.numberDownloadRetries + 1,

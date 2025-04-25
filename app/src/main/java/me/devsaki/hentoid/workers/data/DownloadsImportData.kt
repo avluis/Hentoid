@@ -2,7 +2,7 @@ package me.devsaki.hentoid.workers.data
 
 import android.net.Uri
 import androidx.work.Data
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.workers.DownloadsImportWorker}
@@ -42,7 +42,7 @@ class DownloadsImportData {
         val queuePosition: Int
             get() = data.getInt(
                 KEY_QUEUE_POSITION,
-                Preferences.Default.QUEUE_NEW_DOWNLOADS_POSITION
+                Settings.Default.QUEUE_NEW_DOWNLOADS_POSITION
             )
         val importAsStreamed: Boolean
             get() = data.getBoolean(KEY_IMPORT_AS_STREAMED, false)

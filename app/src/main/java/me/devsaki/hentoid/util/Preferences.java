@@ -63,50 +63,6 @@ public final class Preferences {
         sharedPreferences.edit().putString(Key.LAST_KNOWN_APP_VERSION_CODE, Integer.toString(versionCode)).apply();
     }
 
-    public static boolean isQueueAutostart() {
-        return getBoolPref(Key.QUEUE_AUTOSTART, Default.QUEUE_AUTOSTART);
-    }
-
-    public static int getQueueNewDownloadPosition() {
-        return getIntPref(Key.QUEUE_NEW_DOWNLOADS_POSITION, Default.QUEUE_NEW_DOWNLOADS_POSITION);
-    }
-
-    public static boolean isQueueWifiOnly() {
-        return getBoolPref(Key.QUEUE_WIFI_ONLY, Default.QUEUE_WIFI_ONLY);
-    }
-
-    public static boolean isDownloadLargeOnlyWifi() {
-        return getBoolPref(Key.DL_SIZE_WIFI, Default.DL_SIZE_WIFI);
-    }
-
-    public static int getDownloadLargeOnlyWifiThresholdMB() {
-        return getIntPref(Key.DL_SIZE_WIFI_THRESHOLD, Default.DL_SIZE_WIFI_THRESHOLD);
-    }
-
-    public static int getDownloadLargeOnlyWifiThresholdPages() {
-        return getIntPref(Key.DL_PAGES_WIFI_THRESHOLD, Default.DL_PAGES_WIFI_THRESHOLD);
-    }
-
-    public static boolean isDlRetriesActive() {
-        return getBoolPref(Key.DL_RETRIES_ACTIVE, Default.DL_RETRIES_ACTIVE);
-    }
-
-    public static int getDlRetriesNumber() {
-        return getIntPref(Key.DL_RETRIES_NUMBER, Default.DL_RETRIES_NUMBER);
-    }
-
-    public static int getDlRetriesMemLimit() {
-        return getIntPref(Key.DL_RETRIES_MEM_LIMIT, Default.DL_RETRIES_MEM_LIMIT);
-    }
-
-    public static int getDlSpeedCap() {
-        return getIntPref(Key.DL_SPEED_CAP, Default.DL_SPEED_CAP);
-    }
-
-    public static int getTagBlockingBehaviour() {
-        return getIntPref(Key.DL_BLOCKED_TAG_BEHAVIOUR, Default.DL_BLOCKED_TAGS_BEHAVIOUR);
-    }
-
 
     public static boolean isLockOnAppRestore() {
         return getBoolPref(Key.LOCK_ON_APP_RESTORE, Default.LOCK_ON_APP_RESTORE);
@@ -216,22 +172,6 @@ public final class Preferences {
         sharedPreferences.edit().putString(Key.DUPLICATE_LAST_INDEX, Integer.toString(lastIndex)).apply();
     }
 
-    public static boolean isDownloadDuplicateAsk() {
-        return getBoolPref(Key.DOWNLOAD_DUPLICATE_ASK, Default.DOWNLOAD_DUPLICATE_ASK);
-    }
-
-    public static void setDownloadDuplicateAsk(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.DOWNLOAD_DUPLICATE_ASK, value).apply();
-    }
-
-    public static boolean isDownloadPlusDuplicateTry() {
-        return getBoolPref(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, Default.DOWNLOAD_PLUS_DUPLICATE_TRY);
-    }
-
-    public static void setDownloadDuplicateTry(boolean value) {
-        sharedPreferences.edit().putBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, value).apply();
-    }
-
 
     public static final class Key {
 
@@ -247,17 +187,6 @@ public final class Preferences {
         public static final String EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library";
         public static final String STORAGE_MANAGEMENT = "storage_mgt";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
-        static final String QUEUE_AUTOSTART = "pref_queue_autostart";
-        static final String QUEUE_NEW_DOWNLOADS_POSITION = "pref_queue_new_position";
-        static final String QUEUE_WIFI_ONLY = "pref_queue_wifi_only";
-        static final String DL_SIZE_WIFI = "pref_dl_size_wifi";
-        static final String DL_SIZE_WIFI_THRESHOLD = "pref_dl_size_wifi_threshold";
-        static final String DL_PAGES_WIFI_THRESHOLD = "pref_dl_pages_wifi_threshold";
-        static final String DL_RETRIES_ACTIVE = "pref_dl_retries_active";
-        static final String DL_RETRIES_NUMBER = "pref_dl_retries_number";
-        static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
-        public static final String DL_SPEED_CAP = "dl_speed_cap";
-        static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         public static final String ACTIVE_SITES = "active_sites";
         static final String LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
         static final String LOCK_TIMER = "pref_lock_timer";
@@ -275,8 +204,6 @@ public final class Preferences {
         public static final String DUPLICATE_BROWSER_USE_SAME_LANGUAGE = "duplicate_browser_use_same_language";
         public static final String DUPLICATE_IGNORE_CHAPTERS = "duplicate_ignore_chapters";
         public static final String DUPLICATE_LAST_INDEX = "last_index";
-        public static final String DOWNLOAD_DUPLICATE_ASK = "download_duplicate_ask";
-        public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -286,17 +213,6 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
-        static final boolean QUEUE_AUTOSTART = true;
-        public static final int QUEUE_NEW_DOWNLOADS_POSITION = Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
-        static final boolean QUEUE_WIFI_ONLY = false;
-        static final boolean DL_SIZE_WIFI = false;
-        static final int DL_SIZE_WIFI_THRESHOLD = 40;
-        static final int DL_PAGES_WIFI_THRESHOLD = 999999;
-        static final boolean DL_RETRIES_ACTIVE = false;
-        static final int DL_RETRIES_NUMBER = 5;
-        static final int DL_RETRIES_MEM_LIMIT = 100;
-        static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
-        static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         // Default menu in v1.9.x
         static final boolean LOCK_ON_APP_RESTORE = false;
         static final int LOCK_TIMER = Constant.LOCK_TIMER_30S;
@@ -313,8 +229,6 @@ public final class Preferences {
         static final boolean DUPLICATE_BROWSER_USE_ARTIST = true;
         static final boolean DUPLICATE_BROWSER_USE_SAME_LANGUAGE = false;
         static final boolean DUPLICATE_IGNORE_CHAPTERS = true;
-        static final boolean DOWNLOAD_DUPLICATE_ASK = true;
-        static final boolean DOWNLOAD_PLUS_DUPLICATE_TRY = true;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -326,19 +240,6 @@ public final class Preferences {
         }
 
         public static final int ORDER_CONTENT_FAVOURITE = -2; // Artificial order created for clarity purposes
-
-        public static final int QUEUE_NEW_DOWNLOADS_POSITION_TOP = 0;
-        public static final int QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM = 1;
-        public static final int QUEUE_NEW_DOWNLOADS_POSITION_ASK = 2;
-
-        public static final int DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
-        public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
-
-        public static final int DL_SPEED_CAP_NONE = -1;
-        public static final int DL_SPEED_CAP_100 = 0;
-        public static final int DL_SPEED_CAP_200 = 1;
-        public static final int DL_SPEED_CAP_400 = 2;
-        public static final int DL_SPEED_CAP_800 = 3;
 
         public static final int LOCK_TIMER_OFF = 0;
         public static final int LOCK_TIMER_10S = 1;

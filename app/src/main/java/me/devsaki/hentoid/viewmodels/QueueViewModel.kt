@@ -24,8 +24,8 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.removeQueuedContent
@@ -355,7 +355,7 @@ class QueueViewModel(
                         )
                     )
                 } // For each content
-                if (Preferences.isQueueAutostart())
+                if (Settings.isQueueAutostart)
                     ContentQueueManager.resumeQueue(getApplication())
                 EventBus.getDefault().postSticky(
                     ProcessEvent(

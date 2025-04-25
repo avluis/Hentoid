@@ -17,8 +17,8 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification
 import me.devsaki.hentoid.notification.import_.ImportStartNotification
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
@@ -112,7 +112,7 @@ class DownloadsImportWorker(
         } finally {
             dao.cleanup()
         }
-        if (Preferences.isQueueAutostart()) resumeQueue(applicationContext)
+        if (Settings.isQueueAutostart) resumeQueue(applicationContext)
         notifyProcessEnd()
     }
 

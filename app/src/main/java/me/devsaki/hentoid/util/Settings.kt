@@ -139,20 +139,6 @@ object Settings {
     )
     val searchAttributesCount: Boolean by BoolSetting("pref_order_attribute_count", true)
 
-    // DOWNLOADER
-    val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
-    fun getDownloadThreadCount(site: Site): Int {
-        return (sharedPreferences.getString(
-            makeSiteKey(Key.DL_THREADS_QUANTITY_LISTS, site),
-            appDownloadThreadCount.toString()
-        ) + "").toInt()
-    }
-
-    private val appDownloadThreadCount: Int by IntSettingStr(
-        Key.DL_THREADS_QUANTITY_LISTS,
-        Value.DOWNLOAD_THREAD_COUNT_AUTO
-    )
-
     // LOCK
     var lockType: Int by IntSettingStr(Key.LOCK_TYPE, 0)
 
@@ -244,6 +230,33 @@ object Settings {
         false
     )
     val http429DefaultDelaySecs: Int by IntSettingStr(Key.DL_HTTP_429_DEFAULT_DELAY, 120)
+
+    // QUEUE / DOWNLOADER
+    val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
+    fun getDownloadThreadCount(site: Site): Int {
+        return (sharedPreferences.getString(
+            makeSiteKey(Key.DL_THREADS_QUANTITY_LISTS, site),
+            appDownloadThreadCount.toString()
+        ) + "").toInt()
+    }
+
+    private val appDownloadThreadCount: Int by IntSettingStr(
+        Key.DL_THREADS_QUANTITY_LISTS,
+        Value.DOWNLOAD_THREAD_COUNT_AUTO
+    )
+    var downloadDuplicateAsk: Boolean by BoolSetting("download_duplicate_ask", true)
+    var downloadPlusDuplicateTry: Boolean by BoolSetting("download_plus_duplicate_try", true)
+    val isQueueAutostart: Boolean by BoolSetting("pref_queue_autostart", true)
+    val isQueueWifiOnly: Boolean by BoolSetting("pref_queue_wifi_only", false)
+    val isDownloadLargeOnlyWifi: Boolean by BoolSetting("pref_dl_size_wifi", false)
+    val downloadLargeOnlyWifiThresholdMB: Int by IntSettingStr("pref_dl_size_wifi_threshold", 40)
+    val downloadLargeOnlyWifiThresholdPages: Int by IntSettingStr("pref_dl_pages_wifi_threshold", 999999)
+    val isDlRetriesActive: Boolean by BoolSetting("pref_dl_retries_active", false)
+    val dlRetriesNumber: Int by IntSettingStr("pref_dl_retries_number", 5)
+    val dlRetriesMemLimit: Int by IntSettingStr("pref_dl_retries_mem_limit", 100)
+    val dlSpeedCap: Int by IntSettingStr(Key.DL_SPEED_CAP, Value.DL_SPEED_CAP_NONE)
+    val queueNewDownloadPosition: Int by IntSettingStr("pref_queue_new_position", Default.QUEUE_NEW_DOWNLOADS_POSITION)
+    val tagBlockingBehaviour: Int by IntSettingStr("pref_dl_blocked_tags_behaviour", Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE)
 
     // READER
     var isReaderResumeLastLeft: Boolean by BoolSetting("pref_viewer_resume_last_left", true)
@@ -612,6 +625,7 @@ object Settings {
         const val EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete"
 
         const val DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists"
+        const val DL_SPEED_CAP = "dl_speed_cap"
 
         const val READER_COLOR_DEPTH = "viewer_color_depth"
         const val READER_TWOPAGES = "reader_two_pages"
@@ -640,6 +654,7 @@ object Settings {
         const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
         const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
         const val LIBRARY_DISPLAY = Value.LIBRARY_DISPLAY_LIST
+        const val QUEUE_NEW_DOWNLOADS_POSITION = Value.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
         const val IMPORT_NAME_PATTERN = "%t"
     }
 
@@ -700,6 +715,20 @@ object Settings {
         const val DL_ACTION_DL_PAGES = 0
         const val DL_ACTION_STREAM = 1
         const val DL_ACTION_ASK = 2
+
+        const val QUEUE_NEW_DOWNLOADS_POSITION_TOP = 0
+        const val QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM = 1
+        const val QUEUE_NEW_DOWNLOADS_POSITION_ASK = 2
+
+        const val DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0
+        const val DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1
+
+        const val DL_SPEED_CAP_NONE = -1
+        const val DL_SPEED_CAP_100 = 0
+        const val DL_SPEED_CAP_200 = 1
+        const val DL_SPEED_CAP_400 = 2
+        const val DL_SPEED_CAP_800 = 3
+
 
         const val VIEWER_DISPLAY_FIT = 0
         const val VIEWER_DISPLAY_FILL = 1

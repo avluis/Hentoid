@@ -16,7 +16,7 @@ import me.devsaki.hentoid.databinding.DialogWebDuplicateBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.isInQueue
@@ -187,8 +187,8 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
 
     private fun submit(actionMode: ActionMode) {
         binding?.apply {
-            if (chAlwaysDownload.isChecked) Preferences.setDownloadDuplicateAsk(false)
-            if (chNeverExtraOnDupes.isChecked) Preferences.setDownloadDuplicateTry(false)
+            if (chAlwaysDownload.isChecked) Settings.downloadDuplicateAsk = false
+            if (chNeverExtraOnDupes.isChecked) Settings.downloadPlusDuplicateTry = false
         }
         parent?.onDownloadDuplicate(actionMode)
         dismissAllowingStateLoss()

@@ -173,8 +173,8 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.DL_SPEED_CAP -> {
-                DownloadSpeedLimiter.setSpeedLimitKbps(Preferences.getDlSpeedCap())
+            Settings.Key.DL_SPEED_CAP -> {
+                DownloadSpeedLimiter.setSpeedLimitKbps(Settings.dlSpeedCap)
                 true
             }
 

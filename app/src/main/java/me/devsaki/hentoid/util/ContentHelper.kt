@@ -117,9 +117,9 @@ import kotlin.math.max
 
 // == Used for queue management
 enum class QueuePosition(val value: Int) {
-    TOP(Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP),
-    BOTTOM(Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM),
-    ASK(Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK);
+    TOP(Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_TOP),
+    BOTTOM(Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM),
+    ASK(Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK);
 
     companion object {
         fun fromValue(v: Int): QueuePosition {

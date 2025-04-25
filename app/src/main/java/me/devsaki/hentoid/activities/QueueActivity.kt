@@ -40,7 +40,6 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment
 import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
@@ -347,7 +346,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         reparseImages: Boolean
     ) {
         binding?.let {
-            if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+            if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
                 show(
                     this, it.queueTabs, this
                 ) { position: Int, _: PowerMenuItem? ->
@@ -362,7 +361,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
                 contentList,
                 reparseContent,
                 reparseImages,
-                QueuePosition.entries.first { e -> e.value == Preferences.getQueueNewDownloadPosition() }
+                QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition }
             )
         }
     }
@@ -393,7 +392,8 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
             resources.getString(R.string.redownload_queue_progress),
             R.plurals.book
         )
-        viewModel.redownloadContent(contentList, reparseContent, reparseImages, position,
+        viewModel.redownloadContent(
+            contentList, reparseContent, reparseImages, position,
             { nbSuccess: Int ->
                 val message = resources.getQuantityString(
                     R.plurals.redownloaded_scratch,

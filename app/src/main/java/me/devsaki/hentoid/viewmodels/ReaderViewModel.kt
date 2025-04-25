@@ -32,7 +32,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.Settings
@@ -1564,7 +1563,7 @@ class ReaderViewModel(
                         null,
                         isQueueActive(getApplication())
                     )
-                    if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
+                    if (Settings.isQueueAutostart) resumeQueue(getApplication())
                     dao.cleanup()
                 }
             } catch (t: Throwable) {
@@ -1614,7 +1613,7 @@ class ReaderViewModel(
                             isQueueActive(getApplication())
                         )
                     }
-                    if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
+                    if (Settings.isQueueAutostart) resumeQueue(getApplication())
                     dao.cleanup()
                 }
                 onContentRemoved()

@@ -37,10 +37,10 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
@@ -61,7 +61,7 @@ import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.queue.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
@@ -708,7 +708,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     resources.getString(
                         R.string.queue_bottom_bar_retry,
                         numberRetries,
-                        Preferences.getDlRetriesNumber()
+                        Settings.dlRetriesNumber
                     )
                 )
                 val avgSpeedKbps = getAvgSpeedKbps().toInt()
@@ -1092,7 +1092,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             R.id.action_change_mode -> {
                 binding?.let {
                     val menu = build(requireContext(), requireActivity())
-                    show(menu,
+                    show(
+                        menu,
                         it.queueList,
                         { position: Int, _: PowerMenuItem? ->
                             onNewModeSelected(DownloadMode.fromValue(position))

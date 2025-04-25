@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,6 +17,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DimenRes
 import androidx.annotation.StringRes
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -762,7 +762,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
 
                 val uri = if (c.isArchive || c.isPdf)
-                    getParent(context, Uri.parse(Settings.externalLibraryUri), folder)
+                    getParent(context, Settings.externalLibraryUri.toUri(), folder)
                 else folder.uri
                 uri?.let { openUri(context, it) }
             }
@@ -1122,12 +1122,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun advancedSearchReturnResult(result: ActivityResult) {
         if (result.resultCode == Activity.RESULT_OK && result.data != null && result.data!!.extras != null) {
             val parser = SearchActivityBundle(result.data!!.extras!!)
-            val searchUri = Uri.parse(parser.uri)
-            if (searchUri != null) {
-                excludeClicked = parser.excludeMode
-                setMetadata(parseSearchUri(searchUri))
-                viewModel.searchContent(getQuery(), getMetadata(), searchUri)
-            }
+            val searchUri = parser.uri.toUri()
+            excludeClicked = parser.excludeMode
+            setMetadata(parseSearchUri(searchUri))
+            viewModel.searchContent(getQuery(), getMetadata(), searchUri)
         }
     }
 
@@ -1615,7 +1613,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun redownloadFromScratch(contentList: List<Content>) {
-        if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+        if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
                 AddQueueMenu.show(requireActivity(), it, this) { position, _ ->
                     redownloadFromScratch(
@@ -1627,7 +1625,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
         } else redownloadFromScratch(
             contentList,
-            QueuePosition.fromValue(Preferences.getQueueNewDownloadPosition())
+            QueuePosition.fromValue(Settings.queueNewDownloadPosition)
         )
     }
 
@@ -1658,7 +1656,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     private fun download(contentList: List<Content>, onError: Consumer<Throwable>) {
-        if (Preferences.getQueueNewDownloadPosition() == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+        if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
                 AddQueueMenu.show(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
                     download(
@@ -1670,7 +1668,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }
         } else download(
             contentList,
-            QueuePosition.fromValue(Preferences.getQueueNewDownloadPosition()),
+            QueuePosition.fromValue(Settings.queueNewDownloadPosition),
             onError
         )
     }

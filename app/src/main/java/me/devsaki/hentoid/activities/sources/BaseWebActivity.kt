@@ -70,7 +70,6 @@ import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.Preferences.Constant
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
@@ -859,7 +858,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     protected open fun onActionClick() {
         if (null == currentContent) return
         val needsDuplicateAlert =
-            Preferences.isDownloadDuplicateAsk() && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD
+            Settings.downloadDuplicateAsk && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD
         when (actionButtonMode) {
             ActionMode.DOWNLOAD -> {
                 if (needsDuplicateAlert) DuplicateDialogFragment.invoke(
@@ -1062,7 +1061,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Check if the tag blocker applies here
         val blockedTagsLocal = getBlockedTags(currentContent!!)
         if (blockedTagsLocal.isNotEmpty()) {
-            if (Preferences.getTagBlockingBehaviour() == Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
+            if (Settings.tagBlockingBehaviour == Settings.Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 toast(R.string.blocked_tag, blockedTagsLocal[0])
             } else { // Insert directly as an error
                 val errors: MutableList<ErrorRecord> = ArrayList()
@@ -1087,7 +1086,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
         val replacementTitleFinal = replacementTitle
         // No reason to block or ignore -> actually add to the queue
-        if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Settings.getBrowserDlAction() == DownloadMode.ASK) {
+        if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Settings.getBrowserDlAction() == DownloadMode.ASK) {
             show(
                 this, webView, this
             ) { position1, _ ->
@@ -1104,7 +1103,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     }, null
                 )
             }
-        } else if (Preferences.getQueueNewDownloadPosition() == Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+        } else if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             show(
                 this, webView, this
             ) { position, _ ->
@@ -1121,7 +1120,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 webView, this,
                 { position, _ ->
                     addToQueue(
-                        QueuePosition.entries.first { it.value == Preferences.getQueueNewDownloadPosition() },
+                        QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                         if (0 == position) DownloadMode.DOWNLOAD else DownloadMode.STREAM,
                         isReplaceDuplicate,
                         replacementTitleFinal
@@ -1130,7 +1129,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             )
         } else {
             addToQueue(
-                QueuePosition.entries.first { it.value == Preferences.getQueueNewDownloadPosition() },
+                QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                 Settings.getBrowserDlAction(),
                 isReplaceDuplicate,
                 replacementTitleFinal
@@ -1191,7 +1190,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } finally {
             dao.cleanup()
         }
-        if (Preferences.isQueueAutostart()) resumeQueue(this)
+        if (Settings.isQueueAutostart) resumeQueue(this)
         setActionMode(ActionMode.VIEW_QUEUE)
         if (webClient.isMarkQueued()) updateQueuedBooksUrls()
     }
@@ -1256,7 +1255,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             val isInCollection = contentDB != null && isInLibrary(contentDB.status)
             val isInQueue = contentDB != null && isInQueue(contentDB.status)
             if (!isInCollection && !isInQueue) {
-                if (Preferences.isDownloadDuplicateAsk() && onlineContent.coverImageUrl.isNotEmpty()) {
+                if (Settings.downloadDuplicateAsk && onlineContent.coverImageUrl.isNotEmpty()) {
                     // Index the content's cover picture
                     var pHash = Long.MIN_VALUE
                     try {
@@ -1306,7 +1305,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             // Content ID of the duplicate candidate of the currently viewed Content
                             val duplicateSameSite = duplicateResult.first.site == onlineContent.site
                             // Same site and similar => enable download button by default, but look for extra pics just in case
-                            if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload) searchForExtraImages(
+                            if (duplicateSameSite && Settings.downloadPlusDuplicateTry && !quickDownload) searchForExtraImages(
                                 duplicateResult.first,
                                 onlineContent
                             )
@@ -1359,7 +1358,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             ContentStatus.UNDOWNLOADABLE -> onResultFailed()
             ContentStatus.UNKNOWN -> {
                 if (quickDownload) {
-                    if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk()) DuplicateDialogFragment.invoke(
+                    if (duplicateId > -1 && Settings.downloadDuplicateAsk) DuplicateDialogFragment.invoke(
                         this,
                         duplicateId,
                         currentContent!!.qtyPages,

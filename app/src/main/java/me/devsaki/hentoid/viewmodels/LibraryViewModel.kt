@@ -640,7 +640,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     } // Each content
                     dao.cleanup()
                 } // Dispatchers.IO
-                if (Preferences.isQueueAutostart()) resumeQueue(getApplication())
+                if (Settings.isQueueAutostart) resumeQueue(getApplication())
                 onSuccess.invoke(contentList.size - nbErrors.get())
             } catch (t: Throwable) {
                 onError.invoke(t)

@@ -3,7 +3,7 @@ package me.devsaki.hentoid.util.download
 import io.github.bucket4j.Bandwidth
 import io.github.bucket4j.BlockingBucket
 import io.github.bucket4j.Bucket
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import java.time.Duration
 
 object DownloadSpeedLimiter {
@@ -29,10 +29,10 @@ object DownloadSpeedLimiter {
 
     fun prefsSpeedCapToKbps(value: Int): Int {
         return when (value) {
-            Preferences.Constant.DL_SPEED_CAP_100 -> 100
-            Preferences.Constant.DL_SPEED_CAP_200 -> 200
-            Preferences.Constant.DL_SPEED_CAP_400 -> 400
-            Preferences.Constant.DL_SPEED_CAP_800 -> 800
+            Settings.Value.DL_SPEED_CAP_100 -> 100
+            Settings.Value.DL_SPEED_CAP_200 -> 200
+            Settings.Value.DL_SPEED_CAP_400 -> 400
+            Settings.Value.DL_SPEED_CAP_800 -> 800
             else -> -1
         }
     }
