@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide02Binding
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.checkExternalStorageReadWritePermission
 

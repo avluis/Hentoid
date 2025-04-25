@@ -19,6 +19,11 @@ import me.devsaki.hentoid.util.network.Source
 import java.util.regex.Pattern
 import kotlin.reflect.KProperty
 
+/**
+ * Decorator class that wraps a SharedPreference to implement properties
+ * Some properties do not have a setter because it is changed by PreferenceActivity
+ * Some properties are parsed as ints because of limitations with the Preference subclass used
+ */
 object Settings {
     private lateinit var sharedPreferences: SharedPreferences
 

@@ -63,7 +63,6 @@ import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type

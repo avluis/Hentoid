@@ -16,7 +16,6 @@ import me.devsaki.hentoid.databinding.ActivityDuplicateDetectorBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.tools.DuplicateDetailsFragment
 import me.devsaki.hentoid.fragments.tools.DuplicateMainFragment
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel

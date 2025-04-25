@@ -39,7 +39,6 @@ import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.retrofit.sources.PixivServer
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
@@ -51,6 +50,13 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 
+// Value of key elements on the preferences tree
+private const val CHECK_UPDATE_MANUAL = "pref_check_updates_manual"
+private const val DRAWER_SOURCES = "pref_drawer_sources"
+private const val SOURCE_SPECIFICS = "pref_source_specifics"
+private const val EXTERNAL_LIBRARY = "pref_external_library"
+private const val EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library"
+private const val STORAGE_MANAGEMENT = "storage_mgt"
 
 class PreferencesFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
@@ -144,12 +150,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
         when (preference.key) {
-            Preferences.Key.DRAWER_SOURCES -> {
+            DRAWER_SOURCES -> {
                 requireContext().startLocalActivity<PreferencesSourceSelectActivity>()
                 true
             }
 
-            Preferences.Key.SOURCE_SPECIFICS -> {
+            SOURCE_SPECIFICS -> {
                 val intent = Intent(context, PreferencesSourceSpecificsActivity::class.java)
                 val outBundle = PrefsSourceSpecificsBundle()
                 outBundle.site = site.code
@@ -158,7 +164,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.STORAGE_MANAGEMENT -> {
+            STORAGE_MANAGEMENT -> {
                 requireContext().startLocalActivity<PreferencesStorageActivity>()
                 true
             }
@@ -168,7 +174,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
 
-            Preferences.Key.CHECK_UPDATE_MANUAL -> {
+            CHECK_UPDATE_MANUAL -> {
                 onCheckUpdatePrefClick()
                 true
             }
@@ -225,7 +231,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun onExternalFolderChanged() {
         val storageFolderPref: Preference? =
-            findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
+            findPreference(EXTERNAL_LIBRARY) as Preference?
         val uri = Settings.externalLibraryUri.toUri()
         storageFolderPref?.summary = getFullPathFromUri(requireContext(), uri)
         // Enable/disable sub-prefs
@@ -233,7 +239,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             findPreference(Settings.Key.EXTERNAL_LIBRARY_DELETE) as Preference?
         deleteExternalLibrary?.isEnabled = (uri.toString().isNotEmpty())
         val detachExternalLibrary: Preference? =
-            findPreference(Preferences.Key.EXTERNAL_LIBRARY_DETACH) as Preference?
+            findPreference(EXTERNAL_LIBRARY_DETACH) as Preference?
         detachExternalLibrary?.isEnabled = (uri.toString().isNotEmpty())
     }
 
