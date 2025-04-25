@@ -18,7 +18,7 @@ import me.devsaki.hentoid.core.isFinishing
 import me.devsaki.hentoid.databinding.IncludeDuplicateControlsBinding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
@@ -119,12 +119,12 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
         binding.useTitle.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
         binding.useCover.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
 
-        binding.useTitle.isChecked = Preferences.isDuplicateUseTitle()
-        binding.useCover.isChecked = Preferences.isDuplicateUseCover()
-        binding.useArtist.isChecked = Preferences.isDuplicateUseArtist()
-        binding.useSameLanguage.isChecked = Preferences.isDuplicateUseSameLanguage()
-        binding.ignoreChapters.isChecked = Preferences.isDuplicateIgnoreChapters()
-        binding.useSensitivity.index = Preferences.getDuplicateSensitivity()
+        binding.useTitle.isChecked = Settings.duplicateUseTitle
+        binding.useCover.isChecked = Settings.duplicateUseCover
+        binding.useArtist.isChecked = Settings.duplicateUseArtist
+        binding.useSameLanguage.isChecked = Settings.duplicateUseSameLanguage
+        binding.ignoreChapters.isChecked = Settings.duplicateIgnoreChapters
+        binding.useSensitivity.index = Settings.duplicateSensitivity
         updateUI(context)
     }
 
@@ -154,12 +154,12 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
     }
 
     private fun onScanClick() {
-        Preferences.setDuplicateUseTitle(binding.useTitle.isChecked)
-        Preferences.setDuplicateUseCover(binding.useCover.isChecked)
-        Preferences.setDuplicateUseArtist(binding.useArtist.isChecked)
-        Preferences.setDuplicateUseSameLanguage(binding.useSameLanguage.isChecked)
-        Preferences.setDuplicateIgnoreChapters(binding.ignoreChapters.isChecked)
-        Preferences.setDuplicateSensitivity(binding.useSensitivity.index)
+        Settings.duplicateUseTitle = binding.useTitle.isChecked
+        Settings.duplicateUseCover = binding.useCover.isChecked
+        Settings.duplicateUseArtist = binding.useArtist.isChecked
+        Settings.duplicateUseSameLanguage = binding.useSameLanguage.isChecked
+        Settings.duplicateIgnoreChapters = binding.ignoreChapters.isChecked
+        Settings.duplicateSensitivity = binding.useSensitivity.index
 
         activateScanUi()
 

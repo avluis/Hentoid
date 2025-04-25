@@ -69,7 +69,6 @@ import me.devsaki.hentoid.fragments.web.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
@@ -1291,11 +1290,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                         val duplicateResult = findDuplicate(
                             this,
                             onlineContent,
-                            Preferences.isDuplicateBrowserUseTitle(),
-                            Preferences.isDuplicateBrowserUseArtist(),
-                            Preferences.isDuplicateBrowserUseSameLanguage(),
-                            Preferences.isDuplicateBrowserUseCover(),
-                            Preferences.getDuplicateBrowserSensitivity(),
+                            Settings.duplicateBrowserUseTitle,
+                            Settings.duplicateBrowserUseArtist,
+                            Settings.duplicateBrowserUseSameLanguage,
+                            Settings.duplicateBrowserUseCover,
+                            Settings.duplicateBrowserSensitivity,
                             pHash,
                             dao
                         )

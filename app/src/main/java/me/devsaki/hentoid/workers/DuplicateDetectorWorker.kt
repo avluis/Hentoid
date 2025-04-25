@@ -18,7 +18,6 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateCompleteNotification
 import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification
 import me.devsaki.hentoid.util.DuplicateCandidate
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.formatBookFolderName
 import me.devsaki.hentoid.util.indexCovers
@@ -60,8 +59,8 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
-        if (!isStopped && !isComplete) Preferences.setDuplicateLastIndex(currentIndex.get())
-        else Preferences.setDuplicateLastIndex(-1)
+        if (!isStopped && !isComplete) Settings.duplicateLastIndex = currentIndex.get()
+        else Settings.duplicateLastIndex = -1
         stopped.set(true)
         dao.cleanup()
         duplicatesDao.cleanup()
@@ -99,7 +98,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         )
     }
 
-    private suspend fun detectDuplicates(
+    private fun detectDuplicates(
         useTitle: Boolean,
         useCover: Boolean,
         useArtist: Boolean,
@@ -114,7 +113,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         val reverseMatchedIds: MutableMap<Long, MutableList<Long>> = HashMap()
 
         // Retrieve number of lines done in previous iteration (ended with RETRY)
-        val startIndex = Preferences.getDuplicateLastIndex() + 1
+        val startIndex = Settings.duplicateLastIndex + 1
         if (0 == startIndex) duplicatesDao.clearEntries() else {
             trace(Log.DEBUG, "Resuming from index %d", startIndex)
             // Pre-populate matchedIds and reverseMatchedIds using existing duplicates
@@ -163,7 +162,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
         matchedIds.clear()
     }
 
-    private suspend fun processAll(
+    private fun processAll(
         duplicatesDao: DuplicatesDAO,
         library: List<DuplicateCandidate>,
         matchedIds: MutableMap<Long, MutableList<Long>>,

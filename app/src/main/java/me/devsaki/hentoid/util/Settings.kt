@@ -472,6 +472,22 @@ object Settings {
     val isDeleteExternalLibrary: Boolean by BoolSetting(Key.EXTERNAL_LIBRARY_DELETE, false)
     val folderTruncationNbChars: Int by IntSettingStr("pref_folder_trunc_lists", 100)
 
+    // DUPLICATE DETECTOR
+    var duplicateSensitivity: Int by IntSettingStr("duplicate_sensitivity", 1)
+    var duplicateUseTitle: Boolean by BoolSetting("duplicate_use_title", true)
+    var duplicateUseArtist: Boolean by BoolSetting("duplicate_use_artist", true)
+    var duplicateUseCover: Boolean by BoolSetting("duplicate_use_cover", false)
+    var duplicateUseSameLanguage: Boolean by BoolSetting("duplicate_use_same_language", false)
+    var duplicateIgnoreChapters: Boolean by BoolSetting("duplicate_ignore_chapters", true)
+    var duplicateLastIndex: Int by IntSettingStr("last_index", -1)
+
+    val duplicateBrowserSensitivity: Int by IntSettingStr("duplicate_browser_sensitivity", 2)
+    val duplicateBrowserUseTitle: Boolean by BoolSetting("duplicate_browser_use_title", true)
+    val duplicateBrowserUseArtist: Boolean by BoolSetting("duplicate_browser_use_artist", true)
+    val duplicateBrowserUseCover: Boolean by BoolSetting("duplicate_browser_use_cover", true)
+    val duplicateBrowserUseSameLanguage: Boolean by BoolSetting("duplicate_browser_use_same_language", false)
+
+
     // APP-WIDE
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
     var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
@@ -674,6 +690,7 @@ object Settings {
         const val VIEWER_AUTO_ROTATE_OLD = "pref_viewer_auto_rotate"
     }
 
+    // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
     object Default {
         const val ORDER_CONTENT_FIELD = Value.ORDER_FIELD_TITLE
         const val ORDER_GROUP_FIELD = Value.ORDER_FIELD_TITLE
