@@ -169,9 +169,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     // Current search criteria; one per tab
     private val searchCriteria = mutableListOf(
         SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
-        SearchCriteria(
-            "", HashSet(), Location.ANY, Type.ANY
-        )
+        SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
+        SearchCriteria("", HashSet(), Location.ANY, Type.ANY)
     )
 
     // True if item positioning edit mode is on (only available for specific groupings)
@@ -296,19 +295,15 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             ViewModelProvider(this@LibraryActivity, vmFactory)[LibraryViewModel::class.java]
 
         viewModel.contentSearchBundle.observe(this) { contentSearchBundle = it }
+        viewModel.groupSearchBundle.observe(this) { groupSearchBundle = it }
 
         viewModel.group.observe(this) { g: Group? ->
             group = g
             updateToolbar()
         }
 
-        viewModel.groupSearchBundle.observe(this) { b ->
-            groupSearchBundle = b
-            val searchBundle = GroupSearchBundle(b)
-            onGroupingChanged(searchBundle.groupingId)
-        }
-
-        viewModel.searchRecords.observe(this) { records ->
+        viewModel.searchRecords.observe(this)
+        { records ->
             searchRecords.clear()
             searchRecords.addAll(records)
         }
@@ -895,6 +890,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             }
 
             Settings.Key.BROWSER_MODE -> updateAlertBanner()
+
+            Settings.Key.GROUPING_DISPLAY -> onGroupingChanged(Settings.groupingDisplay)
             else -> {}
         }
     }
@@ -918,12 +915,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 Settings.groupSortField = Settings.Default.ORDER_GROUP_FIELD
             }
 
-            // Go back to groups tab if needed
-            if (targetGroupingId != Grouping.FLAT.id && targetGroupingId != Grouping.FOLDERS.id) goBackToGroups()
-
-            // Update screen display if needed
-            if (grouping == Grouping.FLAT || grouping == Grouping.FOLDERS || targetGroupingId == Grouping.FLAT.id || targetGroupingId == Grouping.FOLDERS.id)
-                updateDisplay(targetGroupingId)
+            when (targetGrouping) {
+                Grouping.FLAT, Grouping.FOLDERS -> updateDisplay(targetGroupingId)
+                else -> goBackToGroups()
+            }
 
             grouping = targetGrouping
             updateToolbar()
@@ -1261,7 +1256,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun getCurrentFragmentIndex(): Int {
-        return if (isGroupDisplayed()) 0 else 1
+        return if (isGroupDisplayed()) 0 else if (isFoldersDisplayed()) 2 else 1
     }
 
     private fun enableFragment(fragmentIndex: Int) {
@@ -1276,7 +1271,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             )
         )
         binding?.apply {
-            for (i in 0..libraryPager.childCount) {
+            for (i in 0..libraryPager.adapter!!.itemCount - 1) {
                 if (fragmentIndex != i)
                     EventBus.getDefault().post(
                         CommunicationEvent(

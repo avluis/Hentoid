@@ -229,11 +229,13 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     private fun onEnable() {
+        Timber.d("enable groups")
         enabled = true
         callback?.isEnabled = true
     }
 
     private fun onDisable() {
+        Timber.d("disable groups")
         enabled = false
         callback?.isEnabled = false
     }

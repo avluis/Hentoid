@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewmodels
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import androidx.lifecycle.AndroidViewModel
@@ -43,6 +44,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -92,11 +94,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     val groups = MediatorLiveData<List<Group>>()
     private var currentGroupsTotalSource: LiveData<List<Group>>? = null
     private val currentGroupTotal = MediatorLiveData<Int>()
+    val groupSearchBundle = MutableLiveData<Bundle>()
 
     // Folders data
     val folderRoot = MutableLiveData<Uri>()
     private var currentFoldersSource: LiveData<List<DisplayFile>>? = null
     val folders = MediatorLiveData<List<DisplayFile>>()
+    val folderSearchBundle = MutableLiveData<Bundle>()
 
     // True if there's at least one existing custom group; false instead
     val isCustomGroupingAvailable = MutableLiveData<Boolean>()
@@ -104,8 +108,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // True if there's at least one existing dynamic group; false instead
     val isDynamicGroupingAvailable = MutableLiveData<Boolean>()
 
-    val groupSearchBundle = MutableLiveData<Bundle>()
-    val folderSearchBundle = MutableLiveData<Bundle>()
 
     // Other data
     val searchRecords: LiveData<List<SearchRecord>> = dao.selectSearchRecordsLive()
@@ -156,15 +158,23 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Perform a new library search
      */
-    private fun doSearchContent() {
-        dao.cleanup()
+    private suspend fun doSearchContent() {
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
         if (Settings.getGroupingDisplayG() == Grouping.FLAT) contentSearchManager.setGroup(null)
-        currentSource?.let { libraryPaged.removeSource(it) }
-        currentSource = contentSearchManager.getLibrary()
-        currentSource?.let { libraryPaged.addSource(it) { libraryPaged.value = it } }
+        val newSource = withContext(Dispatchers.IO) {
+            try {
+                contentSearchManager.getLibrary()
+            } finally {
+                dao.cleanup()
+            }
+        }
+        synchronized(contentSearchManager) {
+            currentSource?.let { libraryPaged.removeSource(it) }
+            currentSource = newSource
+            currentSource?.let { libraryPaged.addSource(it) { libraryPaged.value = it } }
+        }
         contentSearchBundle.postValue(contentSearchManager.toBundle())
     }
 
@@ -185,7 +195,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
             dao.insertSearchRecord(SearchRecord(searchUri), 10)
         }
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -206,7 +216,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 metadata.toString(getApplication())
             ), 10
         )
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun clearContent() {
@@ -216,24 +226,39 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun searchGroup() {
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
-    private fun doSearchGroup() {
+    private suspend fun doSearchGroup() {
         dao.cleanup()
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Settings.groupSortField)
         groupSearchManager.setSortDesc(Settings.isGroupSortDesc)
         groupSearchManager.setGrouping(Settings.getGroupingDisplayG())
         groupSearchManager.setArtistGroupVisibility(Settings.artistGroupVisibility)
-        currentGroupsSource?.let { groups.removeSource(it) }
-        currentGroupsSource = groupSearchManager.getGroups()
-        currentGroupsSource?.let { groups.addSource(it) { groups.value = it } }
 
-        currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
-        currentGroupsTotalSource = groupSearchManager.getAllGroups()
-        currentGroupsTotalSource?.let {
-            currentGroupTotal.addSource(it) { currentGroupTotal.postValue(it.size) }
+        val newSource = withContext(Dispatchers.IO) {
+            groupSearchManager.getGroups()
+        }
+        synchronized(groupSearchManager) {
+            currentGroupsSource?.let { groups.removeSource(it) }
+            currentGroupsSource = newSource
+            currentGroupsSource?.let { groups.addSource(it) { groups.value = it } }
+        }
+
+        val newTotalSource = withContext(Dispatchers.IO) {
+            try {
+                groupSearchManager.getAllGroups()
+            } finally {
+                dao.cleanup()
+            }
+        }
+        synchronized(groupSearchManager) {
+            currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
+            currentGroupsTotalSource = newTotalSource
+            currentGroupsTotalSource?.let {
+                currentGroupTotal.addSource(it) { currentGroupTotal.postValue(it.size) }
+            }
         }
 
         groupSearchBundle.postValue(groupSearchManager.toBundle())
@@ -245,19 +270,38 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         isDynamicGroupingAvailable.postValue(dao.countGroupsFor(Grouping.DYNAMIC) > 0)
     }
 
-    private fun doSearchFolders() {
-        // Update search properties set directly through Preferences
-        folderSearchManager.setSortField(Settings.folderSortField)
-        folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
-
-        currentFoldersSource?.let { folders.removeSource(it) }
-        currentFoldersSource = folderSearchManager.files
-        currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
-
+    private suspend fun doSearchFolders() {
         val root = folderRoot.value ?: return
-        folderSearchManager.getFolders(getApplication(), root)
+        val ctx: Context = getApplication()
+        if (root == Uri.EMPTY) {
+            // Display roots
+            val entriesLive = MutableLiveData<List<DisplayFile>>()
+            currentFoldersSource?.let { folders.removeSource(it) }
+            currentFoldersSource = entriesLive
+            currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
 
-        folderSearchBundle.postValue(folderSearchManager.toBundle())
+            withContext(Dispatchers.IO) {
+                val entries = ArrayList<DisplayFile>()
+                entries.add(DisplayFile(ctx.resources.getString(R.string.add_root)))
+                Settings.libraryFoldersRoots.forEach {
+                    getDocumentFromTreeUriString(ctx, it)?.let { entries.add(DisplayFile(it)) }
+                }
+                entriesLive.postValue(entries)
+            }
+        } else {
+            // Search actual folders
+            folderSearchManager.setSortField(Settings.folderSortField)
+            folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
+
+            currentFoldersSource?.let { folders.removeSource(it) }
+            currentFoldersSource = folderSearchManager.files
+            currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
+
+            withContext(Dispatchers.IO) {
+                folderSearchManager.getFolders(ctx, root)
+                folderSearchBundle.postValue(folderSearchManager.toBundle())
+            }
+        }
     }
 
     /**
@@ -266,7 +310,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setCompletedFilter(value: Boolean) {
         contentSearchManager.setFilterBookCompleted(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -275,7 +319,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setNotCompletedFilter(value: Boolean) {
         contentSearchManager.setFilterBookNotCompleted(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -284,7 +328,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentFavouriteFilter(value: Boolean) {
         contentSearchManager.setFilterBookFavourites(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -293,7 +337,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentNonFavouriteFilter(value: Boolean) {
         contentSearchManager.setFilterBookNonFavourites(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -301,7 +345,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun setGroupFavouriteFilter(value: Boolean) {
         groupSearchManager.setFilterFavourites(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     /**
@@ -309,7 +353,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun setGroupNonFavouriteFilter(value: Boolean) {
         groupSearchManager.setFilterNonFavourites(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     /**
@@ -318,7 +362,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentRatingFilter(value: Int) {
         contentSearchManager.setFilterRating(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -326,48 +370,47 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun setGroupRatingFilter(value: Int) {
         groupSearchManager.setFilterRating(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
-
 
     fun setGroupQuery(value: String) {
         groupSearchManager.setQuery(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     fun setFolderRoot(value: Uri) {
         folderRoot.postValue(value)
-        doSearchFolders()
+        viewModelScope.launch { doSearchFolders() }
     }
 
     fun setFolderQuery(value: String) {
         folderSearchManager.setQuery(value)
-        doSearchFolders()
+        viewModelScope.launch { doSearchFolders() }
     }
 
     fun setGrouping(groupingId: Int) {
         val currentGrouping = Settings.groupingDisplay
         if (groupingId != currentGrouping) {
             Settings.groupingDisplay = groupingId
-            if (groupingId == Grouping.FLAT.id) doSearchContent()
-            if (groupingId == Grouping.FOLDERS.id) doSearchFolders()
-            doSearchGroup()
+            if (groupingId == Grouping.FLAT.id) viewModelScope.launch { doSearchContent() }
+            else if (groupingId == Grouping.FOLDERS.id) viewModelScope.launch { doSearchFolders() }
+            else viewModelScope.launch { doSearchGroup() }
         }
     }
 
     fun clearGroupFilters() {
         groupSearchManager.clearFilters()
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     fun clearContentFilters() {
         contentSearchManager.clearFilters()
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun clearFolderFilters() {
         folderSearchManager.clearFilters()
-        doSearchFolders()
+        viewModelScope.launch { doSearchFolders() }
     }
 
     /**
@@ -376,12 +419,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentPagingMethod(isEndless: Boolean) {
         contentSearchManager.setLoadAll(!isEndless)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun searchContent(active: Boolean = true) {
         newContentSearch.value = active
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun setGroup(group: Group, forceRefresh: Boolean) {
@@ -396,7 +439,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         newContentSearch.value = true
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     // =========================

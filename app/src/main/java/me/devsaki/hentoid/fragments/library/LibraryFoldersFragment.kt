@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.library
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.LayoutInflater
@@ -187,8 +188,7 @@ class LibraryFoldersFragment : Fragment(),
         if (fileExists(requireContext(), currentRoot)) {
             viewModel.setFolderRoot(currentRoot)
         } else { // Display level 0 (roots)
-            Timber.d("Display level 0")
-            // TODO
+            viewModel.setFolderRoot(Uri.EMPTY)
         }
     }
 

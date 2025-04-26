@@ -7,7 +7,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
@@ -18,7 +17,7 @@ import com.mikepenz.fastadapter.swipe.IDrawerSwipeableViewHolder
 import com.mikepenz.fastadapter.swipe.ISwipeable
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.bundles.ContentItemBundle
+import me.devsaki.hentoid.activities.bundles.FileItemBundle
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.ui.BlinkAnimation
@@ -67,18 +66,16 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
     }
 
     override fun getDragView(viewHolder: ViewHolder): View? {
-        return viewHolder.ivReorder
+        return null
     }
 
 
     class ViewHolder internal constructor(view: View) :
-        FastAdapter.ViewHolder<FileItem>(view), IDraggableViewHolder, IDrawerSwipeableViewHolder,
-        ISwipeableViewHolder {
+        FastAdapter.ViewHolder<FileItem>(view), IDrawerSwipeableViewHolder, ISwipeableViewHolder {
         // Common elements
         private val baseLayout: View = view.requireById(R.id.item)
         private val tvTitle: TextView = view.requireById(R.id.tvTitle)
         private val ivCover: ImageView = view.requireById(R.id.ivCover)
-        private val ivFlag: ImageView? = view.findViewById(R.id.ivFlag)
         private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
         private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
         private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
@@ -105,9 +102,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
         // Specific to Queued content
-        var topButton: View? = view.findViewById(R.id.queueTopBtn)
-        var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
-        var ivReorder: View? = view.findViewById(R.id.ivReorder)
         var downloadButton: View? = view.findViewById(R.id.ivRedownload)
 
         private var deleteActionRunnable: Runnable? = null
@@ -125,7 +119,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             // Payloads are set when the content stays the same but some properties alone change
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
-                val bundleParser = ContentItemBundle(bundle)
+                val bundleParser = FileItemBundle(bundle)
                 // TODO
                 /*
                 var boolValue = bundleParser.isBeingDeleted
@@ -149,6 +143,8 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             attachTitle(item.doc)
             attachMetrics(item.doc)
             attachButtons(item)
+
+            if (BuildConfig.DEBUG) Timber.d("bind ${item.doc.name}")
         }
 
         private fun updateLayoutVisibility(item: FileItem, doc: DisplayFile) {
@@ -167,7 +163,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun attachTitle(doc: DisplayFile) {
-            // TODO
+            tvTitle.text = doc.name
         }
 
         private fun attachMetrics(doc: DisplayFile) {
@@ -185,16 +181,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             ivCover.dispose()
         }
 
-        override fun onDragged() {
-            // TODO fix incorrect visual behaviour when dragging an item to 1st position
-            //bookCard.setBackgroundColor(ThemeHelper.getColor(bookCard.getContext(), R.color.white_opacity_25));
-        }
-
-        override fun onDropped() {
-            // TODO fix incorrect visual behaviour when dragging an item to 1st position
-            //bookCard.setBackground(bookCard.getContext().getDrawable(R.drawable.bg_book_card));
-        }
-
         override fun onSwiped() {
             // Nothing
         }
@@ -209,10 +195,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
     }
 
     class DragHandlerTouchEvent(private val action: Consumer<Int>) : TouchEventHook<FileItem>() {
-        override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-            return if (viewHolder is ViewHolder) viewHolder.ivReorder else null
-        }
-
         override fun onTouch(
             v: View,
             event: MotionEvent,

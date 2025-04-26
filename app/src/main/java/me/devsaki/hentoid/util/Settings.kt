@@ -136,7 +136,7 @@ object Settings {
     var contentPageQuantity: Int by IntSettingStr("pref_quantity_per_page_lists", 20)
     val endlessScroll: Boolean by BoolSetting(Key.ENDLESS_SCROLL, true)
     var topFabEnabled: Boolean by BoolSetting(Key.TOP_FAB, true)
-    var groupingDisplay: Int by IntSettingStr("grouping_display", Grouping.FLAT.id)
+    var groupingDisplay: Int by IntSettingStr(Key.GROUPING_DISPLAY, Grouping.FLAT.id)
     fun getGroupingDisplayG(): Grouping {
         return Grouping.Companion.searchById(groupingDisplay)
     }
@@ -668,6 +668,7 @@ object Settings {
         const val APP_LOCK = "pref_app_lock"
         const val ENDLESS_SCROLL = "pref_endless_scroll"
         const val TOP_FAB = "pref_top_fab"
+        const val GROUPING_DISPLAY = "grouping_display"
         const val APP_PREVIEW = "pref_app_preview"
         const val PRIMARY_STORAGE_URI = "pref_sd_storage_uri"
         const val PRIMARY_STORAGE_URI_2 = "pref_sd_storage_uri_2"
