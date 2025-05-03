@@ -375,10 +375,10 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
 fun openReader(
     context: Context,
     content: Content,
-    pageNumber: Int,
-    searchParams: Bundle?,
-    forceShowGallery: Boolean,
-    newTask: Boolean
+    pageNumber: Int = -1,
+    searchParams: Bundle? = null,
+    forceShowGallery: Boolean = false,
+    newTask: Boolean = false
 ): Boolean {
     // Check if the book has at least its own folder
     if (content.storageUri.isEmpty()) return false

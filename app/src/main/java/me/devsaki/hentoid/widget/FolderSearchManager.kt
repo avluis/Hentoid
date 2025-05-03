@@ -3,8 +3,8 @@ package me.devsaki.hentoid.widget
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import androidx.core.net.toUri
 import androidx.lifecycle.MutableLiveData
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
@@ -12,6 +12,7 @@ import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
+import timber.log.Timber
 
 class FolderSearchManager() {
 
@@ -50,14 +51,27 @@ class FolderSearchManager() {
         setQuery("")
     }
 
-    fun getFolders(context: Context, root: Uri) {
-        val rootUri = values.root.toUri()
-        if (null == explorer) explorer = FileExplorer(context, root)
-        else if (explorer!!.root != rootUri) explorer = FileExplorer(context, root)
+    fun clear() {
+        clearFilters()
+        explorer?.close()
+        explorer = null
+    }
 
-        val rootDoc = getDocumentFromTreeUri(context, rootUri) ?: return
+    fun getFolders(context: Context, root: Uri) {
+        Timber.d("Navigating to %s", root)
+        val previousRoot = explorer?.root ?: Uri.EMPTY
+        if (previousRoot != root) explorer = FileExplorer(context, root)
+
+        val rootDoc = getDocumentFromTreeUri(context, root) ?: return
         val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return
-        files.postValue(docs.map { DisplayFile(it) })
+
+        // Add 'Up one level' item at position 0
+        val displayFiles = docs.map { DisplayFile(it) }.toMutableList()
+        if (previousRoot != null) displayFiles.add(
+            0,
+            DisplayFile(previousRoot, context.resources.getString(R.string.up_level))
+        )
+        files.postValue(displayFiles)
     }
 
     class FolderSearchBundle(val bundle: Bundle = Bundle()) {

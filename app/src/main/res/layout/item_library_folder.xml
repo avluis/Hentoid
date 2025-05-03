@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="60dp"
     android:layout_marginTop="1dp"
     android:clickable="true"
     android:focusable="true"
@@ -35,30 +35,15 @@
 
         <ImageView
             android:id="@+id/ivCover"
-            android:layout_width="75dp"
-            android:layout_height="100dp"
+            android:layout_width="45dp"
+            android:layout_height="60dp"
             android:adjustViewBounds="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pbDownload"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_trans"
             tools:tint="@color/light_gray" />
-
-        <ProgressBar
-            android:id="@+id/pbDownload"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:indeterminate="true"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/ivCover"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/tvTitle"
@@ -73,25 +58,9 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivCover"
-            app:layout_constraintTop_toBottomOf="@id/pbDownload"
+            app:layout_constraintBottom_toTopOf="@id/tvPages"
+            app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/book_title" />
-
-        <TextView
-            android:id="@+id/tvArtist"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:singleLine="true"
-            android:textColor="@color/card_tags_light"
-            android:textSize="@dimen/caption"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/ivCover"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle"
-            tools:text="@string/book_artist" />
 
         <TextView
             android:id="@+id/tvPages"
@@ -100,12 +69,13 @@
             android:textColor="@color/card_tags_light"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@id/tvArtist"
-            app:layout_constraintStart_toStartOf="@id/tvArtist"
-            app:layout_constraintTop_toBottomOf="@id/tvArtist"
+            app:layout_constraintEnd_toEndOf="@id/tvTitle"
+            app:layout_constraintStart_toStartOf="@id/tvTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            app:layout_constraintBottom_toBottomOf="parent"
             tools:text="@string/book_pages_queue" />
 
-
+<!--
         <ImageView
             android:id="@+id/queue_site_button"
             android:layout_width="48dp"
@@ -181,6 +151,7 @@
             app:tint="@color/medium_gray"
             tools:ignore="ContentDescription"
             tools:visibility="visible" />
+            -->
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/selection_border"

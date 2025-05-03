@@ -22,6 +22,7 @@ import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.DisplayFile.Type
 import me.devsaki.hentoid.util.hash64
 import timber.log.Timber
 
@@ -77,7 +78,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         private val tvTitle: TextView = view.requireById(R.id.tvTitle)
         private val ivCover: ImageView = view.requireById(R.id.ivCover)
         private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
-        private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
         private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
         private val ivError: ImageView? = view.findViewById(R.id.ivError)
@@ -159,7 +159,17 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun attachCover(doc: DisplayFile) {
-            // TODO
+            val icon = when (doc.type) {
+                Type.FOLDER -> R.drawable.ic_folder
+                Type.PDF -> R.drawable.ic_pdf_file
+                Type.ARCHIVE -> R.drawable.ic_archive
+                Type.ADD_BUTTON -> R.drawable.ic_add
+                Type.UP_BUTTON -> R.drawable.ic_keyboard_arrow_up
+                else -> R.drawable.ic_hentoid_shape
+            }
+            // TODO that isn't true for folder pics
+            ivCover.scaleType = ImageView.ScaleType.CENTER_INSIDE
+            ivCover.setImageResource(icon)
         }
 
         private fun attachTitle(doc: DisplayFile) {

@@ -141,6 +141,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             for (info in workObservers)
                 workManager.getWorkInfoByIdLiveData(info.first).removeObserver(info.second)
         }
+        folderSearchManager.clear()
     }
 
     fun getTotalGroup(): LiveData<Int> {
@@ -271,9 +272,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     private suspend fun doSearchFolders() {
-        val root = folderRoot.value ?: return
+        val root = folderRoot.value ?: Uri.EMPTY
         val ctx: Context = getApplication()
         if (root == Uri.EMPTY) {
+            folderSearchManager.clear()
             // Display roots
             val entriesLive = MutableLiveData<List<DisplayFile>>()
             currentFoldersSource?.let { folders.removeSource(it) }
@@ -379,7 +381,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun setFolderRoot(value: Uri) {
-        folderRoot.postValue(value)
+        folderRoot.value = value
         viewModelScope.launch { doSearchFolders() }
     }
 

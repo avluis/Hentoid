@@ -15,7 +15,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,21 +31,38 @@ import com.mikepenz.fastadapter.select.SelectExtensionFactory
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.FileItemBundle
-import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.CollectionDAO
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
+import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
+import me.devsaki.hentoid.util.PickFolderContract
+import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.DisplayFile.Type
+import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.fileExists
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.openReader
+import me.devsaki.hentoid.util.persistLocationCredentials
+import me.devsaki.hentoid.util.scanArchivePdf
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.FileItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -93,6 +109,11 @@ class LibraryFoldersFragment : Fragment(),
     private var touchHelper: ItemTouchHelper? = null
     private var mDragSelectTouchListener: DragSelectTouchListener? = null
 
+    private val pickRootFolder =
+        registerForActivityResult(PickFolderContract()) {
+            onRootFolderPickerResult(it.first, it.second)
+        }
+
 
     // ======== VARIABLES
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
@@ -102,10 +123,9 @@ class LibraryFoldersFragment : Fragment(),
     private var totalContentCount = 0
 
     // TODO doc
-    private var enabled = false
-
-    // TODO doc
     private var previousViewType = -1
+
+    private var root: Uri? = null
 
     private lateinit var pagingDebouncer: Debouncer<Unit>
 
@@ -180,8 +200,10 @@ class LibraryFoldersFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
         viewModel.folders.observe(viewLifecycleOwner) { onFoldersChanged(it) }
+        viewModel.folderRoot.observe(viewLifecycleOwner) {
+            Settings.libraryFoldersRoot = it.toString()
+        }
 
         // Trigger a blank search
         val currentRoot = Settings.libraryFoldersRoot.toUri()
@@ -193,12 +215,10 @@ class LibraryFoldersFragment : Fragment(),
     }
 
     private fun onEnable() {
-        enabled = true
         callback?.isEnabled = true
     }
 
     private fun onDisable() {
-        enabled = false
         callback?.isEnabled = false
     }
 
@@ -460,25 +480,11 @@ class LibraryFoldersFragment : Fragment(),
     }
 
     /**
-     * LiveData callback when the library changes
-     * Happens when a book has been downloaded or deleted
-     *
-     * @param result Current library according to active filters
-     */
-    private fun onLibraryChanged(result: PagedList<Content>) {
-        Timber.i(">> Library changed (folders) ! Size=%s enabled=%s", result.size, enabled)
-        if (!enabled) return
-
-        // TODO
-    }
-
-    /**
      * LiveData callback when the folders changes
      * Happens when navigating
      */
     private fun onFoldersChanged(result: List<DisplayFile>) {
-        Timber.i(">> Folders changed (folders) ! Size=%s enabled=%s", result.size, enabled)
-        if (!enabled) return
+        Timber.i(">> Folders changed (folders) ! Size=%s", result.size)
 
         val isEmpty = result.isEmpty()
         binding?.emptyTxt?.isVisible = isEmpty
@@ -505,10 +511,79 @@ class LibraryFoldersFragment : Fragment(),
      */
     private fun onItemClick(item: FileItem): Boolean {
         if (selectExtension!!.selections.isEmpty()) {
-            // TODO go down one level
+            when (item.doc.type) {
+                Type.ADD_BUTTON -> {
+                    // Make sure permissions are set
+                    if (requireActivity().requestExternalStorageReadWritePermission(
+                            RQST_STORAGE_PERMISSION
+                        )
+                    ) {
+                        // Run folder picker
+                        pickRootFolder.launch(StorageLocation.NONE)
+                    }
+                }
+
+                Type.ARCHIVE, Type.PDF -> {
+                    val ctx = requireContext()
+                    lifecycleScope.launch {
+                        val content = withContext(Dispatchers.IO) {
+                            val parent =
+                                getDocumentFromTreeUriString(ctx, Settings.libraryFoldersRoot)
+                                    ?: return@withContext null
+                            val folder =
+                                getDocumentFromTreeUri(ctx, item.doc.uri) ?: return@withContext null
+                            val res = scanArchivePdf(
+                                ctx,
+                                parent,
+                                folder,
+                                emptyList(),
+                                StatusContent.EXTERNAL,
+                                null
+                            )
+                            if (0 == res.first) res.second?.let {
+                                val dao: CollectionDAO = ObjectBoxDAO()
+                                try {
+                                    it.id = addContent(ctx, dao, it)
+                                    return@withContext it
+                                } finally {
+                                    dao.cleanup()
+                                }
+                            } else return@withContext null
+                        }
+                        content?.let { openReader(ctx, it) }
+                    }
+                }
+
+                else -> {
+                    viewModel.setFolderRoot(item.doc.uri)
+                }
+            }
             return true
         }
         return false
+    }
+
+    private fun onRootFolderPickerResult(resultCode: PickerResult, uri: Uri) {
+        when (resultCode) {
+            PickerResult.OK -> {
+                // Persist I/O permissions; keep existing ones if present
+                persistLocationCredentials(
+                    requireContext(),
+                    uri,
+                    listOf(
+                        StorageLocation.PRIMARY_1,
+                        StorageLocation.PRIMARY_2,
+                        StorageLocation.EXTERNAL
+                    )
+                )
+                val roots = Settings.libraryFoldersRoots.toMutableList()
+                roots.add(uri.toString())
+                Settings.libraryFoldersRoots = roots
+                viewModel.clearFolderFilters()
+            }
+
+            else -> {}
+        }
     }
 
     /**
