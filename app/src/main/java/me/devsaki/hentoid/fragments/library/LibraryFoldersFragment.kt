@@ -63,6 +63,7 @@ import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.scanArchivePdf
+import me.devsaki.hentoid.util.scanBookFolder
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.FileItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -511,20 +512,44 @@ class LibraryFoldersFragment : Fragment(),
      */
     private fun onItemClick(item: FileItem): Boolean {
         if (selectExtension!!.selections.isEmpty()) {
+            val ctx = requireActivity()
             when (item.doc.type) {
                 Type.ADD_BUTTON -> {
                     // Make sure permissions are set
-                    if (requireActivity().requestExternalStorageReadWritePermission(
-                            RQST_STORAGE_PERMISSION
-                        )
-                    ) {
+                    if (ctx.requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) {
                         // Run folder picker
                         pickRootFolder.launch(StorageLocation.NONE)
                     }
                 }
 
+                Type.BOOK_FOLDER -> {
+                    lifecycleScope.launch {
+                        val content = withContext(Dispatchers.IO) {
+                            val parent =
+                                getDocumentFromTreeUriString(ctx, Settings.libraryFoldersRoot)
+                                    ?: return@withContext null
+                            val folder =
+                                getDocumentFromTreeUri(ctx, item.doc.uri) ?: return@withContext null
+                            val res = scanBookFolder(
+                                ctx,
+                                parent,
+                                folder,
+                                emptyList(),
+                                StatusContent.EXTERNAL
+                            )
+                            val dao: CollectionDAO = ObjectBoxDAO()
+                            try {
+                                res.id = addContent(ctx, dao, res)
+                                return@withContext res
+                            } finally {
+                                dao.cleanup()
+                            }
+                        }
+                        content?.let { openReader(ctx, it) }
+                    }
+                }
+
                 Type.SUPPORTED_FILE -> {
-                    val ctx = requireContext()
                     lifecycleScope.launch {
                         val content = withContext(Dispatchers.IO) {
                             val parent =
