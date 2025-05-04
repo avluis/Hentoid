@@ -235,12 +235,7 @@ fun setAndScanPrimaryFolder(
     options: ImportOptions?
 ): Pair<ProcessFolderResult, String> {
     // Persist I/O permissions; keep existing ones if present
-    val locs: MutableList<StorageLocation> = ArrayList()
-    locs.add(StorageLocation.EXTERNAL)
-    if (location == StorageLocation.PRIMARY_1) locs.add(StorageLocation.PRIMARY_2) else locs.add(
-        StorageLocation.PRIMARY_1
-    )
-    persistLocationCredentials(context, treeUri, locs)
+    persistLocationCredentials(context, treeUri, location)
 
     // Check if the folder exists
     val docFile = DocumentFile.fromTreeUri(context, treeUri)
@@ -362,11 +357,7 @@ fun setAndScanExternalFolder(
     treeUri: Uri
 ): Pair<ProcessFolderResult, String> {
     // Persist I/O permissions; keep existing ones if present
-    persistLocationCredentials(
-        context,
-        treeUri,
-        listOf(StorageLocation.PRIMARY_1, StorageLocation.PRIMARY_2)
-    )
+    persistLocationCredentials(context, treeUri, StorageLocation.EXTERNAL)
 
     // Check if the folder exists
     val docFile = DocumentFile.fromTreeUri(context, treeUri)
@@ -414,20 +405,33 @@ fun setAndScanExternalFolder(
 /**
  * Persist I/O credentials for the given location, keeping the given existing credentials
  *
- * @param context  Context to use
- * @param treeUri  Uri to add credentials for
- * @param location Locations to keep credentials for
+ * @param context       Context to use
+ * @param treeUri       Uri to add credentials for
+ * @param override      Storage location to override with threeUri (optional)
  */
 fun persistLocationCredentials(
     context: Context,
     treeUri: Uri,
-    location: List<StorageLocation>
+    override: StorageLocation? = null
 ) {
-    val uri = location
+    // Keep library roots to the exception of the one we're overrriding
+    val locations = mutableListOf(
+        StorageLocation.PRIMARY_1,
+        StorageLocation.PRIMARY_2,
+        StorageLocation.EXTERNAL
+    )
+    override?.let { locations.remove(it) }
+
+    val keepUris = locations
         .map { Settings.getStorageUri(it) }
         .filterNot { it.isEmpty() }
         .map { it.toUri() }
-    persistNewUriPermission(context, treeUri, uri)
+        .toMutableList()
+
+    // Keep folders mode roots too
+    keepUris.addAll(Settings.libraryFoldersRoots.map { it.toUri() })
+
+    persistNewUriPermission(context, treeUri, keepUris)
 }
 
 /**

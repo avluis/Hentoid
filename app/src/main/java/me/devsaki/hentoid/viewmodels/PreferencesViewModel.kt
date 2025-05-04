@@ -33,17 +33,11 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         when (location) {
             StorageLocation.PRIMARY_1,
             StorageLocation.PRIMARY_2 -> {
-                detachAllPrimaryContent(
-                    dao,
-                    location
-                )
+                detachAllPrimaryContent(dao, location)
             }
 
             StorageLocation.EXTERNAL -> {
-                detachAllExternalContent(
-                    getApplication<Application>().applicationContext,
-                    dao
-                )
+                detachAllExternalContent(getApplication<Application>().applicationContext, dao)
                 dao.cleanupOrphanAttributes()
                 Beholder.clearSnapshot(getApplication())
             }
@@ -62,7 +56,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
             val ids = ArrayList<Long>()
             dao.streamAllInternalBooks(
                 getPathRoot(StorageLocation.PRIMARY_2), false
-            ) { c -> ids.add(c.id) }
+            ) { ids.add(it.id) }
             ids.forEach {
                 mergeTo1(it, nbOK, nbKO, nbBooks)
             }

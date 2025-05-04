@@ -1205,7 +1205,7 @@ fun persistNewUriPermission(context: Context, newUri: Uri, keepUris: List<Uri>?)
     if (!isUriPermissionPersisted(contentResolver, newUri)) {
         Timber.d("Persisting Uri permission for %s", newUri)
         // Release previous access permissions, if different than the new one
-        val keepList: MutableList<Uri> = keepUris?.toMutableList() ?: mutableListOf()
+        val keepList = keepUris?.toMutableList() ?: mutableListOf()
         keepList.add(newUri)
         revokePreviousPermissions(contentResolver, keepList)
         // Persist new access permission
@@ -1243,18 +1243,13 @@ fun isUriPermissionPersisted(resolver: ContentResolver, uri: Uri): Boolean {
 private fun revokePreviousPermissions(resolver: ContentResolver, exceptions: List<Uri>) {
     // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
     // -> solution is to compare their TreeDocumentId instead
-    val exceptionIds = exceptions.map { documentUri: Uri? ->
-        DocumentsContract.getTreeDocumentId(documentUri)
-    }
-    for (p in resolver.persistedUriPermissions) if (!exceptionIds.contains(
-            DocumentsContract.getTreeDocumentId(
-                p.uri
+    val exceptionIds = exceptions.map { DocumentsContract.getTreeDocumentId(it) }
+    for (p in resolver.persistedUriPermissions)
+        if (!exceptionIds.contains(DocumentsContract.getTreeDocumentId(p.uri)))
+            resolver.releasePersistableUriPermission(
+                p.uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-        )
-    ) resolver.releasePersistableUriPermission(
-        p.uri,
-        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-    )
 
     if (resolver.persistedUriPermissions.size <= exceptionIds.size) {
         Timber.d("Permissions revoked successfully")

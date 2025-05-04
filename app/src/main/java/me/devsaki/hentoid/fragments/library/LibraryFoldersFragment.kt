@@ -591,17 +591,9 @@ class LibraryFoldersFragment : Fragment(),
     private fun onRootFolderPickerResult(resultCode: PickerResult, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> {
-                // Persist I/O permissions; keep existing ones if present
-                persistLocationCredentials(
-                    requireContext(),
-                    uri,
-                    listOf(
-                        StorageLocation.PRIMARY_1,
-                        StorageLocation.PRIMARY_2,
-                        StorageLocation.EXTERNAL
-                    )
-                )
                 val roots = Settings.libraryFoldersRoots.toMutableList()
+                // Persist I/O permissions; keep existing ones if present
+                persistLocationCredentials(requireContext(), uri)
                 roots.add(uri.toString())
                 Settings.libraryFoldersRoots = roots
                 viewModel.clearFolderFilters()
