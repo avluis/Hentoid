@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -276,7 +277,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val ctx: Context = getApplication()
         if (root == Uri.EMPTY) {
             folderSearchManager.clear()
-            // Display roots
+            // Display roots (level 0)
             val entriesLive = MutableLiveData<List<DisplayFile>>()
             currentFoldersSource?.let { folders.removeSource(it) }
             currentFoldersSource = entriesLive
@@ -296,7 +297,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
 
             currentFoldersSource?.let { folders.removeSource(it) }
-            currentFoldersSource = folderSearchManager.files
+            // Enrich with covers, if books are in the library
+            val storageLD = folderSearchManager.files
+            val enrichedLD = MediatorLiveData<List<DisplayFile>>()
+            enrichedLD.addSource(storageLD) { files ->
+                val enrichedWithItems =
+                    files.map { enrichFileWithCovers(it, dao) }.toList()
+                enrichedLD.value = enrichedWithItems
+            }
+            currentFoldersSource = enrichedLD
             currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
 
             withContext(Dispatchers.IO) {
@@ -304,6 +313,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 folderSearchBundle.postValue(folderSearchManager.toBundle())
             }
         }
+    }
+
+    private fun enrichFileWithCovers(f: DisplayFile, dao: CollectionDAO): DisplayFile {
+        dao.selectContentByStorageUri(f.uri.toString(), false)?.let {
+            f.coverUri = it.cover.usableUri.toUri()
+        }
+        return f
     }
 
     /**

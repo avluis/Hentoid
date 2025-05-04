@@ -358,7 +358,9 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun selectContentByStorageUri(folderUri: String, onlyFlagged: Boolean): Content? {
         // Select only the "document" part of the URI, as the "tree" part can vary
-        val docPart = folderUri.substring(folderUri.indexOf("/document/"))
+        val index = folderUri.indexOf("/document/")
+        if (-1 == index) return null
+        val docPart = folderUri.substring(index)
         return ObjectBoxDB.selectContentEndWithStorageUri(docPart, onlyFlagged)
     }
 

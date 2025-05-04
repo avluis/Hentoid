@@ -159,17 +159,21 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun attachCover(doc: DisplayFile) {
-            val icon = when (doc.type) {
-                Type.FOLDER -> R.drawable.ic_folder
-                Type.PDF -> R.drawable.ic_pdf_file
-                Type.ARCHIVE -> R.drawable.ic_archive
-                Type.ADD_BUTTON -> R.drawable.ic_add
-                Type.UP_BUTTON -> R.drawable.ic_keyboard_arrow_up
-                else -> R.drawable.ic_hentoid_shape
+            doc.coverUri?.let {
+                ivCover.setImageURI(it)
+                ivCover.scaleType = ImageView.ScaleType.FIT_CENTER
+            } ?: run {
+                val icon = when (doc.type) {
+                    Type.FOLDER -> R.drawable.ic_folder
+                    Type.PDF -> R.drawable.ic_pdf_file
+                    Type.ARCHIVE -> R.drawable.ic_archive
+                    Type.ADD_BUTTON -> R.drawable.ic_add
+                    Type.UP_BUTTON -> R.drawable.ic_keyboard_arrow_up
+                    else -> R.drawable.ic_hentoid_shape
+                }
+                ivCover.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                ivCover.setImageResource(icon)
             }
-            // TODO that isn't true for folder pics
-            ivCover.scaleType = ImageView.ScaleType.CENTER_INSIDE
-            ivCover.setImageResource(icon)
         }
 
         private fun attachTitle(doc: DisplayFile) {
