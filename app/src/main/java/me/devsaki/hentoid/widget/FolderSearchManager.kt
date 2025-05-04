@@ -10,6 +10,7 @@ import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
+import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
 import timber.log.Timber
@@ -57,19 +58,27 @@ class FolderSearchManager() {
         explorer = null
     }
 
-    fun getFolders(context: Context, root: Uri) {
-        Timber.d("Navigating to %s", root)
+    fun getFolders(context: Context, root: Uri, parent: Uri) {
+        Timber.d("Navigating to $root with parent $parent")
         val previousRoot = explorer?.root ?: Uri.EMPTY
         if (previousRoot != root) explorer = FileExplorer(context, root)
 
         val rootDoc = getDocumentFromTreeUri(context, root) ?: return
         val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return
 
+        // Count contents to see if we have a folder book
+        val displayFiles = docs.map {
+            val nbChildren = if (it.isDirectory) {
+                explorer?.countFiles(it, imageNamesFilter) ?: 0
+            } else 0
+            val res = DisplayFile(it, nbChildren > 1)
+            res.nbChildren = nbChildren
+            res
+        }.toMutableList()
         // Add 'Up one level' item at position 0
-        val displayFiles = docs.map { DisplayFile(it) }.toMutableList()
-        if (previousRoot != null) displayFiles.add(
+        displayFiles.add(
             0,
-            DisplayFile(previousRoot, context.resources.getString(R.string.up_level))
+            DisplayFile(parent, context.resources.getString(R.string.up_level))
         )
         files.postValue(displayFiles)
     }

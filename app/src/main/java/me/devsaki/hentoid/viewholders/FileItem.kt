@@ -22,6 +22,7 @@ import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.DisplayFile.SubType
 import me.devsaki.hentoid.util.file.DisplayFile.Type
 import me.devsaki.hentoid.util.hash64
 import timber.log.Timber
@@ -143,8 +144,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             attachTitle(item.doc)
             attachMetrics(item.doc)
             attachButtons(item)
-
-            if (BuildConfig.DEBUG) Timber.d("bind ${item.doc.name}")
         }
 
         private fun updateLayoutVisibility(item: FileItem, doc: DisplayFile) {
@@ -165,8 +164,12 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             } ?: run {
                 val icon = when (doc.type) {
                     Type.FOLDER -> R.drawable.ic_folder
-                    Type.PDF -> R.drawable.ic_pdf_file
-                    Type.ARCHIVE -> R.drawable.ic_archive
+                    Type.SUPPORTED_FILE -> {
+                        if (doc.subType == SubType.PDF) R.drawable.ic_pdf_file
+                        else if (doc.subType == SubType.ARCHIVE) R.drawable.ic_archive
+                        else R.drawable.ic_hentoid_shape
+                    }
+
                     Type.ADD_BUTTON -> R.drawable.ic_add
                     Type.UP_BUTTON -> R.drawable.ic_keyboard_arrow_up
                     else -> R.drawable.ic_hentoid_shape
@@ -181,7 +184,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun attachMetrics(doc: DisplayFile) {
-            // TODO
+            tvPages?.text = if (doc.nbChildren > 0) "${doc.nbChildren} images" else ""
         }
 
         private fun attachButtons(item: FileItem) {

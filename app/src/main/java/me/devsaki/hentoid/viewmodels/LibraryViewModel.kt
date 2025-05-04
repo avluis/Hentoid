@@ -69,6 +69,7 @@ import me.devsaki.hentoid.workers.data.SplitMergeData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 import java.security.InvalidParameterException
+import java.util.Stack
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -102,6 +103,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     private var currentFoldersSource: LiveData<List<DisplayFile>>? = null
     val folders = MediatorLiveData<List<DisplayFile>>()
     val folderSearchBundle = MutableLiveData<Bundle>()
+    val parentRoots = Stack<Uri>()
 
     // True if there's at least one existing custom group; false instead
     val isCustomGroupingAvailable = MutableLiveData<Boolean>()
@@ -149,10 +151,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         return currentGroupTotal
     }
 
-
-    // =========================
-    // ========= LIBRARY ACTIONS
-    // =========================
 
     // =========================
     // ========= LIBRARY ACTIONS
@@ -302,14 +300,19 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             val enrichedLD = MediatorLiveData<List<DisplayFile>>()
             enrichedLD.addSource(storageLD) { files ->
                 val enrichedWithItems =
-                    files.map { enrichFileWithCovers(it, dao) }.toList()
+                    files
+                        .map { enrichFileWithCovers(it, dao) }
+                        .sortedBy { it.name }.sortedBy { it.type.ordinal }
+                        .filterNot { it.type == DisplayFile.Type.OTHER }
+                        .toList()
                 enrichedLD.value = enrichedWithItems
             }
             currentFoldersSource = enrichedLD
             currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
 
             withContext(Dispatchers.IO) {
-                folderSearchManager.getFolders(ctx, root)
+                val parentUri = if (parentRoots.empty()) Uri.EMPTY else parentRoots.peek()
+                folderSearchManager.getFolders(ctx, root, parentUri)
                 folderSearchBundle.postValue(folderSearchManager.toBundle())
             }
         }
@@ -397,8 +400,20 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun setFolderRoot(value: Uri) {
+        var isGoingUp = false
+        if (parentRoots.isNotEmpty()) {
+            val existingIdx = parentRoots.indexOf(value)
+            if (existingIdx > -1) {
+                isGoingUp = true
+                (0..<parentRoots.size - existingIdx).forEach { parentRoots.pop() }
+            }
+        }
         folderRoot.value = value
-        viewModelScope.launch { doSearchFolders() }
+
+        viewModelScope.launch {
+            doSearchFolders()
+            if (!isGoingUp) parentRoots.push(value)
+        }
     }
 
     fun setFolderQuery(value: String) {

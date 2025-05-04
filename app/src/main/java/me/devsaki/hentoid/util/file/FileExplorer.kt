@@ -117,7 +117,7 @@ class FileExplorer : Closeable {
      * @param filter Name filter to use to filter the files to count
      * @return Number of files inside the given parent folder matching the given name filter
      */
-    fun countFiles(parent: DocumentFile, filter: NameFilter?): Int {
+    fun countFiles(parent: DocumentFile, filter: NameFilter? = null): Int {
         return countDocumentFiles(parent, filter, countFolders = false, countFiles = true)
     }
 
@@ -128,7 +128,7 @@ class FileExplorer : Closeable {
      * @param filter Name filter to use to filter the folders to count
      * @return Number of folders inside the given parent folder matching the given name filter
      */
-    fun countFolders(parent: DocumentFile, filter: NameFilter?): Int {
+    fun countFolders(parent: DocumentFile, filter: NameFilter? = null): Int {
         return countDocumentFiles(parent, filter, countFolders = true, countFiles = false)
     }
 

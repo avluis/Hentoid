@@ -523,7 +523,7 @@ class LibraryFoldersFragment : Fragment(),
                     }
                 }
 
-                Type.ARCHIVE, Type.PDF -> {
+                Type.SUPPORTED_FILE -> {
                     val ctx = requireContext()
                     lifecycleScope.launch {
                         val content = withContext(Dispatchers.IO) {

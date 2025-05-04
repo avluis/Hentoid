@@ -5,13 +5,18 @@ import androidx.documentfile.provider.DocumentFile
 
 class DisplayFile {
     enum class Type {
-        FOLDER, BOOK_FOLDER, ARCHIVE, PDF, ADD_BUTTON, UP_BUTTON, OTHER
+        ADD_BUTTON, UP_BUTTON, FOLDER, BOOK_FOLDER, SUPPORTED_FILE, OTHER
+    }
+
+    enum class SubType {
+        ARCHIVE, PDF, OTHER
     }
 
     val uri: Uri
     val name: String
     val lastModified: Long
     val type: Type
+    val subType: SubType
 
     var nbChildren = 0
     var coverUri: Uri? = null
@@ -23,11 +28,24 @@ class DisplayFile {
         uri = doc.uri
         name = doc.name ?: ""
         lastModified = doc.lastModified()
-        type = if (doc.isDirectory) if (isBook) Type.BOOK_FOLDER else Type.FOLDER
+        if (doc.isDirectory) if (isBook) {
+            type = Type.BOOK_FOLDER
+            subType = SubType.OTHER
+        } else {
+            type = Type.FOLDER
+            subType = SubType.OTHER
+        }
         else {
-            if (isSupportedArchive(name)) Type.ARCHIVE
-            else if (getExtension(name) == "pdf") Type.PDF
-            else Type.OTHER
+            if (isSupportedArchive(name)) {
+                type = Type.SUPPORTED_FILE
+                subType = SubType.ARCHIVE
+            } else if (getExtension(name) == "pdf") {
+                type = Type.SUPPORTED_FILE
+                subType = SubType.PDF
+            } else {
+                type = Type.OTHER
+                subType = SubType.OTHER
+            }
         }
     }
 
@@ -37,6 +55,7 @@ class DisplayFile {
         this.name = name
         lastModified = 0
         type = Type.UP_BUTTON
+        subType = SubType.OTHER
     }
 
     // Used for the "Add root" button
@@ -45,5 +64,6 @@ class DisplayFile {
         this.name = name
         lastModified = 0
         type = Type.ADD_BUTTON
+        subType = SubType.OTHER
     }
 }
