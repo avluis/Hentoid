@@ -408,6 +408,8 @@ class LibraryFoldersFragment : Fragment(),
                 // If none of the above and a search filter is on => clear search filter
                 if (isFilterActive()) {
                     viewModel.clearFolderFilters()
+                } else if (Settings.libraryFoldersRoot.toUri() != Uri.EMPTY) {
+                    viewModel.goUpOneFolder()
                 } else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                     callback!!.remove()
                     onBackPressedDispatcher.onBackPressed()

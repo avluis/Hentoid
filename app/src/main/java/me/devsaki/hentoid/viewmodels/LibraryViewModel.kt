@@ -275,6 +275,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val ctx: Context = getApplication()
         if (isARoot) {
             folderSearchManager.clear()
+            folderRoot.postValue(Uri.EMPTY)
             // Display roots (level 0)
             withContext(Dispatchers.IO) {
                 val entries = ArrayList<DisplayFile>()
