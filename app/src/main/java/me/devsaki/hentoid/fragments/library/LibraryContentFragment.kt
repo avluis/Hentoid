@@ -765,7 +765,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
 
                 val uri = if (c.isArchive || c.isPdf)
-                    getParent(context, Settings.externalLibraryUri.toUri(), folder)
+                    getParent(context, Settings.externalLibraryUri.toUri(), folder.uri)
                 else folder.uri
                 uri?.let { openUri(context, it) }
             }

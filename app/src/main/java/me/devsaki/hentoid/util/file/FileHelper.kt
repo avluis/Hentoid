@@ -1373,14 +1373,16 @@ fun getFileUriCompat(context: Context, file: File): Uri {
  * Get the parent Uri of the given DocumentFile using the given root
  * NB : doc must be a child/grandchild of the document represented by root
  */
-fun getParent(context: Context, root: Uri, doc: DocumentFile): Uri? {
+fun getParent(context: Context, root: Uri, doc: Uri): Uri? {
     val parentsRoots =
-        DocumentsContract.findDocumentPath(context.contentResolver, doc.uri) ?: return null
+        DocumentsContract.findDocumentPath(context.contentResolver, doc) ?: return null
     // NB : that call is expensive; consider implementing that within FileExplorer if needed inside a loop
-    return DocumentsContract.buildDocumentUriUsingTree(
-        root,
-        parentsRoots.path[parentsRoots.path.size - 2]
-    )
+    return if (parentsRoots.path.size > 1)
+        DocumentsContract.buildDocumentUriUsingTree(
+            root,
+            parentsRoots.path[parentsRoots.path.size - 2]
+        )
+    else root
 }
 
 /**

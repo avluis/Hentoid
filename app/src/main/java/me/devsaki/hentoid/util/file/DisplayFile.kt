@@ -49,21 +49,12 @@ class DisplayFile {
         }
     }
 
-    // Used for the "Up one level" button
-    constructor(uri: Uri, name: String) {
-        this.uri = uri
-        this.name = name
-        lastModified = 0
-        type = Type.UP_BUTTON
-        subType = SubType.OTHER
-    }
-
-    // Used for the "Add root" button
-    constructor(name: String) {
+    // Used for the "Add root" and "Go up one level" buttons
+    constructor(name: String, type: Type) {
         uri = Uri.EMPTY
         this.name = name
         lastModified = 0
-        type = Type.ADD_BUTTON
+        this.type = type
         subType = SubType.OTHER
     }
 }

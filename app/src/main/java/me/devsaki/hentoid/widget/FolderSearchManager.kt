@@ -58,8 +58,8 @@ class FolderSearchManager() {
         explorer = null
     }
 
-    fun getFolders(context: Context, root: Uri, parent: Uri) {
-        Timber.d("Navigating to $root with parent $parent")
+    fun getFolders(context: Context, root: Uri) {
+        Timber.d("Navigating to $root")
         val previousRoot = explorer?.root ?: Uri.EMPTY
         if (previousRoot != root) explorer = FileExplorer(context, root)
 
@@ -78,7 +78,7 @@ class FolderSearchManager() {
         // Add 'Up one level' item at position 0
         displayFiles.add(
             0,
-            DisplayFile(parent, context.resources.getString(R.string.up_level))
+            DisplayFile(context.resources.getString(R.string.up_level), DisplayFile.Type.UP_BUTTON)
         )
         files.postValue(displayFiles)
     }

@@ -46,6 +46,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -69,7 +70,6 @@ import me.devsaki.hentoid.workers.data.SplitMergeData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 import java.security.InvalidParameterException
-import java.util.Stack
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -103,7 +103,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     private var currentFoldersSource: LiveData<List<DisplayFile>>? = null
     val folders = MediatorLiveData<List<DisplayFile>>()
     val folderSearchBundle = MutableLiveData<Bundle>()
-    val parentRoots = Stack<Uri>()
 
     // True if there's at least one existing custom group; false instead
     val isCustomGroupingAvailable = MutableLiveData<Boolean>()
@@ -272,8 +271,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     private suspend fun doSearchFolders() {
         val root = folderRoot.value ?: Uri.EMPTY
+        val isARoot = Settings.libraryFoldersRoots.contains(root.toString()) || root == Uri.EMPTY
         val ctx: Context = getApplication()
-        if (root == Uri.EMPTY) {
+        if (isARoot) {
             folderSearchManager.clear()
             // Display roots (level 0)
             val entriesLive = MutableLiveData<List<DisplayFile>>()
@@ -283,7 +283,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
             withContext(Dispatchers.IO) {
                 val entries = ArrayList<DisplayFile>()
-                entries.add(DisplayFile(ctx.resources.getString(R.string.add_root)))
+                entries.add(
+                    DisplayFile(
+                        ctx.resources.getString(R.string.add_root),
+                        DisplayFile.Type.ADD_BUTTON
+                    )
+                )
                 Settings.libraryFoldersRoots.forEach {
                     getDocumentFromTreeUriString(ctx, it)?.let { entries.add(DisplayFile(it)) }
                 }
@@ -311,8 +316,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
 
             withContext(Dispatchers.IO) {
-                val parentUri = if (parentRoots.empty()) Uri.EMPTY else parentRoots.peek()
-                folderSearchManager.getFolders(ctx, root, parentUri)
+                folderSearchManager.getFolders(ctx, root)
                 folderSearchBundle.postValue(folderSearchManager.toBundle())
             }
         }
@@ -399,21 +403,19 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         viewModelScope.launch { doSearchGroup() }
     }
 
-    fun setFolderRoot(value: Uri) {
-        var isGoingUp = false
-        if (parentRoots.isNotEmpty()) {
-            val existingIdx = parentRoots.indexOf(value)
-            if (existingIdx > -1) {
-                isGoingUp = true
-                (0..<parentRoots.size - existingIdx).forEach { parentRoots.pop() }
+    fun goUpOneFolder() {
+        // Identify the current folder's parent and get there
+        val currentFolder = folderRoot.value ?: return
+        Settings.libraryFoldersRoots.firstOrNull { currentFolder.toString().startsWith(it) }?.let {
+            getParent(getApplication(), it.toUri(), currentFolder)?.let {
+                setFolderRoot(it)
             }
         }
-        folderRoot.value = value
+    }
 
-        viewModelScope.launch {
-            doSearchFolders()
-            if (!isGoingUp) parentRoots.push(value)
-        }
+    fun setFolderRoot(value: Uri) {
+        folderRoot.value = value
+        viewModelScope.launch { doSearchFolders() }
     }
 
     fun setFolderQuery(value: String) {

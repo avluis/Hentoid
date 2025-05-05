@@ -59,7 +59,6 @@ import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.openReader
@@ -314,10 +313,10 @@ class LibraryFoldersFragment : Fragment(),
                 selectExtension?.apply { deselect(selections.toMutableSet()) }
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
 
-                val uri = if (item.doc.type == Type.SUPPORTED_FILE)
-                    getParent(context, Settings.libraryFoldersRoot.toUri(), folder)
-                else folder.uri
-                uri?.let { openUri(context, it) }
+                val uri =
+                    if (item.doc.type == Type.SUPPORTED_FILE) Settings.libraryFoldersRoot.toUri()
+                    else folder.uri
+                openUri(context, uri)
             }
         }
     }
@@ -547,6 +546,10 @@ class LibraryFoldersFragment : Fragment(),
                         // Run folder picker
                         pickRootFolder.launch(StorageLocation.NONE)
                     }
+                }
+
+                Type.UP_BUTTON -> {
+                    viewModel.goUpOneFolder()
                 }
 
                 Type.BOOK_FOLDER -> {
