@@ -71,7 +71,7 @@ class FolderSearchManager() {
             val nbChildren = if (it.isDirectory) {
                 explorer?.countFiles(it, imageNamesFilter) ?: 0
             } else 0
-            val res = DisplayFile(it, nbChildren > 1)
+            val res = DisplayFile(it, nbChildren > 1, root)
             res.nbChildren = nbChildren
             res
         }.toMutableList()

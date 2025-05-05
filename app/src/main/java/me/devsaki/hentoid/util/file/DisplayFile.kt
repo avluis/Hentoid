@@ -13,6 +13,7 @@ class DisplayFile {
     }
 
     val uri: Uri
+    val parent: Uri
     val name: String
     val lastModified: Long
     val type: Type
@@ -24,8 +25,9 @@ class DisplayFile {
     var isBeingProcessed: Boolean = false
 
 
-    constructor(doc: DocumentFile, isBook: Boolean = false) {
+    constructor(doc: DocumentFile, isBook: Boolean = false, parent: Uri = Uri.EMPTY) {
         uri = doc.uri
+        this.parent = parent
         name = doc.name ?: ""
         lastModified = doc.lastModified()
         if (doc.isDirectory) if (isBook) {
@@ -52,6 +54,7 @@ class DisplayFile {
     // Used for the "Add root" and "Go up one level" buttons
     constructor(name: String, type: Type) {
         uri = Uri.EMPTY
+        parent = Uri.EMPTY
         this.name = name
         lastModified = 0
         this.type = type

@@ -103,6 +103,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     private var currentFoldersSource: LiveData<List<DisplayFile>>? = null
     val folders = MediatorLiveData<List<DisplayFile>>()
     val folderSearchBundle = MutableLiveData<Bundle>()
+    val parentsCache = HashMap<Uri, Uri>() // Key = child folder, Value = parent folder
 
     // True if there's at least one existing custom group; false instead
     val isCustomGroupingAvailable = MutableLiveData<Boolean>()
@@ -311,6 +312,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         .filterNot { it.type == DisplayFile.Type.OTHER }
                         .toList()
                 enrichedLD.value = enrichedWithItems
+                // Fill parents cache
+                files.filter { it.type == DisplayFile.Type.FOLDER }.forEach {
+                    parentsCache[it.uri] = it.parent
+                }
             }
             currentFoldersSource = enrichedLD
             currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
@@ -404,13 +409,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun goUpOneFolder() {
-        // Identify the current folder's parent and get there
         val currentFolder = folderRoot.value ?: return
-        Settings.libraryFoldersRoots.firstOrNull { currentFolder.toString().startsWith(it) }?.let {
-            getParent(getApplication(), it.toUri(), currentFolder)?.let {
-                setFolderRoot(it)
+        parentsCache[currentFolder]?.let { setFolderRoot(it) }
+            ?: run {
+                // Identify the current folder's parent and get there
+                Settings.libraryFoldersRoots.firstOrNull { currentFolder.toString().startsWith(it) }
+                    ?.let {
+                        getParent(getApplication(), it.toUri(), currentFolder)
+                            ?.let { setFolderRoot(it) }
+                    }
             }
-        }
     }
 
     fun setFolderRoot(value: Uri) {
