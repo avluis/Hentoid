@@ -59,6 +59,8 @@ import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.persistLocationCredentials
@@ -125,8 +127,6 @@ class LibraryFoldersFragment : Fragment(),
 
     // TODO doc
     private var previousViewType = -1
-
-    private var root: Uri? = null
 
     private lateinit var pagingDebouncer: Debouncer<Unit>
 
@@ -275,6 +275,7 @@ class LibraryFoldersFragment : Fragment(),
         when (menuItem.itemId) {
             R.id.action_edit -> editSelectedItemName()
             R.id.action_delete -> deleteSelectedItems()
+            R.id.action_open_folder -> openItemFolder()
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
@@ -294,6 +295,31 @@ class LibraryFoldersFragment : Fragment(),
         }
         if (!keepToolbar) activity.get()!!.getSelectionToolbar()?.visibility = View.GONE
         return true
+    }
+
+    /**
+     * Callback for the "open containing folder" action button
+     */
+    private fun openItemFolder() {
+        val selectedItems: Set<FileItem> = selectExtension!!.selectedItems
+        val context = getActivity() ?: return
+        if (1 == selectedItems.size) {
+            val item = selectedItems.firstOrNull() ?: return
+            if (item.doc.uri == Uri.EMPTY) {
+                toast(R.string.folder_undefined)
+                return
+            }
+            val folder = getDocumentFromTreeUri(context, item.doc.uri)
+            if (folder != null) {
+                selectExtension?.apply { deselect(selections.toMutableSet()) }
+                activity.get()?.getSelectionToolbar()?.visibility = View.GONE
+
+                val uri = if (item.doc.type == Type.SUPPORTED_FILE)
+                    getParent(context, Settings.libraryFoldersRoot.toUri(), folder)
+                else folder.uri
+                uri?.let { openUri(context, it) }
+            }
+        }
     }
 
     /**
