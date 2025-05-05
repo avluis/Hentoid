@@ -3,7 +3,6 @@ package me.devsaki.hentoid.widget
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import androidx.lifecycle.MutableLiveData
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
@@ -17,7 +16,6 @@ import timber.log.Timber
 
 class FolderSearchManager() {
 
-    val files = MutableLiveData<List<DisplayFile>>()
     private val values = FolderSearchBundle()
     private var explorer: FileExplorer? = null
 
@@ -58,13 +56,13 @@ class FolderSearchManager() {
         explorer = null
     }
 
-    fun getFolders(context: Context, root: Uri) {
+    fun getFolders(context: Context, root: Uri): List<DisplayFile> {
         Timber.d("Navigating to $root")
         val previousRoot = explorer?.root ?: Uri.EMPTY
         if (previousRoot != root) explorer = FileExplorer(context, root)
 
-        val rootDoc = getDocumentFromTreeUri(context, root) ?: return
-        val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return
+        val rootDoc = getDocumentFromTreeUri(context, root) ?: return emptyList()
+        val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return emptyList()
 
         // Count contents to see if we have a folder book
         val displayFiles = docs.map {
@@ -80,7 +78,8 @@ class FolderSearchManager() {
             0,
             DisplayFile(context.resources.getString(R.string.up_level), DisplayFile.Type.UP_BUTTON)
         )
-        files.postValue(displayFiles)
+        return displayFiles
+        // files.postValue(displayFiles)
     }
 
     class FolderSearchBundle(val bundle: Bundle = Bundle()) {

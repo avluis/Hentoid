@@ -100,7 +100,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     // Folders data
     val folderRoot = MutableLiveData<Uri>()
-    private var currentFoldersSource: LiveData<List<DisplayFile>>? = null
     val folders = MediatorLiveData<List<DisplayFile>>()
     val folderSearchBundle = MutableLiveData<Bundle>()
     val parentsCache = HashMap<Uri, Uri>() // Key = child folder, Value = parent folder
@@ -277,11 +276,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (isARoot) {
             folderSearchManager.clear()
             // Display roots (level 0)
-            val entriesLive = MutableLiveData<List<DisplayFile>>()
-            currentFoldersSource?.let { folders.removeSource(it) }
-            currentFoldersSource = entriesLive
-            currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
-
             withContext(Dispatchers.IO) {
                 val entries = ArrayList<DisplayFile>()
                 entries.add(
@@ -293,35 +287,24 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 Settings.libraryFoldersRoots.forEach {
                     getDocumentFromTreeUriString(ctx, it)?.let { entries.add(DisplayFile(it)) }
                 }
-                entriesLive.postValue(entries)
+                folders.postValue(entries)
             }
         } else {
             // Search actual folders
             folderSearchManager.setSortField(Settings.folderSortField)
             folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
 
-            currentFoldersSource?.let { folders.removeSource(it) }
-            // Enrich with covers, if books are in the library
-            val storageLD = folderSearchManager.files
-            val enrichedLD = MediatorLiveData<List<DisplayFile>>()
-            enrichedLD.addSource(storageLD) { files ->
-                val enrichedWithItems =
-                    files
-                        .map { enrichFileWithCovers(it, dao) }
-                        .sortedBy { it.name }.sortedBy { it.type.ordinal }
-                        .filterNot { it.type == DisplayFile.Type.OTHER }
-                        .toList()
-                enrichedLD.value = enrichedWithItems
+            withContext(Dispatchers.IO) {
+                val files = folderSearchManager.getFolders(ctx, root)
+                    .map { enrichFileWithCovers(it, dao) }
+                    .sortedBy { it.name }.sortedBy { it.type.ordinal }
+                    .filterNot { it.type == DisplayFile.Type.OTHER }
+                    .toList()
+                folders.postValue(files)
                 // Fill parents cache
                 files.filter { it.type == DisplayFile.Type.FOLDER }.forEach {
                     parentsCache[it.uri] = it.parent
                 }
-            }
-            currentFoldersSource = enrichedLD
-            currentFoldersSource?.let { folders.addSource(it) { folders.value = it } }
-
-            withContext(Dispatchers.IO) {
-                folderSearchManager.getFolders(ctx, root)
                 folderSearchBundle.postValue(folderSearchManager.toBundle())
             }
         }
