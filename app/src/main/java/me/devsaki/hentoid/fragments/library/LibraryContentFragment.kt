@@ -567,8 +567,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
-                while (selectExtension!!.selections.size < getItemAdapter()!!.adapterItemCount && ++count < 5)
-                    selectExtension!!.select(IntRange(0, getItemAdapter()!!.adapterItemCount - 1))
+                selectExtension?.apply {
+                    while (selections.size < getItemAdapter()!!.adapterItemCount && ++count < 5)
+                        IntRange(0, getItemAdapter()!!.adapterItemCount - 1).forEach {
+                            select(it, false, true)
+                        }
+                }
                 keepToolbar = true
             }
 
@@ -1306,9 +1310,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     isSelected: Boolean,
                     calledFromOnStart: Boolean
                 ) {
-                    selectExtension?.let {
-                        if (isSelected) it.select(IntRange(start, end))
-                        else it.deselect(IntRange(start, end).toMutableList())
+                    selectExtension?.let { se ->
+                        if (isSelected) IntRange(start, end).forEach { se.select(it, false, true) }
+                        else se.deselect(IntRange(start, end).toMutableList())
                     }
                 }
             }).withMode(DragSelectionProcessor.Mode.Simple)

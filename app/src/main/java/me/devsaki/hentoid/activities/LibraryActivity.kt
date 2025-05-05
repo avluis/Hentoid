@@ -1112,6 +1112,24 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             splitMenu?.isVisible = false
             transformMenu?.isVisible = false
             exportMetaMenu?.isVisible = selectedTotalCount > 0
+        } else if (isFoldersDisplayed()) {
+            editMenu?.isVisible = false
+            deleteMenu?.isVisible = selectedTotalCount > 0
+            shareMenu?.isVisible = false
+            completedMenu?.isVisible = false
+            resetReadStatsMenu?.isVisible = false
+            rateMenu?.isVisible = false
+            archiveMenu?.isVisible = selectedTotalCount > 0
+            changeGroupMenu?.isVisible = false
+            folderMenu?.isVisible = selectedTotalCount > 0
+            redownloadMenu?.isVisible = false
+            downloadStreamedMenu?.isVisible = false
+            streamMenu?.isVisible = false
+            groupCoverMenu?.isVisible = false
+            mergeMenu?.isVisible = false
+            splitMenu?.isVisible = false
+            transformMenu?.isVisible = false
+            exportMetaMenu?.isVisible = false
         } else { // Flat view
             editMenu?.isVisible = !hasProcessed
             deleteMenu?.isVisible =

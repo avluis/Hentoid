@@ -111,7 +111,7 @@ class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
                         isSelected: Boolean,
                         calledFromOnStart: Boolean
                     ) {
-                        if (isSelected) selectExtension.select(IntRange(start, end))
+                        if (isSelected) IntRange(start, end).forEach { selectExtension.select(it, false, true) }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
                     }
                 }).withMode(DragSelectionProcessor.Mode.Simple)

@@ -197,7 +197,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                         isSelected: Boolean,
                         calledFromOnStart: Boolean
                     ) {
-                        if (isSelected) selectExtension.select(IntRange(start, end))
+                        if (isSelected) IntRange(start, end).forEach { selectExtension.select(it, false, true) }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
                     }
                 }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -323,7 +323,9 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                 var count = 0
                 selectExtension.apply {
                     while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
-                        select(IntRange(0, itemAdapter.adapterItemCount - 1))
+                        IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
+                            select(it, false, true)
+                        }
                 }
                 keepToolbar = true
             }

@@ -47,6 +47,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         showDragHandle = false
         isSwipeable = false
         isEmpty = false
+        isSelectable = (d.type != Type.ADD_BUTTON && d.type != Type.UP_BUTTON)
         identifier = hash64(doc.uri.toString().toByteArray())
     }
 

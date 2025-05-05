@@ -278,10 +278,12 @@ class LibraryFoldersFragment : Fragment(),
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
-                while (selectExtension!!.selections.size < itemAdapter.adapterItemCount && ++count < 5)
-                    selectExtension!!.select(
-                        IntRange(0, itemAdapter.adapterItemCount - 1)
-                    )
+                selectExtension?.apply {
+                    while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
+                        IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
+                            select(it, false, true)
+                        }
+                }
                 keepToolbar = true
             }
 
@@ -404,7 +406,6 @@ class LibraryFoldersFragment : Fragment(),
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.requireOrCreateExtension()
         selectExtension?.apply {
-            isSelectable = true
             multiSelect = true
             selectOnLongClick = true
             selectWithItemUpdate = true
@@ -441,9 +442,9 @@ class LibraryFoldersFragment : Fragment(),
                     isSelected: Boolean,
                     calledFromOnStart: Boolean
                 ) {
-                    selectExtension?.let {
-                        if (isSelected) it.select(IntRange(start, end))
-                        else it.deselect(IntRange(start, end).toMutableList())
+                    selectExtension?.let { se ->
+                        if (isSelected) IntRange(start, end).forEach { se.select(it, false, true) }
+                        else se.deselect(IntRange(start, end).toMutableList())
                     }
                 }
             }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -613,18 +614,10 @@ class LibraryFoldersFragment : Fragment(),
             activity.get()?.getSelectionToolbar()?.visibility = View.GONE
             selectExtension?.selectOnLongClick = true
         } else {
-            // TODO
-            /*
-            activity.get()!!.updateSelectionToolbar(
-                selectedCount.toLong(),
-                selectedProcessedCount.toLong(),
-                selectedLocalCount.toLong(),
-                0,
-                0,
-                0
-            )
-            activity.get()!!.getSelectionToolbar()?.visibility = View.VISIBLE
-             */
+            activity.get()?.apply {
+                updateSelectionToolbar(selectedCount.toLong(), 0, 0, 0, 0, 0)
+                getSelectionToolbar()?.visibility = View.VISIBLE
+            }
         }
     }
 
