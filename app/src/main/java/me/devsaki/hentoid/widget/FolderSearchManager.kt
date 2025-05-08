@@ -8,7 +8,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
@@ -58,21 +57,28 @@ class FolderSearchManager() {
 
     fun getFolders(context: Context, root: Uri): List<DisplayFile> {
         Timber.d("Navigating to $root")
-        val previousRoot = explorer?.root ?: Uri.EMPTY
-        if (previousRoot != root) explorer = FileExplorer(context, root)
+        val previousRootStr = explorer?.root?.path ?: ""
+        val rootStr = root.path ?: ""
+        val needNewExplorer = previousRootStr.isEmpty() ||
+                (!previousRootStr.startsWith(rootStr) && !rootStr.startsWith(previousRootStr))
+        if (needNewExplorer) explorer = FileExplorer(context, root)
 
-        val rootDoc = getDocumentFromTreeUri(context, root) ?: return emptyList()
+        Timber.d("aa")
+        val rootDoc = explorer?.getDocumentFromTreeUri(context, root) ?: return emptyList()
+        Timber.d("bb")
         val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return emptyList()
+        Timber.d("cc")
 
         // Count contents to see if we have a folder book
         val displayFiles = docs.map {
-            val nbChildren = if (it.isDirectory) {
+            val nbImgChildren = if (it.isDirectory) {
                 explorer?.countFiles(it, imageNamesFilter) ?: 0
             } else 0
-            val res = DisplayFile(it, nbChildren > 1, root)
-            res.nbChildren = nbChildren
+            val res = DisplayFile(it, nbImgChildren > 1, root)
+            res.nbChildren = nbImgChildren
             res
         }.toMutableList()
+        Timber.d("dd")
         // Add 'Up one level' item at position 0
         displayFiles.add(
             0,

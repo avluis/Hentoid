@@ -26,6 +26,7 @@ import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.DisplayFile.SubType
 import me.devsaki.hentoid.util.file.DisplayFile.Type
 import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.image.loadStill
 import timber.log.Timber
 
 class FileItem : AbstractItem<FileItem.ViewHolder>,
@@ -115,6 +116,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 debugStr = "empty item"
                 return  // Ignore placeholders from PagedList
             }
+            if (BuildConfig.DEBUG) Timber.d("binding begin ${item.doc.name}")
 
             // Payloads are set when the content stays the same but some properties alone change
             if (payloads.isNotEmpty()) {
@@ -145,6 +147,8 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             attachTitle(item.doc)
             attachMetrics(item.doc)
             attachButtons(item)
+
+            if (BuildConfig.DEBUG) Timber.d("binding end ${item.doc.name}")
         }
 
         private fun updateLayoutVisibility(item: FileItem, doc: DisplayFile) {
@@ -160,8 +164,8 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
 
         private fun attachCover(doc: DisplayFile) {
             doc.coverUri?.let {
-                ivCover.setImageURI(it)
                 ivCover.scaleType = ImageView.ScaleType.FIT_CENTER
+                ivCover.loadStill(it.toString())
             } ?: run {
                 val icon = when (doc.type) {
                     Type.FOLDER -> R.drawable.ic_folder

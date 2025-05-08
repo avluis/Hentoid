@@ -121,7 +121,7 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
  * @return Full, human-readable access path from the given Uri
  */
 private fun getFullPathFromTreeUri(context: Context, uri: Uri): String {
-    if (uri.toString().isEmpty()) return ""
+    if (uri == Uri.EMPTY) return ""
 
     var volumePath = getVolumePath(context, getVolumeIdFromUri(uri)) ?: "UnknownVolume"
     if (volumePath.endsWith(File.separator))

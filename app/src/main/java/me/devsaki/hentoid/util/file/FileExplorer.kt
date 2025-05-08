@@ -368,6 +368,12 @@ class FileExplorer : Closeable {
         return resultFiles
     }
 
+    fun getDocumentFromTreeUri(context: Context, treeUri: Uri): DocumentFile? {
+        val result = fromTreeUriCached(context, treeUri)
+        return if (null == result || !result.exists()) null
+        else result
+    }
+
     /**
      * WARNING Following methods are tweaks of internal Android code to make it faster by caching calls to queryIntentContentProviders
      */
@@ -400,7 +406,7 @@ class FileExplorer : Closeable {
     private fun getTreeDocumentIdCached(uri: Uri): String? {
         val uriStr = uri.toString()
         // First look into cache
-        var result = documentIdCache[uri.toString()]
+        var result = documentIdCache[uriStr]
         // If nothing found, try the long way
         if (null == result) {
             result = DocumentsContract.getTreeDocumentId(uri)
