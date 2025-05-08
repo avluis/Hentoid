@@ -16,6 +16,7 @@ class DisplayFile {
     val parent: Uri
     val name: String
     val lastModified: Long
+    var contentId : Long = 0
     val type: Type
     val subType: SubType
 

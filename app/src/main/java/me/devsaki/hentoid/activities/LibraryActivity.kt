@@ -1119,7 +1119,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             completedMenu?.isVisible = false
             resetReadStatsMenu?.isVisible = false
             rateMenu?.isVisible = false
-            archiveMenu?.isVisible = selectedTotalCount > 0
+            archiveMenu?.isVisible = false
             changeGroupMenu?.isVisible = false
             folderMenu?.isVisible = selectedTotalCount > 0
             redownloadMenu?.isVisible = false
@@ -1166,13 +1166,13 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
      * @param contents Items to be deleted if the answer is yes
      */
     fun askDeleteItems(
-        contents: List<Content>,
-        groups: List<Group>,
+        contentIds: List<Long>,
+        groupIds: List<Long>,
         onSuccess: Runnable?,
         selectExtension: SelectExtension<*>
     ) {
         val builder = MaterialAlertDialogBuilder(this)
-        val count = if (groups.isNotEmpty()) groups.size else contents.size
+        val count = if (groupIds.isNotEmpty()) groupIds.size else contentIds.size
         if (count > 1000) {
             // TODO provide a link to the mass-delete tool when it's ready (#992)
             snack(R.string.delete_limit)
@@ -1180,7 +1180,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             val title = resources.getQuantityString(R.plurals.ask_delete_multiple, count, count)
             builder.setMessage(title).setPositiveButton(R.string.yes) { _, _ ->
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
-                viewModel.deleteItems(contents, groups, false, onSuccess)
+                viewModel.deleteItems(contentIds, groupIds, false, onSuccess)
             }.setNegativeButton(R.string.no) { _, _ ->
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
             }

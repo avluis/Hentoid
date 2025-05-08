@@ -15,7 +15,7 @@ class DeleteProgressNotification(
 ) : BaseNotification() {
 
     enum class ProgressType {
-        DELETE_BOOKS, PURGE_BOOKS, DELETE_PAGES, STREAM_BOOKS
+        DELETE_BOOKS, PURGE_BOOKS, DELETE_PAGES, DELETE_DOCS, STREAM_BOOKS
     }
 
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)

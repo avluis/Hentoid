@@ -297,7 +297,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
             withContext(Dispatchers.IO) {
                 val files = folderSearchManager.getFolders(ctx, root)
-                    .map { enrichFileWithCovers(it, dao) }
+                    .map { enrichWithMetadata(it, dao) }
                     .sortedBy { it.name }.sortedBy { it.type.ordinal }
                     .filterNot { it.type == DisplayFile.Type.OTHER }
                     .toList()
@@ -311,9 +311,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
     }
 
-    private fun enrichFileWithCovers(f: DisplayFile, dao: CollectionDAO): DisplayFile {
+    private fun enrichWithMetadata(f: DisplayFile, dao: CollectionDAO): DisplayFile {
         dao.selectContentByStorageUri(f.uri.toString(), false)?.let {
+            Timber.d("Mapped metadata for ${it.title}")
             f.coverUri = it.cover.usableUri.toUri()
+            f.contentId = it.id
         }
         return f
     }
@@ -403,6 +405,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             ?.let { setFolderRoot(it) }
                     }
             }
+    }
+
+    fun searchFolder() {
+        viewModelScope.launch { doSearchFolders() }
     }
 
     fun setFolderRoot(value: Uri) {
@@ -755,15 +761,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param contents List of content to be deleted
      */
     fun deleteItems(
-        contents: List<Content>,
-        groups: List<Group>,
-        deleteGroupsOnly: Boolean,
-        onSuccess: Runnable?
+        contentIds: List<Long>,
+        groupIds: List<Long>,
+        deleteGroupsOnly: Boolean = false,
+        onSuccess: Runnable? = null
     ) {
         val builder = DeleteData.Builder()
         builder.setOperation(BaseDeleteWorker.Operation.DELETE)
-        if (contents.isNotEmpty()) builder.setContentIds(contents.map { it.id })
-        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { it.id })
+        if (contentIds.isNotEmpty()) builder.setContentIds(contentIds)
+        if (groupIds.isNotEmpty()) builder.setGroupIds(groupIds)
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
@@ -775,6 +781,26 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     if (it.state.isFinished) {
                         onSuccess?.run()
                         refreshAvailableGroupings()
+                    }
+                }
+            }
+        workObservers.add(Pair(request.id, workInfoObserver))
+        workManager.getWorkInfoByIdLiveData(request.id).observeForever(workInfoObserver)
+    }
+
+    fun deleteOnStorage(docs: List<Uri>, onSuccess: Runnable? = null) {
+        val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
+        if (docs.isNotEmpty()) builder.setDocUris(docs)
+        val workManager = WorkManager.getInstance(getApplication())
+        val request: WorkRequest =
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
+        workManager.enqueue(request)
+        val workInfoObserver =
+            Observer { workInfo: WorkInfo? ->
+                workInfo?.let {
+                    if (it.state.isFinished) {
+                        onSuccess?.run()
                     }
                 }
             }

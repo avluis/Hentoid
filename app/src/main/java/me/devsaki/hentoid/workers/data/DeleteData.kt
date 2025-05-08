@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.workers.data
 
+import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import androidx.work.Data
 import me.devsaki.hentoid.util.fromByteArray
 import me.devsaki.hentoid.util.toByteArray
@@ -17,13 +19,13 @@ private const val KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers"
 private const val KEY_GROUP_IDS = "groupIds"
 private const val KEY_QUEUE_IDS = "queueIds"
 private const val KEY_IMAGE_IDS = "imageIds"
+private const val KEY_DOC_URIS = "docUris"
 private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
 private const val KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly"
 private const val KEY_OPERATION = "operation"
 private const val KEY_CONTENT_FILTER = "contentFilter"
 private const val KEY_INVERT_FILTER_SCOPE = "invertFilterScope"
 private const val KEY_KEEP_FAV_GROUPS = "keepFavGroups"
-private const val KEY_DL_PREPURGE = "downloadPrepurge"
 
 class DeleteData {
     class Builder {
@@ -46,6 +48,10 @@ class DeleteData {
 
         fun setImageIds(value: List<Long>) {
             builder.putLongArray(KEY_IMAGE_IDS, value.toLongArray())
+        }
+
+        fun setDocUris(value: List<Uri>) {
+            builder.putStringArray(KEY_DOC_URIS, value.map { it.toString() }.toTypedArray())
         }
 
         fun setDeleteAllQueueRecords(value: Boolean) {
@@ -101,6 +107,10 @@ class DeleteData {
         val imageIds: LongArray
             get() {
                 return data.getLongArray(KEY_IMAGE_IDS) ?: longArrayOf()
+            }
+        val docUris: List<Uri>
+            get() {
+                return data.getStringArray(KEY_DOC_URIS)?.map { it.toUri() } ?: emptyList()
             }
         val isDeleteAllQueueRecords: Boolean
             get() = data.getBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, false)

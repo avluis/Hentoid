@@ -670,7 +670,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             if (!Settings.isDeleteExternalLibrary) selectedContent = selectedContent
                 .filterNot { it.status == StatusContent.EXTERNAL }
             if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
-                selectedContent, emptyList(),
+                selectedContent.map { it.id }, emptyList(),
                 { refreshIfNeeded() }, selectExtension!!
             )
         }
@@ -1902,7 +1902,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
         val content = item.content
         if (content != null) viewModel.deleteItems(
-            listOf(content), emptyList(), false
+            listOf(content.id), emptyList(), false
         ) { refreshIfNeeded() }
     }
 

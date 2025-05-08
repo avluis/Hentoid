@@ -5,6 +5,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import coil3.dispose
@@ -103,9 +104,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
-        // Specific to Queued content
-        var downloadButton: View? = view.findViewById(R.id.ivRedownload)
-
         private var deleteActionRunnable: Runnable? = null
 
         // Extra info to display in stacktraces
@@ -122,11 +120,13 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
                 val bundleParser = FileItemBundle(bundle)
-                // TODO
-                /*
-                var boolValue = bundleParser.isBeingDeleted
-                if (boolValue != null) item.content?.isBeingProcessed = boolValue
-                */
+
+                var strValue = bundleParser.coverUri
+                if (!strValue.isNullOrBlank()) item.doc.coverUri = strValue.toUri()
+                var longValue = bundleParser.contentId
+                if (longValue != null) item.doc.contentId = longValue
+                var boolValue = bundleParser.processed
+                if (boolValue != null) item.doc.isBeingProcessed = boolValue
             }
 
             item.deleteAction?.apply {
