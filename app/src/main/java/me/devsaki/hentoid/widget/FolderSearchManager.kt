@@ -9,6 +9,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
+import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
@@ -64,8 +65,13 @@ class FolderSearchManager() {
                 (!previousRootStr.startsWith(rootStr) && !rootStr.startsWith(previousRootStr))
         if (needNewExplorer) explorer = FileExplorer(context, root)
 
+        val nameFilter = if (values.query.isNotBlank()) {
+            NameFilter { it.contains(values.query, true) }
+        } else null
         val rootDoc = explorer?.getDocumentFromTreeUri(context, root) ?: return emptyList()
-        val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return emptyList()
+        val docs = explorer?.listDocumentFiles(
+            context, rootDoc, nameFilter
+        ) ?: return emptyList()
 
         // Count contents to see if we have a folder book
         var displayFiles = docs.map {

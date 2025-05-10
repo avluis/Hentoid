@@ -576,7 +576,12 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             searchMenu = toolbar.menu.findItem(R.id.action_search)
             searchMenu?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                    showSearchSubBar(true, null, null, !preventShowSearchHistoryNextExpand)
+                    showSearchSubBar(
+                        !isGroupDisplayed() && !isFoldersDisplayed(),
+                        null,
+                        null,
+                        !preventShowSearchHistoryNextExpand
+                    )
                     preventShowSearchHistoryNextExpand = false
                     invalidateNextQueryTextChange = true
 
@@ -673,9 +678,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     collapseSearchMenu()
                 }
                 showSearchSubBar(
-                    !isGroupDisplayed(),
+                    !isGroupDisplayed() && !isFoldersDisplayed(),
                     showClear = true,
-                    showSaveSearch = true,
+                    showSaveSearch = !isFoldersDisplayed(),
                     showSearchHistory = false
                 )
             } else {

@@ -173,27 +173,6 @@ class FileExplorer : Closeable {
         else null
     }
 
-
-    /**
-     * List all folders _and_ files inside the given parent folder (non recursive)
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list elements from
-     * @return Folders and files of the given parent folder
-     */
-    fun listDocumentFiles(
-        context: Context,
-        parent: DocumentFile
-    ): List<DocumentFile> {
-        return listDocumentFiles(
-            context, parent, null,
-            listFolders = true,
-            listFiles = true,
-            stopFirst = false
-        )
-    }
-
-
     /**
      * Count the children of a given folder (non recursive) matching the given criteria
      *
@@ -225,10 +204,10 @@ class FileExplorer : Closeable {
     fun listDocumentFiles(
         context: Context,
         parent: DocumentFile,
-        nameFilter: NameFilter?,
-        listFolders: Boolean,
-        listFiles: Boolean,
-        stopFirst: Boolean
+        nameFilter: NameFilter? = null,
+        listFolders: Boolean = true,
+        listFiles: Boolean = true,
+        stopFirst: Boolean = false
     ): List<DocumentFile> {
         val results = queryDocumentFiles(parent, nameFilter, listFolders, listFiles, stopFirst)
         return convertFromProperties(context, results)
