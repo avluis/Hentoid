@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.util.InnerNameNumberDisplayFileComparator
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
@@ -63,29 +64,33 @@ class FolderSearchManager() {
                 (!previousRootStr.startsWith(rootStr) && !rootStr.startsWith(previousRootStr))
         if (needNewExplorer) explorer = FileExplorer(context, root)
 
-        Timber.d("aa")
         val rootDoc = explorer?.getDocumentFromTreeUri(context, root) ?: return emptyList()
-        Timber.d("bb")
         val docs = explorer?.listDocumentFiles(context, rootDoc) ?: return emptyList()
-        Timber.d("cc")
 
         // Count contents to see if we have a folder book
-        val displayFiles = docs.map {
+        var displayFiles = docs.map {
             val nbImgChildren = if (it.isDirectory) {
                 explorer?.countFiles(it, imageNamesFilter) ?: 0
             } else 0
             val res = DisplayFile(it, nbImgChildren > 1, root)
             res.nbChildren = nbImgChildren
             res
-        }.toMutableList()
-        Timber.d("dd")
+        }
+
+        // Apply sort field
+        displayFiles = when (values.sortField) {
+            Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> displayFiles.sortedBy { it.lastModified }
+            else -> displayFiles.sortedWith(InnerNameNumberDisplayFileComparator())
+        }
+        if (values.sortDesc) displayFiles = displayFiles.reversed()
+
         // Add 'Up one level' item at position 0
+        displayFiles = displayFiles.toMutableList()
         displayFiles.add(
             0,
             DisplayFile(context.resources.getString(R.string.up_level), DisplayFile.Type.UP_BUTTON)
         )
         return displayFiles
-        // files.postValue(displayFiles)
     }
 
     class FolderSearchBundle(val bundle: Bundle = Bundle()) {

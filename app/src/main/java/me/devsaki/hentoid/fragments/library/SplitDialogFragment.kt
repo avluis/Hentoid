@@ -56,9 +56,9 @@ class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogLibrarySplitBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -172,7 +172,7 @@ class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
 
     private fun onActionClick() {
         content?.let { c ->
-            val chapters = selectExtension.selectedItems.mapNotNull { ti -> ti.chapter }
+            val chapters = selectExtension.selectedItems.mapNotNull { it.chapter }
             if (chapters.isNotEmpty()) {
                 parent?.splitContent(c, chapters)
                 dismiss()

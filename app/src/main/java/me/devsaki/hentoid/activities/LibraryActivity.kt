@@ -710,7 +710,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
             R.id.action_sort_filter -> LibraryBottomSortFilterFragment.invoke(
                 this, this.supportFragmentManager, isGroupDisplayed(),
-                group != null && group!!.isUngroupedGroup
+                group != null && group!!.isUngroupedGroup,
+                isFoldersDisplayed()
             )
 
             else -> return false
@@ -1084,7 +1085,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         selectedStreamedCount: Long,
         selectedNonArchivePdfExternalCount: Long,
         selectedArchivePdfExternalCount: Long,
-        selectedRoots : Long = 0
+        selectedRoots: Long = 0
     ) {
         val isMultipleSelection = selectedTotalCount > 1
         val hasProcessed = selectedProcessedCount > 0

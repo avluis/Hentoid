@@ -58,6 +58,7 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.Beholder.registerContent
+import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
@@ -2322,6 +2323,16 @@ private class InnerNameNumberArchiveComparator : Comparator<ArchiveEntry> {
     override fun compare(o1: ArchiveEntry, o2: ArchiveEntry): Int {
         return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
             .compare(o1.path, o2.path)
+    }
+}
+
+/**
+ * Comparator to be used to sort file entries according to their names
+ */
+class InnerNameNumberDisplayFileComparator : Comparator<DisplayFile> {
+    override fun compare(o1: DisplayFile, o2: DisplayFile): Int {
+        return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
+            .compare(o1.name, o2.name)
     }
 }
 

@@ -10,7 +10,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -31,6 +31,7 @@ import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
+import me.devsaki.hentoid.widget.FolderSearchManager.FolderSearchBundle
 import me.devsaki.hentoid.widget.GroupSearchManager.GroupSearchBundle
 
 class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
@@ -48,6 +49,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
     // Variables
     private var isUngroupedGroupDisplayed = false
     private var isGroupsDisplayed = false
+    private var isFoldersDisplayed = false
     private var favouriteFilter = false
     private var nonFavouriteFilter = false
     private var completedFilter = false
@@ -67,13 +69,15 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             context: Context,
             fragmentManager: FragmentManager,
             isGroupsDisplayed: Boolean,
-            isUngroupedGroupDisplayed: Boolean
+            isUngroupedGroupDisplayed: Boolean,
+            isFoldersDisplayed: Boolean
         ) {
             // Don't re-create it if already shown
             for (fragment in fragmentManager.fragments) if (fragment is LibraryBottomSortFilterFragment) return
             val builder = LibraryBottomSortFilterBundle()
             builder.isGroupsDisplayed = isGroupsDisplayed
             builder.isUngroupedGroupDisplayed = isUngroupedGroupDisplayed
+            builder.isFoldersDisplayed = isFoldersDisplayed
             val libraryBottomSheetFragment = LibraryBottomSortFilterFragment()
             libraryBottomSheetFragment.arguments = builder.bundle
             context.setStyle(
@@ -91,12 +95,13 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
         if (bundle != null) {
             val parser = LibraryBottomSortFilterBundle(bundle)
             isGroupsDisplayed = parser.isGroupsDisplayed
+            isFoldersDisplayed = parser.isFoldersDisplayed
             isUngroupedGroupDisplayed = parser.isUngroupedGroupDisplayed
         }
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
         viewModel.contentSearchBundle.observe(this) { b: Bundle? ->
-            if (isGroupsDisplayed) return@observe
+            if (isGroupsDisplayed || isFoldersDisplayed) return@observe
             val searchBundle = ContentSearchBundle(b!!)
             favouriteFilter = searchBundle.filterBookFavourites
             nonFavouriteFilter = searchBundle.filterBookNonFavourites
@@ -113,6 +118,12 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             ratingFilter = searchBundle.filterRating
             updateFilters()
         }
+        viewModel.folderSearchBundle.observe(this) { b: Bundle? ->
+            if (!isFoldersDisplayed) return@observe
+            val searchBundle = FolderSearchBundle(b!!)
+            // TODO
+            updateFilters()
+        }
         greyColor = ContextCompat.getColor(context, R.color.medium_gray)
         selectedColor = context.getThemedColor(R.color.secondary_light)
     }
@@ -121,9 +132,9 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = IncludeLibrarySortFilterBottomPanelBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -178,11 +189,15 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
                 if (isGroupsDisplayed) {
                     Settings.isGroupSortDesc = (i == R.id.sort_descending)
                     viewModel.searchGroup()
+                } else if (isFoldersDisplayed) {
+                    Settings.isFolderSortDesc = (i == R.id.sort_descending)
+                    viewModel.searchFolder()
                 } else {
                     Settings.isContentSortDesc = (i == R.id.sort_descending)
                     viewModel.searchContent()
                 }
             }
+            filtersPanel.isVisible = !isFoldersDisplayed
             filterFavsBtn.setOnClickListener {
                 favouriteFilter = !favouriteFilter
                 updateFilters()
@@ -219,7 +234,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
 
     private fun updateSortDirection() {
         val isRandom =
-            (if (isGroupsDisplayed) Settings.groupSortField else Settings.contentSortField) == Settings.Value.ORDER_FIELD_RANDOM
+            (if (isGroupsDisplayed) Settings.groupSortField else if (isFoldersDisplayed) Settings.folderSortField else Settings.contentSortField) == Settings.Value.ORDER_FIELD_RANDOM
         binding?.apply {
             if (isRandom) {
                 sortAscending.visibility = View.GONE
@@ -231,7 +246,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
                 sortAscending.visibility = View.VISIBLE
                 sortDescending.visibility = View.VISIBLE
                 val currentPrefSortDesc =
-                    if (isGroupsDisplayed) Settings.isGroupSortDesc else Settings.isContentSortDesc
+                    if (isGroupsDisplayed) Settings.isGroupSortDesc else if (isFoldersDisplayed) Settings.isFolderSortDesc else Settings.isContentSortDesc
                 sortAscDesc.check(if (currentPrefSortDesc) R.id.sort_descending else R.id.sort_ascending)
             }
         }
@@ -257,6 +272,9 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_CHILDREN))
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE))
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_CUSTOM))
+        } else if (isFoldersDisplayed) {
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_TITLE))
+            result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE))
         } else {
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_TITLE))
             result.add(createFromFieldCode(Settings.Value.ORDER_FIELD_ARTIST))
@@ -281,7 +299,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
 
     private fun createFromFieldCode(sortFieldCode: Int): TextItem<Int> {
         val currentPrefFieldCode =
-            if (isGroupsDisplayed) Settings.groupSortField else Settings.contentSortField
+            if (isGroupsDisplayed) Settings.groupSortField else if (isFoldersDisplayed) Settings.folderSortField else Settings.contentSortField
         return TextItem(
             resources.getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
             sortFieldCode,
@@ -318,6 +336,9 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             if (isGroupsDisplayed) {
                 Settings.groupSortField = code
                 viewModel.searchGroup()
+            } else if (isFoldersDisplayed) {
+                Settings.folderSortField = code
+                viewModel.searchFolder()
             } else {
                 Settings.contentSortField = code
                 viewModel.searchContent()

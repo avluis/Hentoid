@@ -299,7 +299,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             withContext(Dispatchers.IO) {
                 val files = folderSearchManager.getFolders(ctx, root)
                     .map { enrichWithMetadata(it, dao) }
-                    .sortedBy { it.name }.sortedBy { it.type.ordinal }
                     .filterNot { it.type == DisplayFile.Type.OTHER }
                     .toList()
                 folders.postValue(files)
