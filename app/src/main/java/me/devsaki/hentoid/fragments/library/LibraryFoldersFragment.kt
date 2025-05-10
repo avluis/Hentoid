@@ -65,7 +65,6 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.openReader
-import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.scanArchivePdf
 import me.devsaki.hentoid.util.scanBookFolder
 import me.devsaki.hentoid.util.toast
@@ -282,6 +281,7 @@ class LibraryFoldersFragment : Fragment(),
     private fun onSelectionToolbarItemClicked(menuItem: MenuItem): Boolean {
         var keepToolbar = false
         when (menuItem.itemId) {
+            R.id.action_detach -> detachSelectedItems()
             R.id.action_delete -> deleteSelectedItems()
             R.id.action_open_folder -> openItemFolder()
             R.id.action_select_all -> {
@@ -673,16 +673,21 @@ class LibraryFoldersFragment : Fragment(),
     private fun onRootFolderPickerResult(resultCode: PickerResult, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> {
-                val roots = Settings.libraryFoldersRoots.toMutableList()
-                // Persist I/O permissions; keep existing ones if present
-                persistLocationCredentials(requireContext(), uri)
-                roots.add(uri.toString())
-                Settings.libraryFoldersRoots = roots
-                viewModel.clearFolderFilters()
+                viewModel.attachFolderRoot(uri)
             }
 
             else -> {}
         }
+    }
+
+    /**
+     * Callback for the "detach" action button
+     */
+    private fun detachSelectedItems() {
+        val selectedItems: Set<FileItem> = selectExtension!!.selectedItems
+        if (selectedItems.isEmpty()) return
+
+        viewModel.detachFolderRoots(selectedItems.map { it.doc.uri })
     }
 
     /**
@@ -696,7 +701,8 @@ class LibraryFoldersFragment : Fragment(),
             selectExtension?.selectOnLongClick = true
         } else {
             activity.get()?.apply {
-                updateSelectionToolbar(selectedCount.toLong(), 0, 0, 0, 0, 0)
+                val nbRoots = selectedItems.count { it.doc.type == Type.ROOT_FOLDER }.toLong()
+                updateSelectionToolbar(selectedCount.toLong(), 0, 0, 0, 0, 0, nbRoots)
                 getSelectionToolbar()?.visibility = View.VISIBLE
             }
         }

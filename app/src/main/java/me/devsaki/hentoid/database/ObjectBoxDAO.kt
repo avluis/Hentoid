@@ -364,6 +364,10 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectContentEndWithStorageUri(docPart, onlyFlagged)
     }
 
+    override fun selectContentByStorageRootUri(folderUri: String): List<Content> {
+        return ObjectBoxDB.selectContentStartWithStorageUri(folderUri)
+    }
+
     override fun insertContent(content: Content): Long {
         val result = ObjectBoxDB.insertContentAndAttributes(content)
         // Attach new attributes to existing groups, if any

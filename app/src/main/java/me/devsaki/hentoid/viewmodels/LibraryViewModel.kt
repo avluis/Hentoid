@@ -52,6 +52,7 @@ import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
+import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateGroupsJson
@@ -837,6 +838,41 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 DeleteWorker::class.java
             ).setInputData(builder.data).build()
         )
+    }
+
+    fun attachFolderRoot(uri: Uri) {
+        val roots = Settings.libraryFoldersRoots.toMutableList()
+        // Persist I/O permissions; keep existing ones if present
+        persistLocationCredentials(getApplication(), uri)
+        roots.add(uri.toString())
+        Settings.libraryFoldersRoots = roots
+        searchFolder()
+    }
+
+    fun detachFolderRoots(uris: List<Uri>) {
+        val roots = Settings.libraryFoldersRoots.toMutableList()
+        roots.removeAll(uris.map { it.toString() })
+        Settings.libraryFoldersRoots = roots
+
+        // Remove corresponding books from DB; identify JSONs to be deleted
+        viewModelScope.launch {
+            val jsons = ArrayList<Uri>()
+            withContext(Dispatchers.IO) {
+                uris.forEach {
+                    dao.selectContentByStorageRootUri(it.toString()).forEach {
+                        try {
+                            if (it.jsonUri.isNotBlank()) jsons.add(it.jsonUri.toUri())
+                            dao.deleteContent(it)
+                        } catch (t: Throwable) {
+                            Timber.w(t)
+                        }
+                    }
+                }
+                dao.cleanup()
+            }
+            deleteOnStorage(jsons)
+            searchFolder()
+        }
     }
 
     fun setGroupCoverContent(groupId: Long, coverContent: Content) {

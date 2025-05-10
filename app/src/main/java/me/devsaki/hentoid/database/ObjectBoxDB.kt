@@ -577,6 +577,16 @@ object ObjectBoxDB {
         return queryBuilder.build().safeFindFirst()
     }
 
+    fun selectContentStartWithStorageUri(folderUri: String): List<Content> {
+        return store.boxFor(Content::class.java)
+            .query()
+            .startsWith(
+                Content_.storageUri,
+                folderUri,
+                QueryBuilder.StringOrder.CASE_INSENSITIVE
+            ).build().safeFind()
+    }
+
     private fun getIdsFromAttributes(attrs: Set<Attribute>): LongArray {
         if (attrs.isEmpty()) return LongArray(0)
         val firstAttr = attrs.firstOrNull()

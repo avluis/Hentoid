@@ -5,7 +5,7 @@ import androidx.documentfile.provider.DocumentFile
 
 class DisplayFile {
     enum class Type {
-        ADD_BUTTON, UP_BUTTON, FOLDER, BOOK_FOLDER, SUPPORTED_FILE, OTHER
+        ADD_BUTTON, UP_BUTTON, ROOT_FOLDER, FOLDER, BOOK_FOLDER, SUPPORTED_FILE, OTHER
     }
 
     enum class SubType {
@@ -16,7 +16,7 @@ class DisplayFile {
     val parent: Uri
     val name: String
     val lastModified: Long
-    var contentId : Long = 0
+    var contentId: Long = 0
     val type: Type
     val subType: SubType
 
@@ -33,6 +33,9 @@ class DisplayFile {
         lastModified = doc.lastModified()
         if (doc.isDirectory) if (isBook) {
             type = Type.BOOK_FOLDER
+            subType = SubType.OTHER
+        } else if (parent == Uri.EMPTY) {
+            type = Type.ROOT_FOLDER
             subType = SubType.OTHER
         } else {
             type = Type.FOLDER

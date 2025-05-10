@@ -168,7 +168,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 ivCover.loadStill(it.toString())
             } ?: run {
                 val icon = when (doc.type) {
-                    Type.FOLDER -> R.drawable.ic_folder
+                    Type.ROOT_FOLDER, Type.FOLDER -> R.drawable.ic_folder
                     Type.SUPPORTED_FILE -> {
                         if (doc.subType == SubType.PDF) R.drawable.ic_pdf_file
                         else if (doc.subType == SubType.ARCHIVE) R.drawable.ic_archive
