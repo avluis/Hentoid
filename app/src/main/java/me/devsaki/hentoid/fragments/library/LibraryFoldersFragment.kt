@@ -688,6 +688,7 @@ class LibraryFoldersFragment : Fragment(),
         if (selectedItems.isEmpty()) return
 
         viewModel.detachFolderRoots(selectedItems.map { it.doc.uri })
+        leaveSelectionMode()
     }
 
     /**

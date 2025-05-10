@@ -850,7 +850,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     fun detachFolderRoots(uris: List<Uri>) {
         val roots = Settings.libraryFoldersRoots.toMutableList()
-        roots.removeAll(uris.map { it.toString() })
+        roots.removeAll(uris.map {
+            val str = it.toString()
+            val docPos = str.indexOf("/document/")
+            str.substring(0, docPos)
+        })
         Settings.libraryFoldersRoots = roots
 
         // Remove corresponding books from DB; identify JSONs to be deleted
