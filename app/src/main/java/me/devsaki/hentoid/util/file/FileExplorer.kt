@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor
 // Risky; these values are supposed to be hidden
 private const val DOCPROVIDER_PATH_DOCUMENT = "document"
 private const val DOCPROVIDER_PATH_TREE = "tree"
+private const val DOCPROVIDER_PATH_CHILDREN = "children"
 
 class FileExplorer : Closeable {
     val root: Uri
@@ -26,6 +27,7 @@ class FileExplorer : Closeable {
     private var treeDocumentFileConstructor: Constructor<*>? = null
 
     private val providersCache: MutableMap<String?, Boolean> = HashMap()
+    private val treeDocumentIdCache = MaxSizeHashMap<String, String?>(2000)
     private val documentIdCache = MaxSizeHashMap<String, String?>(2000)
 
     private val client: ContentProviderClient?
@@ -53,6 +55,7 @@ class FileExplorer : Closeable {
 
     @Throws(IOException::class)
     override fun close() {
+        treeDocumentIdCache.clear()
         documentIdCache.clear()
         client?.close()
     }
@@ -215,9 +218,9 @@ class FileExplorer : Closeable {
 
     @Throws(RemoteException::class)
     private fun getCursorFor(rootFolderUri: Uri): Cursor? {
-        val searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(
+        val searchUri = buildChildDocumentsUriUsingTreeCached(
             rootFolderUri,
-            DocumentsContract.getDocumentId(rootFolderUri)
+            getDocumentIdCached(rootFolderUri)
         )
         return client?.query(
             searchUri, arrayOf(
@@ -367,28 +370,52 @@ class FileExplorer : Closeable {
             .appendPath(documentId).build()
     }
 
+    // Original (uncached) is DocumentsContract.buildChildDocumentsUriUsingTree
+    private fun buildChildDocumentsUriUsingTreeCached(
+        treeUri: Uri,
+        parentDocumentId: String?
+    ): Uri {
+        return Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
+            .authority(treeUri.authority).appendPath(DOCPROVIDER_PATH_TREE)
+            .appendPath(getTreeDocumentIdCached(treeUri))
+            .appendPath(DOCPROVIDER_PATH_DOCUMENT)
+            .appendPath(parentDocumentId).appendPath(DOCPROVIDER_PATH_CHILDREN).build()
+    }
+
 
     // Original (uncached) is DocumentFile.fromTreeUri
     private fun fromTreeUriCached(context: Context, treeUri: Uri): DocumentFile? {
         var documentId = getTreeDocumentIdCached(treeUri)
         if (isDocumentUriCached(context, treeUri)) {
-            documentId = DocumentsContract.getDocumentId(treeUri)
+            documentId = getDocumentIdCached(treeUri)
         }
         return newTreeDocumentFile(
             null, context,
             buildDocumentUriUsingTreeCached(treeUri, documentId)
         )
-        //DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId));
     }
 
     // Original (uncached) is DocumentsContract.getTreeDocumentId
     private fun getTreeDocumentIdCached(uri: Uri): String? {
         val uriStr = uri.toString()
         // First look into cache
-        var result = documentIdCache[uriStr]
+        var result = treeDocumentIdCache[uriStr]
         // If nothing found, try the long way
         if (null == result) {
             result = DocumentsContract.getTreeDocumentId(uri)
+            treeDocumentIdCache[uriStr] = result
+        }
+        return result
+    }
+
+    // Original (uncached) is DocumentsContract.getDocumentId
+    private fun getDocumentIdCached(uri: Uri): String? {
+        val uriStr = uri.toString()
+        // First look into cache
+        var result = documentIdCache[uriStr]
+        // If nothing found, try the long way
+        if (null == result) {
+            result = DocumentsContract.getDocumentId(uri)
             documentIdCache[uriStr] = result
         }
         return result
