@@ -6,8 +6,8 @@ import android.net.Uri
 class CachedDocumentFile(
     val wrapped: DocumentFile,
     var mName: String?,
-    var mLength: Long?,
-    var mIsDirectory: Boolean?
+    var mLength: Long? = null,
+    var mIsDirectory: Boolean? = null
 ) : DocumentFile(wrapped.parentFile) {
 
     var mCanRead: Boolean? = null

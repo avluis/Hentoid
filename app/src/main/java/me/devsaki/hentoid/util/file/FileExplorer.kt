@@ -1,52 +1,33 @@
 package me.devsaki.hentoid.util.file
 
 import android.content.ContentProviderClient
-import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.RemoteException
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.CachedDocumentFile
 import androidx.documentfile.provider.DocumentFile
-import me.devsaki.hentoid.util.MaxSizeHashMap
 import timber.log.Timber
 import java.io.Closeable
 import java.io.IOException
-import java.lang.reflect.Constructor
 
-// Risky; these values are supposed to be hidden
-private const val DOCPROVIDER_PATH_DOCUMENT = "document"
-private const val DOCPROVIDER_PATH_TREE = "tree"
-private const val DOCPROVIDER_PATH_CHILDREN = "children"
 
 class FileExplorer : Closeable {
     val root: Uri
-
-    private var treeDocumentFileConstructor: Constructor<*>? = null
-
-    private val providersCache: MutableMap<String?, Boolean> = HashMap()
-    private val treeDocumentIdCache = MaxSizeHashMap<String, String?>(2000)
-    private val documentIdCache = MaxSizeHashMap<String, String?>(2000)
-
+    private val contract: CachedDocumentsContract
     private val client: ContentProviderClient?
-
-
-    @Synchronized
-    private fun setTreeDocumentFileConstructor(value: Constructor<*>) {
-        treeDocumentFileConstructor = value
-    }
-
 
     constructor(context: Context, parent: DocumentFile) {
         root = parent.uri
         client = init(context, parent.uri)
+        contract = CachedDocumentsContract()
     }
 
     constructor(context: Context, parentUri: Uri) {
         root = parentUri
         client = init(context, parentUri)
+        contract = CachedDocumentsContract()
     }
 
     private fun init(context: Context, uri: Uri): ContentProviderClient? {
@@ -55,8 +36,7 @@ class FileExplorer : Closeable {
 
     @Throws(IOException::class)
     override fun close() {
-        treeDocumentIdCache.clear()
-        documentIdCache.clear()
+        contract.close()
         client?.close()
     }
 
@@ -86,8 +66,8 @@ class FileExplorer : Closeable {
     fun hasFolders(parent: DocumentFile): Boolean {
         return countDocumentFiles(
             parent, null,
-            listFolders = true,
-            listFiles = false,
+            countFolders = true,
+            countFiles = false,
             stopFirst = true
         ) > 0
     }
@@ -177,24 +157,6 @@ class FileExplorer : Closeable {
     }
 
     /**
-     * Count the children of a given folder (non recursive) matching the given criteria
-     *
-     * @param parent       Folder containing the document to count
-     * @param nameFilter   NameFilter defining which documents to include
-     * @param countFolders true if matching folders have to be counted in the results
-     * @param countFiles   true if matching files have to be counted in the results
-     * @return Number of documents inside the given folder, matching the given criteria
-     */
-    private fun countDocumentFiles(
-        parent: DocumentFile,
-        nameFilter: NameFilter?,
-        countFolders: Boolean,
-        countFiles: Boolean
-    ): Int {
-        return countDocumentFiles(parent, nameFilter, countFolders, countFiles, false)
-    }
-
-    /**
      * List the children of a given folder (non recursive) matching the given criteria
      *
      * @param context     Context to use for the query
@@ -202,6 +164,7 @@ class FileExplorer : Closeable {
      * @param nameFilter  NameFilter defining which documents to include
      * @param listFolders true if matching folders have to be listed in the results
      * @param listFiles   true if matching files have to be listed in the results
+     * @param stopFirst   true to stop at the first match (useful to optimize when the point is to check for emptiness)
      * @return List of documents inside the given folder, matching the given criteria
      */
     fun listDocumentFiles(
@@ -218,9 +181,9 @@ class FileExplorer : Closeable {
 
     @Throws(RemoteException::class)
     private fun getCursorFor(rootFolderUri: Uri): Cursor? {
-        val searchUri = buildChildDocumentsUriUsingTreeCached(
+        val searchUri = contract.buildChildDocumentsUriUsingTree(
             rootFolderUri,
-            getDocumentIdCached(rootFolderUri)
+            contract.getDocumentId(rootFolderUri)
         )
         return client?.query(
             searchUri, arrayOf(
@@ -265,7 +228,7 @@ class FileExplorer : Closeable {
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                         results.add(
                             DocumentProperties(
-                                buildDocumentUriUsingTreeCached(parent.uri, documentId),
+                                contract.buildDocumentUriUsingTree(parent.uri, documentId),
                                 documentName,
                                 documentSize,
                                 isFolder
@@ -287,17 +250,17 @@ class FileExplorer : Closeable {
      *
      * @param parent      Folder containing the document to count
      * @param nameFilter  NameFilter defining which documents to include
-     * @param listFolders true if matching folders have to be listed in the results
-     * @param listFiles   true if matching files have to be listed in the results
-     * @param stopFirst   true to stop at the first match (useful to optimize when the point is to check for emptiness)
+     * @param countFolders true if matching folders have to be listed in the results
+     * @param countFiles   true if matching files have to be listed in the results
+     * @param stopFirst   true to stop at the first match (useful to optimize when the point is to check for emptiness); default is false
      * @return Number of children of the given folder, matching the given criteria
      */
     private fun countDocumentFiles(
         parent: DocumentFile,
         nameFilter: NameFilter?,
-        listFolders: Boolean,
-        listFiles: Boolean,
-        stopFirst: Boolean
+        countFolders: Boolean,
+        countFiles: Boolean,
+        stopFirst: Boolean = false
     ): Int {
         if (null == client) return 0
         var result = 0
@@ -310,7 +273,7 @@ class FileExplorer : Closeable {
                         c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR
 
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
-                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder))) result++
+                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((countFiles && !isFolder) || (countFolders && isFolder))) result++
 
                     // Don't do the whole loop if the point is to check for emptiness
                     if (stopFirst && result > 0) break
@@ -333,157 +296,25 @@ class FileExplorer : Closeable {
         context: Context,
         properties: List<DocumentProperties>
     ): List<DocumentFile> {
-        val resultFiles: MutableList<DocumentFile> = ArrayList()
-        for ((uri, name, size, isDirectory) in properties) {
-            val docFile = fromTreeUriCached(context, uri)
+        return properties.mapNotNull {
             // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
             //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
-            if (docFile != null) resultFiles.add(
+            contract.fromTreeUri(context, it.uri)?.let { doc ->
                 CachedDocumentFile(
-                    docFile,
-                    name,
-                    size,
-                    isDirectory
+                    doc,
+                    it.name,
+                    it.size,
+                    it.isDirectory
                 )
-            )
+            }
         }
-        return resultFiles
     }
 
     fun getDocumentFromTreeUri(context: Context, treeUri: Uri): DocumentFile? {
-        val result = fromTreeUriCached(context, treeUri)
+        val result = contract.fromTreeUri(context, treeUri)
         return if (null == result || !result.exists()) null
         else result
     }
-
-    /**
-     * WARNING Following methods are tweaks of internal Android code to make it faster by caching calls to queryIntentContentProviders
-     */
-    // Original (uncached) is DocumentsContract.buildDocumentUriUsingTree
-    // NB : appendPath got costly because of encoding operations
-    private fun buildDocumentUriUsingTreeCached(treeUri: Uri, documentId: String?): Uri {
-        return Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
-            .authority(treeUri.authority)
-            .appendPath(DOCPROVIDER_PATH_TREE) // Risky; this value is supposed to be hidden
-            .appendPath(getTreeDocumentIdCached(treeUri))
-            .appendPath(DOCPROVIDER_PATH_DOCUMENT) // Risky; this value is supposed to be hidden
-            .appendPath(documentId).build()
-    }
-
-    // Original (uncached) is DocumentsContract.buildChildDocumentsUriUsingTree
-    private fun buildChildDocumentsUriUsingTreeCached(
-        treeUri: Uri,
-        parentDocumentId: String?
-    ): Uri {
-        return Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
-            .authority(treeUri.authority).appendPath(DOCPROVIDER_PATH_TREE)
-            .appendPath(getTreeDocumentIdCached(treeUri))
-            .appendPath(DOCPROVIDER_PATH_DOCUMENT)
-            .appendPath(parentDocumentId).appendPath(DOCPROVIDER_PATH_CHILDREN).build()
-    }
-
-
-    // Original (uncached) is DocumentFile.fromTreeUri
-    private fun fromTreeUriCached(context: Context, treeUri: Uri): DocumentFile? {
-        var documentId = getTreeDocumentIdCached(treeUri)
-        if (isDocumentUriCached(context, treeUri)) {
-            documentId = getDocumentIdCached(treeUri)
-        }
-        return newTreeDocumentFile(
-            null, context,
-            buildDocumentUriUsingTreeCached(treeUri, documentId)
-        )
-    }
-
-    // Original (uncached) is DocumentsContract.getTreeDocumentId
-    private fun getTreeDocumentIdCached(uri: Uri): String? {
-        val uriStr = uri.toString()
-        // First look into cache
-        var result = treeDocumentIdCache[uriStr]
-        // If nothing found, try the long way
-        if (null == result) {
-            result = DocumentsContract.getTreeDocumentId(uri)
-            treeDocumentIdCache[uriStr] = result
-        }
-        return result
-    }
-
-    // Original (uncached) is DocumentsContract.getDocumentId
-    private fun getDocumentIdCached(uri: Uri): String? {
-        val uriStr = uri.toString()
-        // First look into cache
-        var result = documentIdCache[uriStr]
-        // If nothing found, try the long way
-        if (null == result) {
-            result = DocumentsContract.getDocumentId(uri)
-            documentIdCache[uriStr] = result
-        }
-        return result
-    }
-
-    // Original (uncached) : DocumentsContract.isDocumentUri
-    private fun isDocumentUriCached(context: Context, uri: Uri?): Boolean {
-        if (isContentUri(uri) && isDocumentsProviderCached(context, uri!!.authority)) {
-            val paths = uri.pathSegments
-            if (paths.size == 2) {
-                return DOCPROVIDER_PATH_DOCUMENT == paths[0]
-            } else if (paths.size == 4) {
-                return DOCPROVIDER_PATH_TREE == paths[0] && DOCPROVIDER_PATH_DOCUMENT == paths[2]
-            }
-        }
-        return false
-    }
-
-    // Original (uncached) : DocumentsContract.isDocumentsProvider
-    private fun isDocumentsProviderCached(context: Context, authority: String?): Boolean {
-        // First look into cache
-        val b = providersCache[authority]
-        if (b != null) return b
-        // If nothing found, try the long way
-        val intent = Intent(DocumentsContract.PROVIDER_INTERFACE)
-        val infos = context.packageManager
-            .queryIntentContentProviders(intent, 0)
-        for (info in infos) {
-            if (authority == info.providerInfo.authority) {
-                providersCache[authority] = true
-                return true
-            }
-        }
-        providersCache[authority] = false
-        return false
-    }
-
-    // Original : DocumentsContract.isContentUri
-    private fun isContentUri(uri: Uri?): Boolean {
-        return uri != null && ContentResolver.SCHEME_CONTENT == uri.scheme
-    }
-
-    // Original : TreeDocumentFile constructor (package private visibility)
-    private fun newTreeDocumentFile(
-        parent: DocumentFile?,
-        context: Context,
-        uri: Uri
-    ): DocumentFile? {
-        //resultFiles[i] = new TreeDocumentFile(this, context, result[i]); <-- not visible
-        try {
-            if (null == treeDocumentFileConstructor) {
-                val treeDocumentFileClazz =
-                    Class.forName("androidx.documentfile.provider.TreeDocumentFile")
-                val constructor = treeDocumentFileClazz.getDeclaredConstructor(
-                    DocumentFile::class.java,
-                    Context::class.java,
-                    Uri::class.java
-                )
-                constructor.isAccessible = true
-                setTreeDocumentFileConstructor(constructor)
-            }
-            return treeDocumentFileConstructor!!.newInstance(parent, context, uri) as DocumentFile
-        } catch (ex: Exception) {
-            Timber.e(ex)
-        }
-        return null
-    }
-
 
     /**
      * Create a NameFilter that filters all names equal'ing the given string
@@ -492,12 +323,7 @@ class FileExplorer : Closeable {
      * @return NameFilter that filters all names equal'ing the given string
      */
     fun createNameFilterEquals(name: String): NameFilter {
-        return NameFilter { displayName: String ->
-            displayName.equals(
-                name,
-                ignoreCase = true
-            )
-        }
+        return NameFilter { it.equals(name, ignoreCase = true) }
     }
 
     /**
