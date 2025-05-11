@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -76,7 +77,6 @@ import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 import java.security.InvalidParameterException
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class LibraryViewModel(application: Application, val dao: CollectionDAO) :
@@ -301,13 +301,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             folderSearchManager.setSortField(Settings.folderSortField)
             folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
 
-            val collectedFolders = ArrayList<DisplayFile>()
-
             withContext(Dispatchers.IO) {
                 folderSearchManager.getFolders(ctx, root)
                     .takeWhile { true } // TODO cancel here
                     .filterNot { it.type == DisplayFile.Type.OTHER }
                     .map { enrichWithMetadata(it, dao) }
+                    .transform {
+                        // Fill parents cache
+                        if (it.type == DisplayFile.Type.FOLDER) parentsCache[it.uri] = it.parent
+                        emit(it)
+                    }
                     .scan(ArrayList<DisplayFile>()) { accumulator, value ->
                         accumulator.add(value)
                         accumulator

@@ -91,17 +91,18 @@ class FolderSearchManager() {
             )
             val flowFiles =
                 theExplorer.listDocumentFilesFw(context, rootDoc, nameFilter)
-                    .flowOn(Dispatchers.IO)
                     .map {
                         // Count contents to see if we have a folder book
-                        // TODO do more
-                        val nbImgChildren = if (it.isDirectory) {
-                            theExplorer.countFiles(it, imageNamesFilter)
-                        } else 0
-                        val res = DisplayFile(it, nbImgChildren > 1, root)
-                        res.nbChildren = nbImgChildren
+                        val imgChildren = if (it.isDirectory) {
+                            theExplorer.listFiles(context, it, imageNamesFilter)
+                        } else emptyList()
+                        val coverUri = imgChildren.firstOrNull()?.uri ?: Uri.EMPTY
+                        val res = DisplayFile(it, imgChildren.size > 1, root)
+                        res.coverUri = coverUri
+                        res.nbChildren = imgChildren.size
                         res
                     }
+                    .flowOn(Dispatchers.IO)
 
             return@withContext merge(flowUp, flowFiles)
 
