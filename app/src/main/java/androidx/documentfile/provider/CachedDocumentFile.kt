@@ -1,139 +1,130 @@
-package androidx.documentfile.provider;
+package androidx.documentfile.provider
 
-import android.net.Uri;
+import android.net.Uri
 
-import androidx.annotation.NonNull;
+// Must stay inside androidx.documentfile.provider to be able to call DocumentFile constructor which is package-private
+class CachedDocumentFile(
+    val wrapped: DocumentFile,
+    var mName: String?,
+    var mLength: Long?,
+    var mIsDirectory: Boolean?
+) : DocumentFile(wrapped.parentFile) {
 
-public class CachedDocumentFile extends DocumentFile {
+    var mCanRead: Boolean? = null
+    var mCanWrite: Boolean? = null
+    var mExists: Boolean? = null
+    var mIsVirtual: Boolean? = null
+    var mType: String? = null
+    var mLastModified: Long? = null
 
-    final DocumentFile mWrapped;
-
-    Boolean mCanRead;
-    Boolean mCanWrite;
-    Boolean mExists;
-    String mName;
-    String mType;
-    Boolean mIsDirectory;
-    Long mLastModified;
-    Long mLength;
-
-    public void invalidate() {
-        mCanRead = null;
-        mCanWrite = null;
-        mExists = null;
-        mName = null;
-        mType = null;
-        mIsDirectory = null;
-        mLastModified = null;
-        mLength = null;
+    fun invalidate() {
+        mCanRead = null
+        mCanWrite = null
+        mExists = null
+        mIsVirtual = null
+        mName = null
+        mType = null
+        mIsDirectory = null
+        mLastModified = null
+        mLength = null
     }
 
-    public CachedDocumentFile(DocumentFile wrapped, String name, long length, boolean isDirectory) {
-        super(wrapped.getParentFile());
-        mWrapped = wrapped;
-        mName = name;
-        mLength = length;
-        mIsDirectory = isDirectory;
-    }
-
-    public boolean canRead() {
+    override fun canRead(): Boolean {
         if (mCanRead == null) {
-            mCanRead = mWrapped.canRead();
+            mCanRead = wrapped.canRead()
         }
-        return mCanRead;
+        return mCanRead!!
     }
 
-    public boolean canWrite() {
+    override fun canWrite(): Boolean {
         if (mCanWrite == null) {
-            mCanWrite = mWrapped.canWrite();
+            mCanWrite = wrapped.canWrite()
         }
-        return mCanWrite;
-
+        return mCanWrite!!
     }
 
-    public DocumentFile createDirectory(@NonNull String arg0) {
-        return mWrapped.createDirectory(arg0);
+    override fun createDirectory(arg0: String): DocumentFile? {
+        return wrapped.createDirectory(arg0)
     }
 
-    public DocumentFile createFile(@NonNull String arg0, @NonNull String arg1) {
-        return mWrapped.createFile(arg0, arg1);
+    override fun createFile(arg0: String, arg1: String): DocumentFile? {
+        return wrapped.createFile(arg0, arg1)
     }
 
-    public boolean delete() {
-        if (mWrapped.delete()) {
-            invalidate();
-            return true;
+    override fun delete(): Boolean {
+        if (wrapped.delete()) {
+            invalidate()
+            return true
         }
-        return false;
+        return false
     }
 
-    public boolean exists() {
+    override fun exists(): Boolean {
         if (mExists == null) {
-            mExists = mWrapped.exists();
+            mExists = wrapped.exists()
         }
-        return mExists;
+        return mExists!!
     }
 
-    @NonNull
-    @Override
-    public DocumentFile[] listFiles() {
-        return mWrapped.listFiles();
+    override fun listFiles(): Array<DocumentFile> {
+        return wrapped.listFiles()
     }
 
-    public String getName() {
+    override fun getName(): String? {
         if (mName == null) {
-            mName = mWrapped.getName();
+            mName = wrapped.name
         }
-        return mName;
+        return mName
     }
 
-    public String getType() {
+    override fun getType(): String? {
         if (mType == null) {
-            mType = mWrapped.getType();
+            mType = wrapped.type
         }
-        return mType;
+        return mType
     }
 
-    @NonNull
-    public Uri getUri() {
-        return mWrapped.getUri();
+    override fun getUri(): Uri {
+        return wrapped.uri
     }
 
-    public boolean isDirectory() {
+    override fun isDirectory(): Boolean {
         if (mIsDirectory == null) {
-            mIsDirectory = mWrapped.isDirectory();
+            mIsDirectory = wrapped.isDirectory
         }
-        return mIsDirectory;
+        return mIsDirectory!!
     }
 
-    public boolean isFile() {
-        return !isDirectory();
+    override fun isFile(): Boolean {
+        return !isDirectory()
     }
 
-    public boolean isVirtual() {
-        return mWrapped.isVirtual();
+    override fun isVirtual(): Boolean {
+        if (mIsVirtual == null) {
+            mIsVirtual = wrapped.isVirtual
+        }
+        return mIsVirtual!!
     }
 
-    public long lastModified() {
+    override fun lastModified(): Long {
         if (mLastModified == null) {
-            mLastModified = mWrapped.lastModified();
+            mLastModified = wrapped.lastModified()
         }
-        return mLastModified;
+        return mLastModified!!
     }
 
-    public long length() {
+    override fun length(): Long {
         if (mLength == null) {
-            mLength = mWrapped.length();
+            mLength = wrapped.length()
         }
-        return mLength;
+        return mLength!!
     }
 
-    public boolean renameTo(@NonNull String arg0) {
-        if (mWrapped.renameTo(arg0)) {
-            invalidate(); // We can't value mName because renaming to an existing name in the same folder can result in unspecified behaviour (e.g. "newName (1).ext")
-            return true;
+    override fun renameTo(displayName: String): Boolean {
+        if (wrapped.renameTo(displayName)) {
+            invalidate() // We can't value mName because renaming to an existing name in the same folder can result in unspecified behaviour (e.g. "newName (1).ext")
+            return true
         }
-        return false;
+        return false
     }
-
 }

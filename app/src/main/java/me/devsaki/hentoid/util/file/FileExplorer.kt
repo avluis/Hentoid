@@ -458,6 +458,7 @@ class FileExplorer : Closeable {
         return uri != null && ContentResolver.SCHEME_CONTENT == uri.scheme
     }
 
+    // Original : TreeDocumentFile constructor (package private visibility)
     private fun newTreeDocumentFile(
         parent: DocumentFile?,
         context: Context,
