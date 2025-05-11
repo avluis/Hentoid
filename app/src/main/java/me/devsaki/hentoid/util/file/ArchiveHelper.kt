@@ -390,7 +390,6 @@ fun Context.zipFiles(
     }
 }
 
-// This is a dumb struct class, nothing more
 // Describes an entry inside an archive
 data class ArchiveEntry(val path: String, val size: Long)
 

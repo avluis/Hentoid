@@ -522,19 +522,21 @@ class LibraryFoldersFragment : Fragment(),
      * Happens when navigating
      */
     private fun onFoldersChanged(result: List<DisplayFile>) {
-        Timber.i(">> Folders changed (folders) ! Size=%s", result.size)
+        val resSize = result.size.toLong()
+        Timber.i(">> Folders changed (folders) ! Size=$resSize)")
 
-        val isEmpty = result.isEmpty()
+        val isEmpty = 0L == resSize
         binding?.emptyTxt?.isVisible = isEmpty
-        activity.get()?.updateTitle(result.size.toLong(), result.size.toLong())
+        activity.get()?.updateTitle(resSize, resSize)
 
-        val files = result.map { FileItem(it) }.distinct()
+        // Copy result to new list to avoid concurrency issues when processing updated list
+        val files = result.toList().map { FileItem(it) }
         set(itemAdapter, files, FILEITEM_DIFF_CALLBACK)
 
         // Update visibility and content of advanced search bar
         // - After getting results from a search
         // - When switching between Group and Content view
-        activity.get()?.updateSearchBarOnResults(result.isNotEmpty())
+        activity.get()?.updateSearchBarOnResults(!isEmpty)
     }
 
     /**

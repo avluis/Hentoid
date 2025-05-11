@@ -18,6 +18,10 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -72,6 +76,7 @@ import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 import java.security.InvalidParameterException
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class LibraryViewModel(application: Application, val dao: CollectionDAO) :
@@ -296,6 +301,28 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             folderSearchManager.setSortField(Settings.folderSortField)
             folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
 
+            val collectedFolders = ArrayList<DisplayFile>()
+
+            withContext(Dispatchers.IO) {
+                folderSearchManager.getFolders(ctx, root)
+                    .takeWhile { true } // TODO cancel here
+                    .filterNot { it.type == DisplayFile.Type.OTHER }
+                    .map { enrichWithMetadata(it, dao) }
+                    .scan(ArrayList<DisplayFile>()) { accumulator, value ->
+                        accumulator.add(value)
+                        accumulator
+                    }
+                    .collect { folders.postValue(it) }
+            }
+
+            /*
+            .collect {
+                collectedFolders.add(it)
+                if (0 == collectedFolders.size % 10) folders.postValue(collectedFolders)
+            }
+             */
+
+            /*
             withContext(Dispatchers.IO) {
                 val files = folderSearchManager.getFolders(ctx, root)
                     .map { enrichWithMetadata(it, dao) }
@@ -308,6 +335,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 }
                 folderSearchBundle.postValue(folderSearchManager.toBundle())
             }
+             */
         }
     }
 

@@ -8,6 +8,11 @@ import android.os.RemoteException
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.CachedDocumentFile
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
 import timber.log.Timber
 import java.io.Closeable
 import java.io.IOException
@@ -16,17 +21,19 @@ import java.io.IOException
 class FileExplorer : Closeable {
     val root: Uri
     private val contract: CachedDocumentsContract
-    private val client: ContentProviderClient?
+    private val client: ContentProviderClient
 
     constructor(context: Context, parent: DocumentFile) {
         root = parent.uri
-        client = init(context, parent.uri)
+        client =
+            init(context, parent.uri) ?: throw IOException("Couldn't init ContentProviderClient")
         contract = CachedDocumentsContract()
     }
 
     constructor(context: Context, parentUri: Uri) {
         root = parentUri
-        client = init(context, parentUri)
+        client =
+            init(context, parentUri) ?: throw IOException("Couldn't init ContentProviderClient")
         contract = CachedDocumentsContract()
     }
 
@@ -37,7 +44,7 @@ class FileExplorer : Closeable {
     @Throws(IOException::class)
     override fun close() {
         contract.close()
-        client?.close()
+        client.close()
     }
 
 
@@ -179,20 +186,43 @@ class FileExplorer : Closeable {
         return convertFromProperties(context, results)
     }
 
-    @Throws(RemoteException::class)
-    private fun getCursorFor(rootFolderUri: Uri): Cursor? {
+    fun listDocumentFilesFw(
+        context: Context,
+        parent: DocumentFile,
+        nameFilter: NameFilter? = null,
+        listFolders: Boolean = true,
+        listFiles: Boolean = true
+    ): Flow<DocumentFile> {
+        try {
+            val cursor = getCursorFor(parent.uri)
+            return queryDocumentFilesFw(
+                cursor,
+                parent,
+                nameFilter,
+                listFolders,
+                listFiles
+            ).mapNotNull { convertFromProperties(context, it) }
+                .onCompletion { cursor.close() }
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
+        return emptyFlow()
+    }
+
+    @Throws(RemoteException::class, IOException::class)
+    private fun getCursorFor(rootFolderUri: Uri): Cursor {
         val searchUri = contract.buildChildDocumentsUriUsingTree(
             rootFolderUri,
             contract.getDocumentId(rootFolderUri)
         )
-        return client?.query(
+        return client.query(
             searchUri, arrayOf(
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME,
                 DocumentsContract.Document.COLUMN_MIME_TYPE,
                 DocumentsContract.Document.COLUMN_SIZE
             ), null, null, null
-        )
+        ) ?: throw IOException("Couldn't complete query")
     }
 
     /**
@@ -212,12 +242,11 @@ class FileExplorer : Closeable {
         listFiles: Boolean,
         stopFirst: Boolean
     ): List<DocumentProperties> {
-        if (null == client) return emptyList()
         val results: MutableList<DocumentProperties> = ArrayList()
 
         try {
             getCursorFor(parent.uri).use { c ->
-                if (c != null) while (c.moveToNext()) {
+                while (c.moveToNext()) {
                     val documentId = c.getString(0)
                     val documentName = c.getString(1)
                     val isFolder =
@@ -245,6 +274,34 @@ class FileExplorer : Closeable {
         return results
     }
 
+    private fun queryDocumentFilesFw(
+        c: Cursor,
+        parent: DocumentFile,
+        nameFilter: NameFilter?,
+        listFolders: Boolean,
+        listFiles: Boolean
+    ): Flow<DocumentProperties> {
+        return flow {
+            while (c.moveToNext()) {
+                val documentId = c.getString(0)
+                val documentName = c.getString(1)
+                val isFolder = c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR
+                val documentSize = c.getLong(3)
+
+                // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
+                if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                    emit(
+                        DocumentProperties(
+                            contract.buildDocumentUriUsingTree(parent.uri, documentId),
+                            documentName,
+                            documentSize,
+                            isFolder
+                        )
+                    )
+            }
+        }
+    }
+
     /**
      * Count the children of the given folder (non recursive) matching the given criteria
      *
@@ -262,12 +319,11 @@ class FileExplorer : Closeable {
         countFiles: Boolean,
         stopFirst: Boolean = false
     ): Int {
-        if (null == client) return 0
         var result = 0
 
         try {
             getCursorFor(parent.uri).use { c ->
-                if (c != null) while (c.moveToNext()) {
+                while (c.moveToNext()) {
                     val documentName = c.getString(1)
                     val isFolder =
                         c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR
@@ -296,17 +352,22 @@ class FileExplorer : Closeable {
         context: Context,
         properties: List<DocumentProperties>
     ): List<DocumentFile> {
-        return properties.mapNotNull {
-            // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
-            //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
-            contract.fromTreeUri(context, it.uri)?.let { doc ->
-                CachedDocumentFile(
-                    doc,
-                    it.name,
-                    it.size,
-                    it.isDirectory
-                )
-            }
+        return properties.mapNotNull { convertFromProperties(context, it) }
+    }
+
+    private fun convertFromProperties(
+        context: Context,
+        properties: DocumentProperties
+    ): DocumentFile? {
+        // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
+        //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
+        return contract.fromTreeUri(context, properties.uri)?.let { doc ->
+            CachedDocumentFile(
+                doc,
+                properties.name,
+                properties.size,
+                properties.isDirectory
+            )
         }
     }
 

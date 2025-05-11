@@ -3,8 +3,15 @@ package me.devsaki.hentoid.widget
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.InnerNameNumberDisplayFileComparator
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
@@ -57,47 +64,88 @@ class FolderSearchManager() {
         explorer = null
     }
 
-    fun getFolders(context: Context, root: Uri): List<DisplayFile> {
-        Timber.d("Navigating to $root")
-        val previousRootStr = explorer?.root?.path ?: ""
-        val rootStr = root.path ?: ""
-        val needNewExplorer = previousRootStr.isEmpty() ||
-                (!previousRootStr.startsWith(rootStr) && !rootStr.startsWith(previousRootStr))
-        if (needNewExplorer) explorer = FileExplorer(context, root)
+    suspend fun getFolders(context: Context, root: Uri): Flow<DisplayFile> =
+        withContext(Dispatchers.IO) {
+            Timber.d("Navigating to $root")
+            val previousRootStr = explorer?.root?.path ?: ""
+            val rootStr = root.path ?: ""
+            val needNewExplorer = previousRootStr.isEmpty() ||
+                    (!previousRootStr.startsWith(rootStr) && !rootStr.startsWith(previousRootStr))
+            if (needNewExplorer) explorer = FileExplorer(context, root)
+            val theExplorer = explorer ?: return@withContext emptyFlow()
 
-        val nameFilter = if (values.query.isNotBlank()) {
-            NameFilter { it.contains(values.query, true) }
-        } else null
-        val rootDoc = explorer?.getDocumentFromTreeUri(context, root) ?: return emptyList()
-        val docs = explorer?.listDocumentFiles(
-            context, rootDoc, nameFilter
-        ) ?: return emptyList()
+            val nameFilter = if (values.query.isNotBlank()) {
+                NameFilter { it.contains(values.query, true) }
+            } else null
+            val rootDoc =
+                theExplorer.getDocumentFromTreeUri(context, root) ?: return@withContext emptyFlow()
 
-        // Count contents to see if we have a folder book
-        var displayFiles = docs.map {
-            val nbImgChildren = if (it.isDirectory) {
-                explorer?.countFiles(it, imageNamesFilter) ?: 0
-            } else 0
-            val res = DisplayFile(it, nbImgChildren > 1, root)
-            res.nbChildren = nbImgChildren
-            res
+            // TODO sorting at file level
+
+            // Add 'Up one level' item at position 0
+            val flowUp = flowOf(
+                DisplayFile(
+                    context.resources.getString(R.string.up_level),
+                    DisplayFile.Type.UP_BUTTON
+                )
+            )
+            val flowFiles =
+                theExplorer.listDocumentFilesFw(context, rootDoc, nameFilter)
+                    .flowOn(Dispatchers.IO)
+                    .map {
+                        // Count contents to see if we have a folder book
+                        // TODO do more
+                        val nbImgChildren = if (it.isDirectory) {
+                            theExplorer.countFiles(it, imageNamesFilter)
+                        } else 0
+                        val res = DisplayFile(it, nbImgChildren > 1, root)
+                        res.nbChildren = nbImgChildren
+                        res
+                    }
+
+            return@withContext merge(flowUp, flowFiles)
+
+
+            /*
+            val docs = explorer?.listDocumentFiles(
+                context, rootDoc, nameFilter
+            ) ?: return emptyList()
+
+             */
+
+            /*
+            // Count contents to see if we have a folder book
+            var displayFiles = docs.map {
+                val nbImgChildren = if (it.isDirectory) {
+                    theExplorer.countFiles(it, imageNamesFilter)
+                } else 0
+                val res = DisplayFile(it, nbImgChildren > 1, root)
+                res.nbChildren = nbImgChildren
+                res
+            }
+             */
+
+            /*
+            // Apply sort field
+            displayFiles = when (values.sortField) {
+                Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> displayFiles.sortedBy { it.lastModified }
+                else -> displayFiles.sortedWith(InnerNameNumberDisplayFileComparator())
+            }
+            if (values.sortDesc) displayFiles = displayFiles.reversed()
+             */
+            /*
+                        // Add 'Up one level' item at position 0
+                        displayFiles = displayFiles.toMutableList()
+                        displayFiles.add(
+                            0,
+                            DisplayFile(
+                                context.resources.getString(R.string.up_level),
+                                DisplayFile.Type.UP_BUTTON
+                            )
+                        )
+                        return displayFiles
+             */
         }
-
-        // Apply sort field
-        displayFiles = when (values.sortField) {
-            Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> displayFiles.sortedBy { it.lastModified }
-            else -> displayFiles.sortedWith(InnerNameNumberDisplayFileComparator())
-        }
-        if (values.sortDesc) displayFiles = displayFiles.reversed()
-
-        // Add 'Up one level' item at position 0
-        displayFiles = displayFiles.toMutableList()
-        displayFiles.add(
-            0,
-            DisplayFile(context.resources.getString(R.string.up_level), DisplayFile.Type.UP_BUTTON)
-        )
-        return displayFiles
-    }
 
     class FolderSearchBundle(val bundle: Bundle = Bundle()) {
 
