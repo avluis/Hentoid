@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.util.InnerNameNumberDisplayFileComparator
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
@@ -64,7 +65,50 @@ class FolderSearchManager() {
         explorer = null
     }
 
-    suspend fun getFolders(context: Context, root: Uri): Flow<DisplayFile> =
+    suspend fun getFoldersFast(context: Context, root: Uri): List<DisplayFile> =
+        withContext(Dispatchers.IO) {
+            Timber.d("Navigating to $root")
+            val previousRootStr = explorer?.root?.path ?: ""
+            val rootStr = root.path ?: ""
+            val needNewExplorer = previousRootStr.isEmpty() ||
+                    (!previousRootStr.startsWith(rootStr) && !rootStr.startsWith(previousRootStr))
+            if (needNewExplorer) explorer = FileExplorer(context, root)
+            val theExplorer = explorer ?: return@withContext emptyList()
+
+            val nameFilter = if (values.query.isNotBlank()) {
+                NameFilter { it.contains(values.query, true) }
+            } else null
+            val rootDoc =
+                theExplorer.getDocumentFromTreeUri(context, root) ?: return@withContext emptyList()
+            val docs = theExplorer.listDocumentFiles(
+                context, rootDoc, nameFilter
+            )
+
+            // Count contents to see if we have a folder book
+            var displayFiles = docs.map { DisplayFile(it, false, root) }
+
+            // Apply sort field
+            displayFiles = when (values.sortField) {
+                Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE ->
+                    displayFiles.sortedBy { it.lastModified * if (values.sortDesc) -1 else 1 }
+
+                else -> displayFiles.sortedWith(InnerNameNumberDisplayFileComparator(values.sortDesc))
+            }
+
+            // Add 'Up one level' item at position 0
+            displayFiles = displayFiles.toMutableList()
+            displayFiles.add(
+                0,
+                DisplayFile(
+                    context.resources.getString(R.string.up_level),
+                    DisplayFile.Type.UP_BUTTON
+                )
+            )
+
+            return@withContext displayFiles
+        }
+
+    suspend fun getFoldersFw(context: Context, root: Uri): Flow<DisplayFile> =
         withContext(Dispatchers.IO) {
             Timber.d("Navigating to $root")
             val previousRootStr = explorer?.root?.path ?: ""

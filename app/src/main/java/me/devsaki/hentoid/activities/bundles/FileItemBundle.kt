@@ -15,6 +15,8 @@ class FileItemBundle(val bundle: Bundle = Bundle()) {
     var coverUri by bundle.string()
     var contentId by bundle.long()
     var processed by bundle.boolean()
+    var type by bundle.int()
+    var subType by bundle.int()
 
     val isEmpty get() = bundle.isEmpty
 }

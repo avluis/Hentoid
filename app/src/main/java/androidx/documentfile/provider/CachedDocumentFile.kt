@@ -7,7 +7,8 @@ class CachedDocumentFile(
     val wrapped: DocumentFile,
     var mName: String?,
     var mLength: Long? = null,
-    var mIsDirectory: Boolean? = null
+    var mIsDirectory: Boolean? = null,
+    var mLastModified: Long? = null
 ) : DocumentFile(wrapped.parentFile) {
 
     var mCanRead: Boolean? = null
@@ -15,7 +16,6 @@ class CachedDocumentFile(
     var mExists: Boolean? = null
     var mIsVirtual: Boolean? = null
     var mType: String? = null
-    var mLastModified: Long? = null
 
     fun invalidate() {
         mCanRead = null

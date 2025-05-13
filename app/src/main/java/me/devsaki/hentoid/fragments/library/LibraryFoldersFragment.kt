@@ -147,6 +147,8 @@ class LibraryFoldersFragment : Fragment(),
                     newItem: FileItem
                 ): Boolean {
                     return oldItem.doc.name == newItem.doc.name
+                            && oldItem.doc.type == newItem.doc.type
+                            && oldItem.doc.subType == newItem.doc.subType
                             && oldItem.doc.nbChildren == newItem.doc.nbChildren
                             && oldItem.doc.contentId == newItem.doc.contentId
                             && oldItem.doc.coverUri == newItem.doc.coverUri
@@ -159,7 +161,13 @@ class LibraryFoldersFragment : Fragment(),
                     newItemPosition: Int
                 ): Any? {
                     val diffBundleBuilder = FileItemBundle()
-                    if (newItem.doc.coverUri != null && oldItem.doc.coverUri != newItem.doc.coverUri) {
+                    if (oldItem.doc.type != newItem.doc.type) {
+                        diffBundleBuilder.type = newItem.doc.type.ordinal
+                    }
+                    if (oldItem.doc.subType != newItem.doc.subType) {
+                        diffBundleBuilder.subType = newItem.doc.subType.ordinal
+                    }
+                    if (newItem.doc.coverUri != null && newItem.doc.coverUri != Uri.EMPTY && oldItem.doc.coverUri != newItem.doc.coverUri) {
                         diffBundleBuilder.coverUri = newItem.doc.coverUri!!.toString()
                     }
                     if (oldItem.doc.contentId != newItem.doc.contentId) {
@@ -208,6 +216,7 @@ class LibraryFoldersFragment : Fragment(),
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.folders.observe(viewLifecycleOwner) { onFoldersChanged(it) }
+        viewModel.foldersDetail.observe(viewLifecycleOwner) { onFoldersDetail(it) }
         viewModel.folderRoot.observe(viewLifecycleOwner) {
             Settings.libraryFoldersRoot = it.toString()
         }
@@ -523,7 +532,7 @@ class LibraryFoldersFragment : Fragment(),
      */
     private fun onFoldersChanged(result: List<DisplayFile>) {
         val resSize = result.size.toLong()
-        Timber.i(">> Folders changed (folders) ! Size=$resSize)")
+        Timber.i(">> Folders changed [new] (folders) ! Size=$resSize)")
 
         val isEmpty = 0L == resSize
         binding?.emptyTxt?.isVisible = isEmpty
@@ -532,6 +541,35 @@ class LibraryFoldersFragment : Fragment(),
         // Copy result to new list to avoid concurrency issues when processing updated list
         val files = result.toList().map { FileItem(it) }
         set(itemAdapter, files, FILEITEM_DIFF_CALLBACK)
+
+        // Update visibility and content of advanced search bar
+        // - After getting results from a search
+        // - When switching between Group and Content view
+        activity.get()?.updateSearchBarOnResults(!isEmpty)
+    }
+
+    /**
+     * LiveData callback when receiving folder detail
+     */
+    private fun onFoldersDetail(result: List<DisplayFile>) {
+        val resSize = result.size.toLong()
+        Timber.i(">> Folders changed [details] (folders) ! Size=$resSize)")
+
+        val isEmpty = 0L == resSize
+        binding?.emptyTxt?.isVisible = isEmpty
+        activity.get()?.updateTitle(resSize, resSize)
+
+        // Copy result to new list to avoid concurrency issues when processing updated list
+        val inItems = result.toList()
+        var updatedItems = itemAdapter.adapterItems.toList()
+        // Merge detailed results data into existing items
+        inItems.forEach { inItem ->
+            updatedItems = updatedItems.map {
+                if (it.identifier == inItem.id) FileItem(inItem)
+                else it
+            }
+        }
+        set(itemAdapter, updatedItems, FILEITEM_DIFF_CALLBACK)
 
         // Update visibility and content of advanced search bar
         // - After getting results from a search

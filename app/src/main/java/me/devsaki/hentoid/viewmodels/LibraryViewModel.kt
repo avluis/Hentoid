@@ -107,6 +107,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // Folders data
     val folderRoot = MutableLiveData<Uri>()
     val folders = MediatorLiveData<List<DisplayFile>>()
+    val foldersDetail = MediatorLiveData<List<DisplayFile>>()
     val folderSearchBundle = MutableLiveData<Bundle>()
     val parentsCache = HashMap<Uri, Uri>() // Key = child folder, Value = parent folder
 
@@ -301,8 +302,21 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             folderSearchManager.setSortField(Settings.folderSortField)
             folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
 
+            // First retrieval = minimal data
             withContext(Dispatchers.IO) {
-                folderSearchManager.getFolders(ctx, root)
+                val files = folderSearchManager.getFoldersFast(ctx, root)
+                    .filterNot { it.type == DisplayFile.Type.OTHER }
+                folders.postValue(files)
+                // Fill parents cache
+                files.filter { it.type == DisplayFile.Type.FOLDER }.forEach {
+                    parentsCache[it.uri] = it.parent
+                }
+                folderSearchBundle.postValue(folderSearchManager.toBundle())
+            }
+
+            // Details
+            withContext(Dispatchers.IO) {
+                folderSearchManager.getFoldersFw(ctx, root)
                     .takeWhile { true } // TODO cancel here
                     .filterNot { it.type == DisplayFile.Type.OTHER }
                     .map { enrichWithMetadata(it, dao) }
@@ -315,30 +329,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         accumulator.add(value)
                         accumulator
                     }
-                    .collect { folders.postValue(it) }
+                    .collect { foldersDetail.postValue(it) }
             }
-
-            /*
-            .collect {
-                collectedFolders.add(it)
-                if (0 == collectedFolders.size % 10) folders.postValue(collectedFolders)
-            }
-             */
-
-            /*
-            withContext(Dispatchers.IO) {
-                val files = folderSearchManager.getFolders(ctx, root)
-                    .map { enrichWithMetadata(it, dao) }
-                    .filterNot { it.type == DisplayFile.Type.OTHER }
-                    .toList()
-                folders.postValue(files)
-                // Fill parents cache
-                files.filter { it.type == DisplayFile.Type.FOLDER }.forEach {
-                    parentsCache[it.uri] = it.parent
-                }
-                folderSearchBundle.postValue(folderSearchManager.toBundle())
-            }
-             */
         }
     }
 

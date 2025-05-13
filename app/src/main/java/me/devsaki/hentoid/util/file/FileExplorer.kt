@@ -220,7 +220,8 @@ class FileExplorer : Closeable {
                 DocumentsContract.Document.COLUMN_DOCUMENT_ID,
                 DocumentsContract.Document.COLUMN_DISPLAY_NAME,
                 DocumentsContract.Document.COLUMN_MIME_TYPE,
-                DocumentsContract.Document.COLUMN_SIZE
+                DocumentsContract.Document.COLUMN_SIZE,
+                DocumentsContract.Document.COLUMN_LAST_MODIFIED
             ), null, null, null
         ) ?: throw IOException("Couldn't complete query")
     }
@@ -252,6 +253,7 @@ class FileExplorer : Closeable {
                     val isFolder =
                         c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR
                     val documentSize = c.getLong(3)
+                    val lastModified = c.getLong(4)
 
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
@@ -260,7 +262,8 @@ class FileExplorer : Closeable {
                                 contract.buildDocumentUriUsingTree(parent.uri, documentId),
                                 documentName,
                                 documentSize,
-                                isFolder
+                                isFolder,
+                                lastModified
                             )
                         )
 
@@ -287,6 +290,7 @@ class FileExplorer : Closeable {
                 val documentName = c.getString(1)
                 val isFolder = c.getString(2) == DocumentsContract.Document.MIME_TYPE_DIR
                 val documentSize = c.getLong(3)
+                val lastModified = c.getLong(4)
 
                 // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                 if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
@@ -295,7 +299,8 @@ class FileExplorer : Closeable {
                             contract.buildDocumentUriUsingTree(parent.uri, documentId),
                             documentName,
                             documentSize,
-                            isFolder
+                            isFolder,
+                            lastModified
                         )
                     )
             }
@@ -366,7 +371,8 @@ class FileExplorer : Closeable {
                 doc,
                 properties.name,
                 properties.size,
-                properties.isDirectory
+                properties.isDirectory,
+                properties.lastModified
             )
         }
     }
@@ -394,6 +400,7 @@ class FileExplorer : Closeable {
         val uri: Uri,
         val name: String,
         val size: Long,
-        val isDirectory: Boolean
+        val isDirectory: Boolean,
+        val lastModified: Long
     )
 }

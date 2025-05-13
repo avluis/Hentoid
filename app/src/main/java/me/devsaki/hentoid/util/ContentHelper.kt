@@ -2329,10 +2329,10 @@ private class InnerNameNumberArchiveComparator : Comparator<ArchiveEntry> {
 /**
  * Comparator to be used to sort file entries according to their names
  */
-class InnerNameNumberDisplayFileComparator : Comparator<DisplayFile> {
+class InnerNameNumberDisplayFileComparator(val desc : Boolean = false) : Comparator<DisplayFile> {
     override fun compare(o1: DisplayFile, o2: DisplayFile): Int {
         return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
-            .compare(o1.name, o2.name)
+            .compare(o1.name, o2.name) * if (desc) -1 else 1
     }
 }
 

@@ -25,7 +25,6 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.DisplayFile.SubType
 import me.devsaki.hentoid.util.file.DisplayFile.Type
-import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.image.loadStill
 import timber.log.Timber
 
@@ -50,7 +49,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         isSwipeable = false
         isEmpty = false
         isSelectable = (d.type != Type.ADD_BUTTON && d.type != Type.UP_BUTTON)
-        identifier = hash64(doc.uri.toString().toByteArray())
+        identifier = doc.id
     }
 
     override fun getViewHolder(v: View): ViewHolder {
@@ -125,10 +124,10 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
 
                 var strValue = bundleParser.coverUri
                 if (!strValue.isNullOrBlank()) item.doc.coverUri = strValue.toUri()
-                var longValue = bundleParser.contentId
-                if (longValue != null) item.doc.contentId = longValue
-                var boolValue = bundleParser.processed
-                if (boolValue != null) item.doc.isBeingProcessed = boolValue
+                bundleParser.contentId?.let { item.doc.contentId = it }
+                bundleParser.processed?.let { item.doc.isBeingProcessed = it }
+                bundleParser.type?.let { item.doc.type = Type.entries[it] }
+                bundleParser.subType?.let { item.doc.subType = SubType.entries[it] }
             }
 
             item.deleteAction?.apply {
@@ -163,10 +162,11 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun attachCover(doc: DisplayFile) {
-            doc.coverUri?.let {
+            val coverUri = doc.coverUri?.toString() ?: ""
+            if (!coverUri.isBlank()) {
                 ivCover.scaleType = ImageView.ScaleType.FIT_CENTER
-                ivCover.loadStill(it.toString())
-            } ?: run {
+                ivCover.loadStill(coverUri)
+            } else {
                 val icon = when (doc.type) {
                     Type.ROOT_FOLDER, Type.FOLDER -> R.drawable.ic_folder
                     Type.SUPPORTED_FILE -> {
