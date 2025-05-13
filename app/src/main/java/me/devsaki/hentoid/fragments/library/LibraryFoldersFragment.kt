@@ -563,11 +563,8 @@ class LibraryFoldersFragment : Fragment(),
         val inItems = result.toList()
         var updatedItems = itemAdapter.adapterItems.toList()
         // Merge detailed results data into existing items
-        inItems.forEach { inItem ->
-            updatedItems = updatedItems.map {
-                if (it.identifier == inItem.id) FileItem(inItem)
-                else it
-            }
+        updatedItems = updatedItems.map { up ->
+            inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it) } ?: up
         }
         set(itemAdapter, updatedItems, FILEITEM_DIFF_CALLBACK)
 
