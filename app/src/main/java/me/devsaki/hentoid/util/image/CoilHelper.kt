@@ -115,6 +115,7 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
     loader.enqueue(request.build())
 }
 
+// get dimensions for formats provided by Coil custom loaders
 suspend fun getDimensions(context: Context, data: String): Point = withContext(Dispatchers.IO) {
     val request = ImageRequest.Builder(context)
         .data(data)

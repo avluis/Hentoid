@@ -541,7 +541,8 @@ suspend fun getImageDimensions(context: Context, uri: String): Point = withConte
     val fileUri = uri.toUri()
     if (!fileExists(context, fileUri)) return@withContext Point(0, 0)
 
-    if (getExtensionFromUri(uri) == "jxl") {
+    val ext = getExtensionFromUri(uri)
+    if (ext == "jxl" || ext == "avif") {
         return@withContext getDimensions(context, uri)
     } else { // Natively supported by Android
         val options = BitmapFactory.Options()
