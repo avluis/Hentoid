@@ -515,6 +515,18 @@
                 app:tag="EHENTAI,EXHENTAI" />
         </PreferenceCategory>
         <PreferenceCategory
+            android:title="@string/pref_cat_hitomi"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_dl_eh_hires_default"
+                android:key="pref_dl_hitomi_avif"
+                android:summaryOff="@string/download_hitomi_avif_off"
+                android:summaryOn="@string/download_hitomi_avif_on"
+                android:title="@string/download_hitomi_avif_title"
+                app:iconSpaceReserved="false"
+                app:tag="HITOMI" />
+        </PreferenceCategory>
+        <PreferenceCategory
             android:title="@string/pref_cat_advanced"
             app:iconSpaceReserved="false">
             <ListPreference

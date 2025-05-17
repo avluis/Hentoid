@@ -250,6 +250,7 @@ object Settings {
 
     // QUEUE / DOWNLOADER
     val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
+    val isDownloadHitomiAvif: Boolean by BoolSetting("pref_dl_hitomi_avif", false)
     fun getDownloadThreadCount(site: Site): Int {
         return (sharedPreferences.getString(
             makeSiteKey(Key.DL_THREADS_QUANTITY_LISTS, site),

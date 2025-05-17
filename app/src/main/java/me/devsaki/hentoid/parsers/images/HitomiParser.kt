@@ -18,6 +18,7 @@ import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.LIST_STRINGS
 import me.devsaki.hentoid.util.MAP_STRINGS
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.jsonToObject
@@ -104,13 +105,13 @@ class HitomiParser : BaseImageListParser() {
 
                 this.webview?.apply {
                     loadUrl(pageUrl) {
-                        evaluateJs(this, galleryInfo, imagesStr, done)
+                        evaluateJs(this, galleryInfo, Settings.isDownloadHitomiAvif, imagesStr, done)
                     }
                 }
                 Timber.i(">> loading wv")
             }
-        } else { // We suppose the caller is the main thread if the webview is provided
-            handler.post { evaluateJs(webview, galleryInfo, imagesStr, done) }
+        } else { // We assume the caller is the main thread if the webview is provided
+            handler.post { evaluateJs(webview, galleryInfo, Settings.isDownloadHitomiAvif, imagesStr, done) }
         }
         var remainingIterations = 15 // Timeout
         do {
@@ -139,11 +140,12 @@ class HitomiParser : BaseImageListParser() {
     private fun evaluateJs(
         webview: WebView,
         galleryInfo: String,
+        dlAvif : Boolean,
         imagesStr: AtomicReference<String>,
         done: AtomicBoolean
     ) {
         Timber.d(">> evaluating JS")
-        webview.evaluateJavascript(getJsPagesScript(galleryInfo)) { s: String? ->
+        webview.evaluateJavascript(getJsPagesScript(galleryInfo, dlAvif)) { s: String? ->
             Timber.d(">> JS evaluated")
             imagesStr.set(s ?: "")
             done.set(true)
@@ -151,10 +153,12 @@ class HitomiParser : BaseImageListParser() {
     }
 
     // TODO optimize
-    private fun getJsPagesScript(galleryInfo: String): String {
+    private fun getJsPagesScript(galleryInfo: String, dlAvif: Boolean): String {
         val sb = StringBuilder()
         getAssetAsString(getInstance().assets, "hitomi_pages.js", sb)
-        return sb.toString().replace("\$galleryInfo", galleryInfo)
+        return sb.toString()
+            .replace("\$galleryInfo", galleryInfo)
+            .replace("\$download_avif", dlAvif.toString())
     }
 
     // TODO doc

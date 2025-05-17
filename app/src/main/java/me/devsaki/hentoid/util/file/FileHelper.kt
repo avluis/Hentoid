@@ -729,6 +729,7 @@ fun getExtensionFromMimeType(mimeType: String): String? {
     // Exceptions that MimeTypeMap does not support
     if (null == result) {
         if (mimeType == "image/apng" || mimeType == "image/vnd.mozilla.apng") return "png"
+        else if (mimeType == "image/avif") return "avif"
     }
     return result
 }
