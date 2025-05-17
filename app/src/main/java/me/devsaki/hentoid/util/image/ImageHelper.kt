@@ -48,6 +48,7 @@ private const val MIME_IMAGE_BMP = "image/bmp"
 const val MIME_IMAGE_PNG = "image/png"
 const val MIME_IMAGE_APNG = "image/apng"
 const val MIME_IMAGE_JXL = "image/jxl"
+const val MIME_IMAGE_AVIF = "image/avif"
 
 // In Java and Kotlin, byte type is signed !
 // => Converting all raw values to byte to be sure they are evaluated as expected
@@ -82,6 +83,8 @@ private val JXL_ISO = byteArrayOf(
     0x0A.toByte()
 )
 
+private val AVIF_SIGNATURE = "ftypavif".toByteArray(CHARSET_LATIN_1)
+
 val imageNamesFilter = NameFilter { isImageExtensionSupported(getExtension(it)) }
 
 
@@ -99,6 +102,7 @@ fun isMimeTypeSupported(extension: String): Boolean {
             || extension.equals(MIME_IMAGE_GIF, ignoreCase = true)
             || extension.equals(MIME_IMAGE_BMP, ignoreCase = true)
             || extension.equals(MIME_IMAGE_JXL, ignoreCase = true)
+            || extension.equals(MIME_IMAGE_AVIF, ignoreCase = true)
             )
 }
 
@@ -115,7 +119,8 @@ private fun isImageExtensionSupported(mimeType: String): Boolean {
             || mimeType.equals("png", ignoreCase = true)
             || mimeType.equals("jfif", ignoreCase = true)
             || mimeType.equals("gif", ignoreCase = true)
-            || mimeType.equals("jxl", ignoreCase = true))
+            || mimeType.equals("jxl", ignoreCase = true)
+            || mimeType.equals("avif", ignoreCase = true))
 }
 
 fun isSupportedImage(fileName: String): Boolean {
@@ -141,17 +146,13 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
     return if (data.startsWith(JPEG_SIGNATURE)) MIME_IMAGE_JPEG
     else if (data.startsWith(JXL_NAKED)) MIME_IMAGE_JXL
     else if (data.startsWith(JXL_ISO)) MIME_IMAGE_JXL
+    else if (data.startsWith(GIF_SIGNATURE)) MIME_IMAGE_GIF
     // WEBP : byte comparison is non-contiguous
     else if (data.startsWith(WEBP_SIGNATURE) && 0x57.toByte() == data[8] && 0x45.toByte() == data[9] && 0x42.toByte() == data[10] && 0x50.toByte() == data[11]
     ) MIME_IMAGE_WEBP
     else if (data.startsWith(PNG_SIGNATURE)) {
         // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
-        val acTlPos = findSequencePosition(
-            data,
-            0,
-            PNG_ACTL,
-            theLimit
-        )
+        val acTlPos = findSequencePosition(data, 0, PNG_ACTL, theLimit)
         if (acTlPos > -1) {
             val idatPos = findSequencePosition(
                 data,
@@ -162,14 +163,14 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
             if (idatPos > -1) return MIME_IMAGE_APNG
         }
         MIME_IMAGE_PNG
-    } else if (data.startsWith(GIF_SIGNATURE)) MIME_IMAGE_GIF
+    } else if (findSequencePosition(data, 4, AVIF_SIGNATURE, 12) > -1) MIME_IMAGE_AVIF
     else if (data.startsWith(BMP_SIGNATURE)) MIME_IMAGE_BMP
     else MIME_IMAGE_GENERIC
 }
 
 /**
  * Analyze the given binary picture header to try and detect if the picture is animated.
- * If the format is supported by the app, returns true if animated (animated GIF, APNG, animated WEBP); false if not
+ * If the format is supported by the app, returns true if animated (e.g. animated GIF, APNG, animated WEBP); false if not
  *
  * @param data Binary picture file header (400 bytes minimum)
  * @return True if the format is animated and supported by the app
@@ -203,6 +204,8 @@ fun isImageAnimated(data: ByteArray): Boolean {
 /**
  * Analyze the given binary picture header to try and detect if the picture is lossless.
  * If the format is supported by the app, returns true if lossless (PNG, lossless WEBP); false if not
+ *
+ * NB : There's no clear way to know if an AVIF file is lossless or not
  *
  * @param data Binary picture file header (16 bytes minimum)
  * @return True if the format is lossless and supported by the app

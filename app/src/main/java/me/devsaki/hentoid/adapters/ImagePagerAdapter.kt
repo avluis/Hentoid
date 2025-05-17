@@ -52,6 +52,7 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_MEDIUM
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_SEPARATING_BARS_SMALL
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.getScreenDimensionsPx
+import me.devsaki.hentoid.util.image.MIME_IMAGE_AVIF
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.MIME_IMAGE_JXL
 import me.devsaki.hentoid.util.image.MIME_IMAGE_PNG
@@ -89,7 +90,8 @@ class ImagePagerAdapter(context: Context) :
         IMG_TYPE_GIF(1), // Static and animated GIFs -> use Coil
         IMG_TYPE_APNG(2), // Animated PNGs -> use Coil
         IMG_TYPE_AWEBP(3), // Animated WEBPs -> use Coil
-        IMG_TYPE_JXL(4) // JXL -> use Coil
+        IMG_TYPE_JXL(4), // JXL -> use Coil
+        IMG_TYPE_AVIF(5) // AVIF -> use Coil
     }
 
     // Cached image types
@@ -183,6 +185,7 @@ class ImagePagerAdapter(context: Context) :
                     } else {
                         if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
                         else if (mime == MIME_IMAGE_JXL) return ImageType.IMG_TYPE_JXL
+                        else if (mime == MIME_IMAGE_AVIF) return ImageType.IMG_TYPE_AVIF
                     }
                 }
             }
@@ -388,7 +391,7 @@ class ImagePagerAdapter(context: Context) :
                     else getImageType(rootView.context, it)
             }
 
-            if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType) {
+            if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType || ImageType.IMG_TYPE_AVIF == imgType) {
                 // Formats that aren't supported by SSIV
                 useImageView(isImageView = true, isClickThrough = true)
             } else useImageView(false, isVertical || isHalfWidth) // Use SSIV by default
@@ -498,7 +501,7 @@ class ImagePagerAdapter(context: Context) :
                                 .data(uri)
                                 .diskCacheKey(uri.toString())
                                 .memoryCacheKey(uri.toString())
-                                .allowHardware(imgType != ImageType.IMG_TYPE_JXL)
+                                .allowHardware(imgType != ImageType.IMG_TYPE_JXL && imgType != ImageType.IMG_TYPE_AVIF)
                                 .allowConversionToBitmap(false)
                                 .build()
                             // TODO does that block the UI thread?
@@ -521,7 +524,7 @@ class ImagePagerAdapter(context: Context) :
 
                 imageView.scaleType = scaleType
 
-                // Custom loader to handle JXL
+                // Custom loader to handle JXL and AVIF
                 // (doesn't support Hardware bitmaps : https://github.com/awxkee/jxl-coder-coil/issues/7)
                 view.context.let { ctx ->
                     val imageLoader = SingletonImageLoader.get(ctx)
@@ -530,7 +533,7 @@ class ImagePagerAdapter(context: Context) :
                         .diskCacheKey(uri.toString())
                         .memoryCacheKey(uri.toString())
                         .target(imageView)
-                        .allowHardware(imgType != ImageType.IMG_TYPE_JXL)
+                        .allowHardware(imgType != ImageType.IMG_TYPE_JXL && imgType != ImageType.IMG_TYPE_AVIF)
                         .listener(
                             onError = { _, err -> onCoilLoadFailed(err) },
                             onSuccess = { _, res -> onCoilLoadSuccess(res) }

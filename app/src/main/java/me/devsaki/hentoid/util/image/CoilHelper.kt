@@ -21,6 +21,7 @@ import coil3.request.Options
 import coil3.request.target
 import coil3.serviceLoaderEnabled
 import com.awxkee.jxlcoder.coil.JxlDecoder
+import com.github.awxkee.avifcoil.decoder.HeifDecoder
 import com.github.penfeizhou.animation.apng.APNGDrawable
 import com.github.penfeizhou.animation.io.ByteBufferReader
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +59,7 @@ private fun initStillImageLoader(): ImageLoader {
             }
             .components {
                 add(JxlDecoder.Factory())
+                add(HeifDecoder.Factory())
             }
             .diskCache {
                 DiskCache.Builder()
