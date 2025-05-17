@@ -262,7 +262,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private var group: Group? = null
 
     // Indicate whether this tab is enabled (active on screen) or not
-    private var enabled = true
+    private var enabled = false
 
     // Search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null

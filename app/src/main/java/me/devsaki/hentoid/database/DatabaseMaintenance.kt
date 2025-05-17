@@ -120,7 +120,8 @@ object DatabaseMaintenance {
         try {
             // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
             Timber.i("Clearing temporary books : start")
-            val contents = ObjectBoxDB.selectContentByStatus(StatusContent.SAVED)
+            val contents = ObjectBoxDB.selectContentByStatus(StatusContent.SAVED).toMutableSet()
+            contents.addAll(ObjectBoxDB.selectContentByStatus(StatusContent.STORAGE_RESOURCE))
             Timber.i("Clearing temporary books : %s books detected", contents.size)
             val max = contents.size
             var pos = 1f

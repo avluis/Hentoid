@@ -83,8 +83,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     AndroidViewModel(application) {
 
     // Search managers
-    private val contentSearchManager = ContentSearchManager(dao)
-    private val groupSearchManager = GroupSearchManager(dao)
+    private val contentSearchManager = ContentSearchManager()
+    private val groupSearchManager = GroupSearchManager()
     private val folderSearchManager = FolderSearchManager()
 
     // Cleanup for all work observers
@@ -171,7 +171,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (Settings.getGroupingDisplayG() == Grouping.FLAT) contentSearchManager.setGroup(null)
         val newSource = withContext(Dispatchers.IO) {
             try {
-                contentSearchManager.getLibrary()
+                contentSearchManager.getLibrary(dao)
             } finally {
                 dao.cleanup()
             }
@@ -244,7 +244,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         groupSearchManager.setArtistGroupVisibility(Settings.artistGroupVisibility)
 
         val newSource = withContext(Dispatchers.IO) {
-            groupSearchManager.getGroups()
+            groupSearchManager.getGroups(dao)
         }
         synchronized(groupSearchManager) {
             currentGroupsSource?.let { groups.removeSource(it) }
@@ -254,7 +254,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         val newTotalSource = withContext(Dispatchers.IO) {
             try {
-                groupSearchManager.getAllGroups()
+                groupSearchManager.getAllGroups(dao)
             } finally {
                 dao.cleanup()
             }
@@ -316,7 +316,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
             // Details
             withContext(Dispatchers.IO) {
-                folderSearchManager.getFoldersFw(ctx, root)
+                folderSearchManager.getFoldersDetails(ctx, root)
                     .takeWhile { true } // TODO cancel here
                     .filterNot { it.type == DisplayFile.Type.OTHER }
                     .map { enrichWithMetadata(it, dao) }

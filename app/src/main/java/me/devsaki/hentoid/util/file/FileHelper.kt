@@ -97,6 +97,7 @@ fun getDocumentFromTreeUriString(context: Context, treeUriStr: String): Document
 }
 
 fun getDocumentFromTreeUri(context: Context, treeUri: Uri): DocumentFile? {
+    if (treeUri == Uri.EMPTY) return null
     val result = DocumentFile.fromTreeUri(context, treeUri)
     return if (null == result || !result.exists()) null
     else result

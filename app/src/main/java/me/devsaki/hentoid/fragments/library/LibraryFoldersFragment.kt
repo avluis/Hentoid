@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.library
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
@@ -33,18 +34,14 @@ import com.mikepenz.fastadapter.select.SelectExtensionFactory
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
+import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.bundles.FileItemBundle
-import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.database.ObjectBoxDAO
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
-import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -54,19 +51,14 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.PickFolderContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.DisplayFile.Type
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
-import me.devsaki.hentoid.util.openReader
-import me.devsaki.hentoid.util.scanArchivePdf
-import me.devsaki.hentoid.util.scanBookFolder
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.FileItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -130,6 +122,9 @@ class LibraryFoldersFragment : Fragment(),
     private var previousViewType = -1
 
     private lateinit var pagingDebouncer: Debouncer<Unit>
+
+    // Search and filtering criteria in the form of a Bundle (see FolderSearchManager.FolderSearchBundle)
+    private var folderSearchBundle: Bundle? = null
 
     companion object {
 
@@ -220,6 +215,7 @@ class LibraryFoldersFragment : Fragment(),
         viewModel.folderRoot.observe(viewLifecycleOwner) {
             Settings.libraryFoldersRoot = it.toString()
         }
+        viewModel.folderSearchBundle.observe(viewLifecycleOwner) { folderSearchBundle = it }
 
         viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
 
@@ -550,14 +546,11 @@ class LibraryFoldersFragment : Fragment(),
 
     /**
      * LiveData callback when receiving folder detail
+     * => Update details of folders that are already on display
      */
     private fun onFoldersDetail(result: List<DisplayFile>) {
         val resSize = result.size.toLong()
         Timber.i(">> Folders changed [details] (folders) ! Size=$resSize)")
-
-        val isEmpty = 0L == resSize
-        binding?.emptyTxt?.isVisible = isEmpty
-        activity.get()?.updateTitle(resSize, resSize)
 
         // Copy result to new list to avoid concurrency issues when processing updated list
         val inItems = result.toList()
@@ -567,11 +560,6 @@ class LibraryFoldersFragment : Fragment(),
             inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it) } ?: up
         }
         set(itemAdapter, updatedItems, FILEITEM_DIFF_CALLBACK)
-
-        // Update visibility and content of advanced search bar
-        // - After getting results from a search
-        // - When switching between Group and Content view
-        activity.get()?.updateSearchBarOnResults(!isEmpty)
     }
 
     /**
@@ -613,88 +601,9 @@ class LibraryFoldersFragment : Fragment(),
                     viewModel.goUpOneFolder()
                 }
 
-                Type.BOOK_FOLDER -> {
-                    lifecycleScope.launch {
-                        // Create a Content in the database for the item we want to open
-                        val content = withContext(Dispatchers.IO) {
-                            val dao: CollectionDAO = ObjectBoxDAO()
-                            try {
-                                if (0L == item.doc.contentId) {
-                                    val parent =
-                                        getDocumentFromTreeUriString(
-                                            ctx,
-                                            Settings.libraryFoldersRoot
-                                        )
-                                            ?: return@withContext null
-                                    val folder =
-                                        getDocumentFromTreeUri(ctx, item.doc.uri)
-                                            ?: return@withContext null
-                                    val res = scanBookFolder(
-                                        ctx,
-                                        parent,
-                                        folder,
-                                        emptyList(),
-                                        StatusContent.EXTERNAL
-                                    )
-                                    res.id = addContent(ctx, dao, res)
-                                    return@withContext res
-                                } else {
-                                    // Use the content attached to the item
-                                    return@withContext dao.selectContent(item.doc.contentId)
-                                }
-                            } finally {
-                                dao.cleanup()
-                            }
-                        }
-                        content?.let {
-                            openReader(ctx, it)
-                            // Refresh the view to have that item mapped (and its cover displayed)
-                            viewModel.searchFolder()
-                        }
-                    }
-                }
-
-                Type.SUPPORTED_FILE -> {
-                    lifecycleScope.launch {
-                        val content = withContext(Dispatchers.IO) {
-                            val dao: CollectionDAO = ObjectBoxDAO()
-                            try {
-                                if (0L == item.doc.contentId) {
-                                    // Create a Content in the database for the item we want to open
-                                    val parent =
-                                        getDocumentFromTreeUriString(
-                                            ctx,
-                                            Settings.libraryFoldersRoot
-                                        )
-                                            ?: return@withContext null
-                                    val folder =
-                                        getDocumentFromTreeUri(ctx, item.doc.uri)
-                                            ?: return@withContext null
-                                    val res = scanArchivePdf(
-                                        ctx,
-                                        parent,
-                                        folder,
-                                        emptyList(),
-                                        StatusContent.EXTERNAL,
-                                        null
-                                    )
-                                    if (0 == res.first) res.second?.let {
-                                        it.id = addContent(ctx, dao, it)
-                                        return@withContext it
-                                    } else return@withContext null
-                                } else {
-                                    // Use the content attached to the item
-                                    return@withContext dao.selectContent(item.doc.contentId)
-                                }
-                            } finally {
-                                dao.cleanup()
-                            }
-                        }
-                        content?.let {
-                            openReader(ctx, it)
-                            // Refresh the view to have that item mapped (and its cover displayed)
-                            viewModel.searchFolder()
-                        }
+                Type.BOOK_FOLDER, Type.SUPPORTED_FILE -> {
+                    folderSearchBundle?.let {
+                        openReaderForResource(requireContext(), item.doc, it)
                     }
                 }
 
@@ -705,6 +614,28 @@ class LibraryFoldersFragment : Fragment(),
             return true
         }
         return false
+    }
+
+    fun openReaderForResource(
+        context: Context,
+        displayFile: DisplayFile,
+        searchParams: Bundle
+    ): Boolean {
+        if (displayFile.uri == Uri.EMPTY) return false
+        getDocumentFromTreeUri(context, displayFile.uri) ?: return false
+
+        Timber.d("Opening: ${displayFile.uri}")
+
+        val builder = ReaderActivityBundle()
+        builder.docUri = displayFile.uri.toString()
+        builder.folderSearchParams = searchParams
+        builder.isOpenFolders = true
+
+        val intent = Intent(context, ReaderActivity::class.java)
+        intent.putExtras(builder.bundle)
+
+        context.startActivity(intent)
+        return true
     }
 
     private fun onRootFolderPickerResult(resultCode: PickerResult, uri: Uri) {

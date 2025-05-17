@@ -389,7 +389,7 @@ fun openReader(
 
     val builder = ReaderActivityBundle()
     builder.contentId = content.id
-    if (searchParams != null) builder.searchParams = searchParams
+    if (searchParams != null) builder.contentSearchParams = searchParams
     if (pageNumber > -1) builder.pageNumber = pageNumber
     builder.isForceShowGallery = forceShowGallery
 

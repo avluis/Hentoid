@@ -136,6 +136,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     // True if current content is favourited
     private var isContentFavourite = false
 
+    // True if current content has been loaded from Folders mode
+    private var isFoldersMode = false
+
     private lateinit var indexRefreshDebouncer: Debouncer<Int>
     private lateinit var processPositionDebouncer: Debouncer<Pair<Int, Int>>
     private lateinit var rescaleDebouncer: Debouncer<Float>
@@ -639,20 +642,21 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun updateFavouriteButtonIcon() {
-        binding?.apply {
+        binding?.controlsOverlay?.apply {
             @DrawableRes var iconRes: Int = R.drawable.ic_fav_empty
             if (isPageFavourite) {
                 iconRes =
                     if (isContentFavourite) R.drawable.ic_fav_full else R.drawable.ic_fav_bottom_half
             } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half
-            controlsOverlay.favouriteActionBtn.setImageResource(iconRes)
+            favouriteActionBtn.setImageResource(iconRes)
+            favouriteActionBtn.visibility = if (isFoldersMode) View.INVISIBLE else View.VISIBLE
         }
     }
 
     private fun hidePendingMicroMenus() {
-        binding?.apply {
-            controlsOverlay.informationMicroMenu.dips()
-            controlsOverlay.favouriteMicroMenu.dips()
+        binding?.controlsOverlay?.apply {
+            informationMicroMenu.dips()
+            favouriteMicroMenu.dips()
         }
     }
 
@@ -756,6 +760,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         isContentArchive = content.isArchive
         isContentDynamic = content.isDynamic
         isContentFavourite = content.favourite
+        isFoldersMode = content.status == StatusContent.STORAGE_RESOURCE
         // Wait for starting index only if content actually changes
         if (content.id != contentId) {
             adjustDisplay(content.site, content.bookPreferences)
@@ -767,8 +772,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         navigator.onContentChanged(content)
         updateFavouriteButtonIcon()
 
-        showFavoritePagesMenu.isVisible = !content.isDynamic
-        deleteMenu.isVisible = !content.isDynamic
+        showFavoritePagesMenu.isVisible = !isContentDynamic && !isFoldersMode
+        deleteMenu.isVisible = !isContentDynamic
 
         // Display "redownload images" button if folder no longer exists and is not external nor dynamic
         binding?.apply {

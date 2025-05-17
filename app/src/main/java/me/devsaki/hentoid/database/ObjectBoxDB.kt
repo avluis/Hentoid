@@ -1700,7 +1700,8 @@ object ObjectBoxDB {
                 StatusContent.DOWNLOADED.code,
                 StatusContent.EXTERNAL.code,
                 StatusContent.ONLINE.code,
-                StatusContent.PLACEHOLDER.code
+                StatusContent.PLACEHOLDER.code,
+                StatusContent.STORAGE_RESOURCE.code
             )
         )
         builder.order(ImageFile_.dbOrder)

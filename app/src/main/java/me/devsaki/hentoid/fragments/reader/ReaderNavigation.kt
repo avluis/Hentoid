@@ -101,13 +101,13 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
 
     fun onImagesChanged(images: List<ImageFile>) {
         this.images = images
-        chapters = images.mapNotNull { obj: ImageFile -> obj.linkedChapter }
-            .sortedBy { obj: Chapter -> obj.order }.distinct().toList()
+        chapters = images.mapNotNull { it.linkedChapter }
+            .sortedBy { it.order }.distinct().toList()
 
         // Can't access the gallery when there's no page to display
         binding?.apply {
             if (images.isNotEmpty()) galleryBtn.visibility = View.VISIBLE
-            else galleryBtn.visibility = View.GONE
+            else galleryBtn.visibility = View.INVISIBLE
         }
         maxPageNumber = images.count { obj: ImageFile -> obj.isReadable }
     }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -38,6 +39,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_BOOK
 import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
+import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.createImageListFromFiles
@@ -52,8 +54,11 @@ import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.DiskCache
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
 import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.getMimeTypeFromUri
@@ -69,9 +74,12 @@ import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.removePages
 import me.devsaki.hentoid.util.reparseFromScratch
+import me.devsaki.hentoid.util.scanArchivePdf
+import me.devsaki.hentoid.util.scanBookFolder
 import me.devsaki.hentoid.util.setAndSaveContentCover
 import me.devsaki.hentoid.util.updateContentReadStats
 import me.devsaki.hentoid.widget.ContentSearchManager
+import me.devsaki.hentoid.widget.FolderSearchManager
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.ReorderWorker
@@ -99,13 +107,19 @@ class ReaderViewModel(
     application: Application, private val dao: CollectionDAO
 ) : AndroidViewModel(application) {
     // Collection DAO
-    private val searchManager: ContentSearchManager = ContentSearchManager(dao)
+    private val contentSearchManager = ContentSearchManager()
+    private val folderSearchManager = FolderSearchManager()
 
     // Collection data
     private val content = MutableLiveData<Content?>() // Current content
 
     // Content Ids of the whole collection ordered according to current filter
     private var contentIds = mutableListOf<Long>()
+
+    // Files of the whole folder ordered according to current filter
+    private var rootUri: Uri = Uri.EMPTY
+    private var folderFiles = mutableListOf<Uri>()
+    private var folderContentsCache = HashMap<Uri, Long>()
 
     private var currentContentIndex = -1 // Index of current content within the above list
 
@@ -200,10 +214,12 @@ class ReaderViewModel(
      */
     fun loadContentFromId(contentId: Long, pageNumber: Int) {
         if (contentId > 0) {
-            val loadedContent = dao.selectContent(contentId)
-            if (loadedContent != null) {
-                if (contentIds.isEmpty()) contentIds.add(contentId)
-                loadContent(loadedContent, pageNumber)
+            viewModelScope.launch {
+                val loadedContent = withContext(Dispatchers.IO) { dao.selectContent(contentId) }
+                if (loadedContent != null) {
+                    if (contentIds.isEmpty()) contentIds.add(contentId)
+                    loadContent(loadedContent, pageNumber)
+                }
             }
             AchievementsManager.trigger(29)
         }
@@ -216,9 +232,9 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      * @param bundle     ContentSearchBundle with the current filters and search criteria
      */
-    fun loadContentFromSearchParams(contentId: Long, pageNumber: Int, bundle: Bundle) {
-        searchManager.loadFromBundle(bundle)
-        loadContentFromSearchParams(contentId, pageNumber)
+    fun loadContentFromContentSearch(contentId: Long, pageNumber: Int, bundle: Bundle) {
+        contentSearchManager.loadFromBundle(bundle)
+        loadContentFromContentSearch(contentId, pageNumber)
     }
 
     /**
@@ -227,12 +243,12 @@ class ReaderViewModel(
      * @param contentId  ID of the Content to load
      * @param pageNumber Page number to start with
      */
-    private fun loadContentFromSearchParams(contentId: Long, pageNumber: Int) {
+    private fun loadContentFromContentSearch(contentId: Long, pageNumber: Int) {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     dao.cleanup()
-                    val list = searchManager.searchContentIds()
+                    val list = contentSearchManager.searchContentIds(dao)
                     contentIds.clear()
                     contentIds.addAll(list)
                 }
@@ -243,6 +259,73 @@ class ReaderViewModel(
             }
         }
     }
+
+    /**
+     * Load the given resource + preload all Uri's corresponding to the given search params
+     *
+     * @param docUri     Uri of the resource (folder / archive / PDF) to load
+     * @param bundle     FolderSearchBundle with the current filters and search criteria
+     */
+    fun loadContentFromFolderSearch(docUri: String, bundle: Bundle) {
+        folderSearchManager.loadFromBundle(bundle)
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                rootUri = folderSearchManager.getRoot().toUri()
+                val list = folderSearchManager.getFoldersFast(
+                    getApplication(),
+                    rootUri
+                )
+                folderFiles.clear()
+                folderFiles.addAll(list.map { it.uri })
+                folderContentsCache.clear()
+                list.forEach { if (it.contentId > 0) folderContentsCache[it.uri] = it.contentId }
+            }
+            loadContentFromFile(docUri.toUri(), rootUri)
+        }
+    }
+
+    private suspend fun loadContentFromFile(uri: Uri, rootUri: Uri) = withContext(Dispatchers.IO) {
+        // Content has already been loaded from storage once
+        folderContentsCache.get(uri)?.let {
+            dao.selectContent(it)?.let {
+                loadContent(it)
+                return@withContext
+            }
+        }
+
+        // Load from storage
+        val ctx: Context = getApplication()
+        val doc = getDocumentFromTreeUri(ctx, uri) ?: return@withContext
+        val parent = getDocumentFromTreeUri(ctx, rootUri) ?: return@withContext
+        val docName = doc.name ?: ""
+
+        if (isSupportedArchive(docName) || "pdf" == getExtension(docName)) {
+            val res = scanArchivePdf(
+                ctx,
+                parent,
+                doc,
+                emptyList(),
+                StatusContent.STORAGE_RESOURCE,
+                null
+            )
+            if (0 == res.first) res.second?.let {
+                it.id = addContent(ctx, dao, it)
+                loadContent(it)
+            }
+        } else {
+            val res = scanBookFolder(
+                ctx,
+                parent,
+                doc,
+                emptyList(),
+                StatusContent.STORAGE_RESOURCE
+            )
+            res.id = addContent(ctx, dao, res)
+            folderContentsCache[uri] = res.id
+            loadContent(res)
+        }
+    }
+
 
     fun loadFavPages() {
         // Forge content with the images alone
@@ -386,9 +469,17 @@ class ReaderViewModel(
      * @param pageNumber Page number to start with
      * @param imageFiles Pictures to process
      */
-    private fun processImages(theContent: Content, pageNumber: Int, imageFiles: List<ImageFile>) {
+    private fun processImages(
+        theContent: Content,
+        pageNumber: Int,
+        imageFiles: List<ImageFile>
+    ) {
         sortAndSetViewerImages(imageFiles, getShuffled().value == true, reversed.value == true)
-        if (theContent.id != loadedContentId) contentFirstLoad(theContent, pageNumber, imageFiles)
+        if (theContent.id != loadedContentId) contentFirstLoad(
+            theContent,
+            pageNumber,
+            imageFiles
+        )
         loadedContentId = theContent.id
     }
 
@@ -571,7 +662,8 @@ class ReaderViewModel(
                 viewerIndex + if (-1 == thumbIndex || thumbIndex > viewerIndex) 0 else 1
             val isLastPage = viewerIndex >= viewerImagesInternal.size - 1
             val indexToSet = if (isLastPage) 0 else collectionIndex
-            val updateReads = readPageNumbers.size >= readThresholdPosition || theContent.reads > 0
+            val updateReads =
+                readPageNumbers.size >= readThresholdPosition || theContent.reads > 0
             val markAsComplete = readPageNumbers.size >= completedThresholdPosition
 
             try {
@@ -635,8 +727,8 @@ class ReaderViewModel(
     fun filterFavouriteImages(targetState: Boolean) {
         if (loadedContentId > -1) {
             showFavouritesOnly.postValue(targetState)
-            searchManager.setFilterPageFavourites(targetState)
-            loadContentFromSearchParams(loadedContentId, -1)
+            contentSearchManager.setFilterPageFavourites(targetState)
+            loadContentFromContentSearch(loadedContentId, -1)
         }
     }
 
@@ -769,7 +861,8 @@ class ReaderViewModel(
     fun deleteContent(onError: (Throwable) -> Unit) {
         val targetContent = dao.selectContent(loadedContentId)
         try {
-            targetContent ?: throw IllegalArgumentException("Content $loadedContentId not found")
+            targetContent
+                ?: throw IllegalArgumentException("Content $loadedContentId not found")
 
             // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
             currentImageSource?.let { databaseImages.removeSource(it) }
@@ -870,13 +963,12 @@ class ReaderViewModel(
      * @return true if there's a book to load; false if there is none
      */
     fun loadNextContent(viewerIndex: Int): Boolean {
-        if (currentContentIndex < contentIds.size - 1) {
+        val max = if (contentIds.isNotEmpty()) contentIds.size else folderFiles.size
+        if (currentContentIndex < max - 1) {
             currentContentIndex++
-            if (contentIds.isNotEmpty()) {
-                onLeaveBook(viewerIndex)
-                loadContentFromId(contentIds[currentContentIndex], -1)
-                return true
-            }
+            onLeaveBook(viewerIndex)
+            reloadContent()
+            return true
         }
         return false
     }
@@ -890,11 +982,9 @@ class ReaderViewModel(
     fun loadPreviousContent(viewerIndex: Int): Boolean {
         if (currentContentIndex > 0) {
             currentContentIndex--
-            if (contentIds.isNotEmpty()) {
-                onLeaveBook(viewerIndex)
-                loadContentFromId(contentIds[currentContentIndex], -1)
-                return true
-            }
+            onLeaveBook(viewerIndex)
+            reloadContent()
+            return true
         }
         return false
     }
@@ -907,11 +997,17 @@ class ReaderViewModel(
     fun loadFirstContent(viewerIndex: Int) {
         currentContentIndex = 0
         onLeaveBook(viewerIndex)
-        loadContentFromId(contentIds[currentContentIndex], 1)
+        reloadContent(1)
     }
 
     private fun reloadContent(viewerIndex: Int = -1) {
-        loadContentFromId(contentIds[currentContentIndex], -1)
+        viewModelScope.launch {
+            if (contentIds.isNotEmpty()) {
+                loadContentFromId(contentIds[currentContentIndex], -1)
+            } else if (folderFiles.isNotEmpty()) {
+                loadContentFromFile(folderFiles[currentContentIndex], rootUri)
+            }
+        }
         if (viewerIndex > -1) setViewerStartingIndex(viewerIndex)
     }
 
@@ -921,17 +1017,23 @@ class ReaderViewModel(
      * @param c Content to load
      * @param pageNumber Page number to start with
      */
-    private fun loadContent(c: Content, pageNumber: Int) {
+    private suspend fun loadContent(c: Content, pageNumber: Int = -1) {
         Settings.readerCurrentContent = c.id
-        currentContentIndex = contentIds.indexOf(c.id)
+        var listSize = 0
+        currentContentIndex = if (c.status == StatusContent.STORAGE_RESOURCE) {
+            listSize = folderFiles.size
+            folderFiles.indexOf(c.storageUri.toUri())
+        } else {
+            listSize = contentIds.size
+            contentIds.indexOf(c.id)
+        }
         if (-1 == currentContentIndex) currentContentIndex = 0
         c.isFirst = 0 == currentContentIndex
-        c.isLast = currentContentIndex >= contentIds.size - 1
-        if (null == getDocumentFromTreeUriString(
-                getApplication(),
-                c.storageUri
-            )
-        ) c.folderExists = false
+        c.isLast = currentContentIndex >= listSize - 1
+        withContext(Dispatchers.IO) {
+            if (null == getDocumentFromTreeUriString(getApplication(), c.storageUri))
+                c.folderExists = false
+        }
         content.postValue(c)
         loadDatabaseImages(c, pageNumber)
     }
@@ -942,16 +1044,20 @@ class ReaderViewModel(
      * @param theContent Content to load the pictures for
      * @param pageNumber Page number to start with
      */
-    private fun loadDatabaseImages(
+    private suspend fun loadDatabaseImages(
         theContent: Content,
-        pageNumber: Int
-    ) {
+        pageNumber: Int = -1
+    ) = withContext(Dispatchers.Main) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
-        if (currentImageSource != null) databaseImages.removeSource(currentImageSource!!)
-        currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
-        databaseImages.addSource(currentImageSource!!) { imgs ->
-            loadImages(theContent, pageNumber, imgs.toMutableList())
+        synchronized(databaseImages) {
+            currentImageSource?.let { databaseImages.removeSource(it) }
+            currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
+            currentImageSource?.let {
+                databaseImages.addSource(it) {
+                    loadImages(theContent, pageNumber, it.toMutableList())
+                }
+            }
         }
     }
 
@@ -1281,7 +1387,9 @@ class ReaderViewModel(
         if (extractInstructions.isEmpty()) return@withContext
 
         Timber.d(
-            "Extracting %d files starting from index %s", extractInstructions.size, indexesToLoad[0]
+            "Extracting %d files starting from index %s",
+            extractInstructions.size,
+            indexesToLoad[0]
         )
 
         val nbProcessed = AtomicInteger()
@@ -1294,14 +1402,28 @@ class ReaderViewModel(
                     archiveFile,
                     extractInstructions,
                     archiveExtractKillSwitch,
-                    { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                    { id, uri ->
+                        onResourceExtracted(
+                            id,
+                            uri,
+                            nbProcessed,
+                            indexesToLoad.size
+                        )
+                    },
                     { onExtractionComplete(nbProcessed, indexesToLoad.size) })
             } else {
                 getApplication<Application>().applicationContext.extractArchiveEntriesCached(
                     archiveFile.uri,
                     extractInstructions,
                     archiveExtractKillSwitch,
-                    { id, uri -> onResourceExtracted(id, uri, nbProcessed, indexesToLoad.size) },
+                    { id, uri ->
+                        onResourceExtracted(
+                            id,
+                            uri,
+                            nbProcessed,
+                            indexesToLoad.size
+                        )
+                    },
                     { onExtractionComplete(nbProcessed, indexesToLoad.size) })
             }
         } catch (_: Exception) {
@@ -1334,7 +1456,12 @@ class ReaderViewModel(
         nbProcessed.getAndIncrement()
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, maxElements
+                ProcessEvent.Type.PROGRESS,
+                R.id.viewer_load,
+                0,
+                nbProcessed.get(),
+                0,
+                maxElements
             )
         )
         var idx: Int? = null
@@ -1356,7 +1483,12 @@ class ReaderViewModel(
         }
     }
 
-    private fun updateImgWithExtractedUri(img: ImageFile, idx: Int, uri: Uri, refresh: Boolean) {
+    private fun updateImgWithExtractedUri(
+        img: ImageFile,
+        idx: Int,
+        uri: Uri,
+        refresh: Boolean
+    ) {
         // Instanciate a new ImageFile not to modify the one used by the UI
         val extractedPic = ImageFile(img, populateContent = true, populateChapter = true)
         extractedPic.fileUri = uri.toString()
@@ -1384,7 +1516,12 @@ class ReaderViewModel(
         Timber.d("Extracted %d files successfuly", maxElements)
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, maxElements
+                ProcessEvent.Type.COMPLETE,
+                R.id.viewer_load,
+                0,
+                nbProcessed.get(),
+                0,
+                maxElements
             )
         )
         indexExtractInProgress.clear()
@@ -1739,7 +1876,8 @@ class ReaderViewModel(
      */
     private fun doCreateRemoveChapter(contentId: Long, selectedPageId: Long) {
         assertNonUiThread()
-        val chapterStr = getApplication<Application>().getString(R.string.gallery_chapter_prefix)
+        val chapterStr =
+            getApplication<Application>().getString(R.string.gallery_chapter_prefix)
         if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
             "$chapterStr [0-9]+"
         )
@@ -1748,7 +1886,8 @@ class ReaderViewModel(
             dao.selectContent(contentId) ?: throw IllegalArgumentException("No content found")
 
         val selectedPage =
-            dao.selectImageFile(selectedPageId) ?: throw IllegalArgumentException("No page found")
+            dao.selectImageFile(selectedPageId)
+                ?: throw IllegalArgumentException("No page found")
         var selectedChapter = selectedPage.linkedChapter
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == selectedChapter) {
