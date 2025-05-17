@@ -77,6 +77,7 @@ import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 import java.security.InvalidParameterException
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class LibraryViewModel(application: Application, val dao: CollectionDAO) :
@@ -110,6 +111,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     val foldersDetail = MediatorLiveData<List<DisplayFile>>()
     val folderSearchBundle = MutableLiveData<Bundle>()
     val parentsCache = HashMap<Uri, Uri>() // Key = child folder, Value = parent folder
+    val detailsFlowKillSwitch = AtomicBoolean(true)
 
     // True if there's at least one existing custom group; false instead
     val isCustomGroupingAvailable = MutableLiveData<Boolean>()
@@ -277,6 +279,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     private suspend fun doSearchFolders() {
+        detailsFlowKillSwitch.set(true)
         val root = folderRoot.value ?: Uri.EMPTY
         val isARoot = Settings.libraryFoldersRoots.contains(root.toString()) || root == Uri.EMPTY
         val ctx: Context = getApplication()
@@ -316,8 +319,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
             // Details
             withContext(Dispatchers.IO) {
+                detailsFlowKillSwitch.set(false)
                 folderSearchManager.getFoldersDetails(ctx, root)
-                    .takeWhile { true } // TODO cancel here
+                    .takeWhile { !detailsFlowKillSwitch.get() }
                     .filterNot { it.type == DisplayFile.Type.OTHER }
                     .map { enrichWithMetadata(it, dao) }
                     .transform {
@@ -780,8 +784,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     /**
      * Delete the given list of content
-     *
-     * @param contents List of content to be deleted
      */
     fun deleteItems(
         contentIds: List<Long>,
@@ -862,13 +864,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         )
     }
 
-    fun attachFolderRoot(uri: Uri) {
+    fun attachFolderRoot(uri: Uri): Boolean {
         val roots = Settings.libraryFoldersRoots.toMutableList()
+        if (roots.contains(uri.toString())) return false
+
         // Persist I/O permissions; keep existing ones if present
         persistLocationCredentials(getApplication(), uri)
         roots.add(uri.toString())
         Settings.libraryFoldersRoots = roots
         searchFolder()
+        return true
     }
 
     fun detachFolderRoots(uris: List<Uri>) {
@@ -1006,7 +1011,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             localGroups.filter { g -> g.name.equals(newGroupName, ignoreCase = true) }
         if (groupMatchingName.isNotEmpty()) { // Existing group with the same name
             onFail.invoke(R.string.group_name_exists)
-        } else if (group.isUngroupedGroup) { // "Ungrouped" group can't be renamed because it stops to work (TODO investgate that)
+        } else if (group.isUngroupedGroup) { // "Ungrouped" group can't be renamed because it stops to work (TODO investigate that)
             onFail.invoke(R.string.group_rename_forbidden)
         } else {
             group.name = newGroupName

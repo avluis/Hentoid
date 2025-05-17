@@ -629,6 +629,7 @@
     <string name="clear_search_history_confirm">Clear search history?</string>
     <string name="fav_pages">Favourite pages</string>
     <string name="add_root">Add root folder</string>
+    <string name="add_root_fail">Couldn\'t add root folder</string>
     <string name="up_level">Up one level</string>
 
     <!-- Merge & split -->

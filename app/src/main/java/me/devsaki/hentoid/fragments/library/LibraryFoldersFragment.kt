@@ -34,6 +34,9 @@ import com.mikepenz.fastadapter.select.SelectExtensionFactory
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
@@ -549,17 +552,20 @@ class LibraryFoldersFragment : Fragment(),
      * => Update details of folders that are already on display
      */
     private fun onFoldersDetail(result: List<DisplayFile>) {
-        val resSize = result.size.toLong()
-        Timber.i(">> Folders changed [details] (folders) ! Size=$resSize)")
-
         // Copy result to new list to avoid concurrency issues when processing updated list
-        val inItems = result.toList()
-        var updatedItems = itemAdapter.adapterItems.toList()
-        // Merge detailed results data into existing items
-        updatedItems = updatedItems.map { up ->
-            inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it) } ?: up
+        lifecycleScope.launch {
+            val updatedItems = withContext(Dispatchers.Default) {
+                val inItems = result.toList()
+                var updatedItems = itemAdapter.adapterItems.toList()
+                // Merge detailed results data into existing items
+                updatedItems.map { up ->
+                    inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it) } ?: up
+                }
+            }
+            withContext(Dispatchers.Main) {
+                set(itemAdapter, updatedItems, FILEITEM_DIFF_CALLBACK)
+            }
         }
-        set(itemAdapter, updatedItems, FILEITEM_DIFF_CALLBACK)
     }
 
     /**
@@ -641,10 +647,12 @@ class LibraryFoldersFragment : Fragment(),
     private fun onRootFolderPickerResult(resultCode: PickerResult, uri: Uri) {
         when (resultCode) {
             PickerResult.OK -> {
-                viewModel.attachFolderRoot(uri)
+                if (!viewModel.attachFolderRoot(uri)) activity.get()?.toast(R.string.add_root_fail)
             }
 
-            else -> {}
+            else -> {
+                activity.get()?.toast(R.string.add_root_fail)
+            }
         }
     }
 
