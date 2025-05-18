@@ -80,7 +80,8 @@ class HitomiActivity : BaseWebActivity() {
             ".container div[class^=hitomi-]",
             ".top-content > div:not(.list-title)",
             ".content > div:not(.gallery,.cover-column,.gallery-preview)",
-            ".wnvtqvsW"
+            ".wnvtqvsW",
+            "#dl-button" // May confuse users into thinking Hentoid uses that button => hide it
         )
     }
 
