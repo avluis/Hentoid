@@ -333,7 +333,7 @@
   <string name="new_group_name">¿Nombre del grupo nuevo?</string>
   <string name="group_edit_name">Editar nombre de grupo</string>
   <string name="book_edit_title">Editar título del libro</string>
-  <string name="delete_progress">Borrando libros</string>
+  <string name="delete_books_progress">Borrando libros</string>
   <string name="purge_progress">Purgando libros</string>
   <string name="cancel_queue_progress">Cancelando elementos en fila</string>
   <string name="delete_success_books">%d libro</string>

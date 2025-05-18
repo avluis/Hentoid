@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.IdRes
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -23,10 +24,10 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.splitMerge.SplitMergeCompleteNotification
 import me.devsaki.hentoid.notification.splitMerge.SplitMergeProgressNotification
 import me.devsaki.hentoid.notification.splitMerge.SplitMergeStartNotification
-import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.createJson
+import me.devsaki.hentoid.util.deleteChapters
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFiles
@@ -43,15 +44,14 @@ import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContent
+import me.devsaki.hentoid.util.renumberChapters
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.time.Instant
-import java.util.regex.Pattern
 import kotlin.math.floor
 import kotlin.math.log10
-import androidx.core.net.toUri
 
 enum class SplitMergeType {
     SPLIT, MERGE, REORDER
@@ -132,7 +132,6 @@ abstract class BaseSplitMergeWorker(
         val chapters = dao.selectChapters(chapterSplitIds.toList())
         var targetFolder: DocumentFile? = null
 
-
         val images = content.imageList
         if (chapters.isEmpty()) throw ContentNotProcessedException(content, "No chapters detected")
         if (images.isEmpty()) throw ContentNotProcessedException(content, "No images detected")
@@ -206,7 +205,7 @@ abstract class BaseSplitMergeWorker(
 
         // If we're here, no exception has been triggered -> cleanup if needed
         if (deleteAfterOperation && !isStopped) {
-            // TODO delete selected chapters and associated files when the "delete after operation" feature is implemented in the UI
+            deleteChapters(applicationContext, dao, chapterSplitIds.toList())
         }
     }
 
@@ -319,9 +318,6 @@ abstract class BaseSplitMergeWorker(
         val content = dao.selectChapter(chapterIds.first())
         val contentId = content?.contentId ?: return
 
-        val chapterStr = applicationContext.getString(R.string.gallery_chapter_prefix)
-        if (null == VANILLA_CHAPTERNAME_PATTERN)
-            VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("$chapterStr [0-9]+")
         var chapters = dao.selectChapters(contentId)
         require(chapters.isNotEmpty()) { "No chapters found" }
 
@@ -330,13 +326,7 @@ abstract class BaseSplitMergeWorker(
         chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
 
         // Renumber all chapters and update the DB
-        chapters.forEachIndexed { index, c ->
-            // Update names with the default "Chapter x" naming
-            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
-                "$chapterStr " + (index + 1)
-            // Update order
-            c.order = index + 1
-        }
+        renumberChapters(chapters.asSequence())
         dao.insertChapters(chapters)
 
         // Renumber all readable images

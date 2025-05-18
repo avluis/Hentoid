@@ -380,8 +380,7 @@ fun removeFile(context: Context, fileUri: Uri) {
         val path = fileUri.path
         if (null != path) removeFile(File(path))
     } else {
-        val doc = getFileFromSingleUri(context, fileUri)
-        doc?.delete()
+        getFileFromSingleUri(context, fileUri)?.delete()
     }
 }
 

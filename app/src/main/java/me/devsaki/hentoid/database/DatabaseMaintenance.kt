@@ -83,14 +83,21 @@ object DatabaseMaintenance {
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start")
-            var contentList = ObjectBoxDB.selectAllFlaggedBooksQ().safeFind()
+            var contentList = ObjectBoxDB.selectAllFlaggedContentsQ().safeFindIds()
             Timber.i("Unflag books : %s books detected", contentList.size)
             ObjectBoxDB.flagContentsForDeletion(contentList, false)
             Timber.i("Unflag books : done")
 
+            // Unflag all images marked for deletion
+            Timber.i("Unflag images : start")
+            var imgList = ObjectBoxDB.selectAllFlaggedImgsQ().safeFindIds()
+            Timber.i("Unflag images : %s images detected", imgList.size)
+            ObjectBoxDB.flagImagesForDeletion(imgList, false)
+            Timber.i("Unflag images : done")
+
             // Unflag all books signaled as being processed
             Timber.i("Unmark books as being processed : start")
-            contentList = ObjectBoxDB.selectAllProcessedBooksQ().safeFind()
+            contentList = ObjectBoxDB.selectAllProcessedContentsQ().safeFindIds()
             Timber.i("Unmark books as being processed : %s books detected", contentList.size)
             ObjectBoxDB.markContentsAsBeingProcessed(contentList, false)
             Timber.i("Unmark books as being processed : done")

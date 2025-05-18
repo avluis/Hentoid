@@ -1201,13 +1201,14 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     fun splitContent(
         content: Content,
-        chapters: List<Chapter>
+        chapters: List<Chapter>,
+        deleteAfter: Boolean
     ) {
         val builder = SplitMergeData.Builder()
         builder.setOperation(SplitMergeType.SPLIT)
         builder.setContentIds(listOf(content.id))
         builder.setChapterIdsForSplit(chapters.map { it.id })
-        //builder.setDeleteAfterOps(deleteAfterMerging)
+        builder.setDeleteAfterOps(deleteAfter)
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
             R.id.split_service.toString(),

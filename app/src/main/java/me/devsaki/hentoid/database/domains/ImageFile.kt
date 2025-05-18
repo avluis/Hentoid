@@ -42,7 +42,9 @@ data class ImageFile(
     var mimeType: String = MIME_IMAGE_GENERIC,
     var size: Long = 0,
     var imageHash: Long = 0,
-    var isTransformed: Boolean = false
+    var isTransformed: Boolean = false,
+    // Useful only during cleanup operations; no need to get it into the JSON
+    var isFlaggedForDeletion: Boolean = false
 ) {
     lateinit var content: ToOne<Content>
     lateinit var chapter: ToOne<Chapter>

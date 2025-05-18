@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -98,6 +99,7 @@ import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.util.string_similarity.Cosine
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import me.devsaki.hentoid.workers.BaseDeleteWorker
+import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
@@ -176,10 +178,17 @@ private val queueStatus =
     intArrayOf(StatusContent.DOWNLOADING.code, StatusContent.PAUSED.code, StatusContent.ERROR.code)
 private val queueTabStatus = intArrayOf(StatusContent.DOWNLOADING.code, StatusContent.PAUSED.code)
 
+var chapterStr: String = "Chapter" // Default english value; will be overriden at init
+    internal set
+
 // TODO empty this cache at some point
 private val fileNameMatchCache: MutableMap<String, String> = HashMap()
 
-var VANILLA_CHAPTERNAME_PATTERN: Pattern? = null
+val VANILLA_CHAPTERNAME_PATTERN: Pattern by lazy { Pattern.compile("$chapterStr [0-9]+") }
+
+fun initResources(res: Resources) {
+    chapterStr = res.getString(R.string.gallery_chapter_prefix)
+}
 
 fun getLibraryStatuses(): IntArray {
     return libraryStatus
@@ -463,7 +472,7 @@ fun getPictureFilesFromContent(context: Context, content: Content): List<Documen
 }
 
 /**
- * Remove the given Content from the disk and the DB
+ * Remove the given Content from the storage and the DB
  *
  * @param context Context to be used
  * @param dao     DAO to be used
@@ -522,12 +531,12 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
 /**
  * Remove the given Content
  * - from the queue
- * - from disk and the DB (optional)
+ * - from storage and the DB (optional)
  *
  * @param context       Context to be used
  * @param dao           DAO to be used
  * @param content       Content to be removed
- * @param deleteContent If true, the content itself is deleted from disk and DB
+ * @param deleteContent If true, the content itself is deleted from storage and DB
  * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
  */
 @Throws(ContentNotProcessedException::class)
@@ -583,7 +592,7 @@ fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation) {
     // Remove all external books from DB
     // NB : do NOT use ContentHelper.removeContent as it would remove files too
     // here we just want to remove DB entries without removing files
-    dao.deleteAllInternalBooks(getPathRoot(location), true)
+    dao.deleteAllInternalContents(getPathRoot(location), true)
 
     // TODO groups
 }
@@ -753,7 +762,7 @@ fun addAttribute(
 }
 
 /**
- * Remove the given pages from the disk and the DB
+ * Remove the given pages from the storage and the DB
  *
  * @param images  Pages to be removed
  * @param dao     DAO to be used
@@ -765,7 +774,7 @@ fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
     // NB : start with DB to have a LiveData feedback, because file removal can take much time
     dao.deleteImageFiles(images)
 
-    // Remove the pages from disk
+    // Remove the pages from storage
     for (image in images) removeFile(context, image.fileUri.toUri())
 
     // Lists all relevant content
@@ -849,7 +858,7 @@ fun getOrCreateContentDownloadDir(
     val siteDownloadDir = getOrCreateSiteDownloadDir(context, location, content.site) ?: return null
 
     // == Book folder
-    val bookFolderName = formatBookFolderName(content)
+    val bookFolderName = formatFolderName(content)
 
     // First try finding the folder with new naming...
     if (!createOnly) {
@@ -874,15 +883,15 @@ fun getOrCreateContentDownloadDir(
  * - Left side : Naming convention allowing non-ANSI characters
  * - Right side : Old naming convention with ANSI characters alone
  */
-fun formatBookFolderName(
+fun formatFolderName(
     content: Content
 ): Pair<String, String> {
     val title = content.title
-    val author = formatBookAuthor(content).lowercase(Locale.getDefault())
+    val author = formatAuthor(content).lowercase(Locale.getDefault())
 
     return Pair(
-        formatBookFolderName(content, cleanFileName(title), cleanFileName(author)),
-        formatBookFolderName(
+        formatFolderName(content, cleanFileName(title), cleanFileName(author)),
+        formatFolderName(
             content,
             title.replace(UNAUTHORIZED_CHARS, "_"),
             author.replace(UNAUTHORIZED_CHARS, "_")
@@ -890,7 +899,7 @@ fun formatBookFolderName(
     )
 }
 
-private fun formatBookFolderName(
+private fun formatFolderName(
     content: Content,
     title: String, author: String
 ): String {
@@ -904,7 +913,7 @@ private fun formatBookFolderName(
     result += " - "
 
     // Unique content ID
-    val suffix = formatBookId(content)
+    val suffix = formatId(content)
 
     // Truncate folder dir to something manageable for Windows
     // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
@@ -927,7 +936,7 @@ private fun formatBookFolderName(
  * @return Formatted Content ID
  */
 // Math.abs is used for formatting purposes only
-fun formatBookId(content: Content): String {
+fun formatId(content: Content): String {
     content.populateUniqueSiteId()
     var id = content.uniqueSiteId
     // For certain sources (8muses, fakku), unique IDs are strings that may be very long
@@ -942,7 +951,7 @@ fun formatBookId(content: Content): String {
  * @param content Content to use
  * @return Resulting author string
  */
-fun formatBookAuthor(content: Content): String {
+fun formatAuthor(content: Content): String {
     var result = ""
     val attrMap = content.attributeMap
     // Try and get first Artist
@@ -2080,7 +2089,7 @@ suspend fun mergeContents(
                 "Could not create target directory : external root unreachable"
             )
 
-            val bookFolderName = formatBookFolderName(mergedContent)
+            val bookFolderName = formatFolderName(mergedContent)
             // First try finding the folder with new naming...
             targetFolder = findFolder(context, externalRootFolder, bookFolderName.first)
             if (null == targetFolder) { // ...then with old (sanitized) naming...
@@ -2305,6 +2314,47 @@ fun purgeContent(
     )
 }
 
+suspend fun deleteChapters(context: Context, dao: CollectionDAO, chapterIds : List<Long>) {
+    // Delete chapters and flag images for deletion
+    val imageIdsToDelete = HashSet<Long>()
+    withContext(Dispatchers.IO) {
+        try {
+            val chapters = dao.selectChapters(chapterIds)
+            chapters.forEach { chp ->
+                // Queue pages for deletion
+                imageIdsToDelete.addAll(chp.imageList.map { it.id })
+                // Delete chapter
+                dao.deleteChapter(chp)
+            }
+            renumberChapters(chapters.asSequence())
+            dao.insertChapters(chapters)
+            dao.flagImagesForDeletion(imageIdsToDelete.toLongArray(), true)
+        } finally {
+            dao.cleanup()
+        }
+    }
+
+    // Use worker to delete ImageFiles and associated files
+    val builder = DeleteData.Builder()
+    builder.setOperation(BaseDeleteWorker.Operation.DELETE)
+    builder.setDeleteFlaggedImages(true)
+    val workManager = WorkManager.getInstance(context)
+    workManager.enqueue(
+        OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+            .setInputData(builder.data).build()
+    )
+}
+
+fun renumberChapters(chaps: Sequence<Chapter>) {
+    chaps.forEachIndexed { index, c ->
+        // Update names with the default "Chapter x" naming
+        if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.name).matches())
+            c.name = "$chapterStr " + (index + 1)
+        // Update order
+        c.order = index + 1
+    }
+}
+
 
 /**
  * Comparator to be used to sort files according to their names
@@ -2329,7 +2379,7 @@ private class InnerNameNumberArchiveComparator : Comparator<ArchiveEntry> {
 /**
  * Comparator to be used to sort file entries according to their names
  */
-class InnerNameNumberDisplayFileComparator(val desc : Boolean = false) : Comparator<DisplayFile> {
+class InnerNameNumberDisplayFileComparator(val desc: Boolean = false) : Comparator<DisplayFile> {
     override fun compare(o1: DisplayFile, o2: DisplayFile): Int {
         return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
             .compare(o1.name, o2.name) * if (desc) -1 else 1

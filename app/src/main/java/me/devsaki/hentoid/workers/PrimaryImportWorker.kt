@@ -52,12 +52,12 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.file.DiskCache.init
+import me.devsaki.hentoid.util.file.StorageCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
-import me.devsaki.hentoid.util.formatBookFolderName
+import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getPathRoot
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.importBookmarks
@@ -426,7 +426,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             if (!isStopped) { // Should only be done when things have run properly
                 val dao: CollectionDAO = ObjectBoxDAO()
                 try {
-                    dao.deleteAllFlaggedBooks(true, getPathRoot(previousUriStr))
+                    dao.deleteAllFlaggedContents(true, getPathRoot(previousUriStr))
                     dao.deleteAllFlaggedGroups()
                     dao.cleanupOrphanAttributes()
                 } finally {
@@ -547,7 +547,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
                 var contentImages = content.imageList
                 if (rename) {
-                    val canonicalBookFolderName = formatBookFolderName(content)
+                    val canonicalBookFolderName = formatFolderName(content)
                     val currentPathParts = bookFolder.uri.pathSegments
                     val bookUriParts =
                         currentPathParts[currentPathParts.size - 1].split(":")

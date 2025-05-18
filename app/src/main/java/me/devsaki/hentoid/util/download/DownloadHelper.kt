@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
-import me.devsaki.hentoid.util.file.DiskCache
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
@@ -66,7 +66,7 @@ fun downloadToFileCached(
 ): Pair<Uri?, String> {
     return downloadToFile(
         context, site, rawUrl, requestHeaders,
-        fileCreator = { _, _ -> DiskCache.createFile(cacheKey) },
+        fileCreator = { _, _ -> StorageCache.createFile(cacheKey) },
         interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
     )
 }
@@ -100,7 +100,7 @@ fun downloadToFile(
 }
 
 /**
- * Download the given resource to the given disk location
+ * Download the given resource to the given storage location
  *
  * @param site              Site to use params for
  * @param rawUrl            URL to download from

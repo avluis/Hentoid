@@ -1765,10 +1765,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         )
     }
 
-    override fun splitContent(content: Content, chapters: List<Chapter>) {
+    override fun splitContent(content: Content, chapters: List<Chapter>, deleteAfter: Boolean) {
         leaveSelectionMode()
-        viewModel.splitContent(content, chapters)
-        //invoke(this, resources.getString(R.string.split_progress), R.plurals.page)
+        viewModel.splitContent(content, chapters, deleteAfter)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)

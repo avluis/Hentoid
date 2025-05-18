@@ -184,8 +184,8 @@ fun Context.extractArchiveEntriesCached(
 ) {
     return extractArchiveEntries(
         uri,
-        fileCreator = { targetFileName -> File(DiskCache.createFile(targetFileName).path!!) },
-        fileFinder = { targetFileName -> DiskCache.getFile(targetFileName) },
+        fileCreator = { targetFileName -> File(StorageCache.createFile(targetFileName).path!!) },
+        fileFinder = { targetFileName -> StorageCache.getFile(targetFileName) },
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -292,7 +292,7 @@ private fun Context.extractArchiveEntries(
     val fileNames: MutableMap<Int, String> = HashMap()
     val identifiers: MutableMap<Int, String> = HashMap()
 
-    // TODO handle the case where the extracted elements would saturate disk space
+    // TODO handle the case where the extracted elements would saturate storage space
     try {
         DocumentFileRandomInStream(this, uri).use { stream ->
             SevenZip.openInArchive(format, stream).use { inArchive ->

@@ -412,7 +412,7 @@
     <string name="new_group_name">Назва нової групи\?</string>
     <string name="group_edit_name">Редагувати назву групи</string>
     <string name="book_edit_title">Редагувати назву книги</string>
-    <string name="delete_progress">Видаляю книги</string>
+    <string name="delete_books_progress">Видаляю книги</string>
     <string name="purge_progress">Знищаю книги</string>
     <string name="cancel_queue_progress">Скасовую елементи черги</string>
     <plurals name="delete_success_books">

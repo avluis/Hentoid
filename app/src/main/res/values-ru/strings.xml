@@ -438,7 +438,7 @@
     <string name="new_group_name">Название новой группы\?</string>
     <string name="group_edit_name">Редактировать название группы</string>
     <string name="book_edit_title">Редактировать название книги</string>
-    <string name="delete_progress">Удаляю книги</string>
+    <string name="delete_books_progress">Удаляю книги</string>
     <string name="purge_progress">Уничтожаю книги</string>
     <string name="cancel_queue_progress">Отменяю элементы очереди</string>
     <plurals name="delete_success_books">

@@ -333,7 +333,7 @@
     <string name="new_group_name">新しいグループの名前\？</string>
     <string name="group_edit_name">グループ名を編集</string>
     <string name="book_edit_title">本のタイトルを編集</string>
-    <string name="delete_progress">本の削除</string>
+    <string name="delete_books_progress">本の削除</string>
     <string name="purge_progress">本のパージ</string>
     <string name="cancel_queue_progress">キューアイテムのキャンセル</string>
     <string name="delete_success_books">%d本</string>

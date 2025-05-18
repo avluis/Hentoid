@@ -47,11 +47,12 @@ import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.DiskCache
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
 import me.devsaki.hentoid.util.image.AnimatedPngDecoder
+import me.devsaki.hentoid.util.initResources
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.workers.StartupWorker
@@ -141,7 +142,8 @@ object AppStartup {
 
     fun getPostLaunchTasks(): List<BiConsumer<Context, (Float) -> Unit>> {
         return listOf(
-            this::initDiskCache,
+            this::initStorageCache,
+            this::initHelperResources,
             this::searchForUpdates,
             this::sendFirebaseStats,
             this::createBookmarksJson,
@@ -207,7 +209,7 @@ object AppStartup {
             context.clearWebviewCache(null)
             Timber.d("Process app update : Clearing app cache")
             context.clearAppCache()
-            DiskCache.init(context)
+            StorageCache.init(context)
             Timber.d("Process app update : Complete")
             EventBus.getDefault().postSticky(AppUpdatedEvent())
             Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
@@ -281,10 +283,16 @@ object AppStartup {
         Timber.i("Create plug receiver : done")
     }
 
-    private fun initDiskCache(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init disk cache : start")
-        DiskCache.init(context)
-        Timber.i("Init disk cache : done")
+    private fun initStorageCache(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init storage cache : start")
+        StorageCache.init(context)
+        Timber.i("Init storage cache : done")
+    }
+
+    private fun initHelperResources(context: Context, emitter: (Float) -> Unit) {
+        Timber.i("Init helper resources : start")
+        initResources(context.resources)
+        Timber.i("Init helper resources : done")
     }
 
     private fun initTLS(context: Context, emitter: (Float) -> Unit) {

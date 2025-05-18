@@ -33,7 +33,7 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.exportToDownloadsFolder
-import me.devsaki.hentoid.util.file.DiskCache
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.getAppHeapBytes
 import me.devsaki.hentoid.util.getAppTotalRamBytes
@@ -138,7 +138,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                     withContext(Dispatchers.IO) {
                         context?.apply {
                             clearAppCache()
-                            DiskCache.init(this)
+                            StorageCache.init(this)
                         }
                     }
                     toast(R.string.tools_cache_app_success)

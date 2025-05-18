@@ -85,7 +85,7 @@ interface CollectionDAO {
 
     fun flagAllInternalBooks(rootPath: String, includePlaceholders: Boolean)
 
-    fun deleteAllInternalBooks(rootPath: String, resetRemainingImagesStatus: Boolean)
+    fun deleteAllInternalContents(rootPath: String, resetRemainingImagesStatus: Boolean)
 
     // Queued books
     fun flagAllErrorBooksWithJson()
@@ -98,13 +98,13 @@ interface CollectionDAO {
 
 
     // Flagging
-    fun deleteAllFlaggedBooks(resetRemainingImagesStatus: Boolean, pathRoot: String?)
+    fun deleteAllFlaggedContents(resetRemainingImagesStatus: Boolean, pathRoot: String?)
 
 
     // External library
     fun deleteAllExternalBooks()
 
-    fun flagAllExternalBooks()
+    fun flagAllExternalContents()
 
 
     // GROUPS
@@ -221,6 +221,10 @@ interface CollectionDAO {
     fun selectImageFile(id: Long): ImageFile?
 
     fun selectImageFiles(ids: LongArray): List<ImageFile>
+
+    fun selectChapterImageFiles(ids: LongArray): List<ImageFile>
+
+    fun flagImagesForDeletion(ids : LongArray, value : Boolean)
 
     fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>>
 

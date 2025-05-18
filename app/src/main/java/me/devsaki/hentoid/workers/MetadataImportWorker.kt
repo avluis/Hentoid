@@ -37,7 +37,7 @@ import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.listFolders
-import me.devsaki.hentoid.util.formatBookId
+import me.devsaki.hentoid.util.formatId
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.isInQueue
@@ -125,7 +125,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         val dao = ObjectBoxDAO()
         try {
             if (!add) {
-                if (importLibrary) dao.deleteAllInternalBooks("", false)
+                if (importLibrary) dao.deleteAllInternalContents("", false)
                 if (importQueue) dao.deleteAllQueuedBooks()
                 if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM)
                 if (importBookmarks) dao.deleteAllBookmarks()
@@ -294,7 +294,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             // Look for the book ID
             c.populateUniqueSiteId()
             for (f in bookfolders) if (f.name != null && f.name!!.contains(
-                    formatBookId(c)
+                    formatId(c)
                 )
             ) {
                 // Cache folder Uri

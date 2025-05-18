@@ -38,11 +38,12 @@ import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_BOOK
-import me.devsaki.hentoid.util.VANILLA_CHAPTERNAME_PATTERN
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.chapterStr
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.createImageListFromFiles
+import me.devsaki.hentoid.util.deleteChapters
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.download.downloadToFileCached
@@ -51,7 +52,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
-import me.devsaki.hentoid.util.file.DiskCache
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
@@ -73,6 +74,7 @@ import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.removePages
+import me.devsaki.hentoid.util.renumberChapters
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.scanArchivePdf
 import me.devsaki.hentoid.util.scanBookFolder
@@ -96,7 +98,6 @@ import java.util.Random
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.regex.Pattern
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
@@ -172,12 +173,12 @@ class ReaderViewModel(
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
         reversed.postValue(false)
-        DiskCache.addCleanupObserver(this.javaClass.name) { this.onCacheCleanup() }
+        StorageCache.addCleanupObserver(this.javaClass.name) { this.onCacheCleanup() }
     }
 
     override fun onCleared() {
         dao.cleanup()
-        DiskCache.removeCleanupObserver(this.javaClass.name)
+        StorageCache.removeCleanupObserver(this.javaClass.name)
         super.onCleared()
     }
 
@@ -385,7 +386,7 @@ class ReaderViewModel(
             forceImageUIReload = false
         }
 
-        // Don't reload from disk / archive again if the image list hasn't changed
+        // Don't reload from storage / archive again if the image list hasn't changed
         // e.g. page favourited
         if (!theContent.isArchive) {
             viewModelScope.launch {
@@ -401,7 +402,7 @@ class ReaderViewModel(
             // Copy location properties of the new list on the current list
             for (i in newImages.indices) {
                 val newImg = newImages[i]
-                val cacheUri = DiskCache.getFile(formatCacheKey(newImg))
+                val cacheUri = StorageCache.getFile(formatCacheKey(newImg))
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
                 else newImg.fileUri = ""
             }
@@ -437,7 +438,7 @@ class ReaderViewModel(
                 }
             } else { // Try to get some from the cache
                 newImageFiles.forEach {
-                    DiskCache.getFile(formatCacheKey(it))?.let { existingUri ->
+                    StorageCache.getFile(formatCacheKey(it))?.let { existingUri ->
                         it.fileUri = existingUri.toString()
                         it.mimeType = getMimeTypeFromUri(
                             getApplication<Application>().applicationContext, existingUri
@@ -1200,11 +1201,11 @@ class ReaderViewModel(
                     nbProcessed++
                     viewerImagesInternal[idx].let { img ->
                         val key = formatCacheKey(img)
-                        if (DiskCache.peekFile(key)) {
+                        if (StorageCache.peekFile(key)) {
                             updateImgWithExtractedUri(
                                 img,
                                 idx,
-                                DiskCache.getFile(key)!!,
+                                StorageCache.getFile(key)!!,
                                 0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
                             )
                             cachedIndexes.add(idx)
@@ -1370,7 +1371,7 @@ class ReaderViewModel(
             val c = img.content.target
             val identifier = formatCacheKey(img)
 
-            val existingUri = DiskCache.getFile(identifier)
+            val existingUri = StorageCache.getFile(identifier)
             if (existingUri != null) {
                 updateImgWithExtractedUri(img, index, existingUri, false)
                 hasExistingUris = true
@@ -1548,7 +1549,7 @@ class ReaderViewModel(
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
-        if (img.fileUri.isNotEmpty() && DiskCache.getFile(formatCacheKey(img)) != null)
+        if (img.fileUri.isNotEmpty() && StorageCache.getFile(formatCacheKey(img)) != null)
             return Triple(pageIndex, img.fileUri, img.mimeType)
 
         // Initiate download
@@ -1612,7 +1613,7 @@ class ReaderViewModel(
     }
 
     /**
-     * Download the picture represented by the given ImageFile to the given disk location
+     * Download the picture represented by the given ImageFile to the given storage location
      *
      * @param content           Corresponding Content
      * @param img               ImageFile of the page to download
@@ -1874,72 +1875,61 @@ class ReaderViewModel(
      * @param contentId      ID of the corresponding content
      * @param selectedPageId ID of the page to remove or create a chapter at
      */
-    private fun doCreateRemoveChapter(contentId: Long, selectedPageId: Long) {
-        assertNonUiThread()
-        val chapterStr =
-            getApplication<Application>().getString(R.string.gallery_chapter_prefix)
-        if (null == VANILLA_CHAPTERNAME_PATTERN) VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(
-            "$chapterStr [0-9]+"
-        )
-        // Work on a fresh content
-        val theContent: Content =
-            dao.selectContent(contentId) ?: throw IllegalArgumentException("No content found")
+    private suspend fun doCreateRemoveChapter(contentId: Long, selectedPageId: Long) =
+        withContext(Dispatchers.IO) {
+            // Work on a fresh content
+            val theContent: Content =
+                dao.selectContent(contentId) ?: throw IllegalArgumentException("No content found")
 
-        val selectedPage =
-            dao.selectImageFile(selectedPageId)
-                ?: throw IllegalArgumentException("No page found")
-        var selectedChapter = selectedPage.linkedChapter
-        // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
-        if (null == selectedChapter) {
-            selectedChapter = Chapter(1, "", "$chapterStr 1")
-            theContent.imageFiles.let { workingList ->
-                selectedChapter.setImageFiles(workingList)
-                // Link images the other way around so that what follows works properly
-                for (img in workingList) img.setChapter(selectedChapter)
+            val selectedPage =
+                dao.selectImageFile(selectedPageId)
+                    ?: throw IllegalArgumentException("No page found")
+            var selectedChapter = selectedPage.linkedChapter
+            // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
+            if (null == selectedChapter) {
+                selectedChapter = Chapter(1, "", "$chapterStr 1")
+                theContent.imageFiles.let { workingList ->
+                    selectedChapter.setImageFiles(workingList)
+                    // Link images the other way around so that what follows works properly
+                    for (img in workingList) img.setChapter(selectedChapter)
+                }
+                selectedChapter.setContent(theContent)
             }
-            selectedChapter.setContent(theContent)
+            val chapterImages = selectedChapter.imageList
+            require(chapterImages.isNotEmpty()) { "No images found for selection" }
+            require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
+
+            // If we tap the 1st page of an existing chapter, it means we're removing it
+            val firstChapterPic = chapterImages.filter { it.isReadable }.minByOrNull { it.order }
+            val isRemoving =
+                if (firstChapterPic != null) firstChapterPic.order == selectedPage.order else false
+
+            if (isRemoving) doRemoveChapter(theContent, selectedChapter, chapterImages)
+            else doCreateChapter(theContent, selectedPage, selectedChapter, chapterImages)
+
+            // Rearrange all chapters
+
+            // Work on a clean image set directly from the DAO
+            // (we don't want to depend on LiveData being on time here)
+            val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
+            // Rely on the order of pictures to get chapter in the right order
+            val allChapters =
+                theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()
+                    .filter { it.order > -1 }
+
+            // Renumber all chapters to reflect changes
+            renumberChapters(allChapters)
+
+            // Map them to the proper content
+            allChapters.forEach { it.setContent(theContent) }
+            val updatedChapters = allChapters.toList()
+
+            // Save chapters
+            dao.insertChapters(updatedChapters)
+            val finalContent = dao.selectContent(contentId)
+            if (finalContent != null) persistJson(getApplication(), finalContent)
+            dao.cleanup()
         }
-        val chapterImages = selectedChapter.imageList
-        require(chapterImages.isNotEmpty()) { "No images found for selection" }
-        require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
-
-        // If we tap the 1st page of an existing chapter, it means we're removing it
-        val firstChapterPic = chapterImages.filter { it.isReadable }.minByOrNull { it.order }
-        val isRemoving =
-            if (firstChapterPic != null) firstChapterPic.order == selectedPage.order else false
-
-        if (isRemoving) doRemoveChapter(theContent, selectedChapter, chapterImages)
-        else doCreateChapter(theContent, selectedPage, selectedChapter, chapterImages)
-
-        // Rearrange all chapters
-
-        // Work on a clean image set directly from the DAO
-        // (we don't want to depend on LiveData being on time here)
-        val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
-        // Rely on the order of pictures to get chapter in the right order
-        val allChapters =
-            theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()
-                .filter { it.order > -1 }
-
-        // Renumber all chapters to reflect changes
-        var order = 1
-        val updatedChapters: MutableList<Chapter> = ArrayList()
-        for (c in allChapters) {
-            // Update names with the default "Chapter x" naming
-            if (VANILLA_CHAPTERNAME_PATTERN!!.matcher(c.name).matches()) c.name =
-                "$chapterStr $order"
-            // Update order
-            c.order = order++
-            c.setContent(theContent)
-            updatedChapters.add(c)
-        }
-
-        // Save chapters
-        dao.insertChapters(updatedChapters)
-        val finalContent = dao.selectContent(contentId)
-        if (finalContent != null) persistJson(getApplication(), finalContent)
-        dao.cleanup()
-    }
 
     /**
      * Create a chapter at the given position, which will become the 1st page of the new chapter
@@ -2033,41 +2023,17 @@ class ReaderViewModel(
     fun deleteChapters(chapterIds: List<Long>, onError: (Throwable) -> Unit) {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    val imageIdsToDelete: MutableList<Long> = ArrayList()
-                    chapterIds.forEach { chId ->
-                        dao.selectChapter(chId)?.let { chp ->
-                            // Queue pages for deletion
-                            imageIdsToDelete.addAll(chp.imageList.map { it.id })
-                            // Delete chapter
-                            dao.deleteChapter(chp)
-                        }
-                    }
-                    // User worker to delete ImageFiles and associated files
-                    val builder = DeleteData.Builder()
-                    builder.setOperation(BaseDeleteWorker.Operation.DELETE)
-                    builder.setImageIds(imageIdsToDelete)
-                    val workManager = WorkManager.getInstance(getApplication())
-                    workManager.enqueue(
-                        OneTimeWorkRequest.Builder(DeleteWorker::class.java)
-                            .setInputData(builder.data).build()
-                    )
-                    dao.cleanup()
-                }
-                withContext(Dispatchers.Main) {
-                    reloadContent()
-                }
+                deleteChapters(getApplication(), dao, chapterIds)
+                withContext(Dispatchers.Main) { reloadContent() }
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
 
     fun saveChapterPositions(chapters: List<Chapter>) {
-        // User worker to reorder ImageFiles and associated files
+        // Use worker to reorder ImageFiles and associated files
         val builder = SplitMergeData.Builder()
         builder.setOperation(SplitMergeType.REORDER)
         builder.setChapterIds(chapters.map { it.id })
@@ -2084,7 +2050,7 @@ class ReaderViewModel(
         synchronized(viewerImagesInternal) {
             viewerImagesInternal.forEach {
                 if ((it.isArchived || it.status == StatusContent.ONLINE)
-                    && !DiskCache.peekFile(formatCacheKey(it))
+                    && !StorageCache.peekFile(formatCacheKey(it))
                 ) it.fileUri = ""
             }
         }

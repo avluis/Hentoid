@@ -16,9 +16,9 @@ import java.io.IOException
 import java.time.Instant
 
 /**
- * The app's disk-based cache
+ * The app's storage-based cache
  */
-object DiskCache {
+object StorageCache {
     private const val FOLDER_NAME = "disk_cache"
     private const val SIZE_LIMIT_DEBUG = 50 * 1024 * 1024
     private const val SIZE_LIMIT_PRODUCTION = 50 * 1024 * 1024 // 50MB
@@ -65,7 +65,7 @@ object DiskCache {
                     if (sortedEntries.isEmpty()) break
                     val oldestEntry = sortedEntries[0]
                     synchronized(entries) {
-                        Timber.d("Disk cache : removing %s", oldestEntry.key)
+                        Timber.d("Storage cache : removing %s", oldestEntry.key)
                         entries.remove(oldestEntry.key)
                     }
                     legacyFileFromUri(oldestEntry.value.second)?.let {

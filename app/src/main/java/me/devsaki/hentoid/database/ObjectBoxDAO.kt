@@ -440,7 +440,7 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     override fun countAllInternalBooks(rootPath: String, favsOnly: Boolean): Long {
-        return ObjectBoxDB.selectAllInternalBooksQ(rootPath, favsOnly, true).safeCount()
+        return ObjectBoxDB.selectAllInternalContentsQ(rootPath, favsOnly, true).safeCount()
     }
 
     override fun countAllQueueBooks(): Long {
@@ -463,13 +463,13 @@ class ObjectBoxDAO : CollectionDAO {
         favsOnly: Boolean,
         consumer: Consumer<Content>
     ) {
-        ObjectBoxDB.selectAllInternalBooksQ(rootPath, favsOnly, true).use { query ->
+        ObjectBoxDB.selectAllInternalContentsQ(rootPath, favsOnly, true).use { query ->
             query.forEach { consumer(it) }
         }
     }
 
     override fun deleteAllExternalBooks() {
-        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllExternalBooksQ().safeFindIds())
+        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllExternalContentsQ().safeFindIds())
     }
 
     override fun selectGroups(groupIds: LongArray): List<Group> {
@@ -753,27 +753,30 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun flagAllInternalBooks(rootPath: String, includePlaceholders: Boolean) {
         ObjectBoxDB.flagContentsForDeletion(
-            ObjectBoxDB.selectAllInternalBooksQ(
+            ObjectBoxDB.selectAllInternalContentsQ(
                 rootPath,
                 false,
                 includePlaceholders
-            ).safeFind(), true
+            ).safeFindIds(), true
         )
     }
 
-    override fun flagAllExternalBooks() {
-        ObjectBoxDB.flagContentsForDeletion(ObjectBoxDB.selectAllExternalBooksQ().safeFind(), true)
+    override fun flagAllExternalContents() {
+        ObjectBoxDB.flagContentsForDeletion(
+            ObjectBoxDB.selectAllExternalContentsQ().safeFindIds(),
+            true
+        )
     }
 
-    override fun deleteAllInternalBooks(rootPath: String, resetRemainingImagesStatus: Boolean) {
+    override fun deleteAllInternalContents(rootPath: String, resetRemainingImagesStatus: Boolean) {
         ObjectBoxDB.deleteContentById(
-            ObjectBoxDB.selectAllInternalBooksQ(rootPath, false).safeFindIds()
+            ObjectBoxDB.selectAllInternalContentsQ(rootPath, false).safeFindIds()
         )
         if (resetRemainingImagesStatus) resetRemainingImagesStatus(rootPath)
     }
 
-    override fun deleteAllFlaggedBooks(resetRemainingImagesStatus: Boolean, pathRoot: String?) {
-        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllFlaggedBooksQ().safeFindIds())
+    override fun deleteAllFlaggedContents(resetRemainingImagesStatus: Boolean, pathRoot: String?) {
+        ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllFlaggedContentsQ().safeFindIds())
         if (resetRemainingImagesStatus && pathRoot != null) resetRemainingImagesStatus(pathRoot)
     }
 
@@ -788,7 +791,7 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     override fun flagAllErrorBooksWithJson() {
-        ObjectBoxDB.flagContentsForDeletion(ObjectBoxDB.selectAllErrorJsonBooksQ().safeFind(), true)
+        ObjectBoxDB.flagContentsForDeletion(ObjectBoxDB.selectAllErrorJsonBooksQ().safeFindIds(), true)
     }
 
     override fun deleteAllQueuedBooks() {
@@ -850,6 +853,14 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun selectImageFiles(ids: LongArray): List<ImageFile> {
         return ObjectBoxDB.selectImageFiles(ids)
+    }
+
+    override fun selectChapterImageFiles(ids: LongArray): List<ImageFile> {
+        return ObjectBoxDB.selectChapterImageFiles(ids)
+    }
+
+    override fun flagImagesForDeletion(ids: LongArray, value: Boolean) {
+        return ObjectBoxDB.flagImagesForDeletion(ids, value)
     }
 
     override fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>> {

@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.zipFiles
-import me.devsaki.hentoid.util.formatBookFolderName
+import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
@@ -158,7 +158,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
     private fun getFileResult(content: Content, params: Params): Pair<OutputStream?, Boolean> {
         // Build destination file
-        val bookFolderName = formatBookFolderName(content)
+        val bookFolderName = formatFolderName(content)
         val ext = when (params.targetFormat) {
             1 -> "cbz"
             2 -> "pdf"

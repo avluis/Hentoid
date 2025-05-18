@@ -18,8 +18,8 @@ private const val KEY_CONTENT_IDS = "contentIds"
 private const val KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers"
 private const val KEY_GROUP_IDS = "groupIds"
 private const val KEY_QUEUE_IDS = "queueIds"
-private const val KEY_IMAGE_IDS = "imageIds"
 private const val KEY_DOC_URIS = "docUris"
+private const val KEY_DELETE_FLAGGED_IMAGES = "deleteFlaggedImages"
 private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
 private const val KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly"
 private const val KEY_OPERATION = "operation"
@@ -46,8 +46,8 @@ class DeleteData {
             builder.putLongArray(KEY_QUEUE_IDS, value.toLongArray())
         }
 
-        fun setImageIds(value: List<Long>) {
-            builder.putLongArray(KEY_IMAGE_IDS, value.toLongArray())
+        fun setDeleteFlaggedImages(value: Boolean) {
+            builder.putBoolean(KEY_DELETE_FLAGGED_IMAGES, value)
         }
 
         fun setDocUris(value: List<Uri>) {
@@ -104,9 +104,9 @@ class DeleteData {
             get() {
                 return data.getLongArray(KEY_QUEUE_IDS) ?: longArrayOf()
             }
-        val imageIds: LongArray
+        val isDeleteFlaggedImages: Boolean
             get() {
-                return data.getLongArray(KEY_IMAGE_IDS) ?: longArrayOf()
+                return data.getBoolean(KEY_DELETE_FLAGGED_IMAGES, false)
             }
         val docUris: List<Uri>
             get() {

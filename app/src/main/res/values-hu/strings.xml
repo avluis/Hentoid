@@ -379,7 +379,7 @@
     <string name="new_group_name">Neve az új csoportnak\?</string>
     <string name="group_edit_name">Csoport nevének szerkesztése</string>
     <string name="book_edit_title">Könyv címének szerkesztése</string>
-    <string name="delete_progress">Könyvek törlése</string>
+    <string name="delete_books_progress">Könyvek törlése</string>
     <string name="purge_progress">Könyvek elégetése</string>
     <string name="cancel_queue_progress">Várakozási sorban lévő elemek megszakítása</string>
     <plurals name="delete_success_books">

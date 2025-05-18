@@ -35,7 +35,7 @@ import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.file.ArchiveEntry
-import me.devsaki.hentoid.util.file.DiskCache
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.getExtension
@@ -230,8 +230,8 @@ class PdfManager {
         onComplete: () -> Unit
     ) {
         val fileCreator: (String) -> File =
-            { targetFileName -> File(DiskCache.createFile(targetFileName).path!!) }
-        val fileFinder: (String) -> Uri? = { targetFileName -> DiskCache.getFile(targetFileName) }
+            { targetFileName -> File(StorageCache.createFile(targetFileName).path!!) }
+        val fileFinder: (String) -> Uri? = { targetFileName -> StorageCache.getFile(targetFileName) }
 
         extractImages(
             context,

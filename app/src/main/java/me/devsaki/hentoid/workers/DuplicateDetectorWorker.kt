@@ -19,7 +19,7 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification
 import me.devsaki.hentoid.util.DuplicateCandidate
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.formatBookFolderName
+import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.indexCovers
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.processContent
@@ -222,7 +222,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) :
             Log.DEBUG,
             "Indexing %s/%s",
             c.site.name,
-            formatBookFolderName(c).first
+            formatFolderName(c).first
         )
     }
 

@@ -53,7 +53,7 @@ import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
-import me.devsaki.hentoid.util.formatBookAuthor
+import me.devsaki.hentoid.util.formatAuthor
 import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.jsonToObject
@@ -488,7 +488,7 @@ data class Content(
         }
 
     fun computeAuthor() {
-        dbAuthor = formatBookAuthor(this)
+        dbAuthor = formatAuthor(this)
     }
 
     var author: String

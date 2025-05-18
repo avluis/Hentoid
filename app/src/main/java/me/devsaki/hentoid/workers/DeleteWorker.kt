@@ -16,10 +16,12 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
+import me.devsaki.hentoid.database.ObjectBoxDB
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.safeFindIds
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -104,8 +106,8 @@ abstract class BaseDeleteWorker(
         contentPurgeKeepCovers = inputData.contentPurgeKeepCovers
         groupIds = inputData.groupIds
         queueIds = inputData.queueIds
-        imageIds = inputData.imageIds
         docUris = inputData.docUris
+        val isDeleteFlaggedImages = inputData.isDeleteFlaggedImages
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         operation = inputData.operation ?: throw IllegalArgumentException("Must set an Operation")
@@ -139,6 +141,13 @@ abstract class BaseDeleteWorker(
             }
         }
         contentIds = askedContentIds
+
+        // Use pre-flagging to avoid serialization hard-limit of androidx.work.Data.Builder
+        // when passing a large long[] through DeleteData
+        imageIds = if (isDeleteFlaggedImages) {
+            ObjectBoxDB.selectAllFlaggedImgsQ().safeFindIds()
+        } else longArrayOf()
+
         deleteMax = contentIds.size + groupIds.size + queueIds.size + imageIds.size + docUris.size
     }
 
@@ -438,8 +447,8 @@ abstract class BaseDeleteWorker(
             if (isStopped) return
             removeFile(applicationContext, uri.toUri())
             progressItem(
-                "Page " + (index + 1).toString(),
-                DeleteProgressNotification.ProgressType.DELETE_PAGES
+                "Image ${index + 1}",
+                DeleteProgressNotification.ProgressType.DELETE_IMAGES
             )
         }
 

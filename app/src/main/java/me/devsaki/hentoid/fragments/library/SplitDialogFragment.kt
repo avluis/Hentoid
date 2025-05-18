@@ -174,14 +174,15 @@ class SplitDialogFragment : BaseDialogFragment<SplitDialogFragment.Parent>() {
         content?.let { c ->
             val chapters = selectExtension.selectedItems.mapNotNull { it.chapter }
             if (chapters.isNotEmpty()) {
-                parent?.splitContent(c, chapters)
-                dismiss()
+                val deleteAfter = binding?.splitDeleteSwitch?.isChecked ?: false
+                parent?.splitContent(c, chapters, deleteAfter)
             }
         }
+        dismiss()
     }
 
     interface Parent {
-        fun splitContent(content: Content, chapters: List<Chapter>)
+        fun splitContent(content: Content, chapters: List<Chapter>, deleteAfter: Boolean)
         fun readBook(content: Content, forceShowGallery: Boolean)
         fun leaveSelectionMode()
     }

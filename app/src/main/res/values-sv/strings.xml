@@ -488,7 +488,7 @@
     <string name="new_group_name">Nya gruppens namn\?</string>
     <string name="group_edit_name">Ändra gruppnamn</string>
     <string name="book_edit_title">Ändra boktitel</string>
-    <string name="delete_progress">Tar bort böcker</string>
+    <string name="delete_books_progress">Tar bort böcker</string>
     <string name="delete_pages_progress">Tar bort sidor</string>
     <string name="purge_progress">rensar ut böcker</string>
     <string name="cancel_queue_progress">Avbryter köade saker</string>

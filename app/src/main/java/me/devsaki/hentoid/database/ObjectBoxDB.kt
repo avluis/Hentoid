@@ -197,7 +197,7 @@ object ObjectBoxDB {
             .`in`(Content_.status, statusCodes).safeFind()
     }
 
-    fun selectAllInternalBooksQ(
+    fun selectAllInternalContentsQ(
         rootPath: String,
         favsOnly: Boolean,
         includePlaceholders: Boolean
@@ -223,7 +223,7 @@ object ObjectBoxDB {
         return query.build()
     }
 
-    fun selectAllInternalBooksQ(rootPath: String, includePlaceholders: Boolean): Query<Content> {
+    fun selectAllInternalContentsQ(rootPath: String, includePlaceholders: Boolean): Query<Content> {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         // and EXTERNAL because we only want to manage internal books here
         var storedContentStatus: IntArray = intArrayOf(
@@ -240,7 +240,7 @@ object ObjectBoxDB {
         return query.build()
     }
 
-    fun selectAllExternalBooksQ(): Query<Content> {
+    fun selectAllExternalContentsQ(): Query<Content> {
         return store.boxFor(Content::class.java).query()
             .equal(Content_.status, StatusContent.EXTERNAL.code.toLong()).build()
     }
@@ -283,25 +283,41 @@ object ObjectBoxDB {
             }
     }
 
-    fun selectAllFlaggedBooksQ(): Query<Content> {
+    fun selectAllFlaggedContentsQ(): Query<Content> {
         return store.boxFor(Content::class.java).query()
             .equal(Content_.isFlaggedForDeletion, true).build()
     }
 
-    fun selectAllProcessedBooksQ(): Query<Content> {
+    fun selectAllFlaggedImgsQ(): Query<ImageFile> {
+        return store.boxFor(ImageFile::class.java).query()
+            .equal(ImageFile_.isFlaggedForDeletion, true).build()
+    }
+
+    fun selectAllProcessedContentsQ(): Query<Content> {
         return store.boxFor(Content::class.java).query()
             .equal(Content_.isBeingProcessed, true)
             .build()
     }
 
-    fun flagContentsForDeletion(contentList: List<Content>, flag: Boolean) {
-        for (c in contentList) c.isFlaggedForDeletion = flag
-        store.boxFor(Content::class.java).put(contentList)
+    fun flagContentsForDeletion(ids: LongArray, flag: Boolean) {
+        val store = store.boxFor(Content::class.java)
+        val contents = store.get(ids)
+        contents.forEach { it.isFlaggedForDeletion = flag }
+        store.put(contents)
     }
 
-    fun markContentsAsBeingProcessed(contentList: List<Content>, flag: Boolean) {
-        for (c in contentList) c.isBeingProcessed = flag
-        store.boxFor(Content::class.java).put(contentList)
+    fun flagImagesForDeletion(ids: LongArray, flag: Boolean) {
+        val store = store.boxFor(ImageFile::class.java)
+        val images = store.get(ids)
+        images.forEach { it.isFlaggedForDeletion = flag }
+        store.put(images)
+    }
+
+    fun markContentsAsBeingProcessed(ids: LongArray, flag: Boolean) {
+        val store = store.boxFor(Content::class.java)
+        val contents = store.get(ids)
+        contents.forEach { it.isBeingProcessed = flag }
+        store.put(contents)
     }
 
     fun deleteContentById(contentId: Long) {
@@ -1689,6 +1705,13 @@ object ObjectBoxDB {
 
     fun selectImageFiles(id: LongArray): List<ImageFile> {
         return store.boxFor(ImageFile::class.java)[id]
+    }
+
+    fun selectChapterImageFiles(id: LongArray): List<ImageFile> {
+        val builder = store.boxFor(ImageFile::class.java).query()
+        builder.`in`(ImageFile_.chapterId, id)
+        builder.order(ImageFile_.dbOrder)
+        return builder.build().safeFind()
     }
 
     fun selectDownloadedImagesFromContentQ(id: Long): Query<ImageFile> {

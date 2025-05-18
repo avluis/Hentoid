@@ -94,6 +94,14 @@
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="list,nochapter_view" />
 
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/split_delete_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="8dp"
+        android:text="@string/split_delete_after_splitting"
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"
         style="@style/HentoidMaterialButtonOutlinedStyle"
@@ -107,7 +115,7 @@
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_split"
         app:iconTint="@color/secondary_color_selector"
-        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
+        app:layout_constraintTop_toBottomOf="@id/split_delete_switch"
         app:strokeColor="@color/secondary_color_selector" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

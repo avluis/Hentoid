@@ -30,7 +30,7 @@ import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
 import me.devsaki.hentoid.util.file.Beholder
-import me.devsaki.hentoid.util.file.DiskCache.init
+import me.devsaki.hentoid.util.file.StorageCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
@@ -107,7 +107,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             val dao = ObjectBoxDAOContainer()
             // Flag DB content for cleanup
             try {
-                dao.dao.flagAllExternalBooks()
+                dao.dao.flagAllExternalContents()
             } finally {
                 dao.reset()
             }
@@ -136,7 +136,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 }
 
                 try {
-                    dao.dao.deleteAllFlaggedBooks(false, null)
+                    dao.dao.deleteAllFlaggedContents(false, null)
                     dao.dao.cleanupOrphanAttributes()
                 } finally {
                     dao.reset()
