@@ -10,7 +10,7 @@ import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
 
-class GroupSearchManager(val dao: CollectionDAO) {
+class GroupSearchManager() {
 
     private val values = GroupSearchBundle()
 
@@ -69,7 +69,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
         setFilterRating(-1)
     }
 
-    fun getGroups(): LiveData<List<Group>> {
+    fun getGroups(dao: CollectionDAO): LiveData<List<Group>> {
         return dao.selectGroupsLive(
             values.groupingId,
             values.query,
@@ -82,7 +82,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
         )
     }
 
-    fun getAllGroups(): LiveData<List<Group>> {
+    fun getAllGroups(dao: CollectionDAO): LiveData<List<Group>> {
         return dao.selectGroupsLive(
             values.groupingId,
             "",

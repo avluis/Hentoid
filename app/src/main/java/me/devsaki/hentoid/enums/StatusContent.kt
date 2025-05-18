@@ -21,10 +21,15 @@ enum class StatusContent(val code: Int, val description: String) {
 
     // Used for ImageFiles only : image can be viewed on-demand (streamed content; undownloaded covers)
     ONLINE(9, "Online"),
-    EXTERNAL(10, "External"), // Content is accessible in the external library
+
+    // Content is accessible in the external library
+    EXTERNAL(10, "External"),
 
     // Content has been imported as an empty placeholder (couldn't be streamed)
-    PLACEHOLDER(11, "Placeholder");
+    PLACEHOLDER(11, "Placeholder"),
+
+    // Content has been temporarily imported by folders mode for the reader to access
+    STORAGE_RESOURCE(12, "Storage resource");
 
     companion object {
         fun searchByCode(code: Int): StatusContent? {

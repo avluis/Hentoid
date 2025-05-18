@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_marginTop="1dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:longClickable="true">
+
+    <ImageView
+        android:id="@+id/delete_btn"
+        android:layout_width="@dimen/delete_drawer_width_list"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@drawable/selector_button_neutral"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_action_delete"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_book_card"
+        android:clickable="true"
+        android:elevation="6dp"
+        android:focusable="true"
+        android:longClickable="true">
+
+        <ImageView
+            android:id="@+id/ivCover"
+            android:layout_width="45dp"
+            android:layout_height="60dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_hentoid_trans"
+            tools:tint="@color/light_gray" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:textColor="?card_title"
+            android:textSize="@dimen/text_subtitle_2"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintBottom_toTopOf="@id/tvPages"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/book_title" />
+
+        <TextView
+            android:id="@+id/tvPages"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@id/tvTitle"
+            app:layout_constraintStart_toStartOf="@id/tvTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="@string/book_pages_queue" />
+
+<!--
+        <ImageView
+            android:id="@+id/queue_site_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_hentoid_shape"
+            android:tooltipText="@string/view_source_help"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvPages"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_error_outline"
+            android:tooltipText="@string/err_stats_help"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/queue_site_button"
+            app:layout_constraintTop_toBottomOf="@id/tvPages"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/ivRedownload"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/selector_download_action"
+            android:tooltipText="@string/menu_redownload"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivError"
+            app:layout_constraintTop_toBottomOf="@id/tvPages"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/ivOnline"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:padding="8dp"
+            android:src="@drawable/ic_action_download_stream"
+            android:tooltipText="@string/menu_redownload"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivRedownload"
+            app:layout_constraintTop_toBottomOf="@id/tvPages"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+            -->
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/selection_border"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_rectangle_border"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

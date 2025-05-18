@@ -97,6 +97,7 @@ fun getDocumentFromTreeUriString(context: Context, treeUriStr: String): Document
 }
 
 fun getDocumentFromTreeUri(context: Context, treeUri: Uri): DocumentFile? {
+    if (treeUri == Uri.EMPTY) return null
     val result = DocumentFile.fromTreeUri(context, treeUri)
     return if (null == result || !result.exists()) null
     else result
@@ -121,7 +122,7 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
  * @return Full, human-readable access path from the given Uri
  */
 private fun getFullPathFromTreeUri(context: Context, uri: Uri): String {
-    if (uri.toString().isEmpty()) return ""
+    if (uri == Uri.EMPTY) return ""
 
     var volumePath = getVolumePath(context, getVolumeIdFromUri(uri)) ?: "UnknownVolume"
     if (volumePath.endsWith(File.separator))
@@ -1206,7 +1207,7 @@ fun persistNewUriPermission(context: Context, newUri: Uri, keepUris: List<Uri>?)
     if (!isUriPermissionPersisted(contentResolver, newUri)) {
         Timber.d("Persisting Uri permission for %s", newUri)
         // Release previous access permissions, if different than the new one
-        val keepList: MutableList<Uri> = keepUris?.toMutableList() ?: mutableListOf()
+        val keepList = keepUris?.toMutableList() ?: mutableListOf()
         keepList.add(newUri)
         revokePreviousPermissions(contentResolver, keepList)
         // Persist new access permission
@@ -1244,18 +1245,13 @@ fun isUriPermissionPersisted(resolver: ContentResolver, uri: Uri): Boolean {
 private fun revokePreviousPermissions(resolver: ContentResolver, exceptions: List<Uri>) {
     // Unfortunately, the content Uri of the selected resource is not exactly the same as the one stored by ContentResolver
     // -> solution is to compare their TreeDocumentId instead
-    val exceptionIds = exceptions.map { documentUri: Uri? ->
-        DocumentsContract.getTreeDocumentId(documentUri)
-    }
-    for (p in resolver.persistedUriPermissions) if (!exceptionIds.contains(
-            DocumentsContract.getTreeDocumentId(
-                p.uri
+    val exceptionIds = exceptions.map { DocumentsContract.getTreeDocumentId(it) }
+    for (p in resolver.persistedUriPermissions)
+        if (!exceptionIds.contains(DocumentsContract.getTreeDocumentId(p.uri)))
+            resolver.releasePersistableUriPermission(
+                p.uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
-        )
-    ) resolver.releasePersistableUriPermission(
-        p.uri,
-        Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-    )
 
     if (resolver.persistedUriPermissions.size <= exceptionIds.size) {
         Timber.d("Permissions revoked successfully")
@@ -1379,14 +1375,16 @@ fun getFileUriCompat(context: Context, file: File): Uri {
  * Get the parent Uri of the given DocumentFile using the given root
  * NB : doc must be a child/grandchild of the document represented by root
  */
-fun getParent(context: Context, root: Uri, doc: DocumentFile): Uri? {
+fun getParent(context: Context, root: Uri, doc: Uri): Uri? {
     val parentsRoots =
-        DocumentsContract.findDocumentPath(context.contentResolver, doc.uri) ?: return null
+        DocumentsContract.findDocumentPath(context.contentResolver, doc) ?: return null
     // NB : that call is expensive; consider implementing that within FileExplorer if needed inside a loop
-    return DocumentsContract.buildDocumentUriUsingTree(
-        root,
-        parentsRoots.path[parentsRoots.path.size - 2]
-    )
+    return if (parentsRoots.path.size > 1)
+        DocumentsContract.buildDocumentUriUsingTree(
+            root,
+            parentsRoots.path[parentsRoots.path.size - 2]
+        )
+    else root
 }
 
 /**

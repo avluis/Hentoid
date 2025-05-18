@@ -18,7 +18,7 @@ import me.devsaki.hentoid.util.long
 import me.devsaki.hentoid.util.string
 import java.util.Collections
 
-class ContentSearchManager(val dao: CollectionDAO) {
+class ContentSearchManager() {
 
     private val values = ContentSearchBundle()
 
@@ -112,7 +112,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         setContentType(0)
     }
 
-    fun getLibrary(): LiveData<PagedList<Content>> {
+    fun getLibrary(dao: CollectionDAO): LiveData<PagedList<Content>> {
         val tags = parseSearchUri(values.attributes.toUri()).attributes
         return when {
             // Universal search
@@ -125,7 +125,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         }
     }
 
-    fun searchContentIds(): List<Long> {
+    fun searchContentIds(dao: CollectionDAO): List<Long> {
         return searchContentIds(values, dao)
     }
 

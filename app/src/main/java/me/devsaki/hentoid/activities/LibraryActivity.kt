@@ -57,6 +57,7 @@ import me.devsaki.hentoid.fragments.library.LibraryArchiveDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
+import me.devsaki.hentoid.fragments.library.LibraryFoldersFragment
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.invokeInputDialog
@@ -130,6 +131,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     // === Selection toolbar
     private var editMenu: MenuItem? = null
     private var deleteMenu: MenuItem? = null
+    private var detachMenu: MenuItem? = null
     private var completedMenu: MenuItem? = null
     private var resetReadStatsMenu: MenuItem? = null
     private var rateMenu: MenuItem? = null
@@ -168,9 +170,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     // Current search criteria; one per tab
     private val searchCriteria = mutableListOf(
         SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
-        SearchCriteria(
-            "", HashSet(), Location.ANY, Type.ANY
-        )
+        SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
+        SearchCriteria("", HashSet(), Location.ANY, Type.ANY)
     )
 
     // True if item positioning edit mode is on (only available for specific groupings)
@@ -295,19 +296,15 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             ViewModelProvider(this@LibraryActivity, vmFactory)[LibraryViewModel::class.java]
 
         viewModel.contentSearchBundle.observe(this) { contentSearchBundle = it }
+        viewModel.groupSearchBundle.observe(this) { groupSearchBundle = it }
 
         viewModel.group.observe(this) { g: Group? ->
             group = g
             updateToolbar()
         }
 
-        viewModel.groupSearchBundle.observe(this) { b ->
-            groupSearchBundle = b
-            val searchBundle = GroupSearchBundle(b)
-            onGroupingChanged(searchBundle.groupingId)
-        }
-
-        viewModel.searchRecords.observe(this) { records ->
+        viewModel.searchRecords.observe(this)
+        { records ->
             searchRecords.clear()
             searchRecords.addAll(records)
         }
@@ -502,7 +499,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             it.recyclerView.adapter = gridSizefastAdapter
             val labels = resources.getStringArray(R.array.pref_grid_card_width_entries)
             val values =
-                resources.getStringArray(R.array.pref_grid_card_width_values).map { s -> s.toInt() }
+                resources.getStringArray(R.array.pref_grid_card_width_values).map { it.toInt() }
             val gridSizePref = Settings.libraryGridCardWidthDP
             labels.forEachIndexed { index, s ->
                 val item = TextItem(
@@ -568,6 +565,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         pagerAdapter?.notifyDataSetChanged()
         if (targetGroupingId == Grouping.FLAT.id) { // Display books right away
             binding?.libraryPager?.currentItem = 1
+        } else if (targetGroupingId == Grouping.FOLDERS.id) { // Display folders
+            binding?.libraryPager?.currentItem = 2
         }
         enableCurrentFragment()
     }
@@ -577,7 +576,12 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             searchMenu = toolbar.menu.findItem(R.id.action_search)
             searchMenu?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem): Boolean {
-                    showSearchSubBar(true, null, null, !preventShowSearchHistoryNextExpand)
+                    showSearchSubBar(
+                        !isGroupDisplayed() && !isFoldersDisplayed(),
+                        null,
+                        null,
+                        !preventShowSearchHistoryNextExpand
+                    )
                     preventShowSearchHistoryNextExpand = false
                     invalidateNextQueryTextChange = true
 
@@ -674,9 +678,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     collapseSearchMenu()
                 }
                 showSearchSubBar(
-                    !isGroupDisplayed(),
+                    !isGroupDisplayed() && !isFoldersDisplayed(),
                     showClear = true,
-                    showSaveSearch = true,
+                    showSaveSearch = !isFoldersDisplayed(),
                     showSearchHistory = false
                 )
             } else {
@@ -711,7 +715,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
             R.id.action_sort_filter -> LibraryBottomSortFilterFragment.invoke(
                 this, this.supportFragmentManager, isGroupDisplayed(),
-                group != null && group!!.isUngroupedGroup
+                group != null && group!!.isUngroupedGroup,
+                isFoldersDisplayed()
             )
 
             else -> return false
@@ -846,6 +851,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             menu.apply {
                 editMenu = findItem(R.id.action_edit)
                 deleteMenu = findItem(R.id.action_delete)
+                detachMenu = findItem(R.id.action_detach)
                 completedMenu = findItem(R.id.action_completed)
                 resetReadStatsMenu = findItem(R.id.action_reset_read)
                 rateMenu = findItem(R.id.action_rate)
@@ -892,6 +898,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             }
 
             Settings.Key.BROWSER_MODE -> updateAlertBanner()
+
+            Settings.Key.GROUPING_DISPLAY -> onGroupingChanged(Settings.groupingDisplay)
             else -> {}
         }
     }
@@ -915,12 +923,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 Settings.groupSortField = Settings.Default.ORDER_GROUP_FIELD
             }
 
-            // Go back to groups tab if we're not
-            if (targetGroupingId != Grouping.FLAT.id) goBackToGroups()
-
-            // Update screen display if needed (flat <-> the rest)
-            if (grouping == Grouping.FLAT || targetGroupingId == Grouping.FLAT.id)
-                updateDisplay(targetGroupingId)
+            when (targetGrouping) {
+                Grouping.FLAT, Grouping.FOLDERS -> updateDisplay(targetGroupingId)
+                else -> goBackToGroups()
+            }
 
             grouping = targetGrouping
             updateToolbar()
@@ -1014,6 +1020,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         return 0 == binding?.libraryPager?.currentItem
     }
 
+    private fun isFoldersDisplayed(): Boolean {
+        return 2 == binding?.libraryPager?.currentItem
+    }
+
     fun goBackToGroups() {
         if (isGroupDisplayed()) return
         enableFragment(0)
@@ -1079,7 +1089,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         selectedLocalCount: Long,
         selectedStreamedCount: Long,
         selectedNonArchivePdfExternalCount: Long,
-        selectedArchivePdfExternalCount: Long
+        selectedArchivePdfExternalCount: Long,
+        selectedRoots: Long = 0
     ) {
         val isMultipleSelection = selectedTotalCount > 1
         val hasProcessed = selectedProcessedCount > 0
@@ -1094,6 +1105,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         if (isGroupDisplayed()) {
             editMenu?.isVisible = !hasProcessed && !isMultipleSelection
                     && Settings.getGroupingDisplayG().canReorderGroups
+            detachMenu?.isVisible = false
             deleteMenu?.isVisible = !hasProcessed
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false
@@ -1110,8 +1122,28 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             splitMenu?.isVisible = false
             transformMenu?.isVisible = false
             exportMetaMenu?.isVisible = selectedTotalCount > 0
+        } else if (isFoldersDisplayed()) {
+            editMenu?.isVisible = false
+            deleteMenu?.isVisible = selectedTotalCount > 0 && 0L == selectedRoots
+            detachMenu?.isVisible = selectedRoots > 0
+            shareMenu?.isVisible = false
+            completedMenu?.isVisible = false
+            resetReadStatsMenu?.isVisible = false
+            rateMenu?.isVisible = false
+            archiveMenu?.isVisible = false
+            changeGroupMenu?.isVisible = false
+            folderMenu?.isVisible = selectedTotalCount > 0
+            redownloadMenu?.isVisible = false
+            downloadStreamedMenu?.isVisible = false
+            streamMenu?.isVisible = false
+            groupCoverMenu?.isVisible = false
+            mergeMenu?.isVisible = false
+            splitMenu?.isVisible = false
+            transformMenu?.isVisible = false
+            exportMetaMenu?.isVisible = false
         } else { // Flat view
             editMenu?.isVisible = !hasProcessed
+            detachMenu?.isVisible = false
             deleteMenu?.isVisible =
                 !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0L == selectedExternalCount || selectedExternalCount > 0 && Settings.isDeleteExternalLibrary)
             completedMenu?.isVisible = true
@@ -1146,13 +1178,13 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
      * @param contents Items to be deleted if the answer is yes
      */
     fun askDeleteItems(
-        contents: List<Content>,
-        groups: List<Group>,
+        contentIds: List<Long>,
+        groupIds: List<Long>,
         onSuccess: Runnable?,
         selectExtension: SelectExtension<*>
     ) {
         val builder = MaterialAlertDialogBuilder(this)
-        val count = if (groups.isNotEmpty()) groups.size else contents.size
+        val count = if (groupIds.isNotEmpty()) groupIds.size else contentIds.size
         if (count > 1000) {
             // TODO provide a link to the mass-delete tool when it's ready (#992)
             snack(R.string.delete_limit)
@@ -1160,7 +1192,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             val title = resources.getQuantityString(R.plurals.ask_delete_multiple, count, count)
             builder.setMessage(title).setPositiveButton(R.string.yes) { _, _ ->
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
-                viewModel.deleteItems(contents, groups, false, onSuccess)
+                viewModel.deleteItems(contentIds, groupIds, false, onSuccess)
             }.setNegativeButton(R.string.no) { _, _ ->
                 selectExtension.deselect(selectExtension.selections.toMutableSet())
             }
@@ -1239,7 +1271,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         EventBus.getDefault().post(
             CommunicationEvent(
                 eventType,
-                if (0 == fragmentIndex) CommunicationEvent.Recipient.GROUPS else CommunicationEvent.Recipient.CONTENTS,
+                when (fragmentIndex) {
+                    1 -> CommunicationEvent.Recipient.CONTENTS
+                    2 -> CommunicationEvent.Recipient.FOLDERS
+                    else -> CommunicationEvent.Recipient.GROUPS
+                },
                 message
             )
         )
@@ -1250,22 +1286,35 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun getCurrentFragmentIndex(): Int {
-        return if (isGroupDisplayed()) 0 else 1
+        return if (isGroupDisplayed()) 0 else if (isFoldersDisplayed()) 2 else 1
     }
 
     private fun enableFragment(fragmentIndex: Int) {
         EventBus.getDefault().post(
             CommunicationEvent(
                 CommunicationEvent.Type.ENABLE,
-                if (0 == fragmentIndex) CommunicationEvent.Recipient.GROUPS else CommunicationEvent.Recipient.CONTENTS
+                when (fragmentIndex) {
+                    1 -> CommunicationEvent.Recipient.CONTENTS
+                    2 -> CommunicationEvent.Recipient.FOLDERS
+                    else -> CommunicationEvent.Recipient.GROUPS
+                },
             )
         )
-        EventBus.getDefault().post(
-            CommunicationEvent(
-                CommunicationEvent.Type.DISABLE,
-                if (0 == fragmentIndex) CommunicationEvent.Recipient.CONTENTS else CommunicationEvent.Recipient.GROUPS
-            )
-        )
+        binding?.apply {
+            for (i in 0..libraryPager.adapter!!.itemCount - 1) {
+                if (fragmentIndex != i)
+                    EventBus.getDefault().post(
+                        CommunicationEvent(
+                            CommunicationEvent.Type.DISABLE,
+                            when (i) {
+                                1 -> CommunicationEvent.Recipient.CONTENTS
+                                2 -> CommunicationEvent.Recipient.FOLDERS
+                                else -> CommunicationEvent.Recipient.GROUPS
+                            },
+                        )
+                    )
+            }
+        }
     }
 
     private fun saveSearchAsGroup() {
@@ -1321,15 +1370,15 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private class LibraryPagerAdapter(fa: FragmentActivity) :
         FragmentStateAdapter(fa) {
         override fun createFragment(position: Int): Fragment {
-            return if (0 == position) {
-                LibraryGroupsFragment()
-            } else {
-                LibraryContentFragment()
+            return when (position) {
+                1 -> LibraryContentFragment()
+                2 -> LibraryFoldersFragment()
+                else -> LibraryGroupsFragment()
             }
         }
 
         override fun getItemCount(): Int {
-            return 2
+            return 3
         }
     }
 

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.json.GithubRelease
 import me.devsaki.hentoid.retrofit.GithubServer
 
@@ -16,13 +15,11 @@ class ChangelogViewModel : ViewModel() {
     val errorValueLive = MutableLiveData<Throwable>()
 
     init {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    successValueLive.postValue(GithubServer.api.releases.execute().body())
-                } catch (e: Exception) {
-                    errorValueLive.postValue(e)
-                }
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                successValueLive.postValue(GithubServer.api.releases.execute().body())
+            } catch (e: Exception) {
+                errorValueLive.postValue(e)
             }
         }
     }

@@ -235,12 +235,7 @@ fun setAndScanPrimaryFolder(
     options: ImportOptions?
 ): Pair<ProcessFolderResult, String> {
     // Persist I/O permissions; keep existing ones if present
-    val locs: MutableList<StorageLocation> = ArrayList()
-    locs.add(StorageLocation.EXTERNAL)
-    if (location == StorageLocation.PRIMARY_1) locs.add(StorageLocation.PRIMARY_2) else locs.add(
-        StorageLocation.PRIMARY_1
-    )
-    persistLocationCredentials(context, treeUri, locs)
+    persistLocationCredentials(context, treeUri, location)
 
     // Check if the folder exists
     val docFile = DocumentFile.fromTreeUri(context, treeUri)
@@ -362,11 +357,7 @@ fun setAndScanExternalFolder(
     treeUri: Uri
 ): Pair<ProcessFolderResult, String> {
     // Persist I/O permissions; keep existing ones if present
-    persistLocationCredentials(
-        context,
-        treeUri,
-        listOf(StorageLocation.PRIMARY_1, StorageLocation.PRIMARY_2)
-    )
+    persistLocationCredentials(context, treeUri, StorageLocation.EXTERNAL)
 
     // Check if the folder exists
     val docFile = DocumentFile.fromTreeUri(context, treeUri)
@@ -414,20 +405,33 @@ fun setAndScanExternalFolder(
 /**
  * Persist I/O credentials for the given location, keeping the given existing credentials
  *
- * @param context  Context to use
- * @param treeUri  Uri to add credentials for
- * @param location Locations to keep credentials for
+ * @param context       Context to use
+ * @param treeUri       Uri to add credentials for
+ * @param override      Storage location to override with threeUri (optional)
  */
 fun persistLocationCredentials(
     context: Context,
     treeUri: Uri,
-    location: List<StorageLocation>
+    override: StorageLocation? = null
 ) {
-    val uri = location
+    // Keep library roots to the exception of the one we're overrriding
+    val locations = mutableListOf(
+        StorageLocation.PRIMARY_1,
+        StorageLocation.PRIMARY_2,
+        StorageLocation.EXTERNAL
+    )
+    override?.let { locations.remove(it) }
+
+    val keepUris = locations
         .map { Settings.getStorageUri(it) }
         .filterNot { it.isEmpty() }
         .map { it.toUri() }
-    persistNewUriPermission(context, treeUri, uri)
+        .toMutableList()
+
+    // Keep folders mode roots too
+    keepUris.addAll(Settings.libraryFoldersRoots.map { it.toUri() })
+
+    persistNewUriPermission(context, treeUri, keepUris)
 }
 
 /**
@@ -729,9 +733,9 @@ fun scanFolderRecursive(
                 context,
                 parent,
                 toScan,
-                explorer,
                 parentNames,
                 StatusContent.EXTERNAL,
+                explorer,
                 dao,
                 images,
                 json
@@ -768,11 +772,11 @@ fun scanFolderRecursive(
  * @param context      Context to use
  * @param parentFolder Parent folder of bookFolder (cuz DocumentFile.getParentFile can't stand on its own)
  * @param bookFolder   Folder to analyze
- * @param explorer     FileExplorer to use
  * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of bookFolder
  * @param targetStatus Target status of the Content to create
+ * @param explorer     FileExplorer to use
  * @param dao          CollectionDAO to use
- * @param files   List of images to match files with; null if they have to be recreated from the files
+ * @param files        List of images to match files with; null if they have to be recreated from the files
  * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
  * @return Content created from the folder information and files
  */
@@ -780,25 +784,24 @@ fun scanBookFolder(
     context: Context,
     parentFolder: DocumentFile?,
     bookFolder: DocumentFile,
-    explorer: FileExplorer,
     parentNames: List<String>,
     targetStatus: StatusContent,
-    dao: CollectionDAO,
-    files: List<DocumentFile>?,
-    jsonFile: DocumentFile?
+    explorer: FileExplorer? = null,
+    dao: CollectionDAO? = null,
+    files: List<DocumentFile>? = null,
+    jsonFile: DocumentFile? = null
 ): Content {
     Timber.d(">>>> scan book folder %s", bookFolder.uri)
     val now = Instant.now().toEpochMilli()
     val isExternal = (targetStatus == StatusContent.EXTERNAL)
 
     var result: Content? = null
-    if (jsonFile != null) {
+    if (jsonFile != null && dao != null) {
         try {
-            val content = jsonToObject(
+            jsonToObject(
                 context, jsonFile,
                 JsonContent::class.java
-            )
-            if (content != null) {
+            )?.let { content ->
                 result = content.toEntity(dao)
                 result.jsonUri = jsonFile.uri.toString()
             }
@@ -821,16 +824,22 @@ fun scanBookFolder(
     if (isExternal) result.downloadCompletionDate = now
     result.lastEditDate = now
     val images: MutableList<ImageFile> = ArrayList()
-    scanFolderImages(
-        context,
-        bookFolder,
-        explorer,
-        targetStatus,
-        false,
-        images,
-        result.imageList,
-        files
-    )
+    val theExplorer = explorer ?: FileExplorer(context, bookFolder)
+    try {
+        scanFolderImages(
+            context,
+            bookFolder,
+            theExplorer,
+            targetStatus,
+            false,
+            images,
+            result.imageList,
+            files
+        )
+    } finally {
+        // Free local FileExplorer
+        if (null == explorer) theExplorer.close()
+    }
 
     // Detect cover
     val coverExists = images.any { it.isCover }

@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.viewmodels
 
 import android.app.Application
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -16,6 +18,11 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.scan
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -42,16 +49,21 @@ import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.EmptyResultException
+import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
+import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
+import me.devsaki.hentoid.widget.FolderSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -65,14 +77,16 @@ import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 import java.security.InvalidParameterException
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     AndroidViewModel(application) {
 
     // Search managers
-    private val contentSearchManager: ContentSearchManager = ContentSearchManager(dao)
-    private val groupSearchManager: GroupSearchManager = GroupSearchManager(dao)
+    private val contentSearchManager = ContentSearchManager()
+    private val groupSearchManager = GroupSearchManager()
+    private val folderSearchManager = FolderSearchManager()
 
     // Cleanup for all work observers
     private val workObservers: MutableList<Pair<UUID, Observer<WorkInfo?>>> = ArrayList()
@@ -89,6 +103,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     val groups = MediatorLiveData<List<Group>>()
     private var currentGroupsTotalSource: LiveData<List<Group>>? = null
     private val currentGroupTotal = MediatorLiveData<Int>()
+    val groupSearchBundle = MutableLiveData<Bundle>()
+
+    // Folders data
+    val folderRoot = MutableLiveData<Uri>()
+    val folders = MediatorLiveData<List<DisplayFile>>()
+    val foldersDetail = MediatorLiveData<List<DisplayFile>>()
+    val folderSearchBundle = MutableLiveData<Bundle>()
+    val parentsCache = HashMap<Uri, Uri>() // Key = child folder, Value = parent folder
+    val detailsFlowKillSwitch = AtomicBoolean(true)
 
     // True if there's at least one existing custom group; false instead
     val isCustomGroupingAvailable = MutableLiveData<Boolean>()
@@ -96,7 +119,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // True if there's at least one existing dynamic group; false instead
     val isDynamicGroupingAvailable = MutableLiveData<Boolean>()
 
-    val groupSearchBundle = MutableLiveData<Bundle>()
 
     // Other data
     val searchRecords: LiveData<List<SearchRecord>> = dao.selectSearchRecordsLive()
@@ -130,6 +152,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             for (info in workObservers)
                 workManager.getWorkInfoByIdLiveData(info.first).removeObserver(info.second)
         }
+        folderSearchManager.clear()
     }
 
     fun getTotalGroup(): LiveData<Int> {
@@ -140,25 +163,25 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // =========================
     // ========= LIBRARY ACTIONS
     // =========================
-
-    // =========================
-    // ========= LIBRARY ACTIONS
-    // =========================
     /**
      * Perform a new library search
      */
-    private fun doSearchContent() {
-        dao.cleanup()
+    private suspend fun doSearchContent() {
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
         if (Settings.getGroupingDisplayG() == Grouping.FLAT) contentSearchManager.setGroup(null)
-        currentSource?.let {
-            libraryPaged.removeSource(it)
+        val newSource = withContext(Dispatchers.IO) {
+            try {
+                contentSearchManager.getLibrary(dao)
+            } finally {
+                dao.cleanup()
+            }
         }
-        currentSource = contentSearchManager.getLibrary()
-        currentSource?.let {
-            libraryPaged.addSource(it) { v -> libraryPaged.value = v }
+        synchronized(contentSearchManager) {
+            currentSource?.let { libraryPaged.removeSource(it) }
+            currentSource = newSource
+            currentSource?.let { libraryPaged.addSource(it) { libraryPaged.value = it } }
         }
         contentSearchBundle.postValue(contentSearchManager.toBundle())
     }
@@ -180,7 +203,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
             dao.insertSearchRecord(SearchRecord(searchUri), 10)
         }
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -201,38 +224,49 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 metadata.toString(getApplication())
             ), 10
         )
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun clearContent() {
-        currentSource?.let {
-            libraryPaged.removeSource(it)
-        }
+        currentSource?.let { libraryPaged.removeSource(it) }
         currentSource = dao.selectNoContent()
-        currentSource?.let {
-            libraryPaged.addSource(it) { v -> libraryPaged.value = v }
-        }
+        currentSource?.let { libraryPaged.addSource(it) { libraryPaged.value = it } }
     }
 
     fun searchGroup() {
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
-    private fun doSearchGroup() {
+    private suspend fun doSearchGroup() {
         dao.cleanup()
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Settings.groupSortField)
         groupSearchManager.setSortDesc(Settings.isGroupSortDesc)
         groupSearchManager.setGrouping(Settings.getGroupingDisplayG())
         groupSearchManager.setArtistGroupVisibility(Settings.artistGroupVisibility)
-        currentGroupsSource?.let { groups.removeSource(it) }
-        currentGroupsSource = groupSearchManager.getGroups()
-        currentGroupsSource?.let { groups.addSource(it) { v -> groups.value = v } }
 
-        currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
-        currentGroupsTotalSource = groupSearchManager.getAllGroups()
-        currentGroupsTotalSource?.let {
-            currentGroupTotal.addSource(it) { list -> currentGroupTotal.postValue(list.size) }
+        val newSource = withContext(Dispatchers.IO) {
+            groupSearchManager.getGroups(dao)
+        }
+        synchronized(groupSearchManager) {
+            currentGroupsSource?.let { groups.removeSource(it) }
+            currentGroupsSource = newSource
+            currentGroupsSource?.let { groups.addSource(it) { groups.value = it } }
+        }
+
+        val newTotalSource = withContext(Dispatchers.IO) {
+            try {
+                groupSearchManager.getAllGroups(dao)
+            } finally {
+                dao.cleanup()
+            }
+        }
+        synchronized(groupSearchManager) {
+            currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
+            currentGroupsTotalSource = newTotalSource
+            currentGroupsTotalSource?.let {
+                currentGroupTotal.addSource(it) { currentGroupTotal.postValue(it.size) }
+            }
         }
 
         groupSearchBundle.postValue(groupSearchManager.toBundle())
@@ -244,13 +278,82 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         isDynamicGroupingAvailable.postValue(dao.countGroupsFor(Grouping.DYNAMIC) > 0)
     }
 
+    private suspend fun doSearchFolders() {
+        detailsFlowKillSwitch.set(true)
+        val root = folderRoot.value ?: Uri.EMPTY
+        val isARoot = Settings.libraryFoldersRoots.contains(root.toString()) || root == Uri.EMPTY
+        val ctx: Context = getApplication()
+        if (isARoot) {
+            folderSearchManager.clear()
+            folderRoot.postValue(Uri.EMPTY)
+            // Display roots (level 0)
+            withContext(Dispatchers.IO) {
+                val entries = ArrayList<DisplayFile>()
+                entries.add(
+                    DisplayFile(
+                        ctx.resources.getString(R.string.add_root),
+                        DisplayFile.Type.ADD_BUTTON
+                    )
+                )
+                Settings.libraryFoldersRoots.forEach {
+                    getDocumentFromTreeUriString(ctx, it)?.let { entries.add(DisplayFile(it)) }
+                }
+                folders.postValue(entries)
+            }
+        } else {
+            // Search actual folders
+            folderSearchManager.setSortField(Settings.folderSortField)
+            folderSearchManager.setSortDesc(Settings.isFolderSortDesc)
+
+            // First retrieval = minimal data
+            withContext(Dispatchers.IO) {
+                val files = folderSearchManager.getFoldersFast(ctx, root)
+                    .filterNot { it.type == DisplayFile.Type.OTHER }
+                folders.postValue(files)
+                // Fill parents cache
+                files.filter { it.type == DisplayFile.Type.FOLDER }.forEach {
+                    parentsCache[it.uri] = it.parent
+                }
+                folderSearchBundle.postValue(folderSearchManager.toBundle())
+            }
+
+            // Details
+            withContext(Dispatchers.IO) {
+                detailsFlowKillSwitch.set(false)
+                folderSearchManager.getFoldersDetails(ctx, root)
+                    .takeWhile { !detailsFlowKillSwitch.get() }
+                    .filterNot { it.type == DisplayFile.Type.OTHER }
+                    .map { enrichWithMetadata(it, dao) }
+                    .transform {
+                        // Fill parents cache
+                        if (it.type == DisplayFile.Type.FOLDER) parentsCache[it.uri] = it.parent
+                        emit(it)
+                    }
+                    .scan(ArrayList<DisplayFile>()) { accumulator, value ->
+                        accumulator.add(value)
+                        accumulator
+                    }
+                    .collect { foldersDetail.postValue(it) }
+            }
+        }
+    }
+
+    private fun enrichWithMetadata(f: DisplayFile, dao: CollectionDAO): DisplayFile {
+        dao.selectContentByStorageUri(f.uri.toString(), false)?.let {
+            Timber.d("Mapped metadata for ${it.title}")
+            f.coverUri = it.cover.usableUri.toUri()
+            f.contentId = it.id
+        }
+        return f
+    }
+
     /**
      * Toggle the completed filter
      */
     fun setCompletedFilter(value: Boolean) {
         contentSearchManager.setFilterBookCompleted(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -259,7 +362,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setNotCompletedFilter(value: Boolean) {
         contentSearchManager.setFilterBookNotCompleted(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -268,7 +371,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentFavouriteFilter(value: Boolean) {
         contentSearchManager.setFilterBookFavourites(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -277,7 +380,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentNonFavouriteFilter(value: Boolean) {
         contentSearchManager.setFilterBookNonFavourites(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -285,7 +388,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun setGroupFavouriteFilter(value: Boolean) {
         groupSearchManager.setFilterFavourites(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     /**
@@ -293,7 +396,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun setGroupNonFavouriteFilter(value: Boolean) {
         groupSearchManager.setFilterNonFavourites(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     /**
@@ -302,7 +405,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentRatingFilter(value: Int) {
         contentSearchManager.setFilterRating(value)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     /**
@@ -310,32 +413,64 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun setGroupRatingFilter(value: Int) {
         groupSearchManager.setFilterRating(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
-
 
     fun setGroupQuery(value: String) {
         groupSearchManager.setQuery(value)
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
+    }
+
+    fun goUpOneFolder() {
+        val currentFolder = folderRoot.value ?: return
+        parentsCache[currentFolder]?.let { setFolderRoot(it) }
+            ?: run {
+                // Identify the current folder's parent and get there
+                Settings.libraryFoldersRoots.firstOrNull { currentFolder.toString().startsWith(it) }
+                    ?.let {
+                        getParent(getApplication(), it.toUri(), currentFolder)
+                            ?.let { setFolderRoot(it) }
+                    }
+            }
+    }
+
+    fun searchFolder() {
+        viewModelScope.launch { doSearchFolders() }
+    }
+
+    fun setFolderRoot(value: Uri) {
+        folderRoot.value = value
+        viewModelScope.launch { doSearchFolders() }
+    }
+
+    fun setFolderQuery(value: String) {
+        folderSearchManager.setQuery(value)
+        viewModelScope.launch { doSearchFolders() }
     }
 
     fun setGrouping(groupingId: Int) {
         val currentGrouping = Settings.groupingDisplay
         if (groupingId != currentGrouping) {
             Settings.groupingDisplay = groupingId
-            if (groupingId == Grouping.FLAT.id) doSearchContent()
-            doSearchGroup()
+            if (groupingId == Grouping.FLAT.id) viewModelScope.launch { doSearchContent() }
+            else if (groupingId == Grouping.FOLDERS.id) viewModelScope.launch { doSearchFolders() }
+            else viewModelScope.launch { doSearchGroup() }
         }
     }
 
     fun clearGroupFilters() {
         groupSearchManager.clearFilters()
-        doSearchGroup()
+        viewModelScope.launch { doSearchGroup() }
     }
 
     fun clearContentFilters() {
         contentSearchManager.clearFilters()
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
+    }
+
+    fun clearFolderFilters() {
+        folderSearchManager.clearFilters()
+        viewModelScope.launch { doSearchFolders() }
     }
 
     /**
@@ -344,12 +479,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setContentPagingMethod(isEndless: Boolean) {
         contentSearchManager.setLoadAll(!isEndless)
         newContentSearch.value = true
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun searchContent(active: Boolean = true) {
         newContentSearch.value = active
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     fun setGroup(group: Group, forceRefresh: Boolean) {
@@ -364,7 +499,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         newContentSearch.value = true
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
-        doSearchContent()
+        viewModelScope.launch { doSearchContent() }
     }
 
     // =========================
@@ -649,19 +784,17 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     /**
      * Delete the given list of content
-     *
-     * @param contents List of content to be deleted
      */
     fun deleteItems(
-        contents: List<Content>,
-        groups: List<Group>,
-        deleteGroupsOnly: Boolean,
-        onSuccess: Runnable?
+        contentIds: List<Long>,
+        groupIds: List<Long>,
+        deleteGroupsOnly: Boolean = false,
+        onSuccess: Runnable? = null
     ) {
         val builder = DeleteData.Builder()
         builder.setOperation(BaseDeleteWorker.Operation.DELETE)
-        if (contents.isNotEmpty()) builder.setContentIds(contents.map { it.id })
-        if (groups.isNotEmpty()) builder.setGroupIds(groups.map { it.id })
+        if (contentIds.isNotEmpty()) builder.setContentIds(contentIds)
+        if (groupIds.isNotEmpty()) builder.setGroupIds(groupIds)
         builder.setDeleteGroupsOnly(deleteGroupsOnly)
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
@@ -673,6 +806,26 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     if (it.state.isFinished) {
                         onSuccess?.run()
                         refreshAvailableGroupings()
+                    }
+                }
+            }
+        workObservers.add(Pair(request.id, workInfoObserver))
+        workManager.getWorkInfoByIdLiveData(request.id).observeForever(workInfoObserver)
+    }
+
+    fun deleteOnStorage(docs: List<Uri>, onSuccess: Runnable? = null) {
+        val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
+        if (docs.isNotEmpty()) builder.setDocUris(docs)
+        val workManager = WorkManager.getInstance(getApplication())
+        val request: WorkRequest =
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
+        workManager.enqueue(request)
+        val workInfoObserver =
+            Observer { workInfo: WorkInfo? ->
+                workInfo?.let {
+                    if (it.state.isFinished) {
+                        onSuccess?.run()
                     }
                 }
             }
@@ -709,6 +862,48 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 DeleteWorker::class.java
             ).setInputData(builder.data).build()
         )
+    }
+
+    fun attachFolderRoot(uri: Uri): Boolean {
+        val roots = Settings.libraryFoldersRoots.toMutableList()
+        if (roots.contains(uri.toString())) return false
+
+        // Persist I/O permissions; keep existing ones if present
+        persistLocationCredentials(getApplication(), uri)
+        roots.add(uri.toString())
+        Settings.libraryFoldersRoots = roots
+        searchFolder()
+        return true
+    }
+
+    fun detachFolderRoots(uris: List<Uri>) {
+        val roots = Settings.libraryFoldersRoots.toMutableList()
+        roots.removeAll(uris.map {
+            val str = it.toString()
+            val docPos = str.indexOf("/document/")
+            str.substring(0, docPos)
+        })
+        Settings.libraryFoldersRoots = roots
+
+        // Remove corresponding books from DB; identify JSONs to be deleted
+        viewModelScope.launch {
+            val jsons = ArrayList<Uri>()
+            withContext(Dispatchers.IO) {
+                uris.forEach {
+                    dao.selectContentByStorageRootUri(it.toString()).forEach {
+                        try {
+                            if (it.jsonUri.isNotBlank()) jsons.add(it.jsonUri.toUri())
+                            dao.deleteContent(it)
+                        } catch (t: Throwable) {
+                            Timber.w(t)
+                        }
+                    }
+                }
+                dao.cleanup()
+            }
+            deleteOnStorage(jsons)
+            searchFolder()
+        }
     }
 
     fun setGroupCoverContent(groupId: Long, coverContent: Content) {
@@ -816,7 +1011,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             localGroups.filter { g -> g.name.equals(newGroupName, ignoreCase = true) }
         if (groupMatchingName.isNotEmpty()) { // Existing group with the same name
             onFail.invoke(R.string.group_name_exists)
-        } else if (group.isUngroupedGroup) { // "Ungrouped" group can't be renamed because it stops to work (TODO investgate that)
+        } else if (group.isUngroupedGroup) { // "Ungrouped" group can't be renamed because it stops to work (TODO investigate that)
             onFail.invoke(R.string.group_rename_forbidden)
         } else {
             group.name = newGroupName

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.annotation.IdRes
 import androidx.core.net.toUri
@@ -79,6 +80,9 @@ abstract class BaseDeleteWorker(
     // ImageFile IDs to delete
     private val imageIds: LongArray
 
+    // Uris of the DocumentFiles to delete
+    private val docUris: List<Uri>
+
     // True to delete all queue records
     private val isDeleteAllQueueRecords: Boolean
 
@@ -101,6 +105,7 @@ abstract class BaseDeleteWorker(
         groupIds = inputData.groupIds
         queueIds = inputData.queueIds
         imageIds = inputData.imageIds
+        docUris = inputData.docUris
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         operation = inputData.operation ?: throw IllegalArgumentException("Must set an Operation")
@@ -134,7 +139,7 @@ abstract class BaseDeleteWorker(
             }
         }
         contentIds = askedContentIds
-        deleteMax = contentIds.size + groupIds.size + queueIds.size + imageIds.size
+        deleteMax = contentIds.size + groupIds.size + queueIds.size + imageIds.size + docUris.size
     }
 
     override fun getStartNotification(): BaseNotification {
@@ -169,8 +174,12 @@ abstract class BaseDeleteWorker(
 
                 // Remove Contents and associated QueueRecords
                 if (queueIds.isNotEmpty()) removeQueue(queueIds)
+
                 // Remove files linked to the given ImageFile IDs
                 if (imageIds.isNotEmpty()) removeImageFiles(imageIds)
+
+                // Remove documentFiles linked to the given Uris
+                if (docUris.isNotEmpty()) removeDocuments(docUris)
 
                 // If asked, make sure all QueueRecords are removed including dead ones
                 if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()
@@ -445,6 +454,21 @@ abstract class BaseDeleteWorker(
         trace(Log.INFO, "Removed %s images", imgs.size)
     }
 
+    private fun removeDocuments(uris: List<Uri>) {
+        trace(Log.INFO, "Removing ${uris.size} documents...")
+
+        uris.forEachIndexed { index, uri ->
+            if (isStopped) return
+            removeFile(applicationContext, uri)
+            progressItem(
+                "Document " + (index + 1).toString(),
+                DeleteProgressNotification.ProgressType.DELETE_DOCS
+            )
+        }
+
+        progressDone()
+        trace(Log.INFO, "Removed ${uris.size} documents")
+    }
 
     @OptIn(DelicateCoroutinesApi::class)
     private fun progressItem(item: Any?, type: DeleteProgressNotification.ProgressType) {

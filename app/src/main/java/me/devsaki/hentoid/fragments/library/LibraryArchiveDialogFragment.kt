@@ -174,15 +174,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
         when (resultCode) {
             PickerResult.OK -> {
                 // Persist I/O permissions; keep existing ones if present
-                persistLocationCredentials(
-                    requireContext(),
-                    uri,
-                    listOf(
-                        StorageLocation.PRIMARY_1,
-                        StorageLocation.PRIMARY_2,
-                        StorageLocation.EXTERNAL
-                    )
-                )
+                persistLocationCredentials(requireContext(), uri)
                 Settings.latestArchiveTargetFolderUri = uri.toString()
                 Settings.archiveTargetFolder = uri.toString()
                 refreshControls(true)

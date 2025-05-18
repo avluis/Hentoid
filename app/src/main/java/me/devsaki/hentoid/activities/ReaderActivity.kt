@@ -40,14 +40,20 @@ open class ReaderActivity : BaseActivity() {
         if (parser.isOpenFavPages) {
             // ViewModel hasn't loaded anything yet (fresh start)
             if (null == viewModel.getContent().value) viewModel.loadFavPages()
+        } else if (parser.isOpenFolders) {
+            parser.folderSearchParams?.let { params ->
+                parser.docUri?.let { uri ->
+                    viewModel.loadContentFromFolderSearch(uri, params)
+                }
+            }
         } else {
             val contentId = parser.contentId
             require(0L != contentId) { "Incorrect ContentId" }
             val pageNumber = parser.pageNumber
             // ViewModel hasn't loaded anything yet (fresh start)
             if (null == viewModel.getContent().value) {
-                val searchParams = parser.searchParams
-                if (searchParams != null) viewModel.loadContentFromSearchParams(
+                val searchParams = parser.contentSearchParams
+                if (searchParams != null) viewModel.loadContentFromContentSearch(
                     contentId,
                     pageNumber,
                     searchParams

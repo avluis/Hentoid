@@ -10,8 +10,8 @@
         android:id="@+id/sort_asc_desc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:checkedButton="@id/sort_ascending"
         android:layout_marginTop="8dp"
+        app:checkedButton="@id/sort_ascending"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -43,9 +43,9 @@
         style="@style/HentoidMaterialButtonOutlinedStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="@string/sort_reshuffle"
         android:visibility="gone"
-        android:layout_marginTop="8dp"
         app:icon="@drawable/ic_menu_sort_random"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -71,158 +71,167 @@
         app:spanCount="2"
         tools:listitem="@layout/item_text" />
 
-    <com.google.android.material.divider.MaterialDivider
-        android:id="@+id/filters_divider"
+    <!-- Filter buttons -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/filters_panel"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        app:dividerColor="@color/medium_gray"
         app:layout_constraintEnd_toEndOf="@id/list"
         app:layout_constraintStart_toStartOf="@id/list"
-        app:layout_constraintTop_toBottomOf="@id/list" />
+        app:layout_constraintTop_toBottomOf="@id/list">
 
-    <TextView
-        android:id="@+id/filter_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/library_filters_title"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        android:layout_marginStart="20dp"
-        app:layout_constraintBottom_toBottomOf="@id/filter_favs_btn"
-        app:layout_constraintStart_toStartOf="@id/list"
-        app:layout_constraintTop_toTopOf="@id/filter_favs_btn" />
+        <com.google.android.material.divider.MaterialDivider
+            android:id="@+id/filters_divider"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:dividerColor="@color/medium_gray"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/filter_vertical_barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="end"
-        app:constraint_referenced_ids="filter_rating_5" />
+        <TextView
+            android:id="@+id/filter_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:text="@string/library_filters_title"
+            android:textSize="@dimen/text_subtitle_1"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/filter_favs_btn"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/filter_favs_btn" />
 
-    <!-- Filter buttons -->
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/filter_vertical_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="end"
+            app:constraint_referenced_ids="filter_rating_5" />
 
-    <ImageView
-        android:id="@+id/filter_favs_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_fav_full"
-        android:tooltipText="@string/library_filter_favourite_help"
-        app:layout_constraintEnd_toStartOf="@id/filter_non_favs_btn"
-        app:layout_constraintTop_toBottomOf="@id/filters_divider"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_favs_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_fav_full"
+            android:tooltipText="@string/library_filter_favourite_help"
+            app:layout_constraintEnd_toStartOf="@id/filter_non_favs_btn"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_non_favs_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_fav_empty"
-        android:tooltipText="@string/library_filter_favourite_help"
-        app:layout_constraintEnd_toStartOf="@id/filter_completed_btn"
-        app:layout_constraintTop_toBottomOf="@id/filters_divider"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_non_favs_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_fav_empty"
+            android:tooltipText="@string/library_filter_favourite_help"
+            app:layout_constraintEnd_toStartOf="@id/filter_completed_btn"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_completed_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_checked_circle"
-        android:tooltipText="@string/filter_completed"
-        app:layout_constraintEnd_toStartOf="@id/filter_not_completed_btn"
-        app:layout_constraintTop_toBottomOf="@id/filters_divider"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_completed_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_checked_circle"
+            android:tooltipText="@string/filter_completed"
+            app:layout_constraintEnd_toStartOf="@id/filter_not_completed_btn"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_not_completed_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_completed_empty"
-        android:tooltipText="@string/filter_not_completed"
-        app:layout_constraintEnd_toEndOf="@id/filter_vertical_barrier"
-        app:layout_constraintTop_toBottomOf="@id/filters_divider"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_not_completed_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_completed_empty"
+            android:tooltipText="@string/filter_not_completed"
+            app:layout_constraintEnd_toEndOf="@id/filter_vertical_barrier"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <!-- Rating buttons -->
+        <!-- Rating buttons -->
 
-    <ImageView
-        android:id="@+id/filter_rating_none"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_forbidden"
-        android:tooltipText="@string/filter_rating"
-        app:layout_constraintEnd_toStartOf="@id/filter_rating_1"
-        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_rating_none"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_forbidden"
+            android:tooltipText="@string/filter_rating"
+            app:layout_constraintEnd_toStartOf="@id/filter_rating_1"
+            app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_rating_1"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_star_empty"
-        android:tooltipText="@string/filter_rating"
-        app:layout_constraintEnd_toStartOf="@id/filter_rating_2"
-        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_rating_1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_empty"
+            android:tooltipText="@string/filter_rating"
+            app:layout_constraintEnd_toStartOf="@id/filter_rating_2"
+            app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_rating_2"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_star_empty"
-        android:tooltipText="@string/filter_rating"
-        app:layout_constraintEnd_toStartOf="@id/filter_rating_3"
-        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_rating_2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_empty"
+            android:tooltipText="@string/filter_rating"
+            app:layout_constraintEnd_toStartOf="@id/filter_rating_3"
+            app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_rating_3"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_star_empty"
-        android:tooltipText="@string/filter_rating"
-        app:layout_constraintEnd_toStartOf="@id/filter_rating_4"
-        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_rating_3"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_empty"
+            android:tooltipText="@string/filter_rating"
+            app:layout_constraintEnd_toStartOf="@id/filter_rating_4"
+            app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_rating_4"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_star_empty"
-        android:tooltipText="@string/filter_rating"
-        app:layout_constraintEnd_toStartOf="@id/filter_rating_5"
-        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_rating_4"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_empty"
+            android:tooltipText="@string/filter_rating"
+            app:layout_constraintEnd_toStartOf="@id/filter_rating_5"
+            app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/filter_rating_5"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="32dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_star_empty"
-        android:tooltipText="@string/filter_rating"
-        app:layout_constraintEnd_toEndOf="@id/list"
-        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
-        app:tint="@color/medium_gray"
-        tools:ignore="ContentDescription"/>
+        <ImageView
+            android:id="@+id/filter_rating_5"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="32dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_empty"
+            android:tooltipText="@string/filter_rating"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

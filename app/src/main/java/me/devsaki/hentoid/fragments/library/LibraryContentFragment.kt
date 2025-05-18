@@ -262,7 +262,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private var group: Group? = null
 
     // Indicate whether this tab is enabled (active on screen) or not
-    private var enabled = true
+    private var enabled = false
 
     // Search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
@@ -567,8 +567,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
-                while (selectExtension!!.selections.size < getItemAdapter()!!.adapterItemCount && ++count < 5)
-                    selectExtension!!.select(IntRange(0, getItemAdapter()!!.adapterItemCount - 1))
+                selectExtension?.apply {
+                    while (selections.size < getItemAdapter()!!.adapterItemCount && ++count < 5)
+                        IntRange(0, getItemAdapter()!!.adapterItemCount - 1).forEach {
+                            select(it, false, true)
+                        }
+                }
                 keepToolbar = true
             }
 
@@ -666,7 +670,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             if (!Settings.isDeleteExternalLibrary) selectedContent = selectedContent
                 .filterNot { it.status == StatusContent.EXTERNAL }
             if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
-                selectedContent, emptyList(),
+                selectedContent.map { it.id }, emptyList(),
                 { refreshIfNeeded() }, selectExtension!!
             )
         }
@@ -761,7 +765,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 activity.get()?.getSelectionToolbar()?.visibility = View.GONE
 
                 val uri = if (c.isArchive || c.isPdf)
-                    getParent(context, Settings.externalLibraryUri.toUri(), folder)
+                    getParent(context, Settings.externalLibraryUri.toUri(), folder.uri)
                 else folder.uri
                 uri?.let { openUri(context, it) }
             }
@@ -1306,9 +1310,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     isSelected: Boolean,
                     calledFromOnStart: Boolean
                 ) {
-                    selectExtension?.let {
-                        if (isSelected) it.select(IntRange(start, end))
-                        else it.deselect(IntRange(start, end).toMutableList())
+                    selectExtension?.let { se ->
+                        if (isSelected) IntRange(start, end).forEach { se.select(it, false, true) }
+                        else se.deselect(IntRange(start, end).toMutableList())
                     }
                 }
             }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -1898,7 +1902,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
         val content = item.content
         if (content != null) viewModel.deleteItems(
-            listOf(content), emptyList(), false
+            listOf(content.id), emptyList(), false
         ) { refreshIfNeeded() }
     }
 

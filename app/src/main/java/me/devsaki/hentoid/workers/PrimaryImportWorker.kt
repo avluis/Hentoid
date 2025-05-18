@@ -770,9 +770,9 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         context,
                         parent,
                         bookFolder,
-                        explorer,
                         parentNames,
                         StatusContent.DOWNLOADED,
+                        explorer,
                         dao,
                         null,
                         null

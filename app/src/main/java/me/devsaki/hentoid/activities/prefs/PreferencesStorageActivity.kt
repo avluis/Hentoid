@@ -2,11 +2,11 @@ package me.devsaki.hentoid.activities.prefs
 
 import android.content.DialogInterface
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -227,7 +227,7 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
                 StorageLocation.PRIMARY_2 -> number.text = "2"
                 else -> number.text = " "
             }
-            val uri = Uri.parse(uriStr)
+            val uri = uriStr.toUri()
             path.text = getFullPathFromUri(baseContext, uri)
 
             val rootFolder = getDocumentFromTreeUriString(baseContext, uriStr)

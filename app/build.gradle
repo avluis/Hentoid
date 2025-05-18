@@ -133,8 +133,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.paging:paging-runtime:2.1.2'
     implementation 'androidx.fragment:fragment-ktx:1.8.6'
-    implementation "androidx.documentfile:documentfile:1.0.1"
-    // <-- if documentfile is bumped, please examine FileExplorer for evolutions
+    implementation "androidx.documentfile:documentfile:1.1.0"
+    // <-- if documentfile is bumped, please examine CachedDocumentsContract for evolutions
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1'
     implementation 'androidx.core:core-ktx:1.15.0'

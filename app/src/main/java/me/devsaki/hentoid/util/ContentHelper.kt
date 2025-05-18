@@ -58,6 +58,7 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.Beholder.registerContent
+import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
@@ -375,10 +376,10 @@ fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
 fun openReader(
     context: Context,
     content: Content,
-    pageNumber: Int,
-    searchParams: Bundle?,
-    forceShowGallery: Boolean,
-    newTask: Boolean
+    pageNumber: Int = -1,
+    searchParams: Bundle? = null,
+    forceShowGallery: Boolean = false,
+    newTask: Boolean = false
 ): Boolean {
     // Check if the book has at least its own folder
     if (content.storageUri.isEmpty()) return false
@@ -388,7 +389,7 @@ fun openReader(
 
     val builder = ReaderActivityBundle()
     builder.contentId = content.id
-    if (searchParams != null) builder.searchParams = searchParams
+    if (searchParams != null) builder.contentSearchParams = searchParams
     if (pageNumber > -1) builder.pageNumber = pageNumber
     builder.isForceShowGallery = forceShowGallery
 
@@ -2322,6 +2323,16 @@ private class InnerNameNumberArchiveComparator : Comparator<ArchiveEntry> {
     override fun compare(o1: ArchiveEntry, o2: ArchiveEntry): Int {
         return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
             .compare(o1.path, o2.path)
+    }
+}
+
+/**
+ * Comparator to be used to sort file entries according to their names
+ */
+class InnerNameNumberDisplayFileComparator(val desc : Boolean = false) : Comparator<DisplayFile> {
+    override fun compare(o1: DisplayFile, o2: DisplayFile): Int {
+        return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
+            .compare(o1.name, o2.name) * if (desc) -1 else 1
     }
 }
 

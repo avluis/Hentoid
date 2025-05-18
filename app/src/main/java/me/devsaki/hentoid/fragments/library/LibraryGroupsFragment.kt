@@ -85,7 +85,6 @@ import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.nio.charset.StandardCharsets
-import java.util.Collections
 import java.util.Locale
 import kotlin.math.max
 
@@ -229,11 +228,13 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     private fun onEnable() {
+        Timber.d("enable groups")
         enabled = true
         callback?.isEnabled = true
     }
 
     private fun onDisable() {
+        Timber.d("disable groups")
         enabled = false
         callback?.isEnabled = false
     }
@@ -298,10 +299,12 @@ class LibraryGroupsFragment : Fragment(),
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
-                while (selectExtension!!.selections.size < itemAdapter.adapterItemCount && ++count < 5)
-                    selectExtension!!.select(
-                        IntRange(0, itemAdapter.adapterItemCount - 1)
-                    )
+                selectExtension?.apply {
+                    while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
+                        IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
+                            select(it, false, true)
+                        }
+                }
                 keepToolbar = true
             }
 
@@ -470,15 +473,13 @@ class LibraryGroupsFragment : Fragment(),
                     )
                 )
                 val powerMenu = powerMenuBuilder.build()
-                val finalGroups = Collections.unmodifiableList(selectedGroups)
-                val finalContent = Collections.unmodifiableList(selectedContent)
                 powerMenu.onMenuItemClickListener =
                     OnMenuItemClickListener { _: Int, (_, _, _, _, _, tag1): PowerMenuItem ->
                         if (tag1 != null) {
                             when (tag1 as Int) {
                                 0 -> { // Delete books only
                                     viewModel.deleteItems(
-                                        finalContent,
+                                        selectedContent.map { it.id },
                                         emptyList(),
                                         false,
                                         null
@@ -488,14 +489,18 @@ class LibraryGroupsFragment : Fragment(),
                                 1 -> { // Delete group only
                                     viewModel.deleteItems(
                                         emptyList(),
-                                        finalGroups,
+                                        selectedGroups.map { it.id },
                                         true,
                                         null
                                     )
                                 }
 
                                 2 -> { // Delete groups and books
-                                    viewModel.deleteItems(finalContent, finalGroups, false, null)
+                                    viewModel.deleteItems(
+                                        selectedContent.map { it.id },
+                                        selectedGroups.map { it.id },
+                                        false, null
+                                    )
                                 }
 
                                 else -> {
@@ -751,9 +756,9 @@ class LibraryGroupsFragment : Fragment(),
                     isSelected: Boolean,
                     calledFromOnStart: Boolean
                 ) {
-                    selectExtension?.let {
-                        if (isSelected) it.select(IntRange(start, end))
-                        else it.deselect(IntRange(start, end).toMutableList())
+                    selectExtension?.let { se ->
+                        if (isSelected) IntRange(start, end).forEach { se.select(it, false, true) }
+                        else se.deselect(IntRange(start, end).toMutableList())
                     }
                 }
             }).withMode(DragSelectionProcessor.Mode.Simple)
