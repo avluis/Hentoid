@@ -63,7 +63,7 @@ fun downloadToFileCached(
     failFast: Boolean = true,
     resourceId: Int,
     notifyProgress: Consumer<Float>? = null
-): Pair<Uri?, String> {
+): Uri? {
     return downloadToFile(
         context, site, rawUrl, requestHeaders,
         fileCreator = { _, _ -> StorageCache.createFile(cacheKey) },
@@ -89,7 +89,7 @@ fun downloadToFile(
     failFast: Boolean = true,
     resourceId: Int,
     notifyProgress: Consumer<Float>? = null
-): Pair<Uri?, String> {
+): Uri? {
     return downloadToFile(
         context, site, rawUrl, requestHeaders,
         fileCreator = { ctx, mimeType ->
@@ -132,7 +132,7 @@ private fun downloadToFile(
     failFast: Boolean = true,
     resourceId: Int,
     notifyProgress: Consumer<Float>? = null
-): Pair<Uri?, String> {
+): Uri? {
     assertNonUiThread()
     val url = fixUrl(rawUrl, site.url)
     if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
@@ -192,10 +192,10 @@ private fun downloadToFile(
                     Timber.d(
                         "WRITING DOWNLOAD %d TO %s (size %s)",
                         resourceId,
-                        targetFileUri!!.path,
+                        targetFileUri.path,
                         sizeStr
                     )
-                    out = getOutputStream(context, targetFileUri!!)
+                    out = getOutputStream(context, targetFileUri)
                 }
                 if (len > 0 && out != null) {
                     out!!.write(buffer, 0, len)
@@ -210,7 +210,7 @@ private fun downloadToFile(
                 out?.flush()
                 if (targetFileUri != null) {
                     val targetFileSize =
-                        fileSizeFromUri(context, targetFileUri!!)
+                        fileSizeFromUri(context, targetFileUri)
                     Timber.d(
                         "DOWNLOAD %d [%s] WRITTEN TO %s (%s)",
                         resourceId,
@@ -222,12 +222,12 @@ private fun downloadToFile(
                         )
                     )
                 }
-                return Pair(targetFileUri, mimeType)
+                return targetFileUri
             }
         }
     }
     // Remove the remaining file chunk if download has been interrupted
-    if (targetFileUri != null) removeFile(context, targetFileUri!!)
+    if (targetFileUri != null) removeFile(context, targetFileUri)
     throw DownloadInterruptedException("Download interrupted")
 }
 

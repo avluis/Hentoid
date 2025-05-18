@@ -62,7 +62,6 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.image.PdfManager
-import me.devsaki.hentoid.util.image.getMimeTypeFromUri
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
@@ -440,9 +439,6 @@ class ReaderViewModel(
                 newImageFiles.forEach {
                     StorageCache.getFile(formatCacheKey(it))?.let { existingUri ->
                         it.fileUri = existingUri.toString()
-                        it.mimeType = getMimeTypeFromUri(
-                            getApplication<Application>().applicationContext, existingUri
-                        )
                     }
                 }
             }
@@ -1301,7 +1297,6 @@ class ReaderViewModel(
                                 populateChapter = true
                             )
                         downloadedPic.fileUri = resultOpt.second
-                        downloadedPic.mimeType = resultOpt.third
                         viewerImagesInternal.removeAt(downloadedPageIndex)
                         viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
                         Timber.d(
@@ -1493,18 +1488,11 @@ class ReaderViewModel(
         // Instanciate a new ImageFile not to modify the one used by the UI
         val extractedPic = ImageFile(img, populateContent = true, populateChapter = true)
         extractedPic.fileUri = uri.toString()
-        extractedPic.mimeType = getMimeTypeFromUri(
-            getApplication<Application>().applicationContext, uri
-        )
         synchronized(viewerImagesInternal) {
             viewerImagesInternal.removeAt(idx)
             viewerImagesInternal.add(idx, extractedPic)
             Timber.v(
-                "Extracting : replacing index %d - order %d -> %s (%s)",
-                idx,
-                extractedPic.order,
-                extractedPic.fileUri,
-                extractedPic.mimeType
+                "Extracting : replacing index $idx - order ${extractedPic.order} -> ${extractedPic.fileUri}"
             )
 
             if (refresh) viewerImages.postValue(ArrayList(viewerImagesInternal))
@@ -1537,20 +1525,19 @@ class ReaderViewModel(
      * @return Optional triple with
      * - The page index
      * - The Uri of the downloaded file
-     * - The Mime-type of the downloaded file
      *
      * The return value is empty if the download fails
      */
     private fun downloadPic(
         pageIndex: Int, stopDownload: AtomicBoolean
-    ): Triple<Int, String, String>? {
+    ): Pair<Int, String>? {
         assertNonUiThread()
         if (viewerImagesInternal.size <= pageIndex) return null
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
         if (img.fileUri.isNotEmpty() && StorageCache.getFile(formatCacheKey(img)) != null)
-            return Triple(pageIndex, img.fileUri, img.mimeType)
+            return Pair(pageIndex, img.fileUri)
 
         // Initiate download
         try {
@@ -1562,7 +1549,7 @@ class ReaderViewModel(
             headers.add(
                 Pair(HEADER_REFERER_KEY, content.readerUrl)
             ) // Useful for Hitomi and Toonily
-            val result: Pair<Uri?, String>
+            val result: Uri?
             if (img.needsPageParsing) {
                 val pageUrl = fixUrl(img.pageUrl, content.site.url)
                 // Get cookies from the app jar
@@ -1597,13 +1584,10 @@ class ReaderViewModel(
                 }
             }
 
-            val targetFileUri = result.first
-            targetFileUri ?: throw ParseException("Resource is not available")
-
+            val targetFileUri = result ?: throw ParseException("Resource is not available")
             targetFile = File(targetFileUri.path!!)
-            mimeType = result.second
 
-            return Triple(pageIndex, Uri.fromFile(targetFile).toString(), mimeType)
+            return Pair(pageIndex, Uri.fromFile(targetFile).toString())
         } catch (_: DownloadInterruptedException) {
             Timber.d("Download interrupted for pic %d", pageIndex)
         } catch (e: Exception) {
@@ -1638,7 +1622,7 @@ class ReaderViewModel(
         pageIndex: Int,
         requestHeaders: List<Pair<String, String>>,
         interruptDownload: AtomicBoolean
-    ): Pair<Uri?, String> {
+    ): Uri? {
         val site = content.site
         val pageUrl = fixUrl(img.pageUrl, site.url)
         val parser = ContentParserFactory.getImageListParser(content.site)

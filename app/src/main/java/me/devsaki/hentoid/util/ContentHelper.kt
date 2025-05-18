@@ -73,6 +73,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
+import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.legacyFileFromUri
@@ -833,7 +834,6 @@ fun setContentCover(content: Content, images: MutableList<ImageFile>, newCover: 
     // Duplicate given picture and set it as a cover
     val cover = ImageFile.newCover(newCover.url, newCover.status)
     cover.fileUri = newCover.fileUri
-    cover.mimeType = newCover.mimeType
     images.add(0, cover)
 
     // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
@@ -1247,7 +1247,6 @@ fun createImageListFromFiles(
         img.status = targetStatus
         img.fileUri = f.uri.toString()
         img.size = f.length()
-        img.mimeType = getMimeTypeFromFileName(name)
         result.add(img)
     }
     // If no thumb found, set the 1st image as cover
@@ -1287,7 +1286,6 @@ fun createImageListFromArchiveEntries(
         img.status = targetStatus
         img.fileUri = path
         img.size = size
-        img.mimeType = getMimeTypeFromFileName(name)
         result.add(img)
     }
     return result
@@ -2231,7 +2229,7 @@ suspend fun mergeContents(
                             context,
                             img.fileUri.toUri(),
                             targetFolder,
-                            newImg.mimeType,
+                            getMimeTypeFromFileUri(img.fileUri),
                             newImg.name + "." + getExtensionFromUri(img.fileUri),
                             true
                         )

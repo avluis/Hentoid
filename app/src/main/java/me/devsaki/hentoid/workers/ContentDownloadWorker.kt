@@ -1179,7 +1179,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val imgFile = getFileFromSingleUri(applicationContext, fileUri)
         if (imgFile != null) {
             img.size = imgFile.length()
-            img.mimeType = imgFile.type ?: MIME_IMAGE_GENERIC
             updateImageProperties(img, true, fileUri.toString())
         } else {
             Timber.i(
@@ -1337,9 +1336,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 resourceId = img.order
             )
 
-            val targetFileUri = result.first
-            targetFileUri
-                ?: throw IOException("Couldn't download ugoira file : resource not available")
+            val targetFileUri = result?: throw IOException("Couldn't download ugoira file : resource not available")
 
             // == Extract all frames
             applicationContext.extractArchiveEntries(
@@ -1388,7 +1385,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 img.name + ".gif"
             ) ?: throw IOException("Couldn't copy result ugoira file")
 
-            img.mimeType = MIME_IMAGE_GIF
             img.size = fileSizeFromUri(
                 applicationContext,
                 ugoiraGifFile

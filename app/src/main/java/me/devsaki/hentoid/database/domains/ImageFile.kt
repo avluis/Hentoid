@@ -13,7 +13,6 @@ import me.devsaki.hentoid.database.reach
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.file.getSupportedExtensions
 import me.devsaki.hentoid.util.hash64
-import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
 import me.devsaki.hentoid.util.isInLibrary
 import java.io.File
 import java.util.Locale
@@ -39,7 +38,6 @@ data class ImageFile(
     var dbIsCover: Boolean = false,
     @Convert(converter = StatusContent.Converter::class, dbType = Integer::class)
     var status: StatusContent = StatusContent.UNHANDLED_ERROR,
-    var mimeType: String = MIME_IMAGE_GENERIC,
     var size: Long = 0,
     var imageHash: Long = 0,
     var isTransformed: Boolean = false,
@@ -88,7 +86,6 @@ data class ImageFile(
         img.favourite,
         img.isCover,
         img.status,
-        img.mimeType,
         img.size,
         img.imageHash,
         img.isTransformed

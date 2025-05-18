@@ -79,7 +79,7 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
             progressPc = it
             launchProgressNotification()
         }
-        apk.first?.let {
+        apk?.let {
             Timber.d("Download successful")
             legacyFileFromUri(it)?.let { file ->
                 notificationManager.notifyLast(

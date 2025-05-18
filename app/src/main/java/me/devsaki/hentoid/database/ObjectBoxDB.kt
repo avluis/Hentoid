@@ -1558,7 +1558,6 @@ object ObjectBoxDB {
         if (img != null) {
             img.status = image.status
             img.downloadParams = image.downloadParams
-            img.mimeType = image.mimeType
             img.fileUri = image.fileUri
             img.size = image.size
             imgBox.put(img)

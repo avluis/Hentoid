@@ -28,6 +28,7 @@ import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
@@ -173,9 +174,10 @@ class ReaderCopyImgDialogFragment : BaseDialogFragment<ReaderCopyImgDialogFragme
             val targetFileName = prefix + "-" + it.name + "." + getExtension(it.fileUri)
             try {
                 val fileUri = it.fileUri.toUri()
+                val mimeType = getMimeTypeFromFileUri(it.fileUri)
                 if (!fileExists(requireContext(), fileUri)) return
 
-                val targets = getTargets(targetFileName, it.mimeType)
+                val targets = getTargets(targetFileName, mimeType)
 
                 targets.first?.use { newDownload ->
                     getInputStream(requireContext(), fileUri)

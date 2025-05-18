@@ -195,7 +195,6 @@ class MangagoParser : BaseChapteredImageListParser() {
         // Enrich physical properties
         getFileFromSingleUri(context, fileUri)?.let {
             img.size = it.length()
-            img.mimeType = it.type ?: MIME_IMAGE_GENERIC
         }
         result.add(img)
     }

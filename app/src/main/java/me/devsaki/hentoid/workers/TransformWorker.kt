@@ -228,7 +228,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             img.fileUri = targetUri.toString()
             img.size = targetData.size.toLong()
             img.isTransformed = true
-            img.mimeType = targetMime
 
             nextOK()
             globalProgress.setProgress(imageId, 1f)

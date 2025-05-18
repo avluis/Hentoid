@@ -15,7 +15,6 @@ data class JsonImageFile(
     val favourite: Boolean?,
     val isRead: Boolean?,
     val status: StatusContent,
-    val mimeType: String?,
     val pHash: Long?,
     val isTransformed: Boolean?,
     val chapterOrder: Int?
@@ -29,7 +28,6 @@ data class JsonImageFile(
         f.favourite,
         f.read,
         f.status,
-        f.mimeType,
         f.imageHash,
         f.isTransformed,
         f.linkedChapter?.order ?: -1
@@ -42,7 +40,6 @@ data class JsonImageFile(
         result.isCover = isCover ?: false
         result.favourite = favourite ?: false
         result.read = isRead ?: false
-        result.mimeType = mimeType ?: ""
         result.imageHash = pHash ?: 0
         result.isTransformed = isTransformed ?: false
 

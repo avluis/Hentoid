@@ -74,7 +74,7 @@ class RequestQueue(
 
     private fun handleSuccess(
         requestOrder: RequestOrder,
-        resultOpt: Triple<Int, Uri, String>?
+        resultOpt: Pair<Int, Uri>?
     ) {
         // Nothing to download => this is actually an error
         if (null == resultOpt) {
@@ -137,7 +137,7 @@ class RequestQueue(
         targetFileNameNoExt: String,
         pageIndex: Int,
         killSwitch: AtomicBoolean
-    ): Triple<Int, Uri, String> {
+    ): Pair<Int, Uri> {
         assertNonUiThread()
 
         val requestHeaders =
@@ -163,10 +163,9 @@ class RequestQueue(
             pageIndex
         )
 
-        val targetFileUri = result.first
-        val mimeType = result.second
+        val targetFileUri = result
         if (null == targetFileUri) throw ParseException("Resource not available")
 
-        return Triple(pageIndex, targetFileUri, mimeType)
+        return Pair(pageIndex, targetFileUri)
     }
 }
