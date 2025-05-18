@@ -29,6 +29,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
 import timber.log.Timber
@@ -743,6 +744,8 @@ fun getExtensionFromMimeType(mimeType: String): String? {
 private fun getMimeTypeFromExtension(extension: String): String {
     if (extension.isEmpty()) return DEFAULT_MIME_TYPE
     val result = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+    // Exceptions that MimeTypeMap does not support
+    if (null == result && extension == "avif") return "image/avif"
     return result ?: DEFAULT_MIME_TYPE
 }
 
@@ -754,6 +757,16 @@ private fun getMimeTypeFromExtension(extension: String): String {
  */
 fun getMimeTypeFromFileName(fileName: String): String {
     return getMimeTypeFromExtension(getExtension(fileName))
+}
+
+/**
+ * Get the most relevant mime-type for the given file Uri
+ *
+ * @param uri File Uri to get the mime-type for
+ * @return Most relevant mime-type for the given file Uri; generic mime-type if none found
+ */
+fun getMimeTypeFromFileUri(uri: String): String {
+    return getMimeTypeFromExtension(getExtensionFromUri(uri))
 }
 
 /**
@@ -865,7 +878,7 @@ fun copyFiles(
 
         operations.forEachIndexed { index, op ->
             val mime =
-                if (forceMime.isNullOrEmpty()) getMimeTypeFromFileName(op.second) else forceMime
+                if (forceMime.isNullOrEmpty()) getMimeTypeFromFileUri(op.first.toString()) else forceMime
             var newUri: Uri? = null
             existingFiles[op.second] ?: targetFolder.createFile(mime, op.second)?.let { out ->
                 getOutputStream(context, out)?.use { output ->

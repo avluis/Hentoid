@@ -854,25 +854,28 @@ fun getOrCreateContentDownloadDir(
     location: StorageLocation,
     createOnly: Boolean
 ): DocumentFile? {
-    // == Site folder
-    val siteDownloadDir = getOrCreateSiteDownloadDir(context, location, content.site) ?: return null
+    // Parent = site folder if downloads; ext root if external
+    val parentFolder = if (StorageLocation.EXTERNAL == location)
+        getDocumentFromTreeUriString(context, Settings.externalLibraryUri) ?: return null
+    else
+        getOrCreateSiteDownloadDir(context, location, content.site) ?: return null
 
     // == Book folder
     val bookFolderName = formatFolderName(content)
 
     // First try finding the folder with new naming...
     if (!createOnly) {
-        var bookFolder = findFolder(context, siteDownloadDir, bookFolderName.first)
+        var bookFolder = findFolder(context, parentFolder, bookFolderName.first)
         if (null == bookFolder) { // ...then with old (sanitized) naming
-            bookFolder = findFolder(context, siteDownloadDir, bookFolderName.second)
+            bookFolder = findFolder(context, parentFolder, bookFolderName.second)
         }
         if (bookFolder != null) return bookFolder
     }
 
     // If nothing found, or create-only, create a new folder with the new naming...
-    val result = siteDownloadDir.createDirectory(bookFolderName.first)
+    val result = parentFolder.createDirectory(bookFolderName.first)
     return result ?: // ...if it fails, create a new folder with the old naming
-    siteDownloadDir.createDirectory(bookFolderName.second)
+    parentFolder.createDirectory(bookFolderName.second)
 }
 
 /**
@@ -2314,7 +2317,7 @@ fun purgeContent(
     )
 }
 
-suspend fun deleteChapters(context: Context, dao: CollectionDAO, chapterIds : List<Long>) {
+suspend fun deleteChapters(context: Context, dao: CollectionDAO, chapterIds: List<Long>) {
     // Delete chapters and flag images for deletion
     val imageIdsToDelete = HashSet<Long>()
     withContext(Dispatchers.IO) {

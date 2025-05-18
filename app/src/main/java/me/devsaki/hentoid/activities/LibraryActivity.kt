@@ -1165,7 +1165,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                             || selectedExternalCount > 1 && 0L == selectedLocalCount && 0L == selectedStreamedCount
                     )
             splitMenu?.isVisible =
-                !hasProcessed && !isMultipleSelection && 1L == selectedLocalCount
+                !hasProcessed && !isMultipleSelection && (1L == selectedLocalCount || 1L == selectedExternalCount)
             transformMenu?.isVisible =
                 !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchivePdfExternalCount
             exportMetaMenu?.isVisible = false
@@ -1175,7 +1175,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     /**
      * Display the yes/no dialog to make sure the user really wants to delete selected items
      *
-     * @param contents Items to be deleted if the answer is yes
+     * @param contentIds    Items to be deleted if the answer is yes
+     * @param groupIds      Groups to be deleted if the answer is yes
      */
     fun askDeleteItems(
         contentIds: List<Long>,

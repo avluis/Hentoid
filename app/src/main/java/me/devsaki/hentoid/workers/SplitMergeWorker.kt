@@ -159,7 +159,7 @@ abstract class BaseSplitMergeWorker(
 
             // Copy the corresponding images to that folder
             val splitContentImages =
-                splitContent.imageList.filter { it.status == StatusContent.DOWNLOADED }
+                splitContent.imageList.filter { it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL }
             withContext(Dispatchers.IO) {
                 try {
                     copyFiles(
