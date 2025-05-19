@@ -855,8 +855,10 @@ open class CustomWebViewClient : WebViewClient {
         if (customCss != null && baseUri == mainPageUrl)
             doc.head().appendElement("style").attr("type", "text/css").appendText(customCss)
 
+        val isAdBlock = Settings.isAdBlockerOn(site) && Settings.isBrowserAugmented(site)
+
         // Remove ad spaces
-        if (Settings.isAdBlockerOn(site) && removableElements != null)
+        if (isAdBlock && removableElements != null)
             for (s in removableElements)
                 for (e in doc.selectX(s)) {
                     Timber.d("[%s] Removing node %s", baseUri, e.toString())
@@ -864,7 +866,7 @@ open class CustomWebViewClient : WebViewClient {
                 }
 
         // Remove scripts
-        if (Settings.isAdBlockerOn(site) && jsContentBlacklist != null) {
+        if (isAdBlock && jsContentBlacklist != null) {
             for (e in doc.select("script")) {
                 val scriptContent = e.toString().lowercase(Locale.getDefault())
                 for (s in jsContentBlacklist) {

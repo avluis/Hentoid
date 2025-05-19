@@ -291,7 +291,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (Settings.isBrowserMode) downloadIcon = R.drawable.ic_forbidden_disabled
         binding?.actionButton?.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon))
         displayTopAlertBanner()
-        updateAdblockButton(Settings.isAdBlockerOn(getStartSite()))
+        updateAdblockButton(
+            Settings.isAdBlockerOn(getStartSite()) &&
+                    Settings.isBrowserAugmented(getStartSite())
+        )
 
         addCustomBackControl()
     }
@@ -805,7 +808,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "Adblocker" button
      */
     private fun onAdblockClick() {
-        Settings.setAdBlockerOn(getStartSite(), !Settings.isAdBlockerOn(getStartSite()))
+        val initialValue =
+            Settings.isAdBlockerOn(getStartSite()) && Settings.isBrowserAugmented(getStartSite())
+        Settings.setAdBlockerOn(getStartSite(), !initialValue)
     }
 
     /**
@@ -844,9 +849,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         else bookmarkMenu?.setIcon(R.drawable.ic_bookmark)
     }
 
-    private fun updateAdblockButton(targetValue: Boolean) {
-        val targetTxt = if (targetValue) R.string.web_adblocker_on else R.string.web_adblocker_off
-        val targetIco = if (targetValue) R.drawable.ic_shield_on else R.drawable.ic_shield_off
+    private fun updateAdblockButton(newValue: Boolean) {
+        val targetTxt = if (newValue) R.string.web_adblocker_on else R.string.web_adblocker_off
+        val targetIco = if (newValue) R.drawable.ic_shield_on else R.drawable.ic_shield_off
         adblockMenu?.icon = ContextCompat.getDrawable(this, targetIco)
         adblockMenu?.title = resources.getString(targetTxt)
     }
@@ -1740,6 +1745,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun onSharedPreferenceChanged(key: String) {
         var reload = false
+        Timber.d("onSharedPreferenceChanged $key")
         if (Settings.Key.BROWSER_DL_ACTION == key) {
             downloadIcon =
                 if (Settings.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
@@ -1780,11 +1786,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } else if (Settings.Key.BROWSER_QUICK_DL_THRESHOLD == key) {
             webView.setLongClickThreshold(Settings.browserQuickDlThreshold)
         } else if (key.startsWith(Settings.Key.WEB_ADBLOCKER)) {
-            if (Settings.isAdBlockerOn(getStartSite()) && !Settings.isBrowserAugmented(getStartSite()))
+            val newVal = Settings.isAdBlockerOn(getStartSite())
+            if (newVal && !Settings.isBrowserAugmented(getStartSite()))
                 Settings.setBrowserAugmented(getStartSite(), true)
-            updateAdblockButton(Settings.isAdBlockerOn(getStartSite()))
-            webClient.adBlocker.setActive(Settings.isAdBlockerOn(getStartSite()))
-            webView.reload()
+            updateAdblockButton(newVal)
+            webClient.adBlocker.setActive(newVal)
+            reload = true
         }
         if (reload && !webClient.isLoading()) webView.reload()
     }
