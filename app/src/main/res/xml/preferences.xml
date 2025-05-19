@@ -337,7 +337,7 @@
                 android:summaryOn="@string/pref_browser_augmented_on"
                 android:title="@string/pref_browser_augmented_title"
                 app:iconSpaceReserved="false"
-                app:tag="ANY" />
+                app:sites="ANY" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_mark_downloaded_default"
                 android:key="browser_mark_downloaded"
@@ -512,7 +512,8 @@
                 android:summaryOn="@string/pref_dl_eh_hires_on"
                 android:title="@string/download_eh_hires_title"
                 app:iconSpaceReserved="false"
-                app:tag="EHENTAI,EXHENTAI,ANY" />
+                app:isGlobal="true"
+                app:sites="EHENTAI,EXHENTAI" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_hitomi"
@@ -524,7 +525,8 @@
                 android:summaryOn="@string/download_hitomi_avif_on"
                 android:title="@string/download_hitomi_avif_title"
                 app:iconSpaceReserved="false"
-                app:tag="HITOMI,ANY" />
+                app:isGlobal="true"
+                app:sites="HITOMI" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_advanced"
@@ -537,7 +539,7 @@
                 android:summary="@string/pref_dl_threads_quantity_summary"
                 android:title="@string/pref_dl_threads_quantity_title"
                 app:iconSpaceReserved="false"
-                app:tag="ANY" />
+                app:sites="ANY" />
             <ListPreference
                 android:defaultValue="@string/pref_dl_speed_cap_default"
                 android:entries="@array/pref_dl_speed_cap_entries"
@@ -601,7 +603,7 @@
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_browse_mode"
                     app:iconSpaceReserved="false"
-                    app:tag="ANY" />
+                    app:sites="ANY" />
             </PreferenceCategory>
             <PreferenceCategory
                 android:title="@string/pref_viewer_page_turn"

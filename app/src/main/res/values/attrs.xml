@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <!-- Custom style items -->
+    <!-- Custom attributes -->
     <attr name="drawer_header_diagonal" format="reference" />
     <attr name="card_title" format="reference" />
     <attr name="card_surface" format="reference" />
@@ -32,4 +31,8 @@
         <attr name="rounded" format="boolean" />
     </declare-styleable>
 
+    <declare-styleable name="Preference">
+        <attr name="isGlobal" format="boolean" />
+        <attr name="sites" format="string" />
+    </declare-styleable>
 </resources>

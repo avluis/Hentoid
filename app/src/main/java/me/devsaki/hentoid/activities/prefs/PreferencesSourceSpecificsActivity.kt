@@ -137,7 +137,7 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
         site: Site,
         value: String
     ) {
-        val key = Settings.makeSiteKey(item.key ?: "", site)
+        val key = Settings.makeSiteKey(item.key ?: "", if (item.isGlobal) Site.ANY else site)
         val appValue = if (item.dataType == PreferenceItem.DataType.BOOL)
             prefs.getBoolean(item.key ?: "", item.defaultValue.toBoolean()).toString()
         else

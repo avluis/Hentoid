@@ -121,12 +121,14 @@ class PreferencesParser internal constructor() {
         result.values = readStringArray(context, getAttribute(xpp, "entryValues"))
         result.defaultValue = readString(context, getAttribute(xpp, "defaultValue"))
 
-        val tags = readString(context, getAttribute(xpp, "tag"))
+        val tags = readString(context, getAttribute(xpp, "sites"))
         if (!tags.isNullOrBlank()) {
             tags.split(",").forEach {
                 result.sites.add(Site.searchByName(it))
             }
         }
+        result.isGlobal =
+            getAttribute(xpp, "isGlobal").let { if (it.isEmpty()) true else it.toBoolean() }
 
         Timber.tag("PreferenceParser").d("Found: ${xpp.name}/$result")
         return result
@@ -147,9 +149,7 @@ class PreferencesParser internal constructor() {
     }
 
     private fun readString(context: Context, s: String?): String? {
-        if (s == null) {
-            return null
-        }
+        if (s == null) return null
         if (s.startsWith("@")) {
             try {
                 val id = s.substring(1).toInt()
