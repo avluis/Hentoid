@@ -82,10 +82,10 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
 
     // Used for associating attributes to sites in Preferences
-    ANY(97, "any", "", R.drawable.ic_attribute_source),
+    ANY(97, "any", "", R.drawable.ic_hentoid_shape),
 
     // External library; fallback site
-    NONE(98, "none", "", R.drawable.ic_attribute_source),
+    NONE(98, "none", "", R.drawable.ic_hentoid_shape),
     PANDA(
         99,
         "panda",

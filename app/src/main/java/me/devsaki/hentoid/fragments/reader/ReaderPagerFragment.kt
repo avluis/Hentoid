@@ -1120,7 +1120,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             PowerMenuItem(
                 resources.getString(R.string.viewer_reparse_book),
                 false,
-                R.drawable.ic_attribute_source,
+                R.drawable.ic_browser,
                 null,
                 null,
                 1

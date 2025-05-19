@@ -49,7 +49,7 @@
         android:clickable="true"
         android:focusable="true"
         android:padding="8dp"
-        android:src="@drawable/ic_attribute_source"
+        android:src="@drawable/ic_browser"
         app:layout_constraintBottom_toBottomOf="@id/browse_mode_warning"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/browse_mode_warning"
