@@ -73,7 +73,6 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
-import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.jsonToFile
@@ -421,10 +420,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content))
 
         // Create destination folder for images to be downloaded
-        if (null == dir) dir = getOrCreateContentDownloadDir(
-            applicationContext, content,
-            location, false
-        )
+        if (null == dir) dir = getOrCreateContentDownloadDir(applicationContext, content, location)
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             val title = content.title
@@ -1336,14 +1332,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 resourceId = img.order
             )
 
-            val targetFileUri = result?: throw IOException("Couldn't download ugoira file : resource not available")
+            val targetFileUri = result
+                ?: throw IOException("Couldn't download ugoira file : resource not available")
 
             // == Extract all frames
             applicationContext.extractArchiveEntries(
                 targetFileUri,
                 ugoiraCacheFolder,
                 null,  // Extract everything; keep original names
-                downloadInterrupted
+                { downloadInterrupted.get() }
             )
 
             // == Build the GIF using download params and extracted pics

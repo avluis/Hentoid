@@ -4,9 +4,12 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.download.createFile
 import me.devsaki.hentoid.util.image.startsWith
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
@@ -27,10 +30,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.util.OptionalInt
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.stream.IntStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -140,7 +140,7 @@ fun Context.getArchiveEntries(file: DocumentFile): List<ArchiveEntry> {
         if (fi.read(header) < header.size) return emptyList()
         format = getTypeFromArchiveHeader(header)
     }
-    return if (null == format) emptyList() else getArchiveEntries(format!!, file.uri)
+    return if (null == format) emptyList() else getArchiveEntries(format, file.uri)
 }
 
 /**
@@ -177,15 +177,15 @@ private fun Context.getArchiveEntries(
 @Throws(IOException::class)
 fun Context.extractArchiveEntriesCached(
     uri: Uri,
-    entriesToExtract: List<Pair<String, String>>?,
-    interrupt: AtomicBoolean?,
-    onExtract: ((String, Uri) -> Unit)? = null,
+    entriesToExtract: List<Pair<String, Long>>?,
+    interrupt: (() -> Boolean)? = null,
+    onExtract: ((Long, Uri) -> Unit)? = null,
     onComplete: (() -> Unit)? = null
 ) {
     return extractArchiveEntries(
         uri,
-        fileCreator = { targetFileName -> File(StorageCache.createFile(targetFileName).path!!) },
-        fileFinder = { targetFileName -> StorageCache.getFile(targetFileName) },
+        cacheFileCreator,
+        cacheFileFinder,
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -194,15 +194,23 @@ fun Context.extractArchiveEntriesCached(
 fun Context.extractArchiveEntries(
     uri: Uri,
     targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-    entriesToExtract: List<Pair<String, String>>?,
-    interrupt: AtomicBoolean?,
-    onExtract: ((String, Uri) -> Unit)? = null,
+    entriesToExtract: List<Pair<String, Long>>?,
+    interrupt: (() -> Boolean)? = null,
+    onExtract: ((Long, Uri) -> Unit)? = null,
     onComplete: (() -> Unit)? = null
 ) {
     return extractArchiveEntries(
         uri,
-        fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it)} },
+        fileCreator = { targetFileName ->
+            createFile(
+                this,
+                targetFolder.toUri(),
+                targetFileName,
+                getMimeTypeFromFileName(targetFileName),
+                false
+            )
+        },
+        fileFinder = { targetFileName -> findFile(this, targetFolder.toUri(), targetFileName) },
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -210,7 +218,7 @@ fun Context.extractArchiveEntries(
 /**
  * Extract the given archive entries; blocking call
  *
- * @param uri               Uri of the archive file to extract from
+ * @param archive           Uri of the archive file to extract from
  * @param targetFolder      Folder to extract files to
  * @param entriesToExtract  List of entries to extract; null to extract everything
  *      left = relative paths to the archive root
@@ -220,25 +228,43 @@ fun Context.extractArchiveEntries(
  */
 @Throws(IOException::class)
 fun Context.extractArchiveEntriesBlocking(
-    uri: Uri,
-    targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-    entriesToExtract: List<Pair<String, String>>
+    archive: Uri,
+    targetFolder: Uri,
+    entriesToExtract: List<Pair<String, Long>>,
+    onProgress: (() -> Unit)? = null,
+    interrupt: (() -> Boolean)? = null
 ): List<Uri> {
     val result = ConcurrentHashMap<Int, Uri>()
-    val callback: (String, Uri) -> Unit =
-        { id, fileUri ->
-            // Use the ID to detect the order of the file that was just extracted
-            val indexOpt: OptionalInt = IntStream.range(0, entriesToExtract.size)
-                .filter { i -> id == entriesToExtract[i].second }
-                .findFirst()
-            if (indexOpt.isPresent) result[indexOpt.asInt] = fileUri
-        }
+    val onExtracted: (Long, Uri) -> Unit = { id, fileUri ->
+        onProgress?.invoke()
+        // Use the ID to detect the order of the file that was just extracted
+        IntRange(0, entriesToExtract.size - 1)
+            .firstOrNull { id == entriesToExtract[it].second }
+            ?.let { result[it] = fileUri }
+    }
+
+    val fileCreator: (String) -> Uri? = { targetFileName ->
+        createFile(
+            this,
+            targetFolder,
+            targetFileName,
+            getMimeTypeFromFileName(targetFileName),
+            false
+        )
+    }
+
+    // List once, search the map during extraction
+    val targetFolderList = listFiles(this, targetFolder)
+        .groupBy { UriParts(it.toString()).entireFileName }
+    val fileFinder: (String) -> Uri? =
+        { it -> targetFolderList[it]?.firstOrNull() }
+
     extractArchiveEntries(
-        uri,
-        fileCreator = { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) },
-        fileFinder = { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it)} },
-        entriesToExtract, null,
-        callback, null
+        archive,
+        fileCreator,
+        fileFinder,
+        entriesToExtract, interrupt,
+        onExtracted, null
     )
 
     // Block calling thread until all entries are processed
@@ -249,7 +275,7 @@ fun Context.extractArchiveEntriesBlocking(
         result.apply {
             if (lastSize == size) {
                 // 3 seconds timeout when no progression
-                if (nbPauses++ > 3 * 1000 / delay) throw IOException("Extraction timed out")
+                if (nbPauses++ > 3.0 * 1000.0 / delay) throw IOException("Extraction timed out (${result.size} / ${entriesToExtract.size})")
             } else {
                 nbPauses = 0
             }
@@ -269,16 +295,21 @@ fun Context.extractArchiveEntriesBlocking(
  * @param entriesToExtract List of entries to extract; null to extract everything
  *      left = relative paths to the archive root
  *      right = internal identifier of the resource to extract (for remapping purposes)
+ * @param interrupt        Kill switch
+ * @param onExtract        Extraction callback
+ *      String : Resource identifier set by the caller
+ *      Uri : Uri of the newly created file
+ * @param onComplete       Completion callback
  * @throws IOException If something horrible happens during I/O
  */
 @Throws(IOException::class)
 private fun Context.extractArchiveEntries(
     uri: Uri,
-    fileCreator: (String) -> File,
+    fileCreator: (String) -> Uri?,
     fileFinder: (String) -> Uri?,
-    entriesToExtract: List<Pair<String, String>>?,
-    interrupt: AtomicBoolean?,
-    onExtract: ((String, Uri) -> Unit)?,
+    entriesToExtract: List<Pair<String, Long>>?,
+    interrupt: (() -> Boolean)? = null,
+    onExtract: ((Long, Uri) -> Unit)?,
     onComplete: (() -> Unit)?
 ) {
     assertNonUiThread()
@@ -290,7 +321,7 @@ private fun Context.extractArchiveEntries(
     }
     if (null == format) return
     val fileNames: MutableMap<Int, String> = HashMap()
-    val identifiers: MutableMap<Int, String> = HashMap()
+    val identifiers: MutableMap<Int, Long> = HashMap()
 
     // TODO handle the case where the extracted elements would saturate storage space
     try {
@@ -305,7 +336,7 @@ private fun Context.extractArchiveEntries(
                             if (entry.first.equals(fileName, ignoreCase = true)) {
                                 // TL;DR - We don't care about folders
                                 // If we were coding an all-purpose extractor we would have to create folders
-                                // But Hentoid just wants to extract a bunch of files in one single place !
+                                // But Hentoid just wants to extract a bunch of files in one single place!
                                 fileNames[archiveIndex] = fileName.replace(File.separator, "_")
                                 identifiers[archiveIndex] = entry.second
                                 break
@@ -317,8 +348,9 @@ private fun Context.extractArchiveEntries(
                 }
                 val callback =
                     ArchiveExtractCallback(
-                        fileCreator,
                         fileFinder,
+                        fileCreator,
+                        outputStreamCreator = { uri -> getOutputStream(this, uri) },
                         fileNames,
                         identifiers,
                         interrupt,
@@ -390,7 +422,12 @@ fun Context.zipFiles(
     }
 }
 
-// Describes an entry inside an archive
+/**
+ * Describes an entry inside an archive
+ *
+ * @property path Asbolute path, extension included
+ * @property size Size in bytes
+ */
 data class ArchiveEntry(val path: String, val size: Long)
 
 private class ArchiveOpenCallback : IArchiveOpenCallback {
@@ -500,13 +537,29 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
     }
 }
 
+
+/**
+ * Class that implements extraction actions "driven" by the 7Z library
+ *
+ * @property fileFinder             Delegate method that checks if the target file exists in the target folder
+ * @property fileCreator            Delegate method that creates the given file in the target folder
+ * @property outputStreamCreator    Delegate method that creates an OutputStream for the given Uri
+ * @property fileNames              Target file names, indexed on archive absolute file index
+ * @property identifiers            Target file identifiers given by the caller, indexed on archive absolute file index
+ * @property interrupt              Kill switch
+ * @property onExtract              Extraction callback
+ *      String : Resource identifier set by the caller
+ *      Uri : Uri of the newly created file
+ * @property onComplete             Completion callback
+ */
 private class ArchiveExtractCallback(
-    private val fileCreator: (String) -> File,
     private val fileFinder: (String) -> Uri?,
+    private val fileCreator: (String) -> Uri?,
+    private val outputStreamCreator: (Uri) -> OutputStream?,
     private val fileNames: Map<Int, String>,
-    private val identifiers: Map<Int, String>,
-    private val interrupt: AtomicBoolean?,
-    private val onExtract: ((String, Uri) -> Unit)?,
+    private val identifiers: Map<Int, Long>,
+    private val interrupt: (() -> Boolean)? = null,
+    private val onExtract: ((Long, Uri) -> Unit)?,
     private val onComplete: (() -> Unit)?
 ) : IArchiveExtractCallback {
     private var nbProcessed = 0
@@ -514,37 +567,30 @@ private class ArchiveExtractCallback(
     private var stream: SequentialOutStream? = null
 
     // Out parameters
-    private var identifier = ""
+    private var identifier = 0L
     private var uri: Uri? = null
 
     @Throws(SevenZipException::class)
     override fun getStream(index: Int, extractAskMode: ExtractAskMode): ISequentialOutStream? {
-        if (interrupt != null && interrupt.get()) {
+        if (true == interrupt?.invoke()) {
             Timber.v(INTERRUPTION_MSG)
             throw SevenZipException(INTERRUPTION_MSG)
         }
         this.extractAskMode = extractAskMode
-        if (!fileNames.containsKey(index)) return null
 
-        val fileName: String
-        if (identifiers.isNotEmpty()) {
-            identifier = identifiers[index] ?: return null
-            fileName = identifier
-        } else fileName = fileNames[index] ?: ""
+        if (identifiers.isNotEmpty()) identifier = identifiers[index] ?: return null
+        val fileName = fileNames[index] ?: return null
 
         val existing = fileFinder.invoke(fileName)
         Timber.v("Extract archive, get stream: $index to: $extractAskMode as $fileName")
         return try {
-            val targetFile: File
-            if (null == existing) {
-                targetFile = fileCreator.invoke(fileName)
-                targetFile.createNewFile()
-            } else {
-                targetFile = legacyFileFromUri(existing)!!
-            }
-            uri = Uri.fromFile(targetFile)
-            stream = SequentialOutStream(getOutputStream(targetFile))
-            stream
+            val target = existing ?: fileCreator.invoke(fileName)
+            ?: throw IOException("Can't create file $fileName")
+            uri = target
+            SequentialOutStream(
+                outputStreamCreator.invoke(target)
+                    ?: throw IOException("Can't get outputStream for $fileName")
+            )
         } catch (e: IOException) {
             throw SevenZipException(e)
         }
@@ -553,7 +599,7 @@ private class ArchiveExtractCallback(
     @Throws(SevenZipException::class)
     override fun prepareOperation(extractAskMode: ExtractAskMode) {
         Timber.v("Extract archive, prepare to: %s", extractAskMode)
-        if (interrupt != null && interrupt.get()) {
+        if (true == interrupt?.invoke()) {
             Timber.v(INTERRUPTION_MSG)
             throw SevenZipException(INTERRUPTION_MSG)
         }

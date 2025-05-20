@@ -1358,22 +1358,21 @@ class ReaderViewModel(
         archiveExtractKillSwitch.set(false)
 
         // Build extraction instructions, ignoring already extracted items
-        val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
+        val extractInstructions: MutableList<Pair<String, Long>> = ArrayList()
         var hasExistingUris = false
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
             val img = viewerImagesInternal[index]
             val c = img.content.target
-            val identifier = formatCacheKey(img)
 
-            val existingUri = StorageCache.getFile(identifier)
+            val existingUri = StorageCache.getFile(formatCacheKey(img))
             if (existingUri != null) {
                 updateImgWithExtractedUri(img, index, existingUri, false)
                 hasExistingUris = true
             } else {
                 extractInstructions.add(
                     Pair(
-                        img.url.replace(c.storageUri + File.separator, ""), identifier
+                        img.url.replace(c.storageUri + File.separator, ""), img.id
                     )
                 )
                 indexExtractInProgress.add(index)
@@ -1397,7 +1396,7 @@ class ReaderViewModel(
                     getApplication<Application>().applicationContext,
                     archiveFile,
                     extractInstructions,
-                    archiveExtractKillSwitch,
+                    { archiveExtractKillSwitch.get() },
                     { id, uri ->
                         onResourceExtracted(
                             id,
@@ -1411,7 +1410,7 @@ class ReaderViewModel(
                 getApplication<Application>().applicationContext.extractArchiveEntriesCached(
                     archiveFile.uri,
                     extractInstructions,
-                    archiveExtractKillSwitch,
+                    { archiveExtractKillSwitch.get() },
                     { id, uri ->
                         onResourceExtracted(
                             id,
@@ -1440,7 +1439,7 @@ class ReaderViewModel(
     }
 
     private fun onResourceExtracted(
-        identifier: String,
+        identifier: Long,
         uri: Uri,
         nbProcessed: AtomicInteger,
         maxElements: Int
@@ -1463,7 +1462,7 @@ class ReaderViewModel(
         var idx: Int? = null
         var img: ImageFile? = null
         for ((index, image) in viewerImagesInternal.withIndex()) {
-            if (formatCacheKey(image) == identifier) {
+            if (image.id == identifier) {
                 idx = index
                 img = image
                 break

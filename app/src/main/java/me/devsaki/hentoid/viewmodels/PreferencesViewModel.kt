@@ -88,8 +88,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                 val targetFolder = getOrCreateContentDownloadDir(
                     getApplication(),
                     c,
-                    StorageLocation.PRIMARY_1,
-                    false
+                    StorageLocation.PRIMARY_1
                 )
                 if (targetFolder != null) {
                     // Transfer files

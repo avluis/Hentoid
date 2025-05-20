@@ -68,6 +68,7 @@ import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findFolder
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
@@ -76,6 +77,7 @@ import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
@@ -665,18 +667,18 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
         getFileFromSingleUriString(context, content.storageUri)?.let { archive ->
             try {
                 val targetFolder = context.filesDir
-                val extractInstructions: MutableList<Pair<String, String>> = ArrayList()
+                val extractInstructions: MutableList<Pair<String, Long>> = ArrayList()
                 extractInstructions.add(
                     Pair(
                         content.cover.fileUri.replace(
                             content.storageUri + File.separator,
                             ""
-                        ), newContentId.toString() + ""
+                        ), newContentId
                     )
                 )
                 val results = if (content.isArchive) context.extractArchiveEntriesBlocking(
                     archive.uri,
-                    targetFolder,
+                    targetFolder.toUri(),
                     extractInstructions
                 )
                 else {
@@ -684,7 +686,7 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
                     mgr.extractImagesBlocking(
                         context,
                         archive,
-                        targetFolder,
+                        targetFolder.toUri(),
                         extractInstructions
                     )
                 }
@@ -852,13 +854,19 @@ fun getOrCreateContentDownloadDir(
     context: Context,
     content: Content,
     location: StorageLocation,
-    createOnly: Boolean
+    createOnly: Boolean = false,
+    siblingLocation: Uri = Uri.EMPTY
 ): DocumentFile? {
-    // Parent = site folder if downloads; ext root if external
-    val parentFolder = if (StorageLocation.EXTERNAL == location)
-        getDocumentFromTreeUriString(context, Settings.externalLibraryUri) ?: return null
-    else
+    // Parent = site folder if primary; parent folder if external
+    val parentFolder = if (StorageLocation.EXTERNAL == location) {
+        val parentUri = if (siblingLocation != Uri.EMPTY)
+            getParent(context, Settings.externalLibraryUri.toUri(), siblingLocation)
+        else
+            Settings.externalLibraryUri.toUri()
+        parentUri?.let { getDocumentFromTreeUri(context, it) } ?: return null
+    } else {
         getOrCreateSiteDownloadDir(context, location, content.site) ?: return null
+    }
 
     // == Book folder
     val bookFolderName = formatFolderName(content)
@@ -1589,7 +1597,7 @@ fun purgeFiles(
             if (siteFolder != null) {
                 val name = bookFolder.name
                 bookFolder = if (name != null) siteFolder.createDirectory(name)
-                else getOrCreateContentDownloadDir(context, content, getLocation(content), false)
+                else getOrCreateContentDownloadDir(context, content, getLocation(content))
             }
 
             if (bookFolder != null) {
@@ -2146,6 +2154,7 @@ suspend fun mergeContents(
                     imgIndex++
                     // Unarchive images by chunks of 80MB max
                     if (c.isArchive) {
+                        // TODO we have an unarchiving loop that gets multiple files inside a loop that goes on images one by one => OPTIMIZE
                         tempFolder?.delete()
                         tempFolder = getOrCreateCacheFolder(context, "tmp-merge-archive")
                         if (null == tempFolder) throw ContentNotProcessedException(
@@ -2164,14 +2173,11 @@ suspend fun mergeContents(
                             unarchivedBytes += picToUnarchive.size
                         }
                         val toExtract = picsToUnarchive.map {
-                            Pair(
-                                it.fileUri.replace(c.storageUri + File.separator, ""),
-                                it.id.toString()
-                            )
+                            Pair(it.fileUri.replace(c.storageUri + File.separator, ""), it.id)
                         }
                         val unarchivedFiles = context.extractArchiveEntriesBlocking(
                             c.storageUri.toUri(),
-                            tempFolder,
+                            tempFolder.toUri(),
                             toExtract
                         )
                         if (unarchivedFiles.size < picsToUnarchive.size) throw ContentNotProcessedException(

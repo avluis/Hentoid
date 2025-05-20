@@ -155,12 +155,12 @@ class WysiwygBackgroundWebView(
                 }
                 result = WysiwigResult(saveBmp(it, downloadFolder))
                 isLoaded.set(true)
-                Timber.v("screencap %d : SUCCESS", imageIndex, width, height)
+                Timber.v("screencap $imageIndex : SUCCESS")
             } finally {
                 it.recycle()
             }
         }
-        Timber.v("screencap %d : END", imageIndex, width, height)
+        Timber.v("screencap $imageIndex : END")
     }
 
     private fun saveBmp(bmp: Bitmap, downloadFolder: DocumentFile): Uri {

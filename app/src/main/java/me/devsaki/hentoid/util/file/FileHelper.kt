@@ -580,6 +580,41 @@ fun findFile(folder: File, fileName: String): File? {
     else files[0]
 }
 
+fun findFile(
+    context: Context,
+    parent: Uri,
+    fileName: String
+): Uri? {
+    if (ContentResolver.SCHEME_FILE == parent.scheme) {
+        legacyFileFromUri(parent)?.let {
+            return findFile(it, fileName)?.toUri()
+        }
+    } else {
+        getDocumentFromTreeUri(context, parent)?.let {
+            return findFile(context, it, fileName)?.uri
+        }
+    }
+    return null
+}
+
+fun listFiles(
+    context: Context,
+    parent: Uri
+): List<Uri> {
+    if (ContentResolver.SCHEME_FILE == parent.scheme) {
+        legacyFileFromUri(parent)?.let {
+            return it.listFiles()?.map { it.toUri() } ?: emptyList()
+        }
+    } else {
+        getDocumentFromTreeUri(context, parent)?.let {
+            getDocumentFromTreeUri(context, parent)?.let {
+                return listFiles(context, it).map { it.uri }
+            }
+        }
+    }
+    return emptyList()
+}
+
 /**
  * Open the given file using the device's app(s) of choice
  *
@@ -1601,6 +1636,9 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
     )
 }
 
+
+// DOCUMENTFILE EXTENSIONS
+
 fun DocumentFile.uniqueHash(): Long {
     return hash64((this.name + "." + this.length()).toByteArray())
 }
@@ -1608,6 +1646,9 @@ fun DocumentFile.uniqueHash(): Long {
 fun DocumentFile.getExtension(): String {
     return getExtension(this.name ?: "")
 }
+
+
+// INTERFACES
 
 fun interface NameFilter {
     /**

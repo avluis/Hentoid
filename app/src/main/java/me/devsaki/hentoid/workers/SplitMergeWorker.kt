@@ -31,12 +31,15 @@ import me.devsaki.hentoid.util.deleteChapters
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFiles
+import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
+import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
@@ -48,6 +51,7 @@ import me.devsaki.hentoid.util.renumberChapters
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
+import java.io.File
 import java.io.IOException
 import java.time.Instant
 import kotlin.math.floor
@@ -146,7 +150,8 @@ abstract class BaseSplitMergeWorker(
                 applicationContext,
                 splitContent,
                 location,
-                true
+                true,
+                content.storageUri.toUri()
             )
             if (null == targetFolder || !targetFolder.exists())
                 throw ContentNotProcessedException(
@@ -160,22 +165,67 @@ abstract class BaseSplitMergeWorker(
             // Copy the corresponding images to that folder
             val splitContentImages =
                 splitContent.imageList.filter { it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL }
+                    .distinctBy { it.url }
             withContext(Dispatchers.IO) {
                 try {
-                    copyFiles(
-                        applicationContext,
-                        splitContentImages.map { Pair(it.fileUri.toUri(), it.name) },
-                        targetFolder.uri,
-                        isCanceled = this@BaseSplitMergeWorker::isStopped,
-                        onProgress = { _, oldUri, newUri ->
-                            if (newUri != null) {
-                                splitContentImages.firstOrNull { it.fileUri == oldUri.toString() }?.fileUri =
-                                    newUri.toString()
-                            } else Timber.w("Could not move file $oldUri")
-                            bookTitle = chap.name
-                            launchProgressNotification()
+                    if (content.isArchive || content.isPdf) {
+                        val sourceFile =
+                            getFileFromSingleUriString(applicationContext, content.storageUri)
+                                ?: return@withContext
+
+                        val extractInstructions = splitContentImages.map {
+                            Pair(
+                                it.url.replace(content.storageUri + File.separator, ""),
+                                it.order.toLong()
+                            )
                         }
-                    )
+
+                        val extractedFiles = if (content.isArchive) {
+                            applicationContext.extractArchiveEntriesBlocking(
+                                sourceFile.uri,
+                                targetFolder.uri,
+                                extractInstructions,
+                                this@BaseSplitMergeWorker::launchProgressNotification,
+                                this@BaseSplitMergeWorker::isStopped
+                            )
+                        } else { // PDF
+                            val mgr = PdfManager()
+                            mgr.extractImagesBlocking(
+                                applicationContext,
+                                sourceFile,
+                                targetFolder.uri,
+                                extractInstructions,
+                                this@BaseSplitMergeWorker::launchProgressNotification,
+                                this@BaseSplitMergeWorker::isStopped
+                            )
+                        }
+                        if (isStopped) return@withContext
+                        Timber.d("Successfuly extracted ${extractedFiles.size} / ${splitContentImages.size} files for ${splitContent.title}")
+                        if (extractedFiles.size != splitContentImages.size) return@withContext
+
+                        // Map new, copied files Uris
+                        splitContentImages.forEachIndexed { index, i ->
+                            i.fileUri = extractedFiles[index].toString()
+                        }
+                        Timber.d("Mapping done for ${splitContent.title}")
+                    } else {
+                        copyFiles(
+                            applicationContext,
+                            splitContentImages.map { Pair(it.fileUri.toUri(), it.name) },
+                            targetFolder.uri,
+                            isCanceled = this@BaseSplitMergeWorker::isStopped,
+                            onProgress = { _, oldUri, newUri ->
+                                if (newUri != null) {
+                                    // Map new, copied files Uris
+                                    splitContentImages.firstOrNull { it.fileUri == oldUri.toString() }?.fileUri =
+                                        newUri.toString()
+                                } else Timber.w("Could not move file $oldUri")
+                                bookTitle = chap.name
+                                launchProgressNotification()
+                            }
+                        )
+                        Timber.d("Successfuly copied ${splitContentImages.size} files for ${splitContent.title}")
+                    }
                     if (isStopped) return@withContext
 
                     // Save the JSON for the new book

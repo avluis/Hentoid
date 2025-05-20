@@ -15,8 +15,8 @@ import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
-import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
@@ -255,7 +255,8 @@ fun createFile(
     context: Context,
     targetFolderUri: Uri,
     targetFileName: String,
-    mimeType: String
+    mimeType: String,
+    findBefore : Boolean = true
 ): Uri {
     var targetFileNameFinal =
         targetFileName + "." + getExtensionFromMimeType(mimeType)
@@ -267,28 +268,27 @@ fun createFile(
     }
     return if (ContentResolver.SCHEME_FILE == targetFolderUri.scheme) {
         val path = targetFolderUri.path
-        if (path != null) {
-            val targetFolder = File(path)
-            if (targetFolder.exists()) {
-                val targetFile = File(targetFolder, targetFileNameFinal)
-                if (!targetFile.exists() && !targetFile.createNewFile()) {
-                    throw IOException("Could not create file " + targetFile.path + " in " + path)
-                }
-                Uri.fromFile(targetFile)
-            } else {
-                throw IOException("Could not create file $targetFileNameFinal : $path does not exist")
+            ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
+
+        val targetFolder = File(path)
+        if (targetFolder.exists()) {
+            val targetFile = File(targetFolder, targetFileNameFinal)
+            if (!targetFile.exists() && !targetFile.createNewFile()) {
+                throw IOException("Could not create file " + targetFile.path + " in " + path)
             }
+            Uri.fromFile(targetFile)
         } else {
-            throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
+            throw IOException("Could not create file $targetFileNameFinal : $path does not exist")
         }
     } else {
         getDocumentFromTreeUri(context, targetFolderUri)?.let { targetFolder ->
-            val file = findOrCreateDocumentFile(
+            val file = if (findBefore)
+                findOrCreateDocumentFile(
                 context,
                 targetFolder,
                 mimeType,
-                targetFileNameFinal
-            )
+                targetFileNameFinal)
+            else targetFolder.createFile(mimeType, targetFileNameFinal)
             file?.uri
                 ?: throw IOException("Could not create file $targetFileNameFinal : creation failed")
         }

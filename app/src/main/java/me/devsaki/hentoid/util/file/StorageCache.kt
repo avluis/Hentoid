@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util.file
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -123,3 +124,11 @@ object StorageCache {
         Timber.d("Observer removed; %d registered", cleanupObservers.size)
     }
 }
+
+val cacheFileCreator: (String) -> Uri? =
+    { targetFileName ->
+        val file = File(StorageCache.createFile(targetFileName).path!!)
+        if (file.exists() || file.createNewFile()) file.toUri() else null
+    }
+val cacheFileFinder: (String) -> Uri? =
+    { targetFileName -> StorageCache.getFile(targetFileName) }

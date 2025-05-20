@@ -20,7 +20,6 @@ import me.devsaki.hentoid.util.download.getDownloadLocation
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
-import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.pause
@@ -77,10 +76,7 @@ class MangagoParser : BaseChapteredImageListParser() {
         val locationResult = getDownloadLocation(getInstance(), content) ?: return emptyList()
         var dir = locationResult.first
         val location = locationResult.second
-        if (null == dir) dir = getOrCreateContentDownloadDir(
-            getInstance(), content,
-            location, false
-        )
+        if (null == dir) dir = getOrCreateContentDownloadDir(getInstance(), content, location)
 
         GlobalScope.launch(Dispatchers.Default) {
             withContext(Dispatchers.Main) {

@@ -13,6 +13,7 @@ import com.itextpdf.kernel.colors.ColorConstants
 import com.itextpdf.kernel.events.Event
 import com.itextpdf.kernel.events.IEventHandler
 import com.itextpdf.kernel.events.PdfDocumentEvent
+import com.itextpdf.kernel.exceptions.PdfException
 import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.geom.Rectangle
 import com.itextpdf.kernel.pdf.PdfDocument
@@ -34,24 +35,25 @@ import com.itextpdf.layout.properties.HorizontalAlignment
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
+import me.devsaki.hentoid.util.download.createFile
 import me.devsaki.hentoid.util.file.ArchiveEntry
-import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.NameFilter
-import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.cacheFileCreator
+import me.devsaki.hentoid.util.file.cacheFileFinder
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
 import me.devsaki.hentoid.util.file.getOutputStream
-import me.devsaki.hentoid.util.file.legacyFileFromUri
+import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.saveBinary
+import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
-import net.sf.sevenzipjbinding.SevenZipException
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 import java.io.OutputStream
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 
@@ -73,7 +75,6 @@ fun getPdfNamesFilter(): NameFilter {
 class PdfManager {
 
     private val extractedFiles = ArrayList<Uri>()
-    private val entries = ArrayList<ArchiveEntry>()
     private val currentPageIndex = AtomicInteger(0)
 
     private fun computeScaleRatio(pageSize: PageSize, margin: RectF, imgDims: PointF): Float {
@@ -197,47 +198,50 @@ class PdfManager {
     }
 
     private fun saveExtractedImage(
-        id: String,
+        context: Context,
+        id: Long,
+        fileName: String,
         data: ByteArray,
-        fileCreator: (String) -> File,
         fileFinder: (String) -> Uri?,
-        onExtracted: ((String, Uri) -> Unit)? = null
+        fileCreator: (String) -> Uri?,
+        onExtracted: ((Long, Uri) -> Unit)? = null
     ) {
-        val existing = fileFinder.invoke(id)
-        Timber.v("Extract PDF, get stream: id $id")
+        val existing = fileFinder.invoke(fileName)
+        Timber.v("Extract PDF, get stream: id $fileName")
         try {
-            val targetFile: File
-            if (null == existing) {
-                targetFile = fileCreator.invoke(id)
-                targetFile.createNewFile()
-            } else {
-                targetFile = legacyFileFromUri(existing)!!
-            }
-            val uri = Uri.fromFile(targetFile)
-            getOutputStream(targetFile).use { saveBinary(it, data) }
-            onExtracted?.invoke(id, uri)
+            val target =
+                existing ?: fileCreator.invoke(fileName)
+                ?: throw IOException("Can't create file $fileName")
+            getOutputStream(context, target)?.use { saveBinary(it, data) }
+            onExtracted?.invoke(id, target)
         } catch (e: IOException) {
-            throw SevenZipException(e)
+            throw PdfException(e)
         }
     }
 
     fun extractImagesCached(
         context: Context,
         pdf: DocumentFile,
-        entriesToExtract: List<Pair<String, String>>?,
-        interrupt: AtomicBoolean?,
-        onExtracted: ((String, Uri) -> Unit)?,
+        entriesToExtract: List<Pair<String, Long>>?,
+        interrupt: (() -> Boolean)? = null,
+        onExtracted: ((Long, Uri) -> Unit)?,
         onComplete: () -> Unit
     ) {
-        val fileCreator: (String) -> File =
-            { targetFileName -> File(StorageCache.createFile(targetFileName).path!!) }
-        val fileFinder: (String) -> Uri? = { targetFileName -> StorageCache.getFile(targetFileName) }
-
         extractImages(
             context,
             pdf,
             entriesToExtract, interrupt,
-            { id, data -> saveExtractedImage(id, data, fileCreator, fileFinder, onExtracted) },
+            { name, data, id ->
+                saveExtractedImage(
+                    context,
+                    id,
+                    name,
+                    data,
+                    cacheFileFinder,
+                    cacheFileCreator,
+                    onExtracted
+                )
+            },
             onComplete
         )
     }
@@ -246,22 +250,41 @@ class PdfManager {
     fun extractImagesBlocking(
         context: Context,
         pdf: DocumentFile,
-        targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-        entriesToExtract: List<Pair<String, String>>
+        targetFolder: Uri,
+        entriesToExtract: List<Pair<String, Long>>,
+        onProgress: (() -> Unit)? = null,
+        interrupt: (() -> Boolean)? = null
     ): List<Uri> {
-        extractedFiles.clear()
-        val fileCreator: (String) -> File =
-            { targetFileName -> File(targetFolder.absolutePath + File.separator + targetFileName) }
+        val fileCreator: (String) -> Uri? =
+            { targetFileName ->
+                createFile(
+                    context, targetFolder, targetFileName,
+                    getMimeTypeFromFileName(targetFileName), false
+                )
+            }
+        // List once, search the map during extraction
+        val targetFolderList = listFiles(context, targetFolder)
+            .groupBy { UriParts(it.toString()).entireFileName }
         val fileFinder: (String) -> Uri? =
-            { targetFileName -> findFile(targetFolder, targetFileName)?.let { Uri.fromFile(it) } }
+            { it -> targetFolderList[it]?.firstOrNull() }
 
+        extractedFiles.clear()
         extractImages(
             context,
             pdf,
-            entriesToExtract, null,
-            { id, data ->
-                saveExtractedImage(id, data, fileCreator, fileFinder)
-                { _, uri -> extractedFiles.add(uri) }
+            entriesToExtract, interrupt,
+            { name, data, id ->
+                saveExtractedImage(
+                    context,
+                    id,
+                    name,
+                    data,
+                    fileFinder,
+                    fileCreator
+                ) { _, uri ->
+                    onProgress?.invoke()
+                    extractedFiles.add(uri)
+                }
             }
         )
         // Block calling thread until all entries are processed
@@ -272,7 +295,7 @@ class PdfManager {
             extractedFiles.apply {
                 if (lastSize == size) {
                     // 3 seconds timeout when no progression
-                    if (nbPauses++ > 3 * 1000 / delay) throw IOException("Extraction timed out")
+                    if (nbPauses++ > 3.0 * 1000.0 / delay) throw IOException("Extraction timed out")
                 } else {
                     nbPauses = 0
                 }
@@ -283,25 +306,40 @@ class PdfManager {
         return extractedFiles
     }
 
+    /**
+     * Extract images
+     *
+     * @param context              Context to use
+     * @param pdf                  PDF file to extract from
+     * @param entriesToExtract     Entries to extract; null to extract everything
+     *      left : path of the resource (format is "pageNumber.indexInPage.extension")
+     *      right : internal identifier of the resource to extract (for remapping purposes)
+     * @param interrupt            Kill switch
+     * @param onExtract            Extraction callback
+     *      Long : Resource identifier set by the caller; internal hash if none
+     *      String : Mime-type of the extracted picture
+     *      ByteArray : Data of the extracted picture
+     * @param onComplete           Completion callback
+     */
     private fun extractImages(
         context: Context,
         pdf: DocumentFile,
-        entriesToExtract: List<Pair<String, String>>?,
-        interrupt: AtomicBoolean?,
-        onExtract: (String, ByteArray) -> Unit,
+        entriesToExtract: List<Pair<String, Long>>?,
+        interrupt: (() -> Boolean)? = null,
+        onExtract: (String, ByteArray, Long) -> Unit,
         onComplete: (() -> Unit)? = null
     ) {
         getInputStream(context, pdf).use { input ->
             PdfDocument(PdfReader(input)).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(entriesToExtract, onExtract)
                 val parser = PdfCanvasProcessor(listener)
-                if (entriesToExtract.isNullOrEmpty()) {
+                if (entriesToExtract.isNullOrEmpty()) { // Extract everything
                     for (i in 1..pdfDoc.numberOfPages) {
                         currentPageIndex.set(i)
                         parser.processPageContent(pdfDoc.getPage(i))
-                        if (interrupt?.get() == true) return
+                        if (interrupt?.invoke() == true) return
                     }
-                } else {
+                } else { // Targeted extraction
                     val targetEntries = entriesToExtract
                         .map {
                             val s = it.first.split(".")
@@ -313,7 +351,7 @@ class PdfManager {
                         currentPageIndex.set(it.first)
                         // TODO selectively extract image X within selected page
                         parser.processPageContent(pdfDoc.getPage(it.first))
-                        if (interrupt?.get() == true) return@forEach
+                        if (interrupt?.invoke() == true) return@forEach
                     }
                 }
             }
@@ -325,11 +363,11 @@ class PdfManager {
         context: Context,
         doc: DocumentFile
     ): List<ArchiveEntry> {
-        entries.clear()
+        val result = ArrayList<ArchiveEntry>()
         getInputStream(context, doc).use { input ->
             PdfDocument(PdfReader(input)).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(null)
-                { name, data -> entries.add(ArchiveEntry(name, data.size.toLong())) }
+                { name, data, id -> result.add(ArchiveEntry(name, data.size.toLong())) }
                 val parser = PdfCanvasProcessor(listener)
                 for (i in 1..pdfDoc.numberOfPages) {
                     currentPageIndex.set(i)
@@ -337,7 +375,7 @@ class PdfManager {
                 }
             }
         }
-        return entries
+        return result
     }
 
     private class PageRotationEventHandler : IEventHandler {
@@ -375,9 +413,12 @@ class PdfManager {
         }
     }
 
+    /**
+     * Class that implements extraction actions "driven" by the PDF library
+     */
     inner class ImageRenderListener(
-        private val entriesToExtract: List<Pair<String, String>>?,
-        private val onExtract: (String, ByteArray) -> Unit
+        private val entriesToExtract: List<Pair<String, Long>>?,
+        private val onExtract: (String, ByteArray, Long) -> Unit
     ) : IEventListener {
         private var page = -1
         private var indexInPage = 0
@@ -392,12 +433,13 @@ class PdfManager {
                         page = curPage
                     }
                     val data = image.getImageBytes(false)
-                    val ext = getExtensionFromMimeType(getMimeTypeFromPictureBinary(data))
-                    val internalIdentifier = "$curPage.$indexInPage.$ext"
+                    val mimeType = getMimeTypeFromPictureBinary(data)
+                    val ext = getExtensionFromMimeType(mimeType)
+                    val internalUniqueName = "$curPage.$indexInPage.$ext"
                     val identifier = entriesToExtract?.let { entry ->
-                        entry.firstOrNull { it.first == internalIdentifier }?.second
-                    } ?: internalIdentifier
-                    onExtract.invoke(identifier, data)
+                        entry.firstOrNull { it.first == internalUniqueName }?.second
+                    } ?: hash64(internalUniqueName.toByteArray())
+                    onExtract.invoke(internalUniqueName, data, identifier)
                 } catch (e: com.itextpdf.io.exceptions.IOException) {
                     Timber.w(e)
                 } catch (e: IOException) {
@@ -409,7 +451,7 @@ class PdfManager {
         }
 
         override fun getSupportedEvents(): Set<EventType>? {
-            return null
+            return setOf(EventType.RENDER_IMAGE)
         }
     }
 }
