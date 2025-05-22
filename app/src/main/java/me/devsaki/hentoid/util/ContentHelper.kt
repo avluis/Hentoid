@@ -2087,7 +2087,7 @@ suspend fun mergeContents(
         // Create destination folder for new content
         val parentFolder: DocumentFile?
         var targetFolder: DocumentFile?
-        // TODO destination is an archive when all source contents are archives
+        // TODO destination is an archive when all source contents are archives; same with PDFs
 
         // External library root for external content
         if (mergedContent.status == StatusContent.EXTERNAL) {
@@ -2153,7 +2153,7 @@ suspend fun mergeContents(
                     if (isCanceled.invoke()) break
                     imgIndex++
                     // Unarchive images by chunks of 80MB max
-                    if (c.isArchive) {
+                    if (c.isArchive || c.isPdf) {
                         // TODO we have an unarchiving loop that gets multiple files inside a loop that goes on images one by one => OPTIMIZE
                         tempFolder?.delete()
                         tempFolder = getOrCreateCacheFolder(context, "tmp-merge-archive")
@@ -2175,11 +2175,26 @@ suspend fun mergeContents(
                         val toExtract = picsToUnarchive.map {
                             Pair(it.fileUri.replace(c.storageUri + File.separator, ""), it.id)
                         }
-                        val unarchivedFiles = context.extractArchiveEntriesBlocking(
-                            c.storageUri.toUri(),
-                            tempFolder.toUri(),
-                            toExtract
-                        )
+                        val unarchivedFiles = if (c.isArchive) {
+                            context.extractArchiveEntriesBlocking(
+                                c.storageUri.toUri(),
+                                tempFolder.toUri(),
+                                toExtract,
+                                null,
+                                isCanceled
+                            )
+                        } else { // PDF
+                            getFileFromSingleUriString(context, c.storageUri)?.let { doc ->
+                                PdfManager().extractImagesBlocking(
+                                    context,
+                                    doc,
+                                    tempFolder.toUri(),
+                                    toExtract,
+                                    null,
+                                    isCanceled
+                                )
+                            } ?: emptyList()
+                        }
                         if (unarchivedFiles.size < picsToUnarchive.size) throw ContentNotProcessedException(
                             mergedContent,
                             "Issue when unarchiving " + unarchivedFiles.size + " " + picsToUnarchive.size
