@@ -5,7 +5,7 @@ import me.devsaki.hentoid.enums.Site
 class Manhwa18Activity : BaseWebActivity() {
 
     companion object {
-        const val GALLERY_PATTERN = "//manhwa18.net/manga/[%\\w\\-]+$"
+        const val GALLERY_PATTERN = "^https://manhwa18.net/manga/[%\\w\\-]+$"
 
         private const val DOMAIN_FILTER = "manhwa18.net"
         private val GALLERY_FILTER =

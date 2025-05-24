@@ -63,8 +63,8 @@ class PixivActivity : BaseWebActivity() {
         binding?.swipeContainer?.isEnabled = true
     }
 
-    override fun onGalleryPageStarted() {
-        super.onGalleryPageStarted()
+    override fun onGalleryPageStarted(url : String) {
+        super.onGalleryPageStarted(url)
         runOnUiThread {
             binding?.swipeContainer?.isEnabled = false
         }

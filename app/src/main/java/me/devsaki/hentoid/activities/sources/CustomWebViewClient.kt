@@ -602,7 +602,7 @@ open class CustomWebViewClient : WebViewClient {
 
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null
-        if (analyzeForDownload) activity?.onGalleryPageStarted()
+        if (analyzeForDownload) activity?.onGalleryPageStarted(url)
         val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         var response: Response? = null
         try {
@@ -1057,7 +1057,7 @@ open class CustomWebViewClient : WebViewClient {
             isGalleryPage: Boolean
         )
 
-        fun onGalleryPageStarted()
+        fun onGalleryPageStarted(url: String = "")
 
         // GETTERS
         val allSiteUrls: List<String>

@@ -624,7 +624,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     ) {
         refreshStopMenu?.setIcon(R.drawable.ic_close)
         binding?.progressBar?.visibility = View.GONE
-        if (!isHtmlLoaded) disableActions()
+        if (!isHtmlLoaded) {
+            Timber.v("onPageStarted $url")
+            lifecycleScope.launch { setActionMode(null) }
+        }
 
         // Activate fetch handler
         if (fetchHandler != null) {
@@ -660,7 +663,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     // WARNING : This method may not be called from the UI thread
-    override fun onGalleryPageStarted() {
+    override fun onGalleryPageStarted(url: String) {
         blockedTags.clear()
         extraImages.clear()
         duplicateId = -1
@@ -674,13 +677,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         )
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
-        runOnUiThread {
-            binding?.apply {
-                actionButton.setImageDrawable(ContextCompat.getDrawable(baseContext, downloadIcon))
-                actionButton.visibility = View.INVISIBLE
-                actionBtnBadge.visibility = View.INVISIBLE
-            }
-        }
+        Timber.v("onGalleryPageStarted $url")
+        lifecycleScope.launch { setActionMode(null) }
     }
 
     override fun onPageFinished(url: String, isResultsPage: Boolean, isGalleryPage: Boolean) {
@@ -910,10 +908,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             newTask = false
                         )
                     else {
-                        binding?.apply {
-                            actionButton.visibility = View.INVISIBLE
-                            actionBtnBadge.visibility = View.INVISIBLE
-                        }
+                        lifecycleScope.launch { setActionMode(null) }
                     }
                 } finally {
                     dao.cleanup()
@@ -926,47 +921,35 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
-    private fun disableActions() {
-        val b: ActivityBaseWebBinding? = binding
-        if (b != null) {
-            b.actionButton.setImageDrawable(ContextCompat.getDrawable(this, downloadIcon))
-            b.actionButton.visibility = View.INVISIBLE
-            b.actionBtnBadge.visibility = View.INVISIBLE
-        }
-    }
-
     /**
      * Switch the action button to either of the available modes
      *
      * @param mode Mode to switch to
      */
-    private fun setActionMode(mode: ActionMode?) {
-        val b: ActivityBaseWebBinding? = binding
-        if (Settings.isBrowserMode && b != null) {
-            b.actionButton.setImageDrawable(
-                ContextCompat.getDrawable(
-                    this,
-                    R.drawable.ic_forbidden_disabled
+    private suspend fun setActionMode(mode: ActionMode?) = withContext(Dispatchers.Main) {
+        Timber.v("actionMode $mode")
+        binding?.apply {
+            if (Settings.isBrowserMode || null == mode) {
+                actionButton.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        this@BaseWebActivity,
+                        R.drawable.ic_forbidden_disabled
+                    )
                 )
-            )
-            b.actionButton.visibility = View.INVISIBLE
-            b.actionBtnBadge.visibility = View.INVISIBLE
-            return
-        }
-        @DrawableRes var resId: Int = R.drawable.ic_info
-        if (ActionMode.DOWNLOAD == mode || ActionMode.DOWNLOAD_PLUS == mode) {
-            resId = downloadIcon
-        } else if (ActionMode.VIEW_QUEUE == mode) {
-            resId = R.drawable.ic_action_queue
-        } else if (ActionMode.READ == mode) {
-            resId = R.drawable.ic_action_play
-        }
-        actionButtonMode = mode
-        if (b != null) {
-            b.actionButton.setImageDrawable(ContextCompat.getDrawable(this, resId))
-            b.actionButton.visibility = View.VISIBLE
+                actionButton.visibility = View.INVISIBLE
+                actionBtnBadge.visibility = View.INVISIBLE
+                return@withContext
+            }
+            @DrawableRes val resId: Int = when (mode) {
+                ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS -> downloadIcon
+                ActionMode.VIEW_QUEUE -> R.drawable.ic_action_queue
+                ActionMode.READ -> R.drawable.ic_action_play
+            }
+            actionButtonMode = mode
+            actionButton.setImageDrawable(ContextCompat.getDrawable(this@BaseWebActivity, resId))
+            actionButton.visibility = View.VISIBLE
             // It will become visible whenever the count of extra pages is known
-            if (ActionMode.DOWNLOAD_PLUS != mode) b.actionBtnBadge.visibility = View.INVISIBLE
+            if (ActionMode.DOWNLOAD_PLUS != mode) actionBtnBadge.visibility = View.INVISIBLE
         }
     }
 
@@ -1005,7 +988,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (null == currentContent) return
         if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent!!.status) {
             toast(R.string.already_downloaded)
-            if (!quickDownload) setActionMode(ActionMode.READ)
+            if (!quickDownload) lifecycleScope.launch { setActionMode(ActionMode.READ) }
             return
         }
         var replacementTitle: String? = null
@@ -1084,7 +1067,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 if (isReplaceDuplicate) currentContent!!.setContentIdToReplace(duplicateId)
                 dao.insertContent(currentContent!!)
                 toast(R.string.blocked_tag_queued, blockedTagsLocal[0])
-                setActionMode(ActionMode.VIEW_QUEUE)
+                lifecycleScope.launch { setActionMode(ActionMode.VIEW_QUEUE) }
             }
             return
         }
@@ -1195,7 +1178,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             dao.cleanup()
         }
         if (Settings.isQueueAutostart) resumeQueue(this)
-        setActionMode(ActionMode.VIEW_QUEUE)
+        lifecycleScope.launch { setActionMode(ActionMode.VIEW_QUEUE) }
         if (webClient.isMarkQueued()) updateQueuedBooksUrls()
     }
 
@@ -1373,24 +1356,25 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                         isDownloadPlus = false,
                         isReplaceDuplicate = false
                     )
-                } else setActionMode(ActionMode.DOWNLOAD)
+                } else lifecycleScope.launch { setActionMode(ActionMode.DOWNLOAD) }
             }
 
             ContentStatus.IN_COLLECTION -> {
                 if (quickDownload) toast(R.string.already_downloaded)
-                setActionMode(ActionMode.READ)
+                lifecycleScope.launch { setActionMode(ActionMode.READ) }
             }
 
             ContentStatus.IN_QUEUE -> {
                 if (quickDownload) toast(R.string.already_queued)
-                setActionMode(ActionMode.VIEW_QUEUE)
+                lifecycleScope.launch { setActionMode(ActionMode.VIEW_QUEUE) }
             }
         }
         blockedTags = getBlockedTags(currentContent!!).toMutableList()
     }
 
     override fun onNoResult() {
-        runOnUiThread { disableActions() }
+        Timber.v("onNoResult")
+        lifecycleScope.launch { setActionMode(null) }
     }
 
     override fun onResultFailed() {
@@ -1508,7 +1492,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 additionalImages.filterNot { storedUrls.contains(it.url) }
             if (additionalNonDownloadedImages.isNotEmpty()) {
                 extraImages = additionalNonDownloadedImages.toMutableList()
-                setActionMode(ActionMode.DOWNLOAD_PLUS)
+                lifecycleScope.launch { setActionMode(ActionMode.DOWNLOAD_PLUS) }
                 binding?.apply {
                     actionBtnBadge.text = String.format(
                         Locale.ENGLISH,
@@ -1610,7 +1594,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls()
             if (webClient.isMarkQueued()) updateQueuedBooksUrls()
             if (event.content != null && event.content == currentContent && event.content!!.status == StatusContent.DOWNLOADED) {
-                setActionMode(ActionMode.READ)
+                lifecycleScope.launch { setActionMode(ActionMode.READ) }
             }
         }
     }
@@ -1745,11 +1729,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      */
     private fun onSharedPreferenceChanged(key: String) {
         var reload = false
-        Timber.d("onSharedPreferenceChanged $key")
+        Timber.v("onSharedPreferenceChanged $key")
         if (Settings.Key.BROWSER_DL_ACTION == key) {
             downloadIcon =
                 if (Settings.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
-            setActionMode(actionButtonMode)
+            lifecycleScope.launch { setActionMode(actionButtonMode) }
         } else if (Settings.Key.BROWSER_MARK_DOWNLOADED == key) {
             m_customCss = null
             webClient.setMarkDownloaded(Settings.isBrowserMarkDownloaded)
