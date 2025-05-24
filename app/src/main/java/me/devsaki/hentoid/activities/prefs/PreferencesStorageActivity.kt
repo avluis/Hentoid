@@ -235,14 +235,19 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
                 val memUsage = MemoryUsageFigures(baseContext, rootFolder)
                 val locationFreeBytes = memUsage.getfreeUsageBytes()
                 val locationTotalBytes = memUsage.totalSpaceBytes
-                statsTxt.text = resources.getString(
-                    R.string.location_storage,
-                    formatHumanReadableSize(locationFreeBytes, resources),
-                    locationFreeBytes * 100 / locationTotalBytes
-                )
-                statsGraph.apply {
-                    isIndeterminate = false
-                    progress = (locationFreeBytes * 100 / locationTotalBytes).toInt()
+                if (locationTotalBytes > 0) {
+                    statsTxt.text = resources.getString(
+                        R.string.location_storage,
+                        formatHumanReadableSize(locationFreeBytes, resources),
+                        locationFreeBytes * 100 / locationTotalBytes
+                    )
+                    statsGraph.apply {
+                        isIndeterminate = false
+                        progress = (locationFreeBytes * 100 / locationTotalBytes).toInt()
+                    }
+                } else {
+                    statsTxt.text = resources.getString(R.string.location_storage_err)
+                    statsGraph.isIndeterminate = true
                 }
             }
             actionsBtn.setOnClickListener { onActionClick(location, actionsBtn) }
