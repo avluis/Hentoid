@@ -36,6 +36,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
         android:progress="50"
+        android:indeterminate="false"
         app:indicatorColor="@color/secondary_light"
         app:indicatorSize="24dp"
         app:layout_constraintStart_toEndOf="@id/number"

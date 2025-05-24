@@ -265,7 +265,7 @@
     <string name="external_library_subtitle">Archives, 3rd party books</string>
     <string name="add_external">Add external location</string>
     <string name="location_storage">%1$s (%2$d%%) free</string>
-    <string name="location_storage_err">Error while reading storage</string>
+    <string name="location_storage_err">Usage stats unavailable</string>
     <string name="storage_action_change">Change location…</string>
     <string name="storage_action_remove">Detach</string>
     <string name="storage_remove_ask">Detach selected location?\nNB : Books will not be deleted</string>

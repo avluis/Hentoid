@@ -242,12 +242,12 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
                         locationFreeBytes * 100 / locationTotalBytes
                     )
                     statsGraph.apply {
-                        isIndeterminate = false
+                        visibility = View.VISIBLE
                         progress = (locationFreeBytes * 100 / locationTotalBytes).toInt()
                     }
                 } else {
                     statsTxt.text = resources.getString(R.string.location_storage_err)
-                    statsGraph.isIndeterminate = true
+                    statsGraph.visibility = View.INVISIBLE
                 }
             }
             actionsBtn.setOnClickListener { onActionClick(location, actionsBtn) }
