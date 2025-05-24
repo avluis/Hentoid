@@ -1117,12 +1117,16 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     // Init for API 21 to 25
     private fun init21(context: Context, f: DocumentFile) {
         val fullPath = getFullPathFromUri(context, f.uri) // Oh so dirty !!
-        if (fullPath.isNotEmpty()) {
-            val stat = StatFs(fullPath)
+        try {
+            if (fullPath.isNotEmpty()) {
+                val stat = StatFs(fullPath)
 
-            val blockSize = stat.blockSizeLong
-            totalSpaceBytes = stat.blockCountLong * blockSize
-            freeMemBytes = stat.availableBlocksLong * blockSize
+                val blockSize = stat.blockSizeLong
+                totalSpaceBytes = stat.blockCountLong * blockSize
+                freeMemBytes = stat.availableBlocksLong * blockSize
+            }
+        } catch (e: Exception) {
+            Timber.w(e)
         }
     }
 
