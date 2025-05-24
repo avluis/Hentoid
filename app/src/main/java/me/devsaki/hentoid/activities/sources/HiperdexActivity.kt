@@ -4,7 +4,7 @@ import me.devsaki.hentoid.enums.Site
 
 class HiperdexActivity : BaseWebActivity() {
     companion object {
-        const val GALLERY_PATTERN = "//hiperdex.com/[\\w\\-]+/[%\\w\\-]+[/]{0,1}$"
+        const val GALLERY_PATTERN = "//hiperdex.com/[manga|comic]+/[%\\w\\-]+[/]{0,1}$"
 
         private const val DOMAIN_FILTER = "hiperdex.com"
         private val GALLERY_FILTER =
