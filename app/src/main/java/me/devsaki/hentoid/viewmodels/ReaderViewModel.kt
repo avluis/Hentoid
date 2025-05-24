@@ -1928,26 +1928,29 @@ class ReaderViewModel(
         currentChapter: Chapter,
         chapterImgs: List<ImageFile>
     ) {
-        var chapterImages = chapterImgs
         val newChapterOrder = currentChapter.order + 1
-        val newChapter = Chapter(
-            newChapterOrder,
-            "",
-            getApplication<Application>().getString(R.string.gallery_chapter_prefix) + " " + newChapterOrder
-        )
+        val newChapter = Chapter(newChapterOrder, "", "$chapterStr $newChapterOrder")
         newChapter.setContent(content)
 
         // Sort by order
-        chapterImages = chapterImages.sortedBy { it.order }
+        val chapterImages = chapterImgs.toList().sortedBy { it.order }
 
         // Split pages
         val firstPageOrder = selectedPage.order
-        val lastPageOrder = chapterImages[chapterImages.size - 1].order
-        for (img in chapterImages) if (img.order in firstPageOrder..lastPageOrder) {
-            val oldChapter = img.linkedChapter
-            oldChapter?.removeImageFile(img)
-            img.setChapter(newChapter)
-            newChapter.addImageFile(img)
+        val lastPageOrder = chapterImages.maxOf { it.order }
+
+        val chapCache = HashMap<Long, Chapter>()
+        chapterImages.asSequence().forEach {
+            if (it.order in firstPageOrder..lastPageOrder) {
+                val oldChapId = it.chapterId
+                val oldChapter = chapCache.get(oldChapId) ?: it.linkedChapter
+                oldChapter?.let { ch ->
+                    chapCache[oldChapId] = ch
+                    ch.removeImageFile(it)
+                }
+                it.setChapter(newChapter)
+                newChapter.addImageFile(it)
+            }
         }
 
         // Save images
