@@ -165,7 +165,7 @@ abstract class BaseSplitMergeWorker(
             // Copy the corresponding images to that folder
             val splitContentImages =
                 splitContent.imageList.filter { it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL }
-                    .distinctBy { it.url }
+                    .distinctBy { if (content.isArchive || content.isPdf) it.url else it.fileUri }
             withContext(Dispatchers.IO) {
                 try {
                     if (content.isArchive || content.isPdf) {
