@@ -168,7 +168,7 @@ dependencies {
     implementation 'com.github.awxkee:avif-coder-coil:2.1.2'
 
     // Animated pics that Coil doesn't support (APNG) -> https://github.com/penfeizhou/APNG4Android
-    def APNG4Android_version = '3.0.4'
+    def APNG4Android_version = '3.0.5'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
