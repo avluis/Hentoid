@@ -43,7 +43,7 @@ dependencies {
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
-    implementation 'androidx.core:core-ktx:1.15.0'
+    implementation 'androidx.core:core-ktx:1.16.0'
 
     implementation project(path: ':app:gles-renderer')
 }
