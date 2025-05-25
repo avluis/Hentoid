@@ -16,7 +16,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -28,7 +27,6 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories.register
-import com.mikepenz.fastadapter.paged.ExperimentalPagedSupport
 import com.mikepenz.fastadapter.select.SelectExtension
 import com.mikepenz.fastadapter.select.SelectExtensionFactory
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback
@@ -43,7 +41,6 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.bundles.FileItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
@@ -117,12 +114,6 @@ class LibraryFoldersFragment : Fragment(),
     // ======== VARIABLES
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private var backButtonPressed: Long = 0
-
-    // Total number of books in the whole unfiltered library
-    private var totalContentCount = 0
-
-    // TODO doc
-    private var previousViewType = -1
 
     private lateinit var pagingDebouncer: Debouncer<Unit>
 
@@ -219,8 +210,6 @@ class LibraryFoldersFragment : Fragment(),
             Settings.libraryFoldersRoot = it.toString()
         }
         viewModel.folderSearchBundle.observe(viewLifecycleOwner) { folderSearchBundle = it }
-
-        viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
 
         // Trigger a blank search
         val currentRoot = Settings.libraryFoldersRoot.toUri()
@@ -566,19 +555,6 @@ class LibraryFoldersFragment : Fragment(),
                 set(itemAdapter, updatedItems, FILEITEM_DIFF_CALLBACK)
             }
         }
-    }
-
-    /**
-     * LiveData callback when the library changes
-     * - Either because a new search has been performed
-     * - Or because a book has been downloaded, deleted, updated
-     *
-     * @param result Current library according to active filters
-     */
-    @OptIn(ExperimentalPagedSupport::class)
-    private fun onLibraryChanged(result: PagedList<Content>) {
-        Timber.i(">> Library changed ! Size=%s", result.size)
-        // TODO
     }
 
     // TODO doc
