@@ -440,16 +440,13 @@ abstract class BaseDeleteWorker(
     private fun removeImageFiles(ids: LongArray) {
         val imgs = dao.selectImageFiles(ids)
         trace(Log.INFO, "Removing %s images...", imgs.size)
-        val uris = imgs.map { it.fileUri }
+        val uris = imgs.filterNot { it.isPdf || it.isArchived }.map { it.fileUri }
         val contentIds = imgs.map { it.contentId }.distinct()
         dao.deleteImageFiles(imgs)
         uris.forEachIndexed { index, uri ->
             if (isStopped) return
             removeFile(applicationContext, uri.toUri())
-            progressItem(
-                "Image ${index + 1}",
-                DeleteProgressNotification.ProgressType.DELETE_IMAGES
-            )
+            progressItem("", DeleteProgressNotification.ProgressType.DELETE_IMAGES)
         }
 
         // Update content JSON if it exists (i.e. if book is not queued)

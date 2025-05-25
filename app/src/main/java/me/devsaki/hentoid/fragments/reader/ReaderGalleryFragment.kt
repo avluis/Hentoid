@@ -107,6 +107,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private var startIndex = 0
     private var firstMoveDone = false
     private var isContentDynamic = false
+    private var isContentAchivePdf = false
 
     private var editMode = EditMode.NONE
     private var isReorderingChapters = false
@@ -413,6 +414,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         if (null == content) return
         val chapters = content.chaptersList
         isContentDynamic = content.isDynamic
+        isContentAchivePdf = content.isArchive || content.isPdf
         if (chapters.isEmpty()) return
         binding?.apply {
             chapterSelector.onFocusChangeListener =
@@ -785,16 +787,14 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private fun askDeleteSelectedChps(items: List<Chapter>) {
         activity.get()?.let { act ->
             val builder = MaterialAlertDialogBuilder(act)
-            val title = act.resources.getQuantityString(
-                R.plurals.ask_delete_multiple,
-                items.size,
-                items.size
-            )
+            val message = if (isContentAchivePdf) R.plurals.ask_delete_chapters_no_imgs
+            else R.plurals.ask_delete_chapters
+            val title = act.resources.getQuantityString(message, items.size, items.size)
             builder.setMessage(title)
                 .setPositiveButton(R.string.yes)
                 { _, _ ->
                     expandableSelectExtension.deselect(expandableSelectExtension.selections.toMutableSet())
-                    viewModel.deleteChapters(items.map { it.id }) { t: Throwable -> onDeleteError(t) }
+                    viewModel.deleteChapters(items.map { it.id }) { onDeleteError(it) }
                 }
                 .setNegativeButton(R.string.no)
                 { _, _ -> expandableSelectExtension.deselect(expandableSelectExtension.selections.toMutableSet()) }

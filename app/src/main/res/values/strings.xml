@@ -915,6 +915,14 @@
     <string name="slideshow_stop">Slideshow stopped</string>
     <string name="ask_clear_chapters">Reset all chapters?</string>
     <string name="view_book">View book</string>
+    <plurals name="ask_delete_chapters">
+        <item quantity="one">Delete selected chapter\?\nNB : This will delete image files</item>
+        <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> selected chapters\?\nNB : This will delete image files</item>
+    </plurals>
+    <plurals name="ask_delete_chapters_no_imgs">
+        <item quantity="one">Delete selected chapter\?\nNB : This will not delete image files</item>
+        <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> selected chapters\?\nNB : This will not delete image files</item>
+    </plurals>
 
     <!-- Changelog -->
     <string name="view_changelog">Changelog</string>
