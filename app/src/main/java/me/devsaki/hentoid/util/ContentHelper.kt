@@ -15,6 +15,7 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.mikepenz.fastadapter.diff.DiffCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -22,6 +23,7 @@ import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ReaderActivity.ReaderActivityMulti
 import me.devsaki.hentoid.activities.UnlockActivity.Companion.wrapIntent
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
+import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
@@ -101,6 +103,7 @@ import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.util.string_similarity.Cosine
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
+import me.devsaki.hentoid.viewholders.ContentItem
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.PurgeWorker
@@ -165,6 +168,69 @@ enum class Type(val value: Int) {
         }
     }
 }
+
+// The one for "legacy" List (paged mode)
+val contentItemDiffCallback: DiffCallback<ContentItem> =
+    object : DiffCallback<ContentItem> {
+        override fun areItemsTheSame(
+            oldItem: ContentItem,
+            newItem: ContentItem
+        ): Boolean {
+            return oldItem.identifier == newItem.identifier
+        }
+
+        override fun areContentsTheSame(
+            oldItem: ContentItem,
+            newItem: ContentItem
+        ): Boolean {
+            var result = oldItem.content == newItem.content
+            if (oldItem.queueRecord != null && newItem.queueRecord != null) {
+                result =
+                    result and (oldItem.queueRecord.frozen == newItem.queueRecord.frozen)
+            }
+            return result
+        }
+
+        override fun getChangePayload(
+            oldItem: ContentItem,
+            oldItemPosition: Int,
+            newItem: ContentItem,
+            newItemPosition: Int
+        ): Any? {
+            val oldContent = oldItem.content
+            val newContent = newItem.content
+            if (null == oldContent || null == newContent) return false
+            val diffBundleBuilder = ContentItemBundle()
+            if (oldContent.favourite != newContent.favourite) {
+                diffBundleBuilder.isFavourite = newContent.favourite
+            }
+            if (oldContent.rating != newContent.rating) {
+                diffBundleBuilder.rating = newContent.rating
+            }
+            if (oldContent.completed != newContent.completed) {
+                diffBundleBuilder.isCompleted = newContent.completed
+            }
+            if (oldContent.reads != newContent.reads) {
+                diffBundleBuilder.reads = newContent.reads
+            }
+            if (oldContent.readPagesCount != newContent.readPagesCount) {
+                diffBundleBuilder.readPagesCount = newContent.readPagesCount
+            }
+            if (oldContent.coverImageUrl != newContent.coverImageUrl) {
+                diffBundleBuilder.coverUri = newContent.cover.fileUri
+            }
+            if (oldContent.title != newContent.title) {
+                diffBundleBuilder.title = newContent.title
+            }
+            if (oldContent.downloadMode != newContent.downloadMode) {
+                diffBundleBuilder.downloadMode = newContent.downloadMode.value
+            }
+            if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.frozen != newItem.queueRecord.frozen) {
+                diffBundleBuilder.frozen = newItem.queueRecord.frozen
+            }
+            return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
+        }
+    }
 
 
 const val KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters"

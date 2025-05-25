@@ -9,6 +9,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
@@ -301,7 +302,7 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
         val currentPrefFieldCode =
             if (isGroupsDisplayed) Settings.groupSortField else if (isFoldersDisplayed) Settings.folderSortField else Settings.contentSortField
         return TextItem(
-            resources.getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
+            resources.getString(getNameFromFieldCode(sortFieldCode)),
             sortFieldCode,
             true,
             currentPrefFieldCode == sortFieldCode
@@ -345,5 +346,25 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
             }
         }
         updateSortDirection()
+    }
+}
+
+@StringRes
+fun getNameFromFieldCode(prefFieldCode: Int): Int {
+    return when (prefFieldCode) {
+        Settings.Value.ORDER_FIELD_TITLE -> R.string.sort_title
+        Settings.Value.ORDER_FIELD_ARTIST -> R.string.sort_artist
+        Settings.Value.ORDER_FIELD_NB_PAGES -> R.string.sort_pages
+        Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> R.string.sort_dl_date
+        Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> R.string.sort_dl_completion_date
+        Settings.Value.ORDER_FIELD_UPLOAD_DATE -> R.string.sort_uplodad_date
+        Settings.Value.ORDER_FIELD_READ_DATE -> R.string.sort_read_date
+        Settings.Value.ORDER_FIELD_READS -> R.string.sort_reads
+        Settings.Value.ORDER_FIELD_SIZE -> R.string.sort_size
+        Settings.Value.ORDER_FIELD_READ_PROGRESS -> R.string.sort_reading_progress
+        Settings.Value.ORDER_FIELD_CUSTOM -> R.string.sort_custom
+        Settings.Value.ORDER_FIELD_RANDOM -> R.string.sort_random
+        Settings.Value.ORDER_FIELD_CHILDREN -> R.string.sort_books
+        else -> R.string.sort_invalid
     }
 }

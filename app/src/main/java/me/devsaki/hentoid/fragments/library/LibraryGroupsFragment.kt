@@ -129,55 +129,50 @@ class LibraryGroupsFragment : Fragment(),
     private var firstLibraryLoad = true
 
     // TODO doc
-    private var enabled = false
-
-    // TODO doc
     private var previousViewType = -1
 
     private lateinit var pagingDebouncer: Debouncer<Unit>
 
-    companion object {
-
-        val GROUPITEM_DIFF_CALLBACK: DiffCallback<GroupDisplayItem> =
-            object : DiffCallback<GroupDisplayItem> {
-                override fun areItemsTheSame(
-                    oldItem: GroupDisplayItem,
-                    newItem: GroupDisplayItem
-                ): Boolean {
-                    return oldItem.identifier == newItem.identifier
-                }
-
-                override fun areContentsTheSame(
-                    oldItem: GroupDisplayItem,
-                    newItem: GroupDisplayItem
-                ): Boolean {
-                    return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId
-                            && oldItem.group.favourite == newItem.group.favourite
-                            && oldItem.group.rating == newItem.group.rating
-                            && oldItem.group.getItems().size == newItem.group.getItems().size
-                }
-
-                override fun getChangePayload(
-                    oldItem: GroupDisplayItem,
-                    oldItemPosition: Int,
-                    newItem: GroupDisplayItem,
-                    newItemPosition: Int
-                ): Any? {
-                    val diffBundleBuilder = GroupItemBundle()
-                    if (!newItem.group.coverContent.isNull && oldItem.group.coverContent.targetId != newItem.group.coverContent.targetId) {
-                        diffBundleBuilder.coverUri =
-                            newItem.group.coverContent.target.cover.usableUri
-                    }
-                    if (oldItem.group.favourite != newItem.group.favourite) {
-                        diffBundleBuilder.isFavourite = newItem.group.favourite
-                    }
-                    if (oldItem.group.rating != newItem.group.rating) {
-                        diffBundleBuilder.rating = newItem.group.rating
-                    }
-                    return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
-                }
+    val groupItemDiffCallback: DiffCallback<GroupDisplayItem> =
+        object : DiffCallback<GroupDisplayItem> {
+            override fun areItemsTheSame(
+                oldItem: GroupDisplayItem,
+                newItem: GroupDisplayItem
+            ): Boolean {
+                return oldItem.identifier == newItem.identifier
             }
-    }
+
+            override fun areContentsTheSame(
+                oldItem: GroupDisplayItem,
+                newItem: GroupDisplayItem
+            ): Boolean {
+                return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId
+                        && oldItem.group.favourite == newItem.group.favourite
+                        && oldItem.group.rating == newItem.group.rating
+                        && oldItem.group.getItems().size == newItem.group.getItems().size
+            }
+
+            override fun getChangePayload(
+                oldItem: GroupDisplayItem,
+                oldItemPosition: Int,
+                newItem: GroupDisplayItem,
+                newItemPosition: Int
+            ): Any? {
+                val diffBundleBuilder = GroupItemBundle()
+                if (!newItem.group.coverContent.isNull && oldItem.group.coverContent.targetId != newItem.group.coverContent.targetId) {
+                    diffBundleBuilder.coverUri =
+                        newItem.group.coverContent.target.cover.usableUri
+                }
+                if (oldItem.group.favourite != newItem.group.favourite) {
+                    diffBundleBuilder.isFavourite = newItem.group.favourite
+                }
+                if (oldItem.group.rating != newItem.group.rating) {
+                    diffBundleBuilder.rating = newItem.group.rating
+                }
+                return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
+            }
+        }
+
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -225,18 +220,6 @@ class LibraryGroupsFragment : Fragment(),
         // Trigger a blank search
         // TODO when group is reached from FLAT through the "group by" menu, this triggers a double-load and a screen blink
         viewModel.searchGroup()
-    }
-
-    private fun onEnable() {
-        Timber.d("enable groups")
-        enabled = true
-        callback?.isEnabled = true
-    }
-
-    private fun onDisable() {
-        Timber.d("disable groups")
-        enabled = false
-        callback?.isEnabled = false
     }
 
     /**
@@ -671,8 +654,6 @@ class LibraryGroupsFragment : Fragment(),
             }
 
             CommunicationEvent.Type.SEARCH -> onSubmitSearch(event.message)
-            CommunicationEvent.Type.ENABLE -> onEnable()
-            CommunicationEvent.Type.DISABLE -> onDisable()
             CommunicationEvent.Type.SCROLL_TOP -> llm?.scrollToPositionWithOffset(0, 0)
             else -> {}
         }
@@ -868,7 +849,9 @@ class LibraryGroupsFragment : Fragment(),
     }
 
     private fun onGroupsChanged(result: List<Group>) {
-        Timber.i(">> Groups changed ! Size=%s enabled=%s", result.size, enabled)
+        val enabled = activity.get()?.isGroupDisplayed() == true
+        Timber.i(">> Groups changed ! Size=${result.size} enabled=$enabled")
+        callback?.isEnabled = enabled
         if (!enabled) return
         val isEmpty = result.isEmpty()
         binding?.emptyTxt?.isVisible = isEmpty
@@ -886,7 +869,7 @@ class LibraryGroupsFragment : Fragment(),
             setPagingMethod(true)
             previousViewType = viewType.ordinal
         } else {
-            set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK)
+            set(itemAdapter, groups, groupItemDiffCallback)
         }
 
         // Update visibility and content of advanced search bar
@@ -904,6 +887,7 @@ class LibraryGroupsFragment : Fragment(),
      * @param count Current group count for the currently selected grouping
      */
     private fun onTotalGroupsChanged(count: Int) {
+        val enabled = activity.get()?.isGroupDisplayed() == true
         if (!enabled) return
         totalContentCount = count
         activity.get()!!
@@ -917,6 +901,7 @@ class LibraryGroupsFragment : Fragment(),
      * @param result Current library according to active filters
      */
     private fun onLibraryChanged(result: PagedList<Content>) {
+        val enabled = activity.get()?.isGroupDisplayed() == true
         Timber.i(">> Library changed (groups) ! Size=%s enabled=%s", result.size, enabled)
         if (!enabled) return
 

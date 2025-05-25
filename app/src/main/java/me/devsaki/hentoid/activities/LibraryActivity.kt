@@ -10,7 +10,6 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import androidx.annotation.StringRes
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -85,6 +84,7 @@ import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
+import me.devsaki.hentoid.widget.FolderSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager.GroupSearchBundle
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -192,6 +192,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     // Current Group search query
     private var groupSearchBundle: Bundle? = null
 
+    // Current Folder  search query
+    private var folderSearchBundle: Bundle? = null
+
     // Used to avoid closing search panel immediately when user uses backspace to correct what he typed
     private lateinit var searchClearDebouncer: Debouncer<Int>
 
@@ -297,6 +300,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
         viewModel.contentSearchBundle.observe(this) { contentSearchBundle = it }
         viewModel.groupSearchBundle.observe(this) { groupSearchBundle = it }
+        viewModel.folderSearchBundle.observe(this) { folderSearchBundle = it }
 
         viewModel.group.observe(this) { g: Group? ->
             group = g
@@ -568,7 +572,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         } else if (targetGroupingId == Grouping.FOLDERS.id) { // Display folders
             binding?.libraryPager?.currentItem = 2
         }
-        enableCurrentFragment()
     }
 
     private fun initToolbar() {
@@ -1016,17 +1019,20 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         activityBinding?.drawerLayout?.openDrawer(GravityCompat.START)
     }
 
-    private fun isGroupDisplayed(): Boolean {
+    fun isGroupDisplayed(): Boolean {
         return 0 == binding?.libraryPager?.currentItem
     }
 
-    private fun isFoldersDisplayed(): Boolean {
+    fun isContentDisplayed(): Boolean {
+        return 1 == binding?.libraryPager?.currentItem
+    }
+
+    fun isFoldersDisplayed(): Boolean {
         return 2 == binding?.libraryPager?.currentItem
     }
 
     fun goBackToGroups() {
         if (isGroupDisplayed()) return
-        enableFragment(0)
         setEditMode(false)
 
         // Reset any active Content filter
@@ -1042,9 +1048,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     fun showBooksInGroup(group: Group) {
-        enableFragment(1)
-        viewModel.setGroup(group, true)
         binding?.libraryPager?.currentItem = 1
+        viewModel.setGroup(group, true)
     }
 
     fun isFilterActive(): Boolean {
@@ -1056,8 +1061,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         if (isGroupDisplayed() && groupSearchBundle != null) {
             val bundle = GroupSearchBundle(groupSearchBundle!!)
             return bundle.isFilterActive()
-        } else if (!isGroupDisplayed() && contentSearchBundle != null) {
+        } else if (isContentDisplayed() && contentSearchBundle != null) {
             val bundle = ContentSearchBundle(contentSearchBundle!!)
+            return bundle.isFilterActive()
+        } else if (isFoldersDisplayed() && folderSearchBundle != null) {
+            val bundle = FolderSearchManager.FolderSearchBundle(folderSearchBundle!!)
             return bundle.isFilterActive()
         }
         return false
@@ -1282,40 +1290,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         )
     }
 
-    private fun enableCurrentFragment() {
-        enableFragment(getCurrentFragmentIndex())
-    }
-
     private fun getCurrentFragmentIndex(): Int {
         return if (isGroupDisplayed()) 0 else if (isFoldersDisplayed()) 2 else 1
-    }
-
-    private fun enableFragment(fragmentIndex: Int) {
-        EventBus.getDefault().post(
-            CommunicationEvent(
-                CommunicationEvent.Type.ENABLE,
-                when (fragmentIndex) {
-                    1 -> CommunicationEvent.Recipient.CONTENTS
-                    2 -> CommunicationEvent.Recipient.FOLDERS
-                    else -> CommunicationEvent.Recipient.GROUPS
-                },
-            )
-        )
-        binding?.apply {
-            for (i in 0..libraryPager.adapter!!.itemCount - 1) {
-                if (fragmentIndex != i)
-                    EventBus.getDefault().post(
-                        CommunicationEvent(
-                            CommunicationEvent.Type.DISABLE,
-                            when (i) {
-                                1 -> CommunicationEvent.Recipient.CONTENTS
-                                2 -> CommunicationEvent.Recipient.FOLDERS
-                                else -> CommunicationEvent.Recipient.GROUPS
-                            },
-                        )
-                    )
-            }
-        }
     }
 
     private fun saveSearchAsGroup() {
@@ -1339,7 +1315,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun onPageSelected() {
-        enableCurrentFragment()
         hideSearchSubBar()
         updateToolbar()
         updateSelectionToolbar(0, 0, 0, 0, 0, 0)
@@ -1382,29 +1357,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             return 3
         }
     }
-
-    companion object {
-        // == VALUES TO PASS ACROSS ACTIVITY RESET (that shouldn't be saved when closing the app)
-        var hasChangedGridDisplay = false
-
-        @StringRes
-        fun getNameFromFieldCode(prefFieldCode: Int): Int {
-            return when (prefFieldCode) {
-                Settings.Value.ORDER_FIELD_TITLE -> R.string.sort_title
-                Settings.Value.ORDER_FIELD_ARTIST -> R.string.sort_artist
-                Settings.Value.ORDER_FIELD_NB_PAGES -> R.string.sort_pages
-                Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE -> R.string.sort_dl_date
-                Settings.Value.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE -> R.string.sort_dl_completion_date
-                Settings.Value.ORDER_FIELD_UPLOAD_DATE -> R.string.sort_uplodad_date
-                Settings.Value.ORDER_FIELD_READ_DATE -> R.string.sort_read_date
-                Settings.Value.ORDER_FIELD_READS -> R.string.sort_reads
-                Settings.Value.ORDER_FIELD_SIZE -> R.string.sort_size
-                Settings.Value.ORDER_FIELD_READ_PROGRESS -> R.string.sort_reading_progress
-                Settings.Value.ORDER_FIELD_CUSTOM -> R.string.sort_custom
-                Settings.Value.ORDER_FIELD_RANDOM -> R.string.sort_random
-                Settings.Value.ORDER_FIELD_CHILDREN -> R.string.sort_books
-                else -> R.string.sort_invalid
-            }
-        }
-    }
 }
+
+// == VALUES TO PASS ACROSS ACTIVITY RESET (that shouldn't be saved when closing the app)
+var hasChangedGridDisplay = false
+

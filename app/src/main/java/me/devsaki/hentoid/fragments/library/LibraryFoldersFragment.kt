@@ -519,6 +519,10 @@ class LibraryFoldersFragment : Fragment(),
      * Happens when navigating
      */
     private fun onFoldersChanged(result: List<DisplayFile>) {
+        val enabled = activity.get()?.isFoldersDisplayed() == true
+        callback?.isEnabled = enabled
+        if (!enabled) return
+
         val resSize = result.size.toLong()
         Timber.i(">> Folders changed [new] (folders) ! Size=$resSize)")
 

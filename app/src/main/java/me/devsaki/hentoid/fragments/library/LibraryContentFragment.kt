@@ -36,7 +36,6 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
-import com.mikepenz.fastadapter.diff.DiffCallback
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories.register
@@ -83,6 +82,7 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.contentItemDiffCallback
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
@@ -125,6 +125,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
+private const val KEY_LAST_LIST_POSITION = "last_list_position"
+
 @OptIn(ExperimentalPagedSupport::class)
 class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     MergeDialogFragment.Parent,
@@ -135,74 +137,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     PopupTextProvider,
     ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
-
-    companion object {
-        private const val KEY_LAST_LIST_POSITION = "last_list_position"
-
-        // The one for "legacy" List (paged mode)
-        val CONTENT_ITEM_DIFF_CALLBACK: DiffCallback<ContentItem> =
-            object : DiffCallback<ContentItem> {
-                override fun areItemsTheSame(
-                    oldItem: ContentItem,
-                    newItem: ContentItem
-                ): Boolean {
-                    return oldItem.identifier == newItem.identifier
-                }
-
-                override fun areContentsTheSame(
-                    oldItem: ContentItem,
-                    newItem: ContentItem
-                ): Boolean {
-                    var result = oldItem.content == newItem.content
-                    if (oldItem.queueRecord != null && newItem.queueRecord != null) {
-                        result =
-                            result and (oldItem.queueRecord.frozen == newItem.queueRecord.frozen)
-                    }
-                    return result
-                }
-
-                override fun getChangePayload(
-                    oldItem: ContentItem,
-                    oldItemPosition: Int,
-                    newItem: ContentItem,
-                    newItemPosition: Int
-                ): Any? {
-                    val oldContent = oldItem.content
-                    val newContent = newItem.content
-                    if (null == oldContent || null == newContent) return false
-                    val diffBundleBuilder = ContentItemBundle()
-                    if (oldContent.favourite != newContent.favourite) {
-                        diffBundleBuilder.isFavourite = newContent.favourite
-                    }
-                    if (oldContent.rating != newContent.rating) {
-                        diffBundleBuilder.rating = newContent.rating
-                    }
-                    if (oldContent.completed != newContent.completed) {
-                        diffBundleBuilder.isCompleted = newContent.completed
-                    }
-                    if (oldContent.reads != newContent.reads) {
-                        diffBundleBuilder.reads = newContent.reads
-                    }
-                    if (oldContent.readPagesCount != newContent.readPagesCount) {
-                        diffBundleBuilder.readPagesCount = newContent.readPagesCount
-                    }
-                    if (oldContent.coverImageUrl != newContent.coverImageUrl) {
-                        diffBundleBuilder.coverUri = newContent.cover.fileUri
-                    }
-                    if (oldContent.title != newContent.title) {
-                        diffBundleBuilder.title = newContent.title
-                    }
-                    if (oldContent.downloadMode != newContent.downloadMode) {
-                        diffBundleBuilder.downloadMode = newContent.downloadMode.value
-                    }
-                    if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.frozen != newItem.queueRecord.frozen) {
-                        diffBundleBuilder.frozen = newItem.queueRecord.frozen
-                    }
-                    return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
-                }
-            }
-    }
-
 
     // ======== COMMUNICATION
     private var callback: OnBackPressedCallback? = null
@@ -260,9 +194,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     // TODO doc
     private var group: Group? = null
-
-    // Indicate whether this tab is enabled (active on screen) or not
-    private var enabled = false
 
     // Search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
@@ -350,7 +281,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentLibraryContentBinding.inflate(inflater, container, false)
 
         Settings.registerPrefsChangedListener(prefsListener)
@@ -364,7 +295,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             { menuItem: MenuItem -> onToolbarItemClicked(menuItem) }
         ) { menuItem: MenuItem -> onSelectionToolbarItemClicked(menuItem) }
 
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -386,16 +317,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(viewLifecycleOwner)
-    }
-
-    private fun onEnable() {
-        enabled = true
-        callback?.isEnabled = true
-    }
-
-    private fun onDisable() {
-        enabled = false
-        callback?.isEnabled = false
     }
 
     /**
@@ -1007,8 +928,6 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             CommunicationEvent.Type.SEARCH -> onSubmitSearch(event.message)
             CommunicationEvent.Type.ADVANCED_SEARCH -> onAdvancedSearchButtonClick()
-            CommunicationEvent.Type.ENABLE -> onEnable()
-            CommunicationEvent.Type.DISABLE -> onDisable()
             CommunicationEvent.Type.UNSELECT -> leaveSelectionMode()
             CommunicationEvent.Type.UPDATE_EDIT_MODE -> setPagingMethod(
                 Settings.endlessScroll, activity.get()!!.isEditMode()
@@ -1404,7 +1323,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             }.distinct()
 
         itemAdapter?.let {
-            set(it, contentItems, CONTENT_ITEM_DIFF_CALLBACK)
+            set(it, contentItems, contentItemDiffCallback)
         }
         Handler(Looper.getMainLooper()).postDelayed({ differEndCallback() }, 150)
     }
@@ -1431,7 +1350,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 .distinct()
         }
         itemAdapter?.let {
-            set(it, contentItems, CONTENT_ITEM_DIFF_CALLBACK)
+            set(it, contentItems, contentItemDiffCallback)
         }
         Handler(Looper.getMainLooper()).postDelayed({ differEndCallback() }, 150)
     }
@@ -1445,7 +1364,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      */
     @OptIn(ExperimentalPagedSupport::class)
     private fun onLibraryChanged(result: PagedList<Content>) {
-        Timber.i(">> Library changed ! Size=%s enabled=%s", result.size, enabled)
+        val enabled = activity.get()?.isContentDisplayed() == true
+        callback?.isEnabled = enabled
+        Timber.i(">> Library changed ! Size=${result.size} enabled=$enabled")
         if (!enabled && Settings.getGroupingDisplayG() != Grouping.FLAT) return
         activity.get()?.updateTitle(result.size.toLong(), totalContentCount.toLong())
 
@@ -1546,9 +1467,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      */
     private fun onTotalContentChanged(count: Int) {
         totalContentCount = count
-        if (enabled) {
-            library?.let {
-                activity.get()!!.updateTitle(it.size.toLong(), totalContentCount.toLong())
+        activity.get()?.let { a ->
+            if (a.isContentDisplayed()) {
+                library?.let { a.updateTitle(it.size.toLong(), totalContentCount.toLong()) }
             }
         }
     }

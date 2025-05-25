@@ -57,11 +57,11 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
-import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.queue.DownloadsImportDialogFragment.Companion.invoke
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.contentItemDiffCallback
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
@@ -269,7 +269,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         isSelected: Boolean,
                         calledFromOnStart: Boolean
                     ) {
-                        if (isSelected) IntRange(start, end).forEach { selectExtension.select(it, false, true) }
+                        if (isSelected) IntRange(start, end).forEach {
+                            selectExtension.select(
+                                it,
+                                false,
+                                true
+                            )
+                        }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
                     }
                 }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -755,7 +761,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }.distinct()
 
             if (newSearch) itemAdapter.setNewList(contentItems, false)
-            else set(itemAdapter, contentItems, LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK)
+            else set(itemAdapter, contentItems, contentItemDiffCallback)
         }
 
         Handler(Looper.getMainLooper()).postDelayed({ differEndCallback() }, 150)
