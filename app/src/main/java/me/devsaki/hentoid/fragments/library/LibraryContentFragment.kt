@@ -621,6 +621,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     deselect(selections.toMutableSet())
                 }
             }
+        } ?: run {
+            requireContext().toast("Couldn't find selectExtension")
         }
     }
 
@@ -637,6 +639,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     deselect(selections.toMutableSet())
                 }
             }
+        } ?: run {
+            requireContext().toast("Couldn't find selectExtension")
         }
     }
 
@@ -649,6 +653,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val contents = selectedItems.mapNotNull { ci -> ci.content }
                 .filterNot { c -> c.storageUri.isEmpty() }
             activity.get()?.askArchiveItems(contents, this)
+        } ?: run {
+            requireContext().toast("Couldn't find selectExtension")
         }
     }
 
@@ -664,6 +670,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 this@LibraryContentFragment,
                 bookIds.toLongArray()
             )
+        } ?: run {
+            requireContext().toast("Couldn't find selectExtension")
         }
     }
 
