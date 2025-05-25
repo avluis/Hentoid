@@ -35,7 +35,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.9.0'
     // Don't update exifinterface > 1.2.0 without testing library screen thumbs with large PNGs
     // v1.3.2 is bugged when loading large PNGs through Glide
     implementation 'androidx.exifinterface:exifinterface:1.2.0'
