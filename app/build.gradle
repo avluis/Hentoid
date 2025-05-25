@@ -239,7 +239,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.19.1'
 
     //    https://github.com/square/retrofit
-    def retrofit_version = '2.11.0'
+    def retrofit_version = '3.0.0'
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
