@@ -132,7 +132,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation 'androidx.fragment:fragment-ktx:1.8.6'
+    implementation 'androidx.fragment:fragment-ktx:1.8.7'
     implementation "androidx.documentfile:documentfile:1.1.0"
     // <-- if documentfile is bumped, please examine CachedDocumentsContract for evolutions
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
