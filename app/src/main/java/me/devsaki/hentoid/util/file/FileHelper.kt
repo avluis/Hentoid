@@ -151,37 +151,21 @@ private fun getVolumePath(context: Context, volumeId: String): String? {
     try {
         // StorageVolume exists since API19, has an uiid since API21 but is only visible since API24
         val mStorageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        val storageVolumeClazz = Class.forName("android.os.storage.StorageVolume")
-        val getVolumeList = mStorageManager.javaClass.getMethod("getVolumeList")
-        val getUuid = storageVolumeClazz.getMethod("getUuid")
-        val isPrimary = storageVolumeClazz.getMethod("isPrimary")
-
-        var result: List<StorageVolume>
-        val resTmp = getVolumeList.invoke(mStorageManager)
-        result = if (null == resTmp) emptyList()
-        else listOf(*resTmp as Array<StorageVolume>)
+        var volumes = mStorageManager.storageVolumes
 
         // getRecentStorageVolumes (API30+) can detect USB storage on certain devices where getVolumeList can't
         if (Build.VERSION.SDK_INT >= 30) {
-            val getRecentVolumeList = mStorageManager.javaClass.getMethod("getRecentStorageVolumes")
-            val rvlResult: List<StorageVolume> =
-                getRecentVolumeList.invoke(mStorageManager) as ArrayList<StorageVolume>
-
-            result = if ((result.size > rvlResult.size)) result else rvlResult
+            val recentVolumes = mStorageManager.recentStorageVolumes
+            volumes = if ((volumes.size > recentVolumes.size)) volumes else recentVolumes
         }
 
-        for (volume in result) {
-            val uuid = (getUuid.invoke(volume) as String?) ?: ""
-            val primary = isPrimary.invoke(volume) as Boolean
-
-            if (volumeIdMatch(uuid, primary, volumeId)) return getVolumePath(volume)
+        volumes.firstOrNull { volumeIdMatch(it.uuid ?: "", it.isPrimary, volumeId) }?.let {
+            return getVolumePath(it)
         }
-        // not found.
-        return null
     } catch (e: Exception) {
         Timber.w(e)
-        return null
     }
+    return null
 }
 
 /**
