@@ -122,9 +122,6 @@ class LibraryGroupsFragment : Fragment(),
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private var backButtonPressed: Long = 0
 
-    // Total number of books in the whole unfiltered library
-    private var totalContentCount = 0
-
     // TODO doc
     private var firstLibraryLoad = true
 
@@ -211,9 +208,8 @@ class LibraryGroupsFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         firstLibraryLoad = true
-        viewModel.groups.observe(viewLifecycleOwner) { onGroupsChanged(it) }
 
-        viewModel.getTotalGroup().observe(viewLifecycleOwner) { onTotalGroupsChanged(it) }
+        viewModel.groups.observe(viewLifecycleOwner) { onGroups2Changed(it) }
 
         viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
 
@@ -848,14 +844,16 @@ class LibraryGroupsFragment : Fragment(),
         }
     }
 
-    private fun onGroupsChanged(result: List<Group>) {
+    private fun onGroups2Changed(data: Pair<List<Group>, Int>) {
         val enabled = activity.get()?.isGroupDisplayed() == true
+        val result = data.first
         Timber.i(">> Groups changed ! Size=${result.size} enabled=$enabled")
         callback?.isEnabled = enabled
         if (!enabled) return
+
         val isEmpty = result.isEmpty()
         binding?.emptyTxt?.isVisible = isEmpty
-        activity.get()?.updateTitle(result.size.toLong(), totalContentCount.toLong())
+        activity.get()?.updateTitle(result.size, data.second)
         val viewType =
             if (activity.get()!!.isEditMode()) GroupDisplayItem.ViewType.LIBRARY_EDIT
             else if (Settings.Value.LIBRARY_DISPLAY_LIST == Settings.libraryDisplay) GroupDisplayItem.ViewType.LIBRARY
@@ -879,19 +877,6 @@ class LibraryGroupsFragment : Fragment(),
 
         // Reset library load indicator
         firstLibraryLoad = true
-    }
-
-    /**
-     * LiveData callback when the total number of groups changes (because of book download of removal)
-     *
-     * @param count Current group count for the currently selected grouping
-     */
-    private fun onTotalGroupsChanged(count: Int) {
-        val enabled = activity.get()?.isGroupDisplayed() == true
-        if (!enabled) return
-        totalContentCount = count
-        activity.get()!!
-            .updateTitle(itemAdapter.itemList.size().toLong(), totalContentCount.toLong())
     }
 
     /**

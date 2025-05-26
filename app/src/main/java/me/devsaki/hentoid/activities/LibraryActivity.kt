@@ -940,16 +940,16 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
      * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
      * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
-    fun updateTitle(totalSelectedCount: Long, totalCount: Long) {
+    fun updateTitle(totalSelectedCount: Int, totalCount: Int) {
         val title: String = if (totalSelectedCount == totalCount) resources.getQuantityString(
             R.plurals.number_of_items,
-            totalSelectedCount.toInt(),
-            totalSelectedCount.toInt()
+            totalSelectedCount,
+            totalSelectedCount
         ) else {
             resources.getQuantityString(
                 R.plurals.number_of_book_search_results,
-                totalSelectedCount.toInt(),
-                totalSelectedCount.toInt(),
+                totalSelectedCount,
+                totalSelectedCount,
                 totalCount
             )
         }

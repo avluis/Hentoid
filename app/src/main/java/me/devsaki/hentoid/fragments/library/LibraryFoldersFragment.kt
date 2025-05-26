@@ -523,10 +523,10 @@ class LibraryFoldersFragment : Fragment(),
         callback?.isEnabled = enabled
         if (!enabled) return
 
-        val resSize = result.size.toLong()
+        val resSize = result.size
         Timber.i(">> Folders changed [new] (folders) ! Size=$resSize)")
 
-        val isEmpty = 0L == resSize
+        val isEmpty = 0 == resSize
         binding?.emptyTxt?.isVisible = isEmpty
         activity.get()?.updateTitle(resSize, resSize)
 

@@ -1376,7 +1376,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         callback?.isEnabled = enabled
         Timber.i(">> Library changed ! Size=${result.size} enabled=$enabled")
         if (!enabled && Settings.getGroupingDisplayG() != Grouping.FLAT) return
-        activity.get()?.updateTitle(result.size.toLong(), totalContentCount.toLong())
+        activity.get()?.updateTitle(result.size, totalContentCount)
 
         // Reshuffle on swipe is only enabled when sort order is random
         binding?.swipeContainer?.isEnabled =
@@ -1477,7 +1477,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         totalContentCount = count
         activity.get()?.let { a ->
             if (a.isContentDisplayed()) {
-                library?.let { a.updateTitle(it.size.toLong(), totalContentCount.toLong()) }
+                library?.let { a.updateTitle(it.size, totalContentCount) }
             }
         }
     }

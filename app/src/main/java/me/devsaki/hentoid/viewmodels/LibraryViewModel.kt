@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.viewmodels
 
+import MergerLiveData
 import android.app.Application
 import android.content.Context
 import android.net.Uri
@@ -99,10 +100,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     // Groups data
     val group = MutableLiveData<Group>()
-    private var currentGroupsSource: LiveData<List<Group>>? = null
-    val groups = MediatorLiveData<List<Group>>()
-    private var currentGroupsTotalSource: LiveData<List<Group>>? = null
-    private val currentGroupTotal = MediatorLiveData<Int>()
+    private var currentGroupsSource: LiveData<Pair<List<Group>, Int>>? = null
+    val groups = MediatorLiveData<Pair<List<Group>, Int>>()
+
     val groupSearchBundle = MutableLiveData<Bundle>()
 
     // Folders data
@@ -153,10 +153,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 workManager.getWorkInfoByIdLiveData(info.first).removeObserver(info.second)
         }
         folderSearchManager.clear()
-    }
-
-    fun getTotalGroup(): LiveData<Int> {
-        return currentGroupTotal
     }
 
 
@@ -245,27 +241,25 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         groupSearchManager.setGrouping(Settings.getGroupingDisplayG())
         groupSearchManager.setArtistGroupVisibility(Settings.artistGroupVisibility)
 
-        val newSource = withContext(Dispatchers.IO) {
-            groupSearchManager.getGroups(dao)
-        }
-        synchronized(groupSearchManager) {
-            currentGroupsSource?.let { groups.removeSource(it) }
-            currentGroupsSource = newSource
-            currentGroupsSource?.let { groups.addSource(it) { groups.value = it } }
-        }
-
-        val newTotalSource = withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             try {
-                groupSearchManager.getAllGroups(dao)
+                val newSource = groupSearchManager.getGroups(dao)
+                val newTotalSource = groupSearchManager.getAllGroups(dao)
+
+                // Send results and total count with the same LiveData
+                val combined = MergerLiveData.Two<List<Group>, List<Group>, Pair<List<Group>, Int>>(
+                    newSource, newTotalSource
+                ) { data1, data2 -> Pair(data1, data2.size) }
+
+                withContext(Dispatchers.Main) {
+                    synchronized(groupSearchManager) {
+                        currentGroupsSource?.let { groups.removeSource(it) }
+                        currentGroupsSource = combined
+                        currentGroupsSource?.let { groups.addSource(it) { groups.value = it } }
+                    }
+                }
             } finally {
                 dao.cleanup()
-            }
-        }
-        synchronized(groupSearchManager) {
-            currentGroupsTotalSource?.let { currentGroupTotal.removeSource(it) }
-            currentGroupsTotalSource = newTotalSource
-            currentGroupsTotalSource?.let {
-                currentGroupTotal.addSource(it) { currentGroupTotal.postValue(it.size) }
             }
         }
 
@@ -1006,9 +1000,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         onSuccess: Runnable
     ) {
         // Check if the group already exists
-        val localGroups = groups.value ?: return
+        val localGroups = groups.value?.first ?: return
         val groupMatchingName =
-            localGroups.filter { g -> g.name.equals(newGroupName, ignoreCase = true) }
+            localGroups.filter { it.name.equals(newGroupName, ignoreCase = true) }
         if (groupMatchingName.isNotEmpty()) { // Existing group with the same name
             onFail.invoke(R.string.group_name_exists)
         } else if (group.isUngroupedGroup) { // "Ungrouped" group can't be renamed because it stops to work (TODO investigate that)
