@@ -1116,8 +1116,6 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     // BOOKMARKS
-
-    // BOOKMARKS
     override fun countAllBookmarks(): Long {
         return ObjectBoxDB.selectBookmarksQ(null).safeCount()
     }
@@ -1156,8 +1154,6 @@ class ObjectBoxDAO : CollectionDAO {
 
 
     // SEARCH HISTORY
-
-    // SEARCH HISTORY
     override fun selectSearchRecordsLive(): LiveData<List<SearchRecord>> {
         return ObjectBoxLiveData(ObjectBoxDB.selectSearchRecordsQ())
     }
@@ -1181,8 +1177,6 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.selectSearchRecordsQ().safeRemove()
     }
 
-
-    // RENAMING RULES
 
     // RENAMING RULES
     override fun selectRenamingRule(id: Long): RenamingRule? {

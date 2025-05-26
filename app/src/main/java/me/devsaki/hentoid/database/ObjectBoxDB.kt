@@ -1935,9 +1935,8 @@ object ObjectBoxDB {
             true
         ) else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false)
         if (filterRating > -1) qb.equal(Group_.rating, filterRating.toLong())
-        var property = Group_.name
-        if (Settings.Value.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) property =
-            Group_.order
+        val property =
+            if (Settings.Value.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) Group_.order else Group_.name
         // Order by number of children / download date is done by the DAO
         if (orderDesc) qb.orderDesc(property) else qb.order(property)
         return qb.build()

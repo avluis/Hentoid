@@ -75,16 +75,16 @@ data class Group(
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
         val group = other as Group
-        return grouping == group.grouping && name == group.name
+        return grouping == group.grouping && name == group.name && subtype == group.subtype
     }
 
     // Must be an int32, so we're bound to use Objects.hash
     override fun hashCode(): Int {
-        return Objects.hash(grouping.name, name)
+        return Objects.hash(grouping.name, name, subtype)
     }
 
     fun uniqueHash(): Long {
-        return hash64((grouping.name + "." + name).toByteArray())
+        return hash64((grouping.name + "." + name + "." + subtype).toByteArray())
     }
 
     class GroupingConverter : PropertyConverter<Grouping?, Int?> {
