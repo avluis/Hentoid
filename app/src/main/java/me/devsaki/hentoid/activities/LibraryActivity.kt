@@ -1149,7 +1149,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             splitMenu?.isVisible = false
             transformMenu?.isVisible = false
             exportMetaMenu?.isVisible = false
-        } else { // Flat view
+        } else { // Books
             editMenu?.isVisible = !hasProcessed
             detachMenu?.isVisible = false
             deleteMenu?.isVisible =
@@ -1157,7 +1157,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             completedMenu?.isVisible = true
             resetReadStatsMenu?.isVisible = true
             rateMenu?.isVisible = isMultipleSelection
-            shareMenu?.isVisible = 0L == selectedArchivePdfExternalCount
+            shareMenu?.isVisible = true
             archiveMenu?.isVisible = !hasProcessed
             changeGroupMenu?.isVisible = !hasProcessed
             folderMenu?.isVisible = !isMultipleSelection

@@ -572,11 +572,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Callback for the "share item" action button
      */
     private fun shareSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        if (selectedItems.isNotEmpty()) {
-            val c = selectedItems.mapNotNull { ci -> ci.content }
-            leaveSelectionMode()
-            shareContent(requireContext(), c)
+        selectExtension?.selectedItems?.let { selectedItems ->
+            if (selectedItems.isNotEmpty()) {
+                val c = selectedItems.mapNotNull { it.content }
+                leaveSelectionMode()
+                shareContent(requireContext(), c)
+            }
         }
     }
 
@@ -584,16 +585,17 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Callback for the "delete item" action button
      */
     private fun deleteSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        if (selectedItems.isNotEmpty()) {
-            var selectedContent = selectedItems.mapNotNull { it.content }
-            // Remove external items if they can't be deleted
-            if (!Settings.isDeleteExternalLibrary) selectedContent = selectedContent
-                .filterNot { it.status == StatusContent.EXTERNAL }
-            if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
-                selectedContent.map { it.id }, emptyList(),
-                { refreshIfNeeded() }, selectExtension!!
-            )
+        selectExtension?.selectedItems?.let { selectedItems ->
+            if (selectedItems.isNotEmpty()) {
+                var selectedContent = selectedItems.mapNotNull { it.content }
+                // Remove external items if they can't be deleted
+                if (!Settings.isDeleteExternalLibrary) selectedContent = selectedContent
+                    .filterNot { it.status == StatusContent.EXTERNAL }
+                if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
+                    selectedContent.map { it.id }, emptyList(),
+                    { refreshIfNeeded() }, selectExtension!!
+                )
+            }
         }
     }
 
@@ -601,10 +603,11 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      * Callback for the "rate items" action button
      */
     private fun onMassRateClick() {
-        val selectedItems = selectExtension!!.selectedItems
-        val selectedIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
-        if (selectedIds.isNotEmpty()) {
-            invoke(this, selectedIds.toLongArray(), 0)
+        selectExtension?.selectedItems?.let { selectedItems ->
+            val selectedIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
+            if (selectedIds.isNotEmpty()) {
+                invoke(this, selectedIds.toLongArray(), 0)
+            }
         }
     }
 

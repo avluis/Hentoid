@@ -1131,7 +1131,9 @@ fun shareContent(
     if (items.isEmpty()) return
 
     val subject = if (1 == items.size) items[0].title else ""
-    val text = TextUtils.join(System.lineSeparator(), items.map { it.galleryUrl })
+    val text = TextUtils.join(System.lineSeparator(), items.map {
+        if (it.galleryUrl.isEmpty()) it.title else it.galleryUrl
+    })
 
     shareText(context, subject, text)
 }
