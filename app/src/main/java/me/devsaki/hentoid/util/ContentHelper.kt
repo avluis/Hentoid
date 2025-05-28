@@ -645,10 +645,7 @@ fun detachAllExternalContent(context: Context, dao: CollectionDAO) {
 
     // Remove all images stored in the app's persistent folder (archive covers)
     val appFolder = context.filesDir
-    val images = appFolder.listFiles { _, s: String? ->
-        isSupportedImage(s ?: "")
-    }
-    if (images != null) for (f in images) removeFile(f!!)
+    appFolder.listFiles { _, s: String? -> isSupportedImage(s ?: "") }?.forEach { removeFile(it) }
 }
 
 /**

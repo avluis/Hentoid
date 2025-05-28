@@ -37,6 +37,8 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.jsonToContent
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -113,6 +115,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             }
 
             Beholder.clearSnapshot(context)
+
+            // Remove all images stored in the app's persistent folder (archive covers)
+            val appFolder = context.filesDir
+            appFolder.listFiles { _, s: String? -> isSupportedImage(s ?: "") }?.forEach { removeFile(it) }
+
             val addedContent = HashMap<String, MutableList<Pair<DocumentFile, Long>>>()
             val progress = ProgressManager()
             FileExplorer(context, rootFolder.uri).use { explorer ->
