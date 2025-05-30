@@ -70,8 +70,10 @@ import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findFolder
+import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getInputStream
@@ -80,6 +82,7 @@ import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
@@ -727,82 +730,101 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
 
     // Extract the cover to the app's persistent folder if the book is an archive or a PDF
     if (content.isArchive || content.isPdf) {
-        getFileFromSingleUriString(context, content.storageUri)?.let { archive ->
-            try {
-                val targetFolder = context.filesDir
-                val extractInstructions: MutableList<Pair<String, Long>> = ArrayList()
-                extractInstructions.add(
-                    Pair(
-                        content.cover.fileUri.replace(
-                            content.storageUri + File.separator,
-                            ""
-                        ), newContentId
-                    )
-                )
-                val results = if (content.isArchive) context.extractArchiveEntriesBlocking(
-                    archive.uri,
-                    targetFolder.toUri(),
-                    extractInstructions
-                )
-                else {
-                    val mgr = PdfManager()
-                    mgr.extractImagesBlocking(
-                        context,
-                        archive,
-                        targetFolder.toUri(),
-                        extractInstructions
-                    )
-                }
-                if (results.isNotEmpty()) {
-                    var uri = results[0]
-
-                    // Save the pic as low-res JPG
-                    val extractedFile = File(uri.path ?: "") // These are file URI's
-                    if (extractedFile.length() > 0) {
-                        try {
-                            getInputStream(context, uri).use { `is` ->
-                                BitmapFactory.decodeStream(`is`)?.let { b ->
-                                    val targetFileName = EXT_THUMB_FILE_PREFIX + extractedFile.name
-                                    // Reuse existing file if exists; create if not
-                                    val existingFile = findFile(targetFolder, targetFileName)
-                                    val finalFile =
-                                        existingFile ?: File(targetFolder, targetFileName)
-                                    getOutputStream(finalFile).use { os ->
-                                        val resizedBitmap =
-                                            getScaledDownBitmap(
-                                                b,
-                                                dpToPx(context, libraryGridCardWidthDP),
-                                                false
-                                            )
-                                        resizedBitmap.compress(
-                                            Bitmap.CompressFormat.JPEG,
-                                            85,
-                                            os
-                                        )
-                                        resizedBitmap.recycle()
-                                    }
-                                    uri = Uri.fromFile(finalFile)
-                                }
-                            }
-                        } finally {
-                            if (!extractedFile.delete()) Timber.w(
-                                "Failed deleting file %s",
-                                extractedFile.absolutePath
-                            )
-                        }
-                        Timber.i(">> Set cover for %s", content.title)
-                        content.cover.fileUri = uri.toString()
-                        content.cover.name = uri.lastPathSegment ?: ""
-                        dao.replaceImageList(newContentId, content.imageList)
-                    }
-                }
-            } catch (e: IOException) {
-                Timber.w(e)
+        val targetFolder = context.filesDir
+        getFirstPictureThumbCached(
+            context,
+            content.storageUri.toUri(),
+            libraryGridCardWidthDP,
+            { fileName -> findFile(targetFolder, fileName)?.toUri() },
+            { fileName ->
+                val file = File(targetFolder, fileName)
+                if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
+                file.toUri()
             }
+        )?.let { cachedThumbUri ->
+            Timber.i(">> Set cover for %s", content.title)
+            content.cover.fileUri = cachedThumbUri.toString()
+            content.cover.name = cachedThumbUri.lastPathSegment ?: ""
+            dao.replaceImageList(newContentId, content.imageList)
+        } ?: run {
+            Timber.w("Couldn't create thumb for ${content.storageUri}")
         }
     }
 
     return newContentId
+}
+
+fun getFirstPictureThumbCached(
+    context: Context,
+    archivePdfUri: Uri,
+    maxDimDp: Int,
+    cacheFinder: (String) -> Uri?,
+    cacheCreator: (String) -> Uri?
+): Uri? {
+    val ext = getExtensionFromUri(archivePdfUri.toString())
+    val isArchive = isSupportedArchive("a.$ext")
+    val isPdf = ext == "pdf"
+    if (!isArchive && !isPdf) return null
+
+    val targetFileName = EXT_THUMB_FILE_PREFIX + hash64(archivePdfUri.toString())
+    val existing = cacheFinder.invoke(targetFileName)
+    if (existing != null) return existing
+
+    getFileFromSingleUri(context, archivePdfUri)?.let { archive ->
+        try {
+            val tempFolder = context.cacheDir.toUri()
+            val results = if (isArchive) {
+                val entries = context.getArchiveEntries(archive)
+                    .filter { isSupportedImage(it.path) }.filter { it.size > 0 }
+                    .sortedWith(InnerNameNumberArchiveComparator())
+                if (entries.isEmpty()) return null
+
+                context.extractArchiveEntriesBlocking(
+                    archive.uri,
+                    tempFolder,
+                    listOf(Pair(entries[0].path, 0))
+                )
+            } else {
+                val mgr = PdfManager()
+                val firstEntry = mgr.getEntries(context, archive, true)
+                if (firstEntry.isEmpty()) return null
+                mgr.extractImagesBlocking(
+                    context,
+                    archive,
+                    tempFolder,
+                    listOf(Pair(firstEntry[0].path, 0))
+                )
+            }
+            if (results.isEmpty()) return null
+
+            var uri = results[0]
+            val tempFile = File(uri.path ?: "") // These are File URI's
+            if (tempFile.length() < 1) return null
+
+            // Save the pic as low-res JPG
+            try {
+                getInputStream(context, uri).use { `is` ->
+                    BitmapFactory.decodeStream(`is`)?.let { b ->
+                        val target = existing ?: cacheCreator.invoke(targetFileName)
+                        ?: throw IOException("Can't create file $targetFileName")
+                        getOutputStream(context, target)?.use { os ->
+                            val resizedBitmap =
+                                getScaledDownBitmap(b, dpToPx(context, maxDimDp), false)
+                            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os)
+                            resizedBitmap.recycle()
+                        }
+                        return target
+                    }
+                }
+            } finally {
+                if (!tempFile.delete())
+                    Timber.w("Failed deleting file ${tempFile.absolutePath}")
+            }
+        } catch (e: IOException) {
+            Timber.w(e)
+        }
+    }
+    return null
 }
 
 /**
@@ -1338,8 +1360,10 @@ fun createImageListFromFiles(
  * @return List of ImageFiles contructed from the given parameters
  */
 fun createImageListFromArchiveEntries(
-    archiveFileUri: Uri, files: List<ArchiveEntry>,
-    targetStatus: StatusContent, startingOrder: Int,
+    archiveFileUri: Uri,
+    files: List<ArchiveEntry>,
+    targetStatus: StatusContent,
+    startingOrder: Int,
     namePrefix: String
 ): List<ImageFile> {
     assertNonUiThread()

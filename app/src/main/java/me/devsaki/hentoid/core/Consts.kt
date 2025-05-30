@@ -25,6 +25,11 @@ const val JSON_FILE_NAME = "content.json"
 const val JSON_FILE_NAME_V2 = "contentV2.json"
 const val JSON_ARCHIVE_SUFFIX = "_h"
 
+// Cache subfolder for reader pics extracted from archives and PDFs or downlodaded
+const val READER_CACHE = "disk_cache"
+// Cache subfolder for cover thumbs extracted from archives and PDFs
+const val THUMBS_CACHE = "thumbs_cache"
+
 const val QUEUE_JSON_FILE_NAME = "queue.json"
 const val BOOKMARKS_JSON_FILE_NAME = "bookmarks.json"
 const val GROUPS_JSON_FILE_NAME = "groups.json"

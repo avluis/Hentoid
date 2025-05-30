@@ -138,7 +138,7 @@ class ToolsFragment : PreferenceFragmentCompat(),
                     withContext(Dispatchers.IO) {
                         context?.apply {
                             clearAppCache()
-                            StorageCache.init(this)
+                            StorageCache.clearAll(this)
                         }
                     }
                     toast(R.string.tools_cache_app_success)

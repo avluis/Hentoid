@@ -19,6 +19,7 @@ import me.devsaki.hentoid.core.JSON_FILE_NAME
 import me.devsaki.hentoid.core.JSON_FILE_NAME_OLD
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.QUEUE_JSON_FILE_NAME
+import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.RENAMING_RULES_JSON_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
@@ -52,8 +53,8 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
-import me.devsaki.hentoid.util.file.StorageCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
@@ -359,7 +360,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     null
                 )
                 // Clear disk cache as import may reuse previous image IDs
-                init(applicationContext)
+                StorageCache.clear(applicationContext, READER_CACHE)
 
                 // 4th pass : Import queue, bookmarks and renaming rules JSON
                 dao = ObjectBoxDAO()

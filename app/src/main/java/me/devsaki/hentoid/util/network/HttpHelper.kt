@@ -423,10 +423,10 @@ fun cleanContentType(rawContentType: String): Pair<String, String?> {
 }
 
 /**
- * Return the extension of the file located at the given URI, without the leading '.'
+ * Return the extension of the file located at the given URI, in lowercase, without the leading '.'
  *
  * @param uri Location of the file
- * @return Extension of the file located at the given URI, without the leading '.'
+ * @return Extension of the file located at the given URI, in lowercase, without the leading '.'
  */
 fun getExtensionFromUri(uri: String): String {
     val parts = UriParts(uri, true)

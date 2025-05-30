@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
@@ -66,7 +67,7 @@ fun downloadToFileCached(
 ): Uri? {
     return downloadToFile(
         context, site, rawUrl, requestHeaders,
-        fileCreator = { _, _ -> StorageCache.createFile(cacheKey) },
+        fileCreator = { _, _ -> StorageCache.createFile(READER_CACHE, cacheKey) },
         interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
     )
 }
@@ -256,7 +257,7 @@ fun createFile(
     targetFolderUri: Uri,
     targetFileName: String,
     mimeType: String,
-    findBefore : Boolean = true
+    findBefore: Boolean = true
 ): Uri {
     var targetFileNameFinal =
         targetFileName + "." + getExtensionFromMimeType(mimeType)
@@ -284,10 +285,11 @@ fun createFile(
         getDocumentFromTreeUri(context, targetFolderUri)?.let { targetFolder ->
             val file = if (findBefore)
                 findOrCreateDocumentFile(
-                context,
-                targetFolder,
-                mimeType,
-                targetFileNameFinal)
+                    context,
+                    targetFolder,
+                    mimeType,
+                    targetFileNameFinal
+                )
             else targetFolder.createFile(mimeType, targetFileNameFinal)
             file?.uri
                 ?: throw IOException("Could not create file $targetFileNameFinal : creation failed")

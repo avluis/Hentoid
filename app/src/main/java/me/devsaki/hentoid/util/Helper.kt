@@ -220,6 +220,10 @@ fun hash64(data: ByteArray): Long {
     return SipHasher.hash(SIP_KEY, data)
 }
 
+fun hash64(data: String): Long {
+    return hash64(data.toByteArray())
+}
+
 /**
  * Compute the weighted average of the given operands
  * - Left part is the value

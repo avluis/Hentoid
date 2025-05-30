@@ -32,14 +32,14 @@ import com.itextpdf.layout.element.AreaBreak
 import com.itextpdf.layout.element.Image
 import com.itextpdf.layout.properties.AreaBreakType
 import com.itextpdf.layout.properties.HorizontalAlignment
+import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.download.createFile
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.NameFilter
-import me.devsaki.hentoid.util.file.cacheFileCreator
-import me.devsaki.hentoid.util.file.cacheFileFinder
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
@@ -64,9 +64,9 @@ private val LANDSCAPE = PdfNumber(90)
 private val pdfNamesFilter = NameFilter { getExtension(it).equals("pdf", true) }
 
 /**
- * Build a [NameFilter] only accepting archive files supported by the app
+ * Build a [NameFilter] only accepting PDF files supported by the app
  *
- * @return [NameFilter] only accepting archive files supported by the app
+ * @return [NameFilter] only accepting PDF files supported by the app
  */
 fun getPdfNamesFilter(): NameFilter {
     return pdfNamesFilter
@@ -237,8 +237,8 @@ class PdfManager {
                     id,
                     name,
                     data,
-                    cacheFileFinder,
-                    cacheFileCreator,
+                    StorageCache.createFinder(READER_CACHE),
+                    StorageCache.createCreator(READER_CACHE),
                     onExtracted
                 )
             },
@@ -313,7 +313,7 @@ class PdfManager {
      * @param pdf                  PDF file to extract from
      * @param entriesToExtract     Entries to extract; null to extract everything
      *      left : path of the resource (format is "pageNumber.indexInPage.extension")
-     *      right : internal identifier of the resource to extract (for remapping purposes)
+     *      right : Resource identifier set by the caller (for remapping purposes)
      * @param interrupt            Kill switch
      * @param onExtract            Extraction callback
      *      Long : Resource identifier set by the caller; internal hash if none
@@ -359,9 +359,10 @@ class PdfManager {
         onComplete?.invoke()
     }
 
-    fun getPdfEntries(
+    fun getEntries(
         context: Context,
-        doc: DocumentFile
+        doc: DocumentFile,
+        stopFirst: Boolean = false
     ): List<ArchiveEntry> {
         val result = ArrayList<ArchiveEntry>()
         getInputStream(context, doc).use { input ->
@@ -372,6 +373,7 @@ class PdfManager {
                 for (i in 1..pdfDoc.numberOfPages) {
                     currentPageIndex.set(i)
                     parser.processPageContent(pdfDoc.getPage(i))
+                    if (stopFirst && result.isNotEmpty()) return result
                 }
             }
         }

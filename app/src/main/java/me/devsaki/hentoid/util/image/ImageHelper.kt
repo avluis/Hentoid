@@ -414,40 +414,40 @@ fun assembleGif(
 }
 
 /**
- * @param bitmap                the Bitmap to be scaled
- * @param threshold             the maxium dimension (either width or height) of the scaled bitmap
+ * @param bitmap    the Bitmap to be scaled
+ * @param maxDim    the maxium dimension (either width or height) of the scaled bitmap
  * @param noRecycle is it necessary to keep the original bitmap? If not recycle the original bitmap to prevent memory leak.
  */
 fun getScaledDownBitmap(
     bitmap: Bitmap,
-    threshold: Int,
+    maxDim: Int,
     noRecycle: Boolean
 ): Bitmap {
     val width = bitmap.width
     val height = bitmap.height
     var newWidth = width
     var newHeight = height
-    if (width > height && width > threshold) {
-        newWidth = threshold
+    if (width > height && width > maxDim) {
+        newWidth = maxDim
         newHeight = (height * newWidth.toFloat() / width).toInt()
     }
-    if (width in (height + 1)..threshold) {
+    if (width in (height + 1)..maxDim) {
         //the bitmap is already smaller than our required dimension, no need to resize it
         return bitmap
     }
-    if (width < height && height > threshold) {
-        newHeight = threshold
+    if (width < height && height > maxDim) {
+        newHeight = maxDim
         newWidth = (width * newHeight.toFloat() / height).toInt()
     }
-    if (height in (width + 1)..threshold) {
+    if (height in (width + 1)..maxDim) {
         //the bitmap is already smaller than our required dimension, no need to resize it
         return bitmap
     }
-    if (width == height && width > threshold) {
-        newWidth = threshold
+    if (width == height && width > maxDim) {
+        newWidth = maxDim
         newHeight = newWidth
     }
-    return if (width == height && width <= threshold) {
+    return if (width == height && width <= maxDim) {
         //the bitmap is already smaller than our required dimension, no need to resize it
         bitmap
     } else sharpRescale(bitmap, newWidth, newHeight, noRecycle)

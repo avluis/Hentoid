@@ -8,66 +8,104 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.assertNonUiThread
-import me.devsaki.hentoid.util.hash64
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.time.Instant
 
 /**
- * The app's storage-based cache
+ * The app's fixed-size storage-based cache
+ * NB : Don't use this class if the "cache" has no size limit; just save stuff to context.filesDir
  */
 object StorageCache {
-    private const val FOLDER_NAME = "disk_cache"
-    private const val SIZE_LIMIT_DEBUG = 50 * 1024 * 1024
-    private const val SIZE_LIMIT_PRODUCTION = 50 * 1024 * 1024 // 50MB
-    private val SIZE_LIMIT = if (BuildConfig.DEBUG) SIZE_LIMIT_DEBUG else SIZE_LIMIT_PRODUCTION
 
-    // Location of the cache folder
-    private lateinit var folder: File
+    // Key = Cache ID
+    // Value = Location of the cache folder
+    private val folder = HashMap<String, File>()
 
-    // Key = URL
-    // Value.first = timestamp of last access
-    // Value.second = Uri of file
-    private val entries = HashMap<String, Pair<Long, Uri>>()
+    // Key = Cache ID
+    // Value = Is the cache permanent ?
+    // NB : Non-permanent cache gets cleared during init; permanent is not
+    private val isPermanent = HashMap<String, Boolean>()
 
-    // Timestamp for the last purge
-    private var lastPurge = Instant.now().toEpochMilli()
+    // Key = Cache ID
+    // Value = Maximum cache size (bytes))
+    private val sizeLimit = HashMap<String, Int>()
 
-    // To broadcast cleanup events
-    private var cleanupObservers = HashMap<String, () -> Unit>()
+    // Key = Cache ID
+    // Value = Cache
+    //   Key = Identifier of the file to access (formatted by the caller)
+    //   Value.first = Timestamp of last access
+    //   Value.second = Uri of cached file
+    private val entries = HashMap<String, HashMap<String, Pair<Long, Uri>>>()
+
+    // Key = Cache ID
+    // Value = Timestamp for the last purge
+    private val lastPurge = HashMap<String, Long>()
+
+    // Key = Cache ID
+    // Value = Delegate to broadcast cleanup events
+    private var cleanupObservers = HashMap<String, HashMap<String, () -> Unit>>()
 
 
-    fun init(context: Context) {
+    fun init(
+        context: Context,
+        cacheId: String,
+        limit: Int,
+        permanent: Boolean = false,
+        forceClear: Boolean = false
+    ) {
         assertNonUiThread()
-        folder = getOrCreateCacheFolder(context, FOLDER_NAME)
-            ?: throw IOException("Couldn't initialize cache folder $FOLDER_NAME")
-        if (!folder.deleteRecursively()) Timber.w("Couldn't empty cache folder $FOLDER_NAME")
-        folder = getOrCreateCacheFolder(context, FOLDER_NAME)
-            ?: throw IOException("Couldn't initialize cache folder $FOLDER_NAME")
-        synchronized(entries) {
-            entries.clear()
+
+        var theFolder = getOrCreateCacheFolder(context, cacheId)
+            ?: throw IOException("Couldn't initialize cache folder $cacheId")
+        if (!permanent || forceClear) {
+            if (!theFolder.deleteRecursively()) Timber.w("Couldn't empty cache folder $cacheId")
+            theFolder = getOrCreateCacheFolder(context, cacheId)
+                ?: throw IOException("Couldn't initialize cache folder $cacheId")
         }
+        folder[cacheId] = theFolder
+
+        isPermanent[cacheId] = permanent
+        sizeLimit[cacheId] = limit
+
+        val now = Instant.now().toEpochMilli()
+        lastPurge[cacheId] = now
+
+        val theEntries = HashMap<String, Pair<Long, Uri>>()
+        entries[cacheId] = theEntries
+        if (permanent && !forceClear) {
+            theFolder.listFiles()?.filterNotNull()?.forEach {
+                theEntries[it.name] = Pair(now, it.toUri())
+            }
+        }
+
+        // Call existing observers as initializing an existing cache cleans it up
+        if (cleanupObservers.containsKey(cacheId))
+            cleanupObservers[cacheId] = HashMap<String, () -> Unit>()
+        cleanupObservers[cacheId]?.forEach { it.value.invoke() }
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private fun purgeIfNeeded() {
+    private fun purgeIfNeeded(cacheId: String) {
         // Avoid straining the system
-        if (Instant.now().toEpochMilli() - lastPurge < 1000) return
-        lastPurge = Instant.now().toEpochMilli()
+        val now = Instant.now().toEpochMilli()
+        if (now - lastPurge[cacheId]!! < 1000) return
+        lastPurge[cacheId] = now
 
         GlobalScope.launch(Dispatchers.Default) {
-            val sortedEntries = entries.entries.sortedBy { it.value.first }.toMutableList()
+            val sortedEntries =
+                entries[cacheId]!!.entries.sortedBy { it.value.first }.toMutableList()
             withContext(Dispatchers.IO) {
-                var storageTaken = getUsedStorage()
-                while (storageTaken > SIZE_LIMIT) {
+                var storageTaken = getUsedStorage(cacheId)
+                val limit = sizeLimit[cacheId]!!
+                while (storageTaken > limit) {
                     if (sortedEntries.isEmpty()) break
                     val oldestEntry = sortedEntries[0]
-                    synchronized(entries) {
+                    synchronized(entries[cacheId]!!) {
                         Timber.d("Storage cache : removing %s", oldestEntry.key)
-                        entries.remove(oldestEntry.key)
+                        entries[cacheId]!!.remove(oldestEntry.key)
                     }
                     legacyFileFromUri(oldestEntry.value.second)?.let {
                         storageTaken -= it.length()
@@ -76,59 +114,79 @@ object StorageCache {
                     sortedEntries.removeAt(0)
                 }
             }
-            cleanupObservers.values.forEach { it.invoke() }
+            cleanupObservers[cacheId]?.forEach { it.value.invoke() }
         }
     }
 
-    private fun getUsedStorage(): Long {
+    private fun getUsedStorage(cacheId: String): Long {
         assertNonUiThread()
         var result = 0L
-        folder.listFiles()?.forEach {
+        folder[cacheId]!!.listFiles()?.forEach {
             result += it.length()
         }
         return result
     }
 
-    fun createFile(key: String): Uri {
-        assertNonUiThread()
-        val targetFile = File(folder, hash64(key.encodeToByteArray()).toString())
-        if (!targetFile.exists() && !targetFile.createNewFile()) throw IOException("Couldn't create file for key $key in cache folder $FOLDER_NAME")
-        val result = Uri.fromFile(targetFile)
-        synchronized(entries) {
-            entries[key] = Pair(Instant.now().toEpochMilli(), result)
+    fun clearAll(context: Context) {
+        folder.entries.forEach {
+            init(context, it.key, sizeLimit[it.key]!!, isPermanent[it.key]!!, true)
         }
-        purgeIfNeeded()
+    }
+
+    fun clear(context: Context, cacheId: String) {
+        init(context, cacheId, sizeLimit[cacheId]!!, isPermanent[cacheId]!!, true)
+    }
+
+    fun createFile(cacheId: String, key: String): Uri {
+        assertNonUiThread()
+        val targetFile = File(folder[cacheId], key)
+        if (!targetFile.exists() && !targetFile.createNewFile()) throw IOException("Couldn't create file for key $key in cache folder $cacheId")
+        val result = Uri.fromFile(targetFile)
+        synchronized(entries[cacheId]!!) {
+            entries[cacheId]!![key] = Pair(Instant.now().toEpochMilli(), result)
+        }
+        purgeIfNeeded(cacheId)
         return result
     }
 
-    fun getFile(key: String): Uri? {
-        synchronized(entries) {
-            val entry = entries[key] ?: return null
-            // Change timestamp of existing entry as it has just been asked for
-            entries[key] = Pair(Instant.now().toEpochMilli(), entry.second)
-            return entry.second
+    fun getFile(cacheId: String, key: String): Uri? {
+        entries[cacheId]?.let {
+            synchronized(it) {
+                val entry = it[key] ?: return null
+                // Change timestamp of existing entry as it has just been asked for
+                it[key] = Pair(Instant.now().toEpochMilli(), entry.second)
+                return entry.second
+            }
+        }
+        return null
+    }
+
+    fun peekFile(cacheId: String, key: String): Boolean {
+        return entries[cacheId]?.containsKey(key) == true
+    }
+
+    fun createFinder(cacheId: String): (String) -> Uri? {
+        return { targetFileName -> getFile(cacheId, targetFileName) }
+    }
+
+    fun createCreator(cacheId: String): (String) -> Uri? {
+        return { targetFileName ->
+            val file = File(createFile(cacheId, targetFileName).path!!)
+            if (file.exists() || file.createNewFile()) file.toUri() else null
         }
     }
 
-    fun peekFile(key: String): Boolean {
-        return entries.containsKey(key)
+    fun addCleanupObserver(cacheId: String, key: String, observer: () -> Unit) {
+        cleanupObservers[cacheId]?.let {
+            it[key] = observer
+            Timber.d("Observer added; %d registered", it.size)
+        }
     }
 
-    fun addCleanupObserver(key: String, observer: () -> Unit) {
-        cleanupObservers[key] = observer
-        Timber.d("Observer added; %d registered", cleanupObservers.size)
-    }
-
-    fun removeCleanupObserver(key: String) {
-        cleanupObservers.remove(key)
-        Timber.d("Observer removed; %d registered", cleanupObservers.size)
+    fun removeCleanupObserver(cacheId: String, key: String) {
+        cleanupObservers[cacheId]?.let {
+            it.remove(key)
+            Timber.d("Observer removed; %d registered", it.size)
+        }
     }
 }
-
-val cacheFileCreator: (String) -> Uri? =
-    { targetFileName ->
-        val file = File(StorageCache.createFile(targetFileName).path!!)
-        if (file.exists() || file.createNewFile()) file.toUri() else null
-    }
-val cacheFileFinder: (String) -> Uri? =
-    { targetFileName -> StorageCache.getFile(targetFileName) }

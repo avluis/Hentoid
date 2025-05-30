@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.SEED_PAGES
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -172,12 +173,12 @@ class ReaderViewModel(
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
         reversed.postValue(false)
-        StorageCache.addCleanupObserver(this.javaClass.name) { this.onCacheCleanup() }
+        StorageCache.addCleanupObserver(READER_CACHE, this.javaClass.name) { this.onCacheCleanup() }
     }
 
     override fun onCleared() {
         dao.cleanup()
-        StorageCache.removeCleanupObserver(this.javaClass.name)
+        StorageCache.removeCleanupObserver(READER_CACHE, this.javaClass.name)
         super.onCleared()
     }
 
@@ -401,7 +402,7 @@ class ReaderViewModel(
             // Copy location properties of the new list on the current list
             for (i in newImages.indices) {
                 val newImg = newImages[i]
-                val cacheUri = StorageCache.getFile(formatCacheKey(newImg))
+                val cacheUri = StorageCache.getFile(READER_CACHE, formatCacheKey(newImg))
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
                 else newImg.fileUri = ""
             }
@@ -437,7 +438,7 @@ class ReaderViewModel(
                 }
             } else { // Try to get some from the cache
                 newImageFiles.forEach {
-                    StorageCache.getFile(formatCacheKey(it))?.let { existingUri ->
+                    StorageCache.getFile(READER_CACHE, formatCacheKey(it))?.let { existingUri ->
                         it.fileUri = existingUri.toString()
                     }
                 }
@@ -1197,11 +1198,11 @@ class ReaderViewModel(
                     nbProcessed++
                     viewerImagesInternal[idx].let { img ->
                         val key = formatCacheKey(img)
-                        if (StorageCache.peekFile(key)) {
+                        if (StorageCache.peekFile(READER_CACHE, key)) {
                             updateImgWithExtractedUri(
                                 img,
                                 idx,
-                                StorageCache.getFile(key)!!,
+                                StorageCache.getFile(READER_CACHE, key)!!,
                                 0 == cachedIndexes.size % 4 || nbProcessed == indexesToLoad.size
                             )
                             cachedIndexes.add(idx)
@@ -1365,15 +1366,13 @@ class ReaderViewModel(
             val img = viewerImagesInternal[index]
             val c = img.content.target
 
-            val existingUri = StorageCache.getFile(formatCacheKey(img))
+            val existingUri = StorageCache.getFile(READER_CACHE, formatCacheKey(img))
             if (existingUri != null) {
                 updateImgWithExtractedUri(img, index, existingUri, false)
                 hasExistingUris = true
             } else {
                 extractInstructions.add(
-                    Pair(
-                        img.url.replace(c.storageUri + File.separator, ""), img.id
-                    )
+                    Pair(img.url.replace(c.storageUri + File.separator, ""), img.id)
                 )
                 indexExtractInProgress.add(index)
             }
@@ -1535,12 +1534,15 @@ class ReaderViewModel(
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
         // Already downloaded
-        if (img.fileUri.isNotEmpty() && StorageCache.getFile(formatCacheKey(img)) != null)
+        if (img.fileUri.isNotEmpty() && StorageCache.getFile(
+                READER_CACHE,
+                formatCacheKey(img)
+            ) != null
+        )
             return Pair(pageIndex, img.fileUri)
 
         // Initiate download
         try {
-            val mimeType: String
             val targetFile: File
 
             // Prepare request headers
@@ -2036,7 +2038,7 @@ class ReaderViewModel(
         synchronized(viewerImagesInternal) {
             viewerImagesInternal.forEach {
                 if ((it.isArchived || it.status == StatusContent.ONLINE)
-                    && !StorageCache.peekFile(formatCacheKey(it))
+                    && !StorageCache.peekFile(READER_CACHE, formatCacheKey(it))
                 ) it.fileUri = ""
             }
         }

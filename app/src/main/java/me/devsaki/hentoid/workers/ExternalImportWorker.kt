@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.ObjectBoxDAOContainer
@@ -30,8 +31,8 @@ import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
 import me.devsaki.hentoid.util.file.Beholder
-import me.devsaki.hentoid.util.file.StorageCache.init
 import me.devsaki.hentoid.util.file.FileExplorer
+import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
@@ -118,7 +119,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
             // Remove all images stored in the app's persistent folder (archive covers)
             val appFolder = context.filesDir
-            appFolder.listFiles { _, s: String? -> isSupportedImage(s ?: "") }?.forEach { removeFile(it) }
+            appFolder.listFiles { _, s: String? -> isSupportedImage(s ?: "") }
+                ?.forEach { removeFile(it) }
 
             val addedContent = HashMap<String, MutableList<Pair<DocumentFile, Long>>>()
             val progress = ProgressManager()
@@ -158,7 +160,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 // Clear disk cache as import may reuse previous image IDs
-                init(applicationContext)
+                StorageCache.clear(applicationContext, READER_CACHE)
 
                 // Update the beholder
                 Beholder.registerContent(context, addedContent)

@@ -12,12 +12,17 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.THUMBS_CACHE
 import me.devsaki.hentoid.util.InnerNameNumberDisplayFileComparator
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.StorageCache
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.getFirstPictureThumbCached
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
@@ -130,8 +135,6 @@ class FolderSearchManager() {
             val rootDoc =
                 theExplorer.getDocumentFromTreeUri(context, root) ?: return@withContext emptyFlow()
 
-            // TODO sorting at file level
-
             // Add 'Up one level' item at position 0
             val flowUp = flowOf(
                 DisplayFile(
@@ -146,7 +149,18 @@ class FolderSearchManager() {
                         val imgChildren = if (it.isDirectory) {
                             theExplorer.listFiles(context, it, imageNamesFilter)
                         } else emptyList()
-                        val coverUri = imgChildren.firstOrNull()?.uri ?: Uri.EMPTY
+                        // TODO get number of images inside archives and PDFs
+                        // Extract archive and PDF covers using private storage (same as bona library books)
+                        val fileName = it.name ?: ""
+                        val archiveCover =
+                            if (isSupportedArchive(fileName) ||  getExtension(fileName) == "pdf") {
+                                getFirstPictureThumbCached(
+                                    context, it.uri, 100,
+                                    StorageCache.createFinder(THUMBS_CACHE),
+                                    StorageCache.createCreator(THUMBS_CACHE)
+                                )
+                            } else Uri.EMPTY
+                        val coverUri = imgChildren.firstOrNull()?.uri ?: archiveCover
                         val res = DisplayFile(it, imgChildren.size > 1, root)
                         res.coverUri = coverUri
                         res.nbChildren = imgChildren.size

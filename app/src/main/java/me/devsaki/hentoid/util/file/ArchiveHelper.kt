@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.createFile
 import me.devsaki.hentoid.util.image.startsWith
@@ -147,10 +148,7 @@ fun Context.getArchiveEntries(file: DocumentFile): List<ArchiveEntry> {
  * Get the entries of the given archive file
  */
 @Throws(IOException::class)
-private fun Context.getArchiveEntries(
-    format: ArchiveFormat,
-    uri: Uri
-): List<ArchiveEntry> {
+private fun Context.getArchiveEntries(format: ArchiveFormat, uri: Uri): List<ArchiveEntry> {
     assertNonUiThread()
     val callback = ArchiveOpenCallback()
     val result = ArrayList<ArchiveEntry>()
@@ -184,8 +182,8 @@ fun Context.extractArchiveEntriesCached(
 ) {
     return extractArchiveEntries(
         uri,
-        cacheFileCreator,
-        cacheFileFinder,
+        StorageCache.createFinder(READER_CACHE),
+        StorageCache.createCreator(READER_CACHE),
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -201,6 +199,7 @@ fun Context.extractArchiveEntries(
 ) {
     return extractArchiveEntries(
         uri,
+        fileFinder = { targetFileName -> findFile(this, targetFolder.toUri(), targetFileName) },
         fileCreator = { targetFileName ->
             createFile(
                 this,
@@ -210,7 +209,6 @@ fun Context.extractArchiveEntries(
                 false
             )
         },
-        fileFinder = { targetFileName -> findFile(this, targetFolder.toUri(), targetFileName) },
         entriesToExtract, interrupt, onExtract, onComplete
     )
 }
@@ -222,7 +220,7 @@ fun Context.extractArchiveEntries(
  * @param targetFolder      Folder to extract files to
  * @param entriesToExtract  List of entries to extract; null to extract everything
  *      left = relative paths to the archive root
- *      right = internal identifier of the resource to extract (for remapping purposes)
+ *      right = resource identifier set by the caller (for remapping purposes)
  * @returns Uris of extracted files
  * @throws IOException If something horrible happens during I/O
  */
@@ -261,8 +259,8 @@ fun Context.extractArchiveEntriesBlocking(
 
     extractArchiveEntries(
         archive,
-        fileCreator,
         fileFinder,
+        fileCreator,
         entriesToExtract, interrupt,
         onExtracted, null
     )
@@ -294,10 +292,10 @@ fun Context.extractArchiveEntriesBlocking(
  * @param fileFinder       Method to call to find a file in the extraction location
  * @param entriesToExtract List of entries to extract; null to extract everything
  *      left = relative paths to the archive root
- *      right = internal identifier of the resource to extract (for remapping purposes)
+ *      right = resource identifier set by the caller (for remapping purposes)
  * @param interrupt        Kill switch
  * @param onExtract        Extraction callback
- *      String : Resource identifier set by the caller
+ *      Long : Resource identifier set by the caller
  *      Uri : Uri of the newly created file
  * @param onComplete       Completion callback
  * @throws IOException If something horrible happens during I/O
@@ -305,8 +303,8 @@ fun Context.extractArchiveEntriesBlocking(
 @Throws(IOException::class)
 private fun Context.extractArchiveEntries(
     uri: Uri,
-    fileCreator: (String) -> Uri?,
     fileFinder: (String) -> Uri?,
+    fileCreator: (String) -> Uri?,
     entriesToExtract: List<Pair<String, Long>>?,
     interrupt: (() -> Boolean)? = null,
     onExtract: ((Long, Uri) -> Unit)?,

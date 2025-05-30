@@ -49,6 +49,7 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.findFile
+import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
 import me.devsaki.hentoid.util.image.AnimatedPngDecoder
@@ -142,7 +143,7 @@ object AppStartup {
 
     fun getPostLaunchTasks(): List<BiConsumer<Context, (Float) -> Unit>> {
         return listOf(
-            this::initStorageCache,
+            this::initStorageCaches,
             this::initHelperResources,
             this::searchForUpdates,
             this::sendFirebaseStats,
@@ -209,7 +210,7 @@ object AppStartup {
             context.clearWebviewCache(null)
             Timber.d("Process app update : Clearing app cache")
             context.clearAppCache()
-            StorageCache.init(context)
+            StorageCache.clearAll(context)
             Timber.d("Process app update : Complete")
             EventBus.getDefault().postSticky(AppUpdatedEvent())
             Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
@@ -283,9 +284,18 @@ object AppStartup {
         Timber.i("Create plug receiver : done")
     }
 
-    private fun initStorageCache(context: Context, emitter: (Float) -> Unit) {
+    private fun initStorageCaches(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Init storage cache : start")
-        StorageCache.init(context)
+        val sizeLimitDebug = 50 * 1024 * 1024
+        val sizeLimitProd = 50 * 1024 * 1024 // 50MB
+        val sizeLimit = if (BuildConfig.DEBUG) sizeLimitDebug else sizeLimitProd
+
+        StorageCache.init(context, READER_CACHE, sizeLimit)
+        Timber.i("Reacer cache : initialized with ${formatHumanReadableSize(sizeLimit.toLong(), context.resources)}")
+
+        StorageCache.init(context, THUMBS_CACHE, sizeLimit, true)
+        Timber.i("Thumbs cache : initialized with ${formatHumanReadableSize(sizeLimit.toLong(), context.resources)}")
+
         Timber.i("Init storage cache : done")
     }
 
