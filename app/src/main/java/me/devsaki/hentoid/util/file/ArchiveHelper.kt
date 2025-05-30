@@ -8,10 +8,10 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.util.assertNonUiThread
-import me.devsaki.hentoid.util.download.createFile
 import me.devsaki.hentoid.util.image.startsWith
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
+import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode
 import net.sf.sevenzipjbinding.ExtractOperationResult
@@ -175,7 +175,7 @@ private fun Context.getArchiveEntries(format: ArchiveFormat, uri: Uri): List<Arc
 @Throws(IOException::class)
 fun Context.extractArchiveEntriesCached(
     uri: Uri,
-    entriesToExtract: List<Pair<String, Long>>?,
+    entriesToExtract: List<Triple<String, Long, String>>?,
     interrupt: (() -> Boolean)? = null,
     onExtract: ((Long, Uri) -> Unit)? = null,
     onComplete: (() -> Unit)? = null
@@ -192,7 +192,7 @@ fun Context.extractArchiveEntriesCached(
 fun Context.extractArchiveEntries(
     uri: Uri,
     targetFolder: File,  // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-    entriesToExtract: List<Pair<String, Long>>?,
+    entriesToExtract: List<Triple<String, Long, String>>?,
     interrupt: (() -> Boolean)? = null,
     onExtract: ((Long, Uri) -> Unit)? = null,
     onComplete: (() -> Unit)? = null
@@ -228,7 +228,7 @@ fun Context.extractArchiveEntries(
 fun Context.extractArchiveEntriesBlocking(
     archive: Uri,
     targetFolder: Uri,
-    entriesToExtract: List<Pair<String, Long>>,
+    entriesToExtract: List<Triple<String, Long, String>>,
     onProgress: (() -> Unit)? = null,
     interrupt: (() -> Boolean)? = null
 ): List<Uri> {
@@ -305,7 +305,7 @@ private fun Context.extractArchiveEntries(
     uri: Uri,
     fileFinder: (String) -> Uri?,
     fileCreator: (String) -> Uri?,
-    entriesToExtract: List<Pair<String, Long>>?,
+    entriesToExtract: List<Triple<String, Long, String>>?,
     interrupt: (() -> Boolean)? = null,
     onExtract: ((Long, Uri) -> Unit)?,
     onComplete: (() -> Unit)?
@@ -318,7 +318,7 @@ private fun Context.extractArchiveEntries(
         format = getTypeFromArchiveHeader(header)
     }
     if (null == format) return
-    val fileNames: MutableMap<Int, String> = HashMap()
+    val targetFileNames: MutableMap<Int, String> = HashMap()
     val identifiers: MutableMap<Int, Long> = HashMap()
 
     // TODO handle the case where the extracted elements would saturate storage space
@@ -335,13 +335,13 @@ private fun Context.extractArchiveEntries(
                                 // TL;DR - We don't care about folders
                                 // If we were coding an all-purpose extractor we would have to create folders
                                 // But Hentoid just wants to extract a bunch of files in one single place!
-                                fileNames[archiveIndex] = fileName.replace(File.separator, "_")
+                                targetFileNames[archiveIndex] = entry.third
                                 identifiers[archiveIndex] = entry.second
                                 break
                             }
                         }
                     } else {
-                        fileNames[archiveIndex] = fileName.replace(File.separator, "_")
+                        targetFileNames[archiveIndex] = fileName.replace(File.separator, "_")
                     }
                 }
                 val callback =
@@ -349,13 +349,13 @@ private fun Context.extractArchiveEntries(
                         fileFinder,
                         fileCreator,
                         outputStreamCreator = { uri -> getOutputStream(this, uri) },
-                        fileNames,
+                        targetFileNames,
                         identifiers,
                         interrupt,
                         onExtract,
                         onComplete
                     )
-                val indexes = fileNames.keys.toIntArray()
+                val indexes = targetFileNames.keys.toIntArray()
                 inArchive.extract(indexes, false, callback)
             }
         }
@@ -542,7 +542,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
  * @property fileFinder             Delegate method that checks if the target file exists in the target folder
  * @property fileCreator            Delegate method that creates the given file in the target folder
  * @property outputStreamCreator    Delegate method that creates an OutputStream for the given Uri
- * @property fileNames              Target file names, indexed on archive absolute file index
+ * @property targetFileNames        Target file names, indexed on archive absolute file index
  * @property identifiers            Target file identifiers given by the caller, indexed on archive absolute file index
  * @property interrupt              Kill switch
  * @property onExtract              Extraction callback
@@ -554,7 +554,7 @@ private class ArchiveExtractCallback(
     private val fileFinder: (String) -> Uri?,
     private val fileCreator: (String) -> Uri?,
     private val outputStreamCreator: (Uri) -> OutputStream?,
-    private val fileNames: Map<Int, String>,
+    private val targetFileNames: Map<Int, String>,
     private val identifiers: Map<Int, Long>,
     private val interrupt: (() -> Boolean)? = null,
     private val onExtract: ((Long, Uri) -> Unit)?,
@@ -577,7 +577,7 @@ private class ArchiveExtractCallback(
         this.extractAskMode = extractAskMode
 
         if (identifiers.isNotEmpty()) identifier = identifiers[index] ?: return null
-        val fileName = fileNames[index] ?: return null
+        val fileName = targetFileNames[index] ?: return null
 
         val existing = fileFinder.invoke(fileName)
         Timber.v("Extract archive, get stream: $index to: $extractAskMode as $fileName")
@@ -620,7 +620,7 @@ private class ArchiveExtractCallback(
         }
         if (extractAskMode != null && extractAskMode == ExtractAskMode.EXTRACT) {
             nbProcessed++
-            if (nbProcessed == fileNames.size) onComplete?.invoke()
+            if (nbProcessed == targetFileNames.size) onComplete?.invoke()
         }
     }
 
@@ -650,5 +650,16 @@ private class SequentialOutStream(private val out: OutputStream) : ISequentialOu
     @Throws(IOException::class)
     fun close() {
         out.close()
+    }
+}
+
+
+/**
+ * Comparator to be used to sort archive entries according to their names
+ */
+class InnerNameNumberArchiveComparator : Comparator<ArchiveEntry> {
+    override fun compare(o1: ArchiveEntry, o2: ArchiveEntry): Int {
+        return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
+            .compare(o1.path, o2.path)
     }
 }

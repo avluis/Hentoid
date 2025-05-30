@@ -27,11 +27,15 @@ import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.copy
+import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.isMimeTypeSupported
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
+import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
 import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
@@ -48,6 +52,7 @@ import java.text.NumberFormat
 import java.time.Instant
 import java.util.Locale
 import kotlin.math.min
+import kotlin.text.Charsets.UTF_8
 
 val decimalFormat = NumberFormat.getInstance(Locale.getDefault()) as DecimalFormat
 val decimalSeparator = decimalFormat.decimalFormatSymbols.decimalSeparator
@@ -788,6 +793,25 @@ fun getMimeTypeFromFileUri(uri: String): String {
     return getMimeTypeFromExtension(getExtensionFromUri(uri))
 }
 
+@Throws(UnsupportedContentException::class)
+fun getMimeTypeFromStream(
+    buffer: ByteArray,
+    bufLength: Int,
+    contentType: String,
+    url: String,
+    size: String,
+): String {
+    val result = getMimeTypeFromPictureBinary(buffer)
+    if (!isMimeTypeSupported(result)) {
+        if (contentType.contains("text/")) {
+            val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
+            throw UnsupportedContentException("Message received from $url : $message")
+        }
+        throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
+    }
+    return result
+}
+
 /**
  * Share the given file using the device's app(s) of choice
  *
@@ -1524,6 +1548,53 @@ private fun deleteQuietly(file: File?): Boolean {
     }
 }
 
+@Throws(IOException::class)
+fun createFile(
+    context: Context,
+    targetFolderUri: Uri,
+    targetFileName: String,
+    mimeType: String,
+    findBefore: Boolean = true
+): Uri {
+    var targetFileNameFinal =
+        targetFileName + "." + getExtensionFromMimeType(mimeType)
+    // Keep the extension if the target file name is provided with one
+    val dotOffset = targetFileName.lastIndexOf('.')
+    if (dotOffset > -1) {
+        val extLength = targetFileName.length - targetFileName.lastIndexOf('.') - 1
+        if (extLength < 5) targetFileNameFinal = targetFileName
+    }
+    return if (ContentResolver.SCHEME_FILE == targetFolderUri.scheme) {
+        val path = targetFolderUri.path
+            ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
+
+        val targetFolder = File(path)
+        if (targetFolder.exists()) {
+            val targetFile = File(targetFolder, targetFileNameFinal)
+            if (!targetFile.exists() && !targetFile.createNewFile()) {
+                throw IOException("Could not create file " + targetFile.path + " in " + path)
+            }
+            Uri.fromFile(targetFile)
+        } else {
+            throw IOException("Could not create file $targetFileNameFinal : $path does not exist")
+        }
+    } else {
+        getDocumentFromTreeUri(context, targetFolderUri)?.let { targetFolder ->
+            val file = if (findBefore)
+                findOrCreateDocumentFile(
+                    context,
+                    targetFolder,
+                    mimeType,
+                    targetFileNameFinal
+                )
+            else targetFolder.createFile(mimeType, targetFileNameFinal)
+            file?.uri
+                ?: throw IOException("Could not create file $targetFileNameFinal : creation failed")
+        }
+            ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri does not exist")
+    }
+}
+
 /**
  * Cleans a directory without deleting it.
  *
@@ -1622,6 +1693,17 @@ fun byteCountToDisplayRoundedSize(size: Long, places: Int, res: Resources): Stri
         res,
         Locale.getDefault()
     )
+}
+
+
+/**
+ * Comparator to be used to sort files according to their names
+ */
+class InnerNameNumberFileComparator : Comparator<DocumentFile?> {
+    override fun compare(o1: DocumentFile?, o2: DocumentFile?): Int {
+        return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
+            .compare(o1?.name ?: "", o2?.name ?: "")
+    }
 }
 
 

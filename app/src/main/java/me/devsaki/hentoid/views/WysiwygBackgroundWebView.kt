@@ -17,7 +17,7 @@ import me.devsaki.hentoid.activities.sources.CustomWebViewClient
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
-import me.devsaki.hentoid.util.download.createFile
+import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.image.MIME_IMAGE_PNG

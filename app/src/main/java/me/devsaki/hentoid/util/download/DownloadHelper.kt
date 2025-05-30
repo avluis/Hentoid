@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util.download
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
@@ -18,17 +17,14 @@ import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.StorageCache
+import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.fileSizeFromUri
-import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getExtensionFromMimeType
+import me.devsaki.hentoid.util.file.getMimeTypeFromStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.file.removeFile
-import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
-import me.devsaki.hentoid.util.image.isMimeTypeSupported
 import me.devsaki.hentoid.util.keepDigits
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.fixUrl
@@ -37,11 +33,9 @@ import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Document
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.text.Charsets.UTF_8
 
 
 // NB : Actual size of read bytes may be smaller
@@ -230,72 +224,6 @@ private fun downloadToFile(
     // Remove the remaining file chunk if download has been interrupted
     if (targetFileUri != null) removeFile(context, targetFileUri)
     throw DownloadInterruptedException("Download interrupted")
-}
-
-@Throws(UnsupportedContentException::class)
-private fun getMimeTypeFromStream(
-    buffer: ByteArray,
-    bufLength: Int,
-    contentType: String,
-    url: String,
-    size: String,
-): String {
-    val result = getMimeTypeFromPictureBinary(buffer)
-    if (!isMimeTypeSupported(result)) {
-        if (contentType.contains("text/")) {
-            val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
-            throw UnsupportedContentException("Message received from $url : $message")
-        }
-        throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
-    }
-    return result
-}
-
-@Throws(IOException::class)
-fun createFile(
-    context: Context,
-    targetFolderUri: Uri,
-    targetFileName: String,
-    mimeType: String,
-    findBefore: Boolean = true
-): Uri {
-    var targetFileNameFinal =
-        targetFileName + "." + getExtensionFromMimeType(mimeType)
-    // Keep the extension if the target file name is provided with one
-    val dotOffset = targetFileName.lastIndexOf('.')
-    if (dotOffset > -1) {
-        val extLength = targetFileName.length - targetFileName.lastIndexOf('.') - 1
-        if (extLength < 5) targetFileNameFinal = targetFileName
-    }
-    return if (ContentResolver.SCHEME_FILE == targetFolderUri.scheme) {
-        val path = targetFolderUri.path
-            ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")
-
-        val targetFolder = File(path)
-        if (targetFolder.exists()) {
-            val targetFile = File(targetFolder, targetFileNameFinal)
-            if (!targetFile.exists() && !targetFile.createNewFile()) {
-                throw IOException("Could not create file " + targetFile.path + " in " + path)
-            }
-            Uri.fromFile(targetFile)
-        } else {
-            throw IOException("Could not create file $targetFileNameFinal : $path does not exist")
-        }
-    } else {
-        getDocumentFromTreeUri(context, targetFolderUri)?.let { targetFolder ->
-            val file = if (findBefore)
-                findOrCreateDocumentFile(
-                    context,
-                    targetFolder,
-                    mimeType,
-                    targetFileNameFinal
-                )
-            else targetFolder.createFile(mimeType, targetFileNameFinal)
-            file?.uri
-                ?: throw IOException("Could not create file $targetFileNameFinal : creation failed")
-        }
-            ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri does not exist")
-    }
 }
 
 /**

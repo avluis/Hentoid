@@ -36,10 +36,10 @@ import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
-import me.devsaki.hentoid.util.download.createFile
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.StorageCache
+import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
@@ -222,7 +222,7 @@ class PdfManager {
     fun extractImagesCached(
         context: Context,
         pdf: DocumentFile,
-        entriesToExtract: List<Pair<String, Long>>?,
+        entriesToExtract: List<Triple<String, Long, String>>?,
         interrupt: (() -> Boolean)? = null,
         onExtracted: ((Long, Uri) -> Unit)?,
         onComplete: () -> Unit
@@ -251,7 +251,7 @@ class PdfManager {
         context: Context,
         pdf: DocumentFile,
         targetFolder: Uri,
-        entriesToExtract: List<Pair<String, Long>>,
+        entriesToExtract: List<Triple<String, Long, String>>,
         onProgress: (() -> Unit)? = null,
         interrupt: (() -> Boolean)? = null
     ): List<Uri> {
@@ -324,7 +324,7 @@ class PdfManager {
     private fun extractImages(
         context: Context,
         pdf: DocumentFile,
-        entriesToExtract: List<Pair<String, Long>>?,
+        entriesToExtract: List<Triple<String, Long, String>>?,
         interrupt: (() -> Boolean)? = null,
         onExtract: (String, ByteArray, Long) -> Unit,
         onComplete: (() -> Unit)? = null
@@ -419,7 +419,7 @@ class PdfManager {
      * Class that implements extraction actions "driven" by the PDF library
      */
     inner class ImageRenderListener(
-        private val entriesToExtract: List<Pair<String, Long>>?,
+        private val entriesToExtract: List<Triple<String, Long, String>>?,
         private val onExtract: (String, ByteArray, Long) -> Unit
     ) : IEventListener {
         private var page = -1
@@ -440,7 +440,7 @@ class PdfManager {
                     val internalUniqueName = "$curPage.$indexInPage.$ext"
                     val identifier = entriesToExtract?.let { entry ->
                         entry.firstOrNull { it.first == internalUniqueName }?.second
-                    } ?: hash64(internalUniqueName.toByteArray())
+                    } ?: hash64(internalUniqueName)
                     onExtract.invoke(internalUniqueName, data, identifier)
                 } catch (e: com.itextpdf.io.exceptions.IOException) {
                     Timber.w(e)

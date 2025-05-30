@@ -54,6 +54,7 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.time.Instant
+import java.util.Locale
 import kotlin.math.floor
 import kotlin.math.log10
 
@@ -173,10 +174,13 @@ abstract class BaseSplitMergeWorker(
                             getFileFromSingleUriString(applicationContext, content.storageUri)
                                 ?: return@withContext
 
+                        val nbMaxDigits =
+                            (floor(log10(splitContentImages.size.toDouble())) + 1).toInt()
                         val extractInstructions = splitContentImages.map {
-                            Pair(
+                            Triple(
                                 it.url.replace(content.storageUri + File.separator, ""),
-                                it.order.toLong()
+                                it.order.toLong(),
+                                String.format(Locale.ENGLISH, "%0${nbMaxDigits}d", it.order)
                             )
                         }
 

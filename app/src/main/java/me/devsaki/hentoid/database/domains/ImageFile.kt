@@ -239,7 +239,7 @@ data class ImageFile(
     }
 
     fun computeName(nbMaxDigits: Int): ImageFile {
-        name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order)
+        name = String.format(Locale.ENGLISH, "%0${nbMaxDigits}d", order)
         return this
     }
 

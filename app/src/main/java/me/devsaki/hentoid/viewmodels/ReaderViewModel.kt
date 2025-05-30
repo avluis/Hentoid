@@ -61,6 +61,7 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.formatCacheKey
 import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.image.PdfManager
 import me.devsaki.hentoid.util.matchFilesToImageList
@@ -1359,7 +1360,7 @@ class ReaderViewModel(
         archiveExtractKillSwitch.set(false)
 
         // Build extraction instructions, ignoring already extracted items
-        val extractInstructions: MutableList<Pair<String, Long>> = ArrayList()
+        val extractInstructions: MutableList<Triple<String, Long, String>> = ArrayList()
         var hasExistingUris = false
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
@@ -1372,7 +1373,7 @@ class ReaderViewModel(
                 hasExistingUris = true
             } else {
                 extractInstructions.add(
-                    Pair(img.url.replace(c.storageUri + File.separator, ""), img.id)
+                    Triple(img.url.replace(c.storageUri + File.separator, ""), img.id, formatCacheKey(img))
                 )
                 indexExtractInProgress.add(index)
             }
@@ -2042,9 +2043,5 @@ class ReaderViewModel(
                 ) it.fileUri = ""
             }
         }
-    }
-
-    private fun formatCacheKey(img: ImageFile): String {
-        return "img" + img.id
     }
 }
