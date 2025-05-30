@@ -54,8 +54,8 @@ import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.persistNewUriPermission
-import me.devsaki.hentoid.util.image.PdfManager
-import me.devsaki.hentoid.util.image.getPdfNamesFilter
+import me.devsaki.hentoid.util.file.PdfManager
+import me.devsaki.hentoid.util.file.getPdfNamesFilter
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker

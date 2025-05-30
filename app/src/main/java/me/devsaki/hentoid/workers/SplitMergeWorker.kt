@@ -39,7 +39,8 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
-import me.devsaki.hentoid.util.image.PdfManager
+import me.devsaki.hentoid.util.file.PdfManager
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
@@ -180,7 +181,7 @@ abstract class BaseSplitMergeWorker(
                             Triple(
                                 it.url.replace(content.storageUri + File.separator, ""),
                                 it.order.toLong(),
-                                String.format(Locale.ENGLISH, "%0${nbMaxDigits}d", it.order)
+                                String.format(Locale.ENGLISH, "%0${nbMaxDigits}d", it.order) + "." + getExtension(it.url)
                             )
                         }
 

@@ -1,14 +1,14 @@
-package me.devsaki.hentoid.util.image
+package me.devsaki.hentoid.util.file
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PointF
 import android.graphics.RectF
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.itextpdf.io.image.ImageDataFactory
 import com.itextpdf.io.source.ByteArrayOutputStream
-import com.itextpdf.kernel.colors.Color
 import com.itextpdf.kernel.colors.ColorConstants
 import com.itextpdf.kernel.events.Event
 import com.itextpdf.kernel.events.IEventHandler
@@ -36,26 +36,18 @@ import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.copy
-import me.devsaki.hentoid.util.file.ArchiveEntry
-import me.devsaki.hentoid.util.file.NameFilter
-import me.devsaki.hentoid.util.file.StorageCache
-import me.devsaki.hentoid.util.file.createFile
-import me.devsaki.hentoid.util.file.getExtension
-import me.devsaki.hentoid.util.file.getExtensionFromMimeType
-import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
-import me.devsaki.hentoid.util.file.getInputStream
-import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
-import me.devsaki.hentoid.util.file.getOutputStream
-import me.devsaki.hentoid.util.file.listFiles
-import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.image.TransformParams
+import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.isSupportedImage
+import me.devsaki.hentoid.util.image.loadBitmap
+import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
 import timber.log.Timber
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicInteger
-
 
 // Inspired by https://github.com/T8RIN/ImageToolbox/blob/master/feature/pdf-tools/src/main/java/ru/tech/imageresizershrinker/feature/pdf_tools/data/AndroidPdfManager.kt
 private val PORTRAIT = PdfNumber(0)
@@ -141,14 +133,14 @@ class PdfManager {
         out: OutputStream,
         imageFiles: List<DocumentFile>,
         keepImgFormat: Boolean,
-        background: android.graphics.Color,
+        background: Color,
         onProgressChange: ((Float) -> Unit)? = null
     ) {
         PdfDocument(PdfWriter(out)).use { pdfDoc ->
             Document(pdfDoc, PageSize.A4).use { doc ->
                 doc.setMargins(0f, 0f, 0f, 0f)
                 doc.setHorizontalAlignment(HorizontalAlignment.CENTER)
-                val bgColor = Color.createColorWithColorSpace(
+                val bgColor = com.itextpdf.kernel.colors.Color.createColorWithColorSpace(
                     arrayOf(background.red(), background.green(), background.blue()).toFloatArray()
                 )
                 doc.setBackgroundColor(bgColor)
@@ -207,7 +199,7 @@ class PdfManager {
         onExtracted: ((Long, Uri) -> Unit)? = null
     ) {
         val existing = fileFinder.invoke(fileName)
-        Timber.v("Extract PDF, get stream: id $fileName")
+        Timber.Forest.v("Extract PDF, get stream: id $fileName")
         try {
             val target =
                 existing ?: fileCreator.invoke(fileName)
@@ -396,7 +388,7 @@ class PdfManager {
     private class PageBackgroundEventHandler : IEventHandler {
         private var color = ColorConstants.WHITE
 
-        fun setBackground(color: Color) {
+        fun setBackground(color: com.itextpdf.kernel.colors.Color) {
             this.color = color
         }
 
@@ -443,9 +435,9 @@ class PdfManager {
                     } ?: hash64(internalUniqueName)
                     onExtract.invoke(internalUniqueName, data, identifier)
                 } catch (e: com.itextpdf.io.exceptions.IOException) {
-                    Timber.w(e)
+                    Timber.Forest.w(e)
                 } catch (e: IOException) {
-                    Timber.w(e)
+                    Timber.Forest.w(e)
                 }
 
                 else -> {}

@@ -63,7 +63,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.formatCacheKey
 import me.devsaki.hentoid.util.getPictureFilesFromContent
-import me.devsaki.hentoid.util.image.PdfManager
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY

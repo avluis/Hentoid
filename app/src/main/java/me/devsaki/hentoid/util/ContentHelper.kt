@@ -89,7 +89,7 @@ import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
-import me.devsaki.hentoid.util.image.PdfManager
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.getScaledDownBitmap
 import me.devsaki.hentoid.util.image.isSupportedImage
