@@ -141,6 +141,7 @@ class LibraryFoldersFragment : Fragment(),
                             && oldItem.doc.nbChildren == newItem.doc.nbChildren
                             && oldItem.doc.contentId == newItem.doc.contentId
                             && oldItem.doc.coverUri == newItem.doc.coverUri
+                            && oldItem.isEnabled == newItem.isEnabled
                 }
 
                 override fun getChangePayload(
@@ -156,11 +157,14 @@ class LibraryFoldersFragment : Fragment(),
                     if (oldItem.doc.subType != newItem.doc.subType) {
                         diffBundleBuilder.subType = newItem.doc.subType.ordinal
                     }
-                    if (newItem.doc.coverUri != null && newItem.doc.coverUri != Uri.EMPTY && oldItem.doc.coverUri != newItem.doc.coverUri) {
-                        diffBundleBuilder.coverUri = newItem.doc.coverUri!!.toString()
+                    if (newItem.doc.coverUri != Uri.EMPTY && oldItem.doc.coverUri != newItem.doc.coverUri) {
+                        diffBundleBuilder.coverUri = newItem.doc.coverUri.toString()
                     }
                     if (oldItem.doc.contentId != newItem.doc.contentId) {
                         diffBundleBuilder.contentId = newItem.doc.contentId
+                    }
+                    if (oldItem.isEnabled != newItem.isEnabled) {
+                        diffBundleBuilder.enabled = newItem.isEnabled
                     }
                     return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
                 }
@@ -552,7 +556,7 @@ class LibraryFoldersFragment : Fragment(),
                 var updatedItems = itemAdapter.adapterItems.toList()
                 // Merge detailed results data into existing items
                 updatedItems.map { up ->
-                    inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it) } ?: up
+                    inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it, true) } ?: up
                 }
             }
             withContext(Dispatchers.Main) {
@@ -589,7 +593,7 @@ class LibraryFoldersFragment : Fragment(),
 
                 Type.BOOK_FOLDER, Type.SUPPORTED_FILE -> {
                     folderSearchBundle?.let {
-                        openReaderForResource(requireContext(), item.doc, it)
+                        if (item.isEnabled) openReaderForResource(requireContext(), item.doc, it)
                     }
                 }
 

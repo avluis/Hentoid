@@ -317,7 +317,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 folderSearchManager.getFoldersDetails(ctx, root)
                     .takeWhile { !detailsFlowKillSwitch.get() }
                     .filterNot { it.type == DisplayFile.Type.OTHER }
-                    .filterNot { it.coverUri == Uri.EMPTY } // No need for useless details
                     .map { enrichWithMetadata(it, dao) }
                     .transform {
                         // Fill parents cache

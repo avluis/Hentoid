@@ -42,7 +42,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
     override val isSwipeable: Boolean
 
     // Constructor for split
-    constructor(d: DisplayFile) {
+    constructor(d: DisplayFile, enabled: Boolean = false) {
         doc = d
         touchHelper = null
         showDragHandle = false
@@ -50,6 +50,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         isEmpty = false
         isSelectable = (d.type != Type.ADD_BUTTON && d.type != Type.UP_BUTTON)
         identifier = doc.id
+        isEnabled = enabled
     }
 
     override fun getViewHolder(v: View): ViewHolder {
@@ -128,6 +129,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 bundleParser.processed?.let { item.doc.isBeingProcessed = it }
                 bundleParser.type?.let { item.doc.type = Type.entries[it] }
                 bundleParser.subType?.let { item.doc.subType = SubType.entries[it] }
+                bundleParser.enabled?.let { item.isEnabled = it }
             }
 
             item.deleteAction?.apply {

@@ -158,7 +158,7 @@ class FolderSearchManager() {
                                     context, it.uri, 100,
                                     StorageCache.createFinder(THUMBS_CACHE),
                                     StorageCache.createCreator(THUMBS_CACHE)
-                                )
+                                ) ?: Uri.EMPTY
                             } else Uri.EMPTY
                         val coverUri = imgChildren.firstOrNull()?.uri ?: archiveCover
                         val res = DisplayFile(it, imgChildren.size > 1, root)

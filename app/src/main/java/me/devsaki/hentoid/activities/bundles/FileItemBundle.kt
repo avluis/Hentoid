@@ -17,6 +17,7 @@ class FileItemBundle(val bundle: Bundle = Bundle()) {
     var processed by bundle.boolean()
     var type by bundle.int()
     var subType by bundle.int()
+    var enabled by bundle.boolean()
 
     val isEmpty get() = bundle.isEmpty
 }

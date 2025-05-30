@@ -23,14 +23,14 @@ class DisplayFile {
     var subType: SubType
 
     var nbChildren = 0
-    var coverUri: Uri? = null
+    var coverUri: Uri = Uri.EMPTY
 
     var isBeingProcessed: Boolean = false
 
 
     constructor(doc: DocumentFile, isBook: Boolean = false, parent: Uri = Uri.EMPTY) {
         uri = doc.uri
-        id = hash64(doc.uri.toString().toByteArray())
+        id = hash64(doc.uri.toString())
         this.parent = parent
         name = doc.name ?: ""
         lastModified = doc.lastModified()
