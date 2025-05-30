@@ -104,8 +104,8 @@ import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.util.useLegacyInsets
 import me.devsaki.hentoid.views.NestedScrollWebView
-import me.devsaki.hentoid.widget.AddQueueMenu.Companion.show
-import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
+import me.devsaki.hentoid.widget.showAddQueueMenu
+import me.devsaki.hentoid.widget.showDownloadModeMenu
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -1074,10 +1074,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val replacementTitleFinal = replacementTitle
         // No reason to block or ignore -> actually add to the queue
         if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK && Settings.getBrowserDlAction() == DownloadMode.ASK) {
-            show(
-                this, webView, this
-            ) { position1, _ ->
-                show(
+            showAddQueueMenu(this, webView, this) { position1, _ ->
+                showDownloadModeMenu(
                     this,
                     webView, this,
                     { position2, _ ->
@@ -1091,9 +1089,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 )
             }
         } else if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-            show(
-                this, webView, this
-            ) { position, _ ->
+            showAddQueueMenu(this, webView, this) { position, _ ->
                 addToQueue(
                     if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
                     Settings.getBrowserDlAction(),
@@ -1102,10 +1098,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 )
             }
         } else if (Settings.getBrowserDlAction() == DownloadMode.ASK) {
-            show(
-                this,
-                webView, this,
-                { position, _ ->
+            showDownloadModeMenu(
+                this, webView, this, { position, _ ->
                     addToQueue(
                         QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                         if (0 == position) DownloadMode.DOWNLOAD else DownloadMode.STREAM,

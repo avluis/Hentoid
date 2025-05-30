@@ -32,7 +32,7 @@ import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.parseBookmarks
-import me.devsaki.hentoid.widget.AddQueueMenu
+import me.devsaki.hentoid.widget.showAddQueueMenu
 import me.devsaki.hentoid.workers.DownloadsImportWorker
 import me.devsaki.hentoid.workers.data.DownloadsImportData
 import org.greenrobot.eventbus.EventBus
@@ -186,7 +186,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
         val queuePosition = Settings.queueNewDownloadPosition
         if (queuePosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.let { bdg ->
-                AddQueueMenu.show(requireContext(), bdg.root, this)
+                showAddQueueMenu(requireContext(), bdg.root, this)
                 { position, _ ->
                     runImport(
                         fileUri,

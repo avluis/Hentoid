@@ -103,14 +103,14 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager
 import me.devsaki.hentoid.widget.DragSelectTouchListener
 import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import me.devsaki.hentoid.widget.LibraryPager
-import me.devsaki.hentoid.widget.RedownloadMenu
 import me.devsaki.hentoid.widget.ScrollPositionListener
+import me.devsaki.hentoid.widget.showAddQueueMenu
+import me.devsaki.hentoid.widget.showRedownloadMenu
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import me.zhanghai.android.fastscroll.PopupTextProvider
 import org.greenrobot.eventbus.EventBus
@@ -724,7 +724,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             return
         }
         binding?.recyclerView?.let {
-            RedownloadMenu.show(
+            showRedownloadMenu(
                 requireContext(),
                 it,
                 this
@@ -1550,7 +1550,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun redownloadFromScratch(contentList: List<Content>) {
         if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
-                AddQueueMenu.show(requireActivity(), it, this) { position, _ ->
+                showAddQueueMenu(requireActivity(), it, this) { position, _ ->
                     redownloadFromScratch(
                         contentList,
                         if (0 == position) QueuePosition.TOP
@@ -1593,7 +1593,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun download(contentList: List<Content>, onError: Consumer<Throwable>) {
         if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
-                AddQueueMenu.show(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
+                showAddQueueMenu(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
                     download(
                         contentList,
                         if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,

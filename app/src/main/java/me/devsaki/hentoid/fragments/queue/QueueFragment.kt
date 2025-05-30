@@ -79,11 +79,11 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder
 import me.devsaki.hentoid.viewmodels.QueueViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.build
-import me.devsaki.hentoid.widget.DownloadModeMenu.Companion.show
 import me.devsaki.hentoid.widget.DragSelectTouchListener
 import me.devsaki.hentoid.widget.DragSelectionProcessor
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
+import me.devsaki.hentoid.widget.buildDownloadModeMenu
+import me.devsaki.hentoid.widget.showDownloadModeMenu
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -1097,8 +1097,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             R.id.action_change_mode -> {
                 binding?.let {
-                    val menu = build(requireContext(), requireActivity())
-                    show(
+                    val menu = buildDownloadModeMenu(requireContext(), requireActivity())
+                    showDownloadModeMenu(
                         menu,
                         it.queueList,
                         { position: Int, _: PowerMenuItem? ->

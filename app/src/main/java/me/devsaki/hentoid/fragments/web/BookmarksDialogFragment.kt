@@ -45,16 +45,16 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
 private const val HOME_UNICODE = "\uD83C\uDFE0"
 
+private const val KEY_SITE = "site"
+private const val KEY_TITLE = "title"
+private const val KEY_URL = "url"
+
 class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
     ItemTouchCallback,
     SelectSiteDialogFragment.Parent,
     BookmarksImportDialogFragment.Parent {
 
     companion object {
-        private const val KEY_SITE = "site"
-        private const val KEY_TITLE = "title"
-        private const val KEY_URL = "url"
-
         fun invoke(
             parent: FragmentActivity,
             site: Site,
@@ -354,6 +354,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_sort -> {
+                // TODO
                 reloadBookmarks(sortAscending)
                 sortAscending = !sortAscending
             }
