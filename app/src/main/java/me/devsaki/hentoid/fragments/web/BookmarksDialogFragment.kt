@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.web
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -14,6 +15,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -21,6 +23,10 @@ import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.select.getSelectExtension
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
+import com.skydoves.powermenu.MenuAnimation
+import com.skydoves.powermenu.OnMenuItemClickListener
+import com.skydoves.powermenu.PowerMenu
+import com.skydoves.powermenu.PowerMenuItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,6 +42,7 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.InnerNameNumberBookmarkComparator
 import me.devsaki.hentoid.util.copyPlainTextToClipboard
+import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.util.updateBookmarksJson
@@ -85,8 +92,6 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private lateinit var site: Site
     private lateinit var title: String
     private lateinit var url: String
-
-    private var sortAscending = true
 
     // Bookmark ID of the current webpage
     private var bookmarkId: Long = -1
@@ -354,9 +359,47 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_sort -> {
-                // TODO
-                reloadBookmarks(sortAscending)
-                sortAscending = !sortAscending
+                val powerMenu = PowerMenu.Builder(requireContext())
+                    .addItem(
+                        PowerMenuItem(
+                            resources.getString(R.string.sort_ascending),
+                            iconRes = R.drawable.ic_simple_arrow_up,
+                            tag = 0
+                        )
+                    )
+                    .addItem(
+                        PowerMenuItem(
+                            resources.getString(R.string.sort_descending),
+                            iconRes = R.drawable.ic_simple_arrow_down,
+                            tag = 1
+                        )
+                    )
+                    .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
+                    .setMenuRadius(10f)
+                    .setLifecycleOwner(viewLifecycleOwner)
+                    .setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.white_opacity_87)
+                    )
+                    .setTextTypeface(Typeface.DEFAULT)
+                    .setMenuColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+                    .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
+                    .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
+                    .setAutoDismiss(true)
+                    .build()
+                powerMenu.onMenuItemClickListener = OnMenuItemClickListener { _, item ->
+                    when (item.tag) {
+                        0 -> askReloadBookmarks(true)
+                        1 -> askReloadBookmarks(false)
+                        else -> {} // Nothing
+                    }
+                    powerMenu.dismiss()
+                }
+                powerMenu.setIconColor(
+                    ContextCompat.getColor(requireContext(), R.color.white_opacity_87)
+                )
+                binding?.apply {
+                    powerMenu.showAsAnchorRightBottom(toolbar)
+                }
             }
 
             R.id.action_import -> {
@@ -388,6 +431,16 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             }
         }
         return true
+    }
+
+    private fun askReloadBookmarks(sortAsc: Boolean) {
+        val title = resources.getString(R.string.bookmark_sort_ask)
+        val builder = MaterialAlertDialogBuilder(requireContext())
+        builder.setMessage(title).setPositiveButton(R.string.yes) { _, _ ->
+            reloadBookmarks(sortAsc)
+        }.setNegativeButton(R.string.no) { _, _ ->
+            // Do nothing
+        }.create().show()
     }
 
     /**
