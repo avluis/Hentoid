@@ -15,6 +15,10 @@ import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.egl.EGLSurface
 import javax.microedition.khronos.opengles.GL10
 
+private const val TAG = "PixelBuffer"
+private const val LIST_CONFIGS = false
+private const val EGL_CONTEXT_CLIENT_VERSION = 0x3098
+
 internal class PixelBuffer(private var width: Int, private var height: Int) {
     // borrow this interface
     private var renderer: GLSurfaceView.Renderer? = null
@@ -173,11 +177,5 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
     private fun getConfigAttrib(config: EGLConfig?, attribute: Int): Int {
         val value = IntArray(1)
         return if (egl10.eglGetConfigAttrib(eglDisplay, config, attribute, value)) value[0] else 0
-    }
-
-    companion object {
-        private const val TAG = "PixelBuffer"
-        private const val LIST_CONFIGS = false
-        private const val EGL_CONTEXT_CLIENT_VERSION = 0x3098
     }
 }

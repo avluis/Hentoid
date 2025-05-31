@@ -5,10 +5,10 @@ import android.graphics.Canvas
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
-import me.devsaki.hentoid.gles_renderer.util.OpenGlUtils
 import me.devsaki.hentoid.gles_renderer.util.Rotation
-import me.devsaki.hentoid.gles_renderer.util.TextureRotationUtil
-import me.devsaki.hentoid.gles_renderer.util.TextureRotationUtil.Companion.TEXTURE_NO_ROTATION
+import me.devsaki.hentoid.gles_renderer.util.TEXTURE_NO_ROTATION
+import me.devsaki.hentoid.gles_renderer.util.getRotation
+import me.devsaki.hentoid.gles_renderer.util.loadTexture
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -18,16 +18,17 @@ import java.util.Queue
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
+private const val NO_IMAGE = -1
+
+
+val CUBE = floatArrayOf(
+    -1.0f, -1.0f,
+    1.0f, -1.0f,
+    -1.0f, 1.0f,
+    1.0f, 1.0f
+)
+
 class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Renderer {
-    companion object {
-        private const val NO_IMAGE = -1
-        val CUBE = floatArrayOf(
-            -1.0f, -1.0f,
-            1.0f, -1.0f,
-            -1.0f, 1.0f,
-            1.0f, 1.0f
-        )
-    }
 
     private var glTextureId = NO_IMAGE
     private val glCubeBuffer: FloatBuffer = ByteBuffer.allocateDirect(CUBE.size * 4)
@@ -136,9 +137,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         }
         imageWidth = bitmap.width
         imageHeight = bitmap.height
-        glTextureId = OpenGlUtils.loadTexture(
-            resizedBitmap ?: bitmap, glTextureId, recycle
-        )
+        glTextureId = loadTexture(resizedBitmap ?: bitmap, glTextureId, recycle)
         resizedBitmap?.recycle()
         adjustImageScaling()
     }
@@ -161,8 +160,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         val ratioHeight = imageHeightNew / outputHeight
          */
         var cube = CUBE
-        var textureCords: FloatArray =
-            TextureRotationUtil.getRotation(rotation, flipHorizontal, flipVertical)
+        var textureCords: FloatArray = getRotation(rotation, flipHorizontal, flipVertical)
         /*
         if (scaleType === GPUImage.ScaleType.CENTER_CROP) {
             val distHorizontal = (1 - 1 / ratioWidth) / 2

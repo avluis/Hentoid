@@ -2,12 +2,12 @@ package me.devsaki.hentoid.retrofit.sources
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import me.devsaki.hentoid.json.sources.PixivIllustMetadata
-import me.devsaki.hentoid.json.sources.PixivIllustPagesMetadata
-import me.devsaki.hentoid.json.sources.PixivSeriesIllustMetadata
-import me.devsaki.hentoid.json.sources.PixivSeriesMetadata
-import me.devsaki.hentoid.json.sources.PixivUserIllustMetadata
-import me.devsaki.hentoid.json.sources.PixivUserMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivIllustMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivIllustPagesMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivSeriesIllustMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivSeriesMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivUserIllustMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivUserMetadata
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit

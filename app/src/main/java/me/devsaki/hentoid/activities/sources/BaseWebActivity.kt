@@ -53,7 +53,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.database.domains.SiteBookmark
+import me.devsaki.hentoid.database.domains.urlsAreSame
 import me.devsaki.hentoid.databinding.ActivityBaseWebBinding
 import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.ErrorType
@@ -652,9 +652,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
                 val bookmarks = dao.selectBookmarks(getStartSite())
-                val currentBookmark = bookmarks.firstOrNull {
-                    SiteBookmark.urlsAreSame(it.url, url)
-                }
+                val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
                 updateBookmarkButton(currentBookmark != null)
             } finally {
                 dao.cleanup()

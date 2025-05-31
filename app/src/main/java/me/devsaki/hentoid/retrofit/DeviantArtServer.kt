@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.retrofit
 
-import me.devsaki.hentoid.json.sources.DeviantArtDeviation
-import me.devsaki.hentoid.json.sources.DeviantArtGallection
-import me.devsaki.hentoid.json.sources.DeviantArtUser
+import me.devsaki.hentoid.json.sources.deviantart.DeviantArtDeviation
+import me.devsaki.hentoid.json.sources.deviantart.DeviantArtGallection
+import me.devsaki.hentoid.json.sources.deviantart.DeviantArtUser
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit

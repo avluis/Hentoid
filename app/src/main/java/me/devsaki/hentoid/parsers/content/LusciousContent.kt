@@ -5,7 +5,7 @@ import me.devsaki.hentoid.activities.sources.LusciousActivity.Companion.GALLERY_
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.json.sources.LusciousQueryParam
+import me.devsaki.hentoid.json.sources.luscious.LusciousQueryParam
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.isNumeric

@@ -21,12 +21,9 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
+private const val RELOAD_LIMIT = 3
+
 class CloudflareHelper {
-
-    companion object {
-        private const val RELOAD_LIMIT = 3
-    }
-
     private var webView: CloudflareWebView? = null
     private val stopped = AtomicBoolean(false)
 

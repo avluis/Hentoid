@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.luscious
 
 data class LusciousQueryParam(
     val id: String

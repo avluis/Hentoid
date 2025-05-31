@@ -30,7 +30,7 @@ import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
 import me.devsaki.hentoid.json.JsonContent
-import me.devsaki.hentoid.json.sources.PixivIllustMetadata
+import me.devsaki.hentoid.json.sources.pixiv.UGOIRA_FRAMES_TYPE
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification
@@ -1353,7 +1353,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             val ugoiraFrames = jsonToObject<List<Pair<String, Int>>>(
                 ugoiraFramesStr,
-                PixivIllustMetadata.UGOIRA_FRAMES_TYPE
+                UGOIRA_FRAMES_TYPE
             ) ?: throw IOException("Couldn't read ugoira frames")
 
             // Map frame name to the downloaded file

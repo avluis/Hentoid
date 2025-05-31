@@ -4,15 +4,7 @@ package me.devsaki.hentoid.gles_renderer.filter
  * A more generalized 9x9 Gaussian blur filter
  * blurSize value ranging from 0.0 on up, with a default of 1.0
  */
-class GPUImageGaussianBlurFilter(private var blurSize: Float) :
-    GPUImageTwoPassTextureSamplingFilter(
-        VERTEX_SHADER,
-        FRAGMENT_SHADER,
-        VERTEX_SHADER,
-        FRAGMENT_SHADER
-    ) {
-    companion object {
-        const val VERTEX_SHADER = """attribute vec4 position;
+private const val VERTEX_SHADER = """attribute vec4 position;
 attribute vec4 inputTextureCoordinate;
 
 const int GAUSSIAN_SAMPLES = 9;
@@ -43,7 +35,7 @@ void main()
 }
 """
 
-        const val FRAGMENT_SHADER = """uniform sampler2D inputImageTexture;
+private const val FRAGMENT_SHADER = """uniform sampler2D inputImageTexture;
 
 const lowp int GAUSSIAN_SAMPLES = 9;
 
@@ -67,7 +59,14 @@ void main()
 
 	gl_FragColor = vec4(sum,fragColor.a);
 }"""
-    }
+
+class GPUImageGaussianBlurFilter(private var blurSize: Float) :
+    GPUImageTwoPassTextureSamplingFilter(
+        VERTEX_SHADER,
+        FRAGMENT_SHADER,
+        VERTEX_SHADER,
+        FRAGMENT_SHADER
+    ) {
 
     override fun onInitialized() {
         super.onInitialized()

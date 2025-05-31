@@ -15,11 +15,9 @@ import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.regex.Pattern
 
-class Manhwa18Content : BaseContentParser() {
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(Manhwa18Activity.GALLERY_PATTERN)
-    }
+private val galleryPattern = Pattern.compile(Manhwa18Activity.GALLERY_PATTERN)
 
+class Manhwa18Content : BaseContentParser() {
     @Selector(value = ".series-cover div div", attr = "style", defValue = "")
     private lateinit var cover: String
 
@@ -43,7 +41,7 @@ class Manhwa18Content : BaseContentParser() {
         content.site = Site.MANHWA18
         if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
+        return if (galleryPattern.matcher(url).find()) updateGallery(
             content,
             updateImages
         ) else updateSingleChapter(content, url, updateImages)

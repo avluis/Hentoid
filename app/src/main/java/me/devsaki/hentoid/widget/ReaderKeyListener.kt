@@ -8,6 +8,9 @@ import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Settings
 
+const val COOLDOWN = 1000
+const val TURBO_COOLDOWN = 500
+
 class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
     private var onVolumeDownListener: Consumer<Boolean>? = null
 
@@ -112,10 +115,5 @@ class ReaderKeyListener(scope: CoroutineScope) : View.OnKeyListener {
         onKeyRightListener = null
         onBackListener = null
         simpleTapDebouncer.clear()
-    }
-
-    companion object {
-        const val COOLDOWN = 1000
-        const val TURBO_COOLDOWN = 500
     }
 }

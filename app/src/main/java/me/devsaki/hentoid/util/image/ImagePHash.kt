@@ -5,6 +5,8 @@ import android.graphics.Canvas
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
+import androidx.core.graphics.get
+import androidx.core.graphics.scale
 import kotlin.math.cos
 import kotlin.math.sqrt
 
@@ -14,25 +16,22 @@ import kotlin.math.sqrt
  * https://gist.github.com/kuFEAR/6e20342198d4040e0bb5
  * Based On: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
  */
+fun distance(hash1: Long, hash2: Long): Int {
+    val similarityMask = (hash1 or hash2 and (hash1 and hash2).inv()).inv()
+    return java.lang.Long.SIZE - java.lang.Long.bitCount(similarityMask)
+}
+
+fun similarity(hash1: Long, hash2: Long): Float {
+    val similarityMask = (hash1 or hash2 and (hash1 and hash2).inv()).inv()
+    return java.lang.Long.bitCount(similarityMask) * 1f / java.lang.Long.SIZE
+}
+
 class ImagePHash(val size: Int, private val smallerSize: Int) {
     private lateinit var c: DoubleArray
 
     init {
         initCoefficients()
     }
-
-    companion object {
-        fun distance(hash1: Long, hash2: Long): Int {
-            val similarityMask = (hash1 or hash2 and (hash1 and hash2).inv()).inv()
-            return java.lang.Long.SIZE - java.lang.Long.bitCount(similarityMask)
-        }
-
-        fun similarity(hash1: Long, hash2: Long): Float {
-            val similarityMask = (hash1 or hash2 and (hash1 and hash2).inv()).inv()
-            return java.lang.Long.bitCount(similarityMask) * 1f / java.lang.Long.SIZE
-        }
-    }
-
 
     fun calcPHash(imgIn: Bitmap): Long {
 
@@ -112,7 +111,7 @@ class ImagePHash(val size: Int, private val smallerSize: Int) {
 
     // TODO optimize by using OpenGL
     private fun resize(bm: Bitmap, newHeight: Int, newWidth: Int): Bitmap {
-        return Bitmap.createScaledBitmap(bm, newWidth, newHeight, false)
+        return bm.scale(newWidth, newHeight, false)
     }
 
     // TODO optimize by using OpenGL
@@ -130,7 +129,7 @@ class ImagePHash(val size: Int, private val smallerSize: Int) {
 
     // TODO optimize by using OpenGL
     private fun getBlue(img: Bitmap, x: Int, y: Int): Int {
-        return img.getPixel(x, y) and 0xff
+        return img[x, y] and 0xff
     }
 
     // DCT function stolen from http://stackoverflow.com/questions/4240490/problems-with-dct-and-idct-algorithm-in-java

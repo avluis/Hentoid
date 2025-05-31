@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.pixiv
 
 import com.squareup.moshi.Json
 import me.devsaki.hentoid.database.domains.Attribute

@@ -26,22 +26,20 @@ class MusesContent : BaseContentParser() {
     @Selector(value = ".gallery a")
     private var thumbLinks: List<Element>? = null
 
-    companion object {
-        private val nonLegitPublishers: MutableList<String> = ArrayList()
-        private val publishersWithAuthors: MutableList<String> = ArrayList()
+    private val nonLegitPublishers: MutableList<String> = ArrayList()
+    private val publishersWithAuthors: MutableList<String> = ArrayList()
 
-        init {
-            nonLegitPublishers.add("various authors")
-            nonLegitPublishers.add("hentai and manga english")
+    init {
+        nonLegitPublishers.add("various authors")
+        nonLegitPublishers.add("hentai and manga english")
 
-            publishersWithAuthors.add("various authors")
-            publishersWithAuthors.add("fakku comics")
-            publishersWithAuthors.add("hentai and manga english")
-            publishersWithAuthors.add("renderotica comics")
-            publishersWithAuthors.add("tg comics")
-            publishersWithAuthors.add("affect3d comics")
-            publishersWithAuthors.add("johnpersons.com comics")
-        }
+        publishersWithAuthors.add("various authors")
+        publishersWithAuthors.add("fakku comics")
+        publishersWithAuthors.add("hentai and manga english")
+        publishersWithAuthors.add("renderotica comics")
+        publishersWithAuthors.add("tg comics")
+        publishersWithAuthors.add("affect3d comics")
+        publishersWithAuthors.add("johnpersons.com comics")
     }
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {

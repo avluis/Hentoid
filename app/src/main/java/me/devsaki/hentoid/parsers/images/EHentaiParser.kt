@@ -10,9 +10,9 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
-import me.devsaki.hentoid.json.sources.EHentaiImageMetadata
-import me.devsaki.hentoid.json.sources.EHentaiImageQuery
-import me.devsaki.hentoid.json.sources.EHentaiImageResponse
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiImageMetadata
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiImageQuery
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiImageResponse
 import me.devsaki.hentoid.parsers.ParseProgress
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.getSavedCookieStr

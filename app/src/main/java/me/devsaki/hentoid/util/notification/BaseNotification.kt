@@ -6,17 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 
+private val pendingIntentActivityFlags: Int = if (Build.VERSION.SDK_INT > 30)
+    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+else PendingIntent.FLAG_UPDATE_CURRENT
+
+private val pendingIntentActionFlags: Int = if (Build.VERSION.SDK_INT > 30)
+    PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+else PendingIntent.FLAG_CANCEL_CURRENT
+
 abstract class BaseNotification {
-    companion object {
-        private val pendingIntentActivityFlags: Int = if (Build.VERSION.SDK_INT > 30)
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        else PendingIntent.FLAG_UPDATE_CURRENT
-
-        private val pendingIntentActionFlags: Int = if (Build.VERSION.SDK_INT > 30)
-            PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        else PendingIntent.FLAG_CANCEL_CURRENT
-    }
-
     abstract fun onCreateNotification(context: Context): Notification
 
     fun getPendingIntentForAction(context: Context, clazz: Class<out Any>): PendingIntent {

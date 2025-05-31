@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.json.sources.DeviantArtDeviation
+import me.devsaki.hentoid.json.sources.deviantart.RELATIVE_URL_PREFIX
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
@@ -186,7 +186,7 @@ class DeviantArtContent : BaseContentParser() {
                 val artist = Attribute(
                     AttributeType.ARTIST,
                     userName,
-                    DeviantArtDeviation.RELATIVE_URL_PREFIX + userName,
+                    RELATIVE_URL_PREFIX + userName,
                     Site.DEVIANTART
                 )
                 content.addAttributes(listOf(artist))

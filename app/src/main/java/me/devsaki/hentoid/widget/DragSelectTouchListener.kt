@@ -13,15 +13,9 @@ import kotlin.math.min
 /**
  * Credits go to https://github.com/MFlisar/DragSelectRecyclerView for the pre-Jetpack version
  */
-class DragSelectTouchListener// -----------------------
-// Konstructur and Builder functions
-// -----------------------
-    () : RecyclerView.OnItemTouchListener {
+private const val TAG = "DSTL"
 
-    companion object {
-        private const val TAG = "DSTL"
-    }
-
+class DragSelectTouchListener() : RecyclerView.OnItemTouchListener {
     private var mIsActive = false
     private var mStart = 0
     private var mEnd = 0

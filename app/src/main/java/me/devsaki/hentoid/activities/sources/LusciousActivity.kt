@@ -6,7 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.json.sources.LusciousQuery
+import me.devsaki.hentoid.json.sources.luscious.LusciousQuery
 import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.LusciousContent
 import me.devsaki.hentoid.util.jsonToObject

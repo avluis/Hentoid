@@ -19,11 +19,9 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
-class HiperdexContent : BaseContentParser() {
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(HiperdexActivity.GALLERY_PATTERN)
-    }
+private val galleryPattern = Pattern.compile(HiperdexActivity.GALLERY_PATTERN)
 
+class HiperdexContent : BaseContentParser() {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private lateinit var coverUrl: String
 
@@ -50,7 +48,7 @@ class HiperdexContent : BaseContentParser() {
         content.site = Site.HIPERDEX
         if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
+        return if (galleryPattern.matcher(url).find()) updateGallery(
             content,
             updateImages
         ) else updateSingleChapter(content, url, updateImages)

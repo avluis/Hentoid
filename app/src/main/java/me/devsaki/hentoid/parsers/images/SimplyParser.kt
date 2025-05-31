@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.json.sources.SimplyGalleryMetadata
+import me.devsaki.hentoid.json.sources.simply.SimplyGalleryMetadata
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.fixUrl

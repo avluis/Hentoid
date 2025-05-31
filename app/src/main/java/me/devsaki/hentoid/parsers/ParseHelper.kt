@@ -9,6 +9,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.BaseContentParser
+import me.devsaki.hentoid.parsers.content.NO_TITLE
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
@@ -526,7 +527,7 @@ fun getUserAgent(site: Site): String {
 }
 
 fun cleanup(data: String?): String {
-    if (null == data) return BaseContentParser.NO_TITLE
+    if (null == data) return NO_TITLE
     return StringEscapeUtils.unescapeHtml4(
         removeNonPrintableChars(data.trim()).replace('’', '\'')
     )

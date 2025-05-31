@@ -20,11 +20,9 @@ import java.io.IOException
 import java.util.Locale
 import java.util.regex.Pattern
 
-class EdoujinContent : BaseContentParser() {
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(EdoujinActivity.GALLERY_PATTERN)
-    }
+private val galleryPattern = Pattern.compile(EdoujinActivity.GALLERY_PATTERN)
 
+class EdoujinContent : BaseContentParser() {
     @Selector(value = ".thumb img")
     private var cover: Element? = null
 
@@ -51,7 +49,7 @@ class EdoujinContent : BaseContentParser() {
         content.site = Site.EDOUJIN
         if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        return if (GALLERY_PATTERN.matcher(url).find())
+        return if (galleryPattern.matcher(url).find())
             updateGallery(content, url, updateImages)
         else updateSingleChapter(content, url, updateImages)
     }

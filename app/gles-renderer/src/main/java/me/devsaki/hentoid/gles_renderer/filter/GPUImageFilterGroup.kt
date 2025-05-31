@@ -2,9 +2,10 @@ package me.devsaki.hentoid.gles_renderer.filter
 
 import android.annotation.SuppressLint
 import android.opengl.GLES20
-import me.devsaki.hentoid.gles_renderer.GPUImageRenderer
+import me.devsaki.hentoid.gles_renderer.CUBE
 import me.devsaki.hentoid.gles_renderer.util.Rotation
-import me.devsaki.hentoid.gles_renderer.util.TextureRotationUtil
+import me.devsaki.hentoid.gles_renderer.util.TEXTURE_NO_ROTATION
+import me.devsaki.hentoid.gles_renderer.util.getRotation
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -25,19 +26,17 @@ open class GPUImageFilterGroup(private val filters: MutableList<GPUImageFilter>)
 
     init {
         updateMergedFilters()
-        glCubeBuffer = ByteBuffer.allocateDirect(GPUImageRenderer.CUBE.size * 4)
+        glCubeBuffer = ByteBuffer.allocateDirect(CUBE.size * 4)
             .order(ByteOrder.nativeOrder())
             .asFloatBuffer()
-        glCubeBuffer.put(GPUImageRenderer.CUBE).position(0)
-        glTextureBuffer = ByteBuffer.allocateDirect(TextureRotationUtil.TEXTURE_NO_ROTATION.size * 4)
-            .order(ByteOrder.nativeOrder())
-            .asFloatBuffer()
-        glTextureBuffer.put(TextureRotationUtil.TEXTURE_NO_ROTATION).position(0)
-        val flipTexture: FloatArray = TextureRotationUtil.getRotation(
-            Rotation.NORMAL,
-            flipHorizontal = false,
-            flipVertical = true
-        )
+        glCubeBuffer.put(CUBE).position(0)
+        glTextureBuffer =
+            ByteBuffer.allocateDirect(TEXTURE_NO_ROTATION.size * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer()
+        glTextureBuffer.put(TEXTURE_NO_ROTATION).position(0)
+        val flipTexture: FloatArray =
+            getRotation(Rotation.NORMAL, flipHorizontal = false, flipVertical = true)
         glTextureFlipBuffer = ByteBuffer.allocateDirect(flipTexture.size * 4)
             .order(ByteOrder.nativeOrder())
             .asFloatBuffer()

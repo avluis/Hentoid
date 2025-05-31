@@ -19,11 +19,9 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
-class NovelcrowContent : BaseContentParser() {
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(NovelcrowActivity.GALLERY_PATTERN)
-    }
+private val galleryPattern = Pattern.compile(NovelcrowActivity.GALLERY_PATTERN)
 
+class NovelcrowContent : BaseContentParser() {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private lateinit var coverUrl: String
 
@@ -53,7 +51,7 @@ class NovelcrowContent : BaseContentParser() {
         content.site = Site.NOVELCROW
         if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
+        return if (galleryPattern.matcher(url).find()) updateGallery(
             content,
             updateImages
         ) else updateSingleChapter(content, url, updateImages)

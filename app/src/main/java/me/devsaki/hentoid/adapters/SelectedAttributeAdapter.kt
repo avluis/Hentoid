@@ -14,6 +14,21 @@ import me.devsaki.hentoid.viewholders.AttributeViewHolder
  * <p>
  * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
  */
+private val DIFF_CALLBACK: DiffUtil.ItemCallback<Attribute> =
+    object : DiffUtil.ItemCallback<Attribute>() {
+        override fun areItemsTheSame(
+            oldAttr: Attribute, newAttr: Attribute
+        ): Boolean {
+            return oldAttr.id == newAttr.id
+        }
+
+        override fun areContentsTheSame(
+            oldAttr: Attribute, newAttr: Attribute
+        ): Boolean {
+            return oldAttr.name == newAttr.name && oldAttr.type == newAttr.type
+        }
+    }
+
 class SelectedAttributeAdapter : ListAdapter<Attribute, AttributeViewHolder>(DIFF_CALLBACK) {
     private var onClickListener: View.OnClickListener? = null
 
@@ -31,22 +46,5 @@ class SelectedAttributeAdapter : ListAdapter<Attribute, AttributeViewHolder>(DIF
     override fun onBindViewHolder(holder: AttributeViewHolder, position: Int) {
         holder.bindTo(getItem(position))
         holder.itemView.setOnClickListener(onClickListener)
-    }
-
-    companion object {
-        val DIFF_CALLBACK: DiffUtil.ItemCallback<Attribute> =
-            object : DiffUtil.ItemCallback<Attribute>() {
-                override fun areItemsTheSame(
-                    oldAttr: Attribute, newAttr: Attribute
-                ): Boolean {
-                    return oldAttr.id == newAttr.id
-                }
-
-                override fun areContentsTheSame(
-                    oldAttr: Attribute, newAttr: Attribute
-                ): Boolean {
-                    return oldAttr.name == newAttr.name && oldAttr.type == newAttr.type
-                }
-            }
     }
 }

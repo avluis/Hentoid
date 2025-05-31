@@ -2,7 +2,7 @@ package me.devsaki.hentoid.util
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
+import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,6 +15,7 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.image.ImagePHash
 import me.devsaki.hentoid.util.image.decodeSampledBitmapFromStream
+import me.devsaki.hentoid.util.image.similarity
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import timber.log.Timber
 import java.io.IOException
@@ -126,7 +127,7 @@ fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
     if (content.cover.fileUri.isEmpty()) return null
 
     try {
-        getInputStream(context, Uri.parse(content.cover.fileUri))
+        getInputStream(context, content.cover.fileUri.toUri())
             .use {
                 return getCoverBitmapFromStream(it)
             }
@@ -244,7 +245,7 @@ private fun computeCoverScore(
     // Ignore unhashable covers
     if (Long.MIN_VALUE == referenceHash || Long.MIN_VALUE == candidateHash) return -1f
 
-    val preCoverScore = ImagePHash.similarity(referenceHash, candidateHash)
+    val preCoverScore = similarity(referenceHash, candidateHash)
     return if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
 }
 
@@ -311,8 +312,8 @@ fun sanitizeTitle(title: String): Triple<String, Int, Int> {
         }
     }
     if (maxChapter != null && null == minChapter) minChapter = maxChapter
-    val minChapterValue = if (minChapter != null) minChapter!!.third else -1
-    val maxChapterValue = if (maxChapter != null) maxChapter!!.third else -1
+    val minChapterValue = minChapter?.third ?: -1
+    val maxChapterValue = maxChapter?.third ?: -1
 
     // Sanitize the title
     var result = removeDigits(title)

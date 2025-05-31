@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.deviantart
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -14,6 +14,8 @@ import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import timber.log.Timber
 import kotlin.math.max
 import kotlin.math.min
+
+const val RELATIVE_URL_PREFIX = "https://www.deviantart.com/"
 
 @JsonClass(generateAdapter = true)
 data class DeviantArtDeviation(
@@ -171,9 +173,5 @@ data class DeviantArtDeviation(
         updateImages: Boolean
     ): Content {
         return deviation.update(content, updateImages)
-    }
-
-    companion object {
-        const val RELATIVE_URL_PREFIX = "https://www.deviantart.com/"
     }
 }

@@ -3,15 +3,14 @@ package me.devsaki.hentoid.gles_renderer.filter
 import android.content.Context
 import android.graphics.PointF
 import android.opengl.GLES20
-import me.devsaki.hentoid.gles_renderer.util.OpenGlUtils
+import me.devsaki.hentoid.gles_renderer.util.NO_TEXTURE
+import me.devsaki.hentoid.gles_renderer.util.loadProgram
 import java.io.InputStream
 import java.nio.FloatBuffer
 import java.util.LinkedList
 import java.util.Scanner
 
-open class GPUImageFilter {
-    companion object {
-        const val NO_FILTER_VERTEX_SHADER = """attribute vec4 position;
+internal const val NO_FILTER_VERTEX_SHADER = """attribute vec4 position;
 attribute vec4 inputTextureCoordinate;
  
 varying vec2 textureCoordinate;
@@ -21,7 +20,7 @@ void main()
     gl_Position = position;
     textureCoordinate = inputTextureCoordinate.xy;
 }"""
-        const val NO_FILTER_FRAGMENT_SHADER = """varying highp vec2 textureCoordinate;
+internal const val NO_FILTER_FRAGMENT_SHADER = """varying highp vec2 textureCoordinate;
  
 uniform sampler2D inputImageTexture;
  
@@ -29,9 +28,10 @@ void main()
 {
      gl_FragColor = texture2D(inputImageTexture, textureCoordinate);
 }"""
-    }
 
-    var outputDimensions : Pair<Int, Int>? = null
+
+open class GPUImageFilter {
+    var outputDimensions: Pair<Int, Int>? = null
         protected set
 
     private val vertexShader: String
@@ -61,7 +61,7 @@ void main()
     }
 
     open fun onInit() {
-        glProgId = OpenGlUtils.loadProgram(vertexShader, fragmentShader)
+        glProgId = loadProgram(vertexShader, fragmentShader)
         glAttribPosition = GLES20.glGetAttribLocation(glProgId, "position")
         glUniformTexture = GLES20.glGetUniformLocation(glProgId, "inputImageTexture")
         glAttribTextureCoordinate = GLES20.glGetAttribLocation(glProgId, "inputTextureCoordinate")
@@ -106,7 +106,7 @@ void main()
             textureBuffer
         )
         GLES20.glEnableVertexAttribArray(glAttribTextureCoordinate)
-        if (textureId != OpenGlUtils.NO_TEXTURE) {
+        if (textureId != NO_TEXTURE) {
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureId)
             GLES20.glUniform1i(glUniformTexture, 0)

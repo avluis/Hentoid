@@ -19,11 +19,9 @@ import java.io.IOException
 import java.util.Locale
 import java.util.regex.Pattern
 
-class Hentai2ReadContent : BaseContentParser() {
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(Hentai2ReadActivity.GALLERY_PATTERN)
-    }
+private val galleryPattern = Pattern.compile(Hentai2ReadActivity.GALLERY_PATTERN)
 
+class Hentai2ReadContent : BaseContentParser() {
     @Selector(value = "div.img-container img[src*=cover]")
     private var cover: Element? = null
 
@@ -44,7 +42,7 @@ class Hentai2ReadContent : BaseContentParser() {
         content.site = Site.HENTAI2READ
         if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        return if (GALLERY_PATTERN.matcher(url).find()) updateGallery(
+        return if (galleryPattern.matcher(url).find()) updateGallery(
             content,
             updateImages
         ) else updateSingleChapter(content, url, updateImages)

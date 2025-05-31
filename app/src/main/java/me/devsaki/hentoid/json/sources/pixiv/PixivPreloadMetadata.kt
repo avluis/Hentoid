@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.pixiv
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass

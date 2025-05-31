@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.retrofit.sources
 
-import me.devsaki.hentoid.json.sources.LusciousBookMetadata
-import me.devsaki.hentoid.json.sources.LusciousGalleryMetadata
+import me.devsaki.hentoid.json.sources.luscious.LusciousBookMetadata
+import me.devsaki.hentoid.json.sources.luscious.LusciousGalleryMetadata
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit

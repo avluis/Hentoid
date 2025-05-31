@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.retrofit.sources
 
-import me.devsaki.hentoid.json.sources.EHentaiGalleriesMetadata
-import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery
-import me.devsaki.hentoid.json.sources.EHentaiImageQuery
-import me.devsaki.hentoid.json.sources.EHentaiImageResponse
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiGalleriesMetadata
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiGalleryQuery
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiImageQuery
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiImageResponse
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit

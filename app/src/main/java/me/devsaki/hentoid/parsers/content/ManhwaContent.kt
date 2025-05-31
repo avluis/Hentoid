@@ -19,12 +19,9 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
+private val galleryPattern = Pattern.compile(ManhwaActivity.GALLERY_PATTERN)
+
 class ManhwaContent : BaseContentParser() {
-
-    companion object {
-        private val GALLERY_PATTERN = Pattern.compile(ManhwaActivity.GALLERY_PATTERN)
-    }
-
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private lateinit var coverUrl: String
 
@@ -51,7 +48,7 @@ class ManhwaContent : BaseContentParser() {
         content.site = Site.MANHWA
         if (url.isEmpty()) return Content(status = StatusContent.IGNORED)
         content.setRawUrl(url)
-        return if (GALLERY_PATTERN.matcher(url).find())
+        return if (galleryPattern.matcher(url).find())
             updateGallery(content, updateImages)
         else updateSingleChapter(content, url, updateImages)
     }

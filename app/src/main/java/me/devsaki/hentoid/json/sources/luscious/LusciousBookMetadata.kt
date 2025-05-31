@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.luscious
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
@@ -9,6 +9,8 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
+
+private const val RELATIVE_URL_PREFIX = "https://luscious.net"
 
 @JsonClass(generateAdapter = true)
 data class LusciousBookMetadata(
@@ -111,9 +113,5 @@ data class LusciousBookMetadata(
             content.qtyPages = 0
         }
         return content
-    }
-
-    companion object {
-        private const val RELATIVE_URL_PREFIX = "https://luscious.net"
     }
 }

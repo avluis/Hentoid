@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources;
+package me.devsaki.hentoid.json.sources.simply;
 
 import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
 import static me.devsaki.hentoid.util.HelperKt.parseDatetimeToEpoch;

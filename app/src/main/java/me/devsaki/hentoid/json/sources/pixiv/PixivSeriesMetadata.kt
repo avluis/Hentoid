@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.pixiv
 
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site

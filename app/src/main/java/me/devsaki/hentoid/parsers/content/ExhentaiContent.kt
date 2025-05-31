@@ -4,7 +4,7 @@ import android.webkit.CookieManager
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery
+import me.devsaki.hentoid.json.sources.ehentai.EHentaiGalleryQuery
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import timber.log.Timber
 import java.io.IOException

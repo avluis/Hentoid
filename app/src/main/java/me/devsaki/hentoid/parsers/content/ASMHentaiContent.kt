@@ -12,11 +12,9 @@ import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.Locale
 
-class ASMHentaiContent : BaseContentParser() {
+private const val BADGE_CONST = "badge"
 
-    companion object {
-        const val BADGE_CONST = "badge"
-    }
+class ASMHentaiContent : BaseContentParser() {
 
     @Selector(value = "div.cover a img")
     private var cover: Element? = null

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.ehentai
 
 import com.squareup.moshi.JsonClass
 

@@ -28,16 +28,14 @@ data class SiteBookmark(
     override fun hashCode(): Int {
         return Objects.hash(neutralizeUrl(url))
     }
+}
 
-    companion object {
-        fun neutralizeUrl(url: String?): String {
-            if (null == url) return ""
-            return if (url.endsWith("/")) url.substring(0, url.length - 1) else url
-        }
+private fun neutralizeUrl(url: String?): String {
+    if (null == url) return ""
+    return if (url.endsWith("/")) url.substring(0, url.length - 1) else url
+}
 
-        // Quick comparator to avoid host/someurl and host/someurl/ to be considered as different by the bookmarks managaer
-        fun urlsAreSame(url1: String?, url2: String?): Boolean {
-            return neutralizeUrl(url1).equals(neutralizeUrl(url2), ignoreCase = true)
-        }
-    }
+// Quick comparator to avoid host/someurl and host/someurl/ to be considered as different by the bookmarks managaer
+fun urlsAreSame(url1: String?, url2: String?): Boolean {
+    return neutralizeUrl(url1).equals(neutralizeUrl(url2), ignoreCase = true)
 }

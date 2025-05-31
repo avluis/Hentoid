@@ -3,7 +3,7 @@ package me.devsaki.hentoid.parsers.content
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.json.sources.SimplyContentMetadata
+import me.devsaki.hentoid.json.sources.simply.SimplyContentMetadata
 import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.getOnlineDocument

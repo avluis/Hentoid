@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.pixiv
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.Types
@@ -19,23 +19,22 @@ import java.lang.reflect.Type
 /**
  * Data structure for Pixiv's "illust details" mobile endpoint
  */
+private val UGOIRA_FRAME_TYPE: Type = Types.newParameterizedType(
+    Pair::class.java,
+    String::class.java,
+    Integer::class.java
+)
+val UGOIRA_FRAMES_TYPE: Type = Types.newParameterizedType(
+    MutableList::class.java, UGOIRA_FRAME_TYPE
+)
+
+
 @SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068")
 data class PixivIllustMetadata(
     val error: Boolean,
     val message: String?,
     val body: IllustBody?
 ) {
-    companion object {
-        private val UGOIRA_FRAME_TYPE: Type = Types.newParameterizedType(
-            Pair::class.java,
-            String::class.java,
-            Integer::class.java
-        )
-        val UGOIRA_FRAMES_TYPE: Type = Types.newParameterizedType(
-            MutableList::class.java, UGOIRA_FRAME_TYPE
-        )
-    }
-
     data class IllustBody(
         @Json(name = "illust_details")
         val illustDetails: IllustDetails?,

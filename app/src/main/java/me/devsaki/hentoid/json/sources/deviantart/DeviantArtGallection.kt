@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json.sources
+package me.devsaki.hentoid.json.sources.deviantart
 
 import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.database.domains.ImageFile

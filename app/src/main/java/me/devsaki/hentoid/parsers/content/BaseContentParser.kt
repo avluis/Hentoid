@@ -3,11 +3,9 @@ package me.devsaki.hentoid.parsers.content
 import me.devsaki.hentoid.database.domains.Content
 import pl.droidsonroids.jspoon.annotation.Selector
 
-abstract class BaseContentParser : ContentParser {
-    companion object {
-        const val NO_TITLE = "<no title>"
-    }
+const val NO_TITLE = "<no title>"
 
+abstract class BaseContentParser : ContentParser {
     @Selector(value = "head [rel=canonical]", attr = "href", defValue = "")
     override lateinit var canonicalUrl: String
 

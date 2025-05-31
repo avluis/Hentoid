@@ -2,22 +2,14 @@ package me.devsaki.hentoid.gles_renderer.filter
 
 import android.opengl.GLES20
 
-class GPUImageResizeFilter(targetX: Int, targetY: Int) :
-    GPUImageFilter(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER) {
-
-    init {
-        setTargetDimensions(floatArrayOf(targetX.toFloat(), targetY.toFloat()))
-    }
-
-    companion object {
-        const val RESIZE_VERTEX_SHADER = """void main()
+private const val RESIZE_VERTEX_SHADER = """void main()
         {
             gl_TexCoord[0] = gl_MultiTexCoord0;         //center
             gl_Position = ftransform();
         }
 """
 
-        const val RESIZE_FRAGMENT_SHADER = """#define FIX(c) max(abs(c), 1e-5);
+private const val RESIZE_FRAGMENT_SHADER = """#define FIX(c) max(abs(c), 1e-5);
 
         uniform sampler2D inputImageTexture;
         varying highp vec2 textureCoordinate;
@@ -84,6 +76,12 @@ class GPUImageResizeFilter(targetX: Int, targetY: Int) :
                 1.0);
         }
 """
+
+class GPUImageResizeFilter(targetX: Int, targetY: Int) :
+    GPUImageFilter(NO_FILTER_VERTEX_SHADER, NO_FILTER_FRAGMENT_SHADER) {
+
+    init {
+        setTargetDimensions(floatArrayOf(targetX.toFloat(), targetY.toFloat()))
     }
 
     private var targetSizeLocation = 0

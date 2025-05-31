@@ -35,6 +35,7 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
+import me.devsaki.hentoid.database.domains.urlsAreSame
 import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -167,8 +168,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         touchHelper = ItemTouchHelper(dragCallback)
 
         val bookmarks = reloadBookmarks()
-        val currentBookmark =
-            bookmarks.firstOrNull { b -> SiteBookmark.urlsAreSame(b.url, url) }
+        val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
         if (currentBookmark != null && currentBookmark.id > 0) bookmarkId = currentBookmark.id
         updateBookmarkButton()
 
@@ -345,7 +345,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
         val bookmarks = reloadBookmarks()
         val currentBookmark =
-            bookmarks.firstOrNull { b -> SiteBookmark.urlsAreSame(b.url, url) }
+            bookmarks.firstOrNull { urlsAreSame(it.url, url) }
         if (currentBookmark != null && currentBookmark.id > 0) bookmarkId = currentBookmark.id
         updateBookmarkButton()
 

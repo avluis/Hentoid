@@ -13,7 +13,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.json.sources.HitomiGalleryInfo
+import me.devsaki.hentoid.json.sources.hitomi.HitomiGalleryInfo
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlToImageFile
 import me.devsaki.hentoid.util.LIST_STRINGS
