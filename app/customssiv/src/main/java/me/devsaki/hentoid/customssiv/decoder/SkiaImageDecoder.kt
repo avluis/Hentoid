@@ -28,7 +28,7 @@ private const val FILE_PREFIX = "file://"
 private const val ASSET_PREFIX = "$FILE_PREFIX/android_asset/"
 private const val RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
 
-class ByteBufferBackedInputStream(private var buf: ByteBuffer) : InputStream() {
+internal class ByteBufferBackedInputStream(private var buf: ByteBuffer) : InputStream() {
     @Throws(IOException::class)
     override fun read(): Int {
         if (!buf.hasRemaining()) {
@@ -52,7 +52,7 @@ class ByteBufferBackedInputStream(private var buf: ByteBuffer) : InputStream() {
     }
 }
 
-class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : ImageDecoder {
+internal class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : ImageDecoder {
     override fun decode(context: Context, uri: Uri): Bitmap {
         val uriString = uri.toString()
         val options = BitmapFactory.Options()

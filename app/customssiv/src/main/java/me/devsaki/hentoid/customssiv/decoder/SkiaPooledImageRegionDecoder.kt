@@ -44,7 +44,7 @@ private const val FILE_PREFIX = "file://"
 private const val ASSET_PREFIX = "$FILE_PREFIX/android_asset/"
 private const val RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
 
-class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageRegionDecoder {
+internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageRegionDecoder {
     private var debug: Boolean = false
 
     private var decoderPool: DecoderPool? = DecoderPool()

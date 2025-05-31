@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
 
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3
 
-suspend fun resizeBitmap(
+internal suspend fun resizeBitmap(
     glEsRenderer: GPUImage?,
     src: Bitmap,
     targetScale: Float
@@ -25,7 +25,7 @@ suspend fun resizeBitmap(
     resizeBitmap(glEsRenderer, src, PointF(targetScale, targetScale))
 }
 
-suspend fun resizeBitmap(
+internal suspend fun resizeBitmap(
     glEsRenderer: GPUImage?,
     src: Bitmap,
     targetScale: PointF

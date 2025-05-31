@@ -8,7 +8,7 @@ import android.net.Uri
  * Interface for image decoding classes, allowing the default {@link android.graphics.BitmapFactory}
  * based on the Skia library to be replaced with a custom class.
  */
-interface ImageDecoder {
+internal interface ImageDecoder {
     /**
      * Decode an image. The URI can be in one of the following formats:
      * <br></br>

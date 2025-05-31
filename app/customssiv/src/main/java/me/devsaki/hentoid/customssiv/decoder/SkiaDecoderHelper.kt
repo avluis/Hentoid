@@ -7,7 +7,7 @@ import android.net.Uri
 import android.text.TextUtils
 
 @Throws(PackageManager.NameNotFoundException::class)
-fun getResourceId(context: Context, uri: Uri): Int {
+internal fun getResourceId(context: Context, uri: Uri): Int {
     val res: Resources
     val packageName = uri.authority
     if (context.packageName == packageName) {

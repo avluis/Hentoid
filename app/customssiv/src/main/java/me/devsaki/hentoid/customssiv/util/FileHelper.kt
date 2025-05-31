@@ -2,7 +2,7 @@ package me.devsaki.hentoid.customssiv.util
 
 import kotlin.math.min
 
-const val FILE_IO_BUFFER_SIZE = 32 * 1024
+internal const val FILE_IO_BUFFER_SIZE = 32 * 1024
 
 /**
  * Return the position of the given sequence in the given data array

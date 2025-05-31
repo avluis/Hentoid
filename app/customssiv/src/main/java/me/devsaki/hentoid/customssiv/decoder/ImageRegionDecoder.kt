@@ -10,7 +10,7 @@ import android.net.Uri
  * Interface for image decoding classes, allowing the default {@link android.graphics.BitmapRegionDecoder}
  * based on the Skia library to be replaced with a custom class.
  */
-interface ImageRegionDecoder {
+internal interface ImageRegionDecoder {
     /**
      * Initialise the decoder. When possible, perform initial setup work once in this method. The
      * dimensions of the image must be returned. The URI can be in one of the following formats:
