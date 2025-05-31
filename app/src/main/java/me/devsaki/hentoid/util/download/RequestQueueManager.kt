@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.network.OkHttpClientManager
 import me.devsaki.hentoid.util.pause
 import timber.log.Timber
 import java.util.Collections
@@ -47,7 +47,8 @@ class RequestQueueManager private constructor(
 
 
     init {
-        downloadThreadCount = getPreferredThreadCount(context, Settings.Value.DOWNLOAD_THREAD_COUNT_AUTO)
+        downloadThreadCount =
+            getPreferredThreadCount(context, Settings.Value.DOWNLOAD_THREAD_COUNT_AUTO)
         init(resetActiveRequests = false, cancelQueue = true)
     }
 
@@ -63,7 +64,7 @@ class RequestQueueManager private constructor(
         if (cancelQueue) cancelQueue()
         else if (resetOkHttp || resetActiveRequests) mRequestQueue?.stop()
 
-        if (resetOkHttp) OkHttpClientSingleton.reset()
+        if (resetOkHttp) OkHttpClientManager.reset()
 
         mRequestQueue = RequestQueue(this::onRequestSuccess, this::onRequestError)
         start()

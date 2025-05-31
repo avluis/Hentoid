@@ -2,7 +2,7 @@ package me.devsaki.hentoid.retrofit.sources
 
 import me.devsaki.hentoid.json.sources.LusciousBookMetadata
 import me.devsaki.hentoid.json.sources.LusciousGalleryMetadata
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -22,7 +22,7 @@ object LusciousServer {
     fun init() {
         api = Retrofit.Builder()
             .baseUrl(API_URL)
-            .client(OkHttpClientSingleton.getInstance())
+            .client(OkHttpClientManager.getInstance())
             .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(Api::class.java)

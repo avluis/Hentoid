@@ -3,7 +3,7 @@ package me.devsaki.hentoid.retrofit
 import me.devsaki.hentoid.json.sources.DeviantArtDeviation
 import me.devsaki.hentoid.json.sources.DeviantArtGallection
 import me.devsaki.hentoid.json.sources.DeviantArtUser
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -24,7 +24,7 @@ object DeviantArtServer {
     fun init() {
         API = Retrofit.Builder()
             .baseUrl(SERVER_URL)
-            .client(OkHttpClientSingleton.getInstance())
+            .client(OkHttpClientManager.getInstance())
             .addConverterFactory(MoshiConverterFactory.create())
             .build()
             .create(Api::class.java)

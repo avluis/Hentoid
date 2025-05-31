@@ -4,7 +4,7 @@ import me.devsaki.hentoid.json.sources.EHentaiGalleriesMetadata
 import me.devsaki.hentoid.json.sources.EHentaiGalleryQuery
 import me.devsaki.hentoid.json.sources.EHentaiImageQuery
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -27,14 +27,14 @@ object EHentaiServer {
     fun init() {
         ehentaiApi = Retrofit.Builder()
             .baseUrl(EHENTAI_URL)
-            .client(OkHttpClientSingleton.getInstance())
+            .client(OkHttpClientManager.getInstance())
             .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(Api::class.java)
 
         exentaiApi = Retrofit.Builder()
             .baseUrl(EXHENTAI_URL)
-            .client(OkHttpClientSingleton.getInstance())
+            .client(OkHttpClientManager.getInstance())
             .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(Api::class.java)

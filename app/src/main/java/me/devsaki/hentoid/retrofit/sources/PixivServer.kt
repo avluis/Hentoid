@@ -2,8 +2,13 @@ package me.devsaki.hentoid.retrofit.sources
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import me.devsaki.hentoid.json.sources.*
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.json.sources.PixivIllustMetadata
+import me.devsaki.hentoid.json.sources.PixivIllustPagesMetadata
+import me.devsaki.hentoid.json.sources.PixivSeriesIllustMetadata
+import me.devsaki.hentoid.json.sources.PixivSeriesMetadata
+import me.devsaki.hentoid.json.sources.PixivUserIllustMetadata
+import me.devsaki.hentoid.json.sources.PixivUserMetadata
+import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -31,7 +36,7 @@ object PixivServer {
     fun init() {
         api = Retrofit.Builder()
             .baseUrl(API_URL)
-            .client(OkHttpClientSingleton.getInstance())
+            .client(OkHttpClientManager.getInstance())
             .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
             .build()
             .create(Api::class.java)

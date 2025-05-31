@@ -130,7 +130,7 @@ fun getOnlineResource(
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
     val request: Request = requestBuilder.get().build()
-    return OkHttpClientSingleton.getInstance().newCall(request).execute()
+    return OkHttpClientManager.getInstance().newCall(request).execute()
 }
 
 @Throws(IOException::class)
@@ -163,7 +163,7 @@ fun getOnlineResourceFast(
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
     val request: Request = requestBuilder.get().build()
-    return OkHttpClientSingleton.getInstance(2000, 10000, followRedirects).newCall(request)
+    return OkHttpClientManager.getInstance(2000, 10000, followRedirects).newCall(request)
         .execute()
 }
 
@@ -179,7 +179,7 @@ fun optOnlineResourceFast(
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
     val request: Request = requestBuilder.method("OPTIONS", null).build()
-    return OkHttpClientSingleton.getInstance(2000, 10000, followRedirects).newCall(request)
+    return OkHttpClientManager.getInstance(2000, 10000, followRedirects).newCall(request)
         .execute()
 }
 
@@ -213,7 +213,7 @@ fun getOnlineResourceDownloader(
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
     val request: Request = requestBuilder.get().build()
-    return OkHttpClientSingleton.getInstance(4000, 15000, followRedirects).newCall(request)
+    return OkHttpClientManager.getInstance(4000, 15000, followRedirects).newCall(request)
         .execute()
 }
 
@@ -244,7 +244,7 @@ fun postOnlineResource(
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
     val request: Request =
         requestBuilder.post(body.toRequestBody(mimeType.toMediaTypeOrNull())).build()
-    return OkHttpClientSingleton.getInstance().newCall(request).execute()
+    return OkHttpClientManager.getInstance().newCall(request).execute()
 }
 
 /**
