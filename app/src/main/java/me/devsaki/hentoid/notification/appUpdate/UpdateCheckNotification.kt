@@ -8,7 +8,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 class UpdateCheckNotification : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
-        NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
+        NotificationCompat.Builder(context, ID)
             .setDefaults(0)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setPriority(NotificationCompat.PRIORITY_MIN)

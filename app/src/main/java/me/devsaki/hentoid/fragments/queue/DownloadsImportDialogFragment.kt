@@ -26,7 +26,6 @@ import me.devsaki.hentoid.databinding.DialogQueueDownloadsImportBinding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
@@ -212,7 +211,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
             builder.setFileUri(fileUri)
             builder.setQueuePosition(queuePosition)
             builder.setImportAsStreamed(importStreamed.isChecked)
-            ImportNotificationChannel.init(requireContext())
+            me.devsaki.hentoid.notification.import_.init(requireContext())
             importProgressText.setText(R.string.starting_import)
             importProgressBar.isIndeterminate = true
             importProgressText.visibility = View.VISIBLE

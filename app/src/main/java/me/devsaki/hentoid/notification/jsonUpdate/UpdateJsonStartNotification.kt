@@ -8,7 +8,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 class UpdateJsonStartNotification : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
-        NotificationCompat.Builder(context, UpdateJsonNotificationChannel.ID)
+        NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setProgress(1, 1, true)
             .setContentTitle(context.resources.getString(R.string.notif_json_progress))

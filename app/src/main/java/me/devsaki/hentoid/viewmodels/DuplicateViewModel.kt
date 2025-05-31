@@ -20,7 +20,6 @@ import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.workers.BaseDeleteWorker
@@ -70,7 +69,7 @@ class DuplicateViewModel(
         builder.setIgnoreChapters(ignoreChapters)
         builder.setSensitivity(sensitivity)
 
-        DuplicateNotificationChannel.init(getApplication())
+        me.devsaki.hentoid.notification.duplicates.init(getApplication())
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
             R.id.duplicate_detector_service.toString(),

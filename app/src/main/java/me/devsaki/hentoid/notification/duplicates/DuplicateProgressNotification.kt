@@ -17,7 +17,7 @@ class DuplicateProgressNotification(
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100f / max)
 
     override fun onCreateNotification(context: Context): android.app.Notification {
-        return NotificationCompat.Builder(context, DuplicateNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(context.resources.getString(R.string.duplicate_processing))
             .setContentText(progressString)

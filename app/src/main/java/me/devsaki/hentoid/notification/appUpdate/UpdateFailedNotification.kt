@@ -23,7 +23,7 @@ class UpdateFailedNotification(private val downloadUrl: String) : BaseNotificati
         val pendingIntent =
             PendingIntent.getBroadcast(context, 0, intent, flags)
 
-        return NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)

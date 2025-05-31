@@ -16,7 +16,7 @@ class TransformCompleteNotification(private val elements: Int, private val isErr
             elements
         )
 
-        return NotificationCompat.Builder(context, TransformNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(context.getString(title))
             .setContentText(content)

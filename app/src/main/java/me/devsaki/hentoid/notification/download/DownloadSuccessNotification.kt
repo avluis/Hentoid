@@ -11,7 +11,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 class DownloadSuccessNotification(private val completeCount: Int) : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
-        NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
+        NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(getTitle(context))
             .setContentIntent(getDefaultIntent(context))

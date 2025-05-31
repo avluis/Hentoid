@@ -26,7 +26,6 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
-import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.jsonToObject
@@ -276,7 +275,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
             builder.setIsImportQueue(importQueue)
             builder.setIsImportCustomGroups(importCustomGroups)
             builder.setIsImportBookmarks(importBookmarks)
-            ImportNotificationChannel.init(requireContext())
+            me.devsaki.hentoid.notification.import_.init(requireContext())
             importProgressText.setText(R.string.starting_import)
             importProgressBar.isIndeterminate = true
             importProgressText.visibility = View.VISIBLE

@@ -8,7 +8,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 class ArchiveStartNotification : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
-        NotificationCompat.Builder(context, ArchiveNotificationChannel.ID)
+        NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setProgress(1, 1, true)
             .setContentTitle(context.resources.getString(R.string.archive_progress))

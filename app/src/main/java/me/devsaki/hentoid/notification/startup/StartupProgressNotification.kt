@@ -16,7 +16,7 @@ class StartupProgressNotification(
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
 
     override fun onCreateNotification(context: Context): android.app.Notification {
-        return NotificationCompat.Builder(context, StartupNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(message)
             .setContentInfo(progressString)

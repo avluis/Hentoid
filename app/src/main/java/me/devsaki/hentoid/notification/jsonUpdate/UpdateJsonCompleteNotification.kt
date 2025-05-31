@@ -11,7 +11,7 @@ class UpdateJsonCompleteNotification :
     override fun onCreateNotification(context: Context): android.app.Notification {
         val title = R.string.notif_json_complete
 
-        return NotificationCompat.Builder(context, UpdateJsonNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(context.getString(title))
             .build()

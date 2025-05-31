@@ -35,15 +35,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.json.core.JsonSiteSettings
-import me.devsaki.hentoid.notification.appUpdate.UpdateNotificationChannel
-import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel
-import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel
-import me.devsaki.hentoid.notification.download.DownloadNotificationChannel
-import me.devsaki.hentoid.notification.jsonUpdate.UpdateJsonNotificationChannel
-import me.devsaki.hentoid.notification.splitMerge.initChannelSplitMerge
-import me.devsaki.hentoid.notification.startup.StartupNotificationChannel
-import me.devsaki.hentoid.notification.transform.TransformNotificationChannel
-import me.devsaki.hentoid.notification.userAction.UserActionNotificationChannel
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Settings
@@ -183,15 +174,15 @@ object AppStartup {
     private fun initNotifications(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Init notifications : start")
         // Init notification channels
-        StartupNotificationChannel.init(context)
-        UpdateNotificationChannel.init(context)
-        DownloadNotificationChannel.init(context)
-        UserActionNotificationChannel.init(context)
-        DeleteNotificationChannel.init(context)
-        UpdateJsonNotificationChannel.init(context)
-        TransformNotificationChannel.init(context)
-        ArchiveNotificationChannel.init(context)
-        initChannelSplitMerge(context)
+        me.devsaki.hentoid.notification.startup.init(context)
+        me.devsaki.hentoid.notification.appUpdate.init(context)
+        me.devsaki.hentoid.notification.download.init(context)
+        me.devsaki.hentoid.notification.userAction.init(context)
+        me.devsaki.hentoid.notification.delete.init(context)
+        me.devsaki.hentoid.notification.jsonUpdate.init(context)
+        me.devsaki.hentoid.notification.transform.init(context)
+        me.devsaki.hentoid.notification.archive.init(context)
+        me.devsaki.hentoid.notification.splitMerge.init(context)
         // Clears all previous notifications
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         manager.cancelAll()
@@ -291,10 +282,24 @@ object AppStartup {
         val sizeLimit = if (BuildConfig.DEBUG) sizeLimitDebug else sizeLimitProd
 
         StorageCache.init(context, READER_CACHE, sizeLimit)
-        Timber.i("Reacer cache : initialized with ${formatHumanReadableSize(sizeLimit.toLong(), context.resources)}")
+        Timber.i(
+            "Reacer cache : initialized with ${
+                formatHumanReadableSize(
+                    sizeLimit.toLong(),
+                    context.resources
+                )
+            }"
+        )
 
         StorageCache.init(context, THUMBS_CACHE, sizeLimit, true)
-        Timber.i("Thumbs cache : initialized with ${formatHumanReadableSize(sizeLimit.toLong(), context.resources)}")
+        Timber.i(
+            "Thumbs cache : initialized with ${
+                formatHumanReadableSize(
+                    sizeLimit.toLong(),
+                    context.resources
+                )
+            }"
+        )
 
         Timber.i("Init storage cache : done")
     }

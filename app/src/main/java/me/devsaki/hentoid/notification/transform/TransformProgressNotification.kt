@@ -19,7 +19,7 @@ class TransformProgressNotification(
     private val progressStr = if (0 == maxItems) "" else " ($processedItems / $maxItems)"
 
     override fun onCreateNotification(context: Context): android.app.Notification {
-        return NotificationCompat.Builder(context, TransformNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(context.getString(R.string.transform_progress) + progressStr)
             .setContentText("")

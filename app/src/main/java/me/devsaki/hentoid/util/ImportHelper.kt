@@ -39,10 +39,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContent
-import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.createNoMedia
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getArchiveNamesFilter
@@ -51,11 +51,10 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getFullPathFromUri
+import me.devsaki.hentoid.util.file.getPdfNamesFilter
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.persistNewUriPermission
-import me.devsaki.hentoid.util.file.PdfManager
-import me.devsaki.hentoid.util.file.getPdfNamesFilter
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -556,7 +555,7 @@ private fun runPrimaryImport(
     options: ImportOptions?
 ): Boolean {
     if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
-    ImportNotificationChannel.init(context)
+    me.devsaki.hentoid.notification.import_.init(context)
     val builder = PrimaryImportData.Builder()
     builder.setLocation(location)
     builder.setTargetRoot(targetRoot)
@@ -588,7 +587,7 @@ fun runExternalImport(
     behold: Boolean = false
 ): Boolean {
     if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
-    ImportNotificationChannel.init(context)
+    me.devsaki.hentoid.notification.import_.init(context)
     val builder = ExternalImportData.Builder()
     builder.setBehold(behold)
     val workManager = WorkManager.getInstance(context)

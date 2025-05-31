@@ -20,7 +20,7 @@ class ArchiveProgressNotification(
         val progressString: String = " %.2f%%".format(Locale.US, progress * 100)
 
         if (!this::builder.isInitialized) {
-            builder = NotificationCompat.Builder(context, ArchiveNotificationChannel.ID)
+            builder = NotificationCompat.Builder(context, ID)
                 .setSmallIcon(R.drawable.ic_hentoid_shape)
                 .setColor(context.getThemedColor(R.color.secondary_light))
                 .addAction(

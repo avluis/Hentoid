@@ -14,7 +14,7 @@ import me.devsaki.hentoid.workers.APK_MIMETYPE
 class UpdateInstallNotification(private val apkUri: Uri) : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
-        NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
+        NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)

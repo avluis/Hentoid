@@ -24,7 +24,7 @@ class ArchiveCompleteNotification(private val books: Int, private val nbErrors: 
             books
         )
 
-        return NotificationCompat.Builder(context, ArchiveNotificationChannel.ID)
+        return NotificationCompat.Builder(context, ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)
             .setContentTitle(context.getString(title))
             .setContentText(contentTxt)
