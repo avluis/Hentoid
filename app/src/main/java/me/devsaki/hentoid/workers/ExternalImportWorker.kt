@@ -253,8 +253,10 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO
     ) {
         if (isStopped) return
-        if (BuildConfig.DEBUG)
-            Timber.d("delta+ root has ${deltaPlus.second.size} documents : ${deltaPlusRoot.uri}")
+        if (BuildConfig.DEBUG) {
+            val cleanRoot = deltaPlusRoot.uri.toString().replace(Settings.externalLibraryUri, "")
+            Timber.d("delta+ root has ${deltaPlus.second.size} documents : ${URLDecoder.decode(cleanRoot, "UTF-8")}")
+        }
 
         // Pair siblings with the same name (e.g. archives and JSON files)
         val deltaPlusPairs = deltaPlus.second.groupBy { getFileNameWithoutExtension(it.name ?: "") }

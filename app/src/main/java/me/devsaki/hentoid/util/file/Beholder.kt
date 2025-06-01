@@ -66,17 +66,17 @@ object Beholder {
                         ).associateBy({ it.uniqueHash() }, { it })
                         val validFiles =
                             files.filterNot { ignoreList.contains(it.value.uri.toString()) }
-                        if (BuildConfig.DEBUG) Timber.d("  Files found : " + files.size + " (" + (files.size - validFiles.size) + " ignored)")
+                        if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - validFiles.size)} ignored)")
 
                         // Select new docs
                         val newKeys = validFiles.keys.asSequence().minus(docs.keys)
                         newDocs.addAll(validFiles.filterKeys { it in newKeys }.values)
-                        if (BuildConfig.DEBUG) Timber.d("  New : " + newKeys.count() + " - " + newDocs.size)
+                        if (BuildConfig.DEBUG) Timber.d("  New : ${newKeys.count()} - ${newDocs.size}")
 
                         // Select deleted docs
                         val deletedKeys = docs.keys.asSequence().minus(files.keys).toSet()
                         deletedDocs.addAll(docs.filterKeys { it in deletedKeys }.values)
-                        if (BuildConfig.DEBUG) Timber.d("  Deleted : " + deletedKeys.count() + " - " + deletedDocs.size)
+                        if (BuildConfig.DEBUG) Timber.d("  Deleted : ${deletedKeys.count()} - ${deletedDocs.size}")
 
                         // Update snapshot in memory
                         snapshot[rootUriStr] = docs
@@ -93,7 +93,7 @@ object Beholder {
             } ?: run { // Snapshot root not found in storage
                 if (BuildConfig.DEBUG) {
                     Timber.d("  Folder not found in storage")
-                    Timber.d("  Deleted : " + docs.count())
+                    Timber.d("  Deleted : ${docs.count()}")
                 }
 
                 // Update global result
@@ -198,7 +198,7 @@ object Beholder {
 
     private fun saveSnapshot(ctx: Context): Boolean {
         val outFile =
-            ctx.filesDir.listFiles { f -> f.name == SNAPSHOT_LOCATION }?.let {
+            ctx.filesDir.listFiles { it.name == SNAPSHOT_LOCATION }?.let {
                 if (it.isNotEmpty()) it[0]
                 else File(ctx.filesDir, SNAPSHOT_LOCATION)
             }
@@ -206,8 +206,8 @@ object Beholder {
         if (null == outFile) return false
         outFile.createNewFile()
 
-        getOutputStream(outFile).use { os ->
-            DataOutputStream(os).use { dos ->
+        getOutputStream(outFile).use {
+            DataOutputStream(it).use { dos ->
                 dos.writeInt(snapshot.size)
                 snapshot.forEach { se ->
                     FolderEntry(se.key, se.value).toStream(dos)
@@ -221,18 +221,19 @@ object Beholder {
     private fun loadSnapshot(ctx: Context): List<FolderEntry> {
         val result: MutableList<FolderEntry> = ArrayList()
         val inFile =
-            ctx.filesDir.listFiles { f -> f.name == SNAPSHOT_LOCATION }?.let {
+            ctx.filesDir.listFiles { it.name == SNAPSHOT_LOCATION }?.let {
                 if (it.isNotEmpty()) it[0]
                 else null
             }
         if (null == inFile || 0L == inFile.length()) return result
 
+        if (BuildConfig.DEBUG)
+            Timber.d("Beholder snapshot : ${formatHumanReadableSize(inFile.length(), ctx.resources)}")
+
         inFile.inputStream().use {
             DataInputStream(it).use { dis ->
                 val nbEntries = dis.readInt()
-                for (i in 1..nbEntries) {
-                    result.add(FolderEntry.fromStream(dis))
-                }
+                repeat(nbEntries) { result.add(FolderEntry.fromStream(dis)) }
             }
         }
         return result
@@ -263,7 +264,7 @@ data class FolderEntry(
             val entryUri = dis.readUTF()
             val nbDocs = dis.readInt()
             val docs = HashMap<Long, Long>()
-            for (j in 1..nbDocs) {
+            repeat(nbDocs) {
                 val key = dis.readLong()
                 val value = dis.readLong()
                 docs[key] = value
