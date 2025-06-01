@@ -15,7 +15,7 @@ import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.regex.Pattern
 
-private val GALLERY_PATTERN = Pattern.compile(PUR_GALLERY_PATTERN)
+private val GALLERY_PATTERN by lazy { Pattern.compile(PUR_GALLERY_PATTERN) }
 
 class PururinContent : BaseContentParser() {
 

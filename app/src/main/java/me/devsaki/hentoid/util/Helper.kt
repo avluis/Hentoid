@@ -73,7 +73,7 @@ private val rand = Random()
 
 private val SIP_KEY = "0123456789ABCDEF".toByteArray()
 
-private val DATE_LITERALS = "(?<=\\d)(st|nd|rd|th)".toRegex()
+private val DATE_LITERALS by lazy { "(?<=\\d)(st|nd|rd|th)".toRegex() }
 
 /**
  * Retreive the given dimension value as DP, not pixels
@@ -129,7 +129,7 @@ fun duplicateInputStream(stream: InputStream, numberDuplicates: Int): List<Input
 
     ByteArrayOutputStream().use { baos ->
         copy(stream, baos)
-        for (i in 0 until numberDuplicates) result.add(ByteArrayInputStream(baos.toByteArray()))
+        repeat(numberDuplicates) { result.add(ByteArrayInputStream(baos.toByteArray())) }
     }
     return result
 }

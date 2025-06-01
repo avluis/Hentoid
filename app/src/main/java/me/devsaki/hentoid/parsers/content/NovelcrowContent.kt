@@ -19,7 +19,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
-private val galleryPattern = Pattern.compile(NovelcrowActivity.GALLERY_PATTERN)
+private val galleryPattern by lazy { Pattern.compile(NovelcrowActivity.GALLERY_PATTERN) }
 
 class NovelcrowContent : BaseContentParser() {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")

@@ -6,10 +6,9 @@ import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.min
 
-private val NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?")
-private val STRING_CLEANUP_INVALID_CHARS_PATTERN =
-    Pattern.compile("[(\\[\\-+?!_~/,:;|.#\"'’=&)\\]]")
-private val SEPARATOR_PATTERN = "\\W".toRegex()
+private val NUMERIC_PATTERN by lazy { Pattern.compile("-?\\d+(\\.\\d+)?") }
+private val STRING_CLEANUP_INVALID_CHARS_PATTERN by lazy { Pattern.compile("[(\\[\\-+?!_~/,:;|.#\"'’=&)\\]]") }
+private val SEPARATOR_PATTERN by lazy { "\\W".toRegex() }
 
 /**
  * Return the given string formatted with a capital letter as its first letter

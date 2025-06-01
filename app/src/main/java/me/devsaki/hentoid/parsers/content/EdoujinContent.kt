@@ -20,7 +20,7 @@ import java.io.IOException
 import java.util.Locale
 import java.util.regex.Pattern
 
-private val galleryPattern = Pattern.compile(EdoujinActivity.GALLERY_PATTERN)
+private val galleryPattern by lazy { Pattern.compile(EdoujinActivity.GALLERY_PATTERN) }
 
 class EdoujinContent : BaseContentParser() {
     @Selector(value = ".thumb img")

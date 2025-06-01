@@ -19,7 +19,7 @@ import java.io.IOException
 import java.util.Locale
 import java.util.regex.Pattern
 
-private val galleryPattern = Pattern.compile(Hentai2ReadActivity.GALLERY_PATTERN)
+private val galleryPattern by lazy { Pattern.compile(Hentai2ReadActivity.GALLERY_PATTERN) }
 
 class Hentai2ReadContent : BaseContentParser() {
     @Selector(value = "div.img-container img[src*=cover]")

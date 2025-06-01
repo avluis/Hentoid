@@ -75,8 +75,8 @@ import java.util.regex.Pattern
 
 private const val EXTERNAL_LIB_TAG = "external-library"
 
-val ENDS_WITH_NUMBER: Pattern = Pattern.compile(".*\\d+(\\.\\d+)?$")
-val BRACKETS = "\\[[^(\\[\\])]*]".toRegex()
+val ENDS_WITH_NUMBER: Pattern by lazy { Pattern.compile(".*\\d+(\\.\\d+)?$") }
+val BRACKETS by lazy { "\\[[^(\\[\\])]*]".toRegex() }
 
 enum class PickerResult {
     OK,  // OK - Returned a valid URI

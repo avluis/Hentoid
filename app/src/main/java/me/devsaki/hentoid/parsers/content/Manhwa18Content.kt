@@ -15,7 +15,7 @@ import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.regex.Pattern
 
-private val galleryPattern = Pattern.compile(Manhwa18Activity.GALLERY_PATTERN)
+private val galleryPattern by lazy { Pattern.compile(Manhwa18Activity.GALLERY_PATTERN) }
 
 class Manhwa18Content : BaseContentParser() {
     @Selector(value = ".series-cover div div", attr = "style", defValue = "")

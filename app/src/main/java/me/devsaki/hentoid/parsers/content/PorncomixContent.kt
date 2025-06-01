@@ -19,7 +19,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
-private val GALLERY_PATTERN = Pattern.compile(PCX_GALLERY_PATTERN)
+private val GALLERY_PATTERN by lazy { Pattern.compile(PCX_GALLERY_PATTERN) }
 
 class PorncomixContent : BaseContentParser() {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")

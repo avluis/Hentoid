@@ -5,7 +5,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import java.util.regex.Pattern
 
-private val hitomiCanonicalUrl = Pattern.compile("/galleries/[0-9]+\\.html")
+private val hitomiCanonicalUrl by lazy { Pattern.compile("/galleries/[0-9]+\\.html") }
 
 class HitomiContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {

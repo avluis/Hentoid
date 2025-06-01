@@ -13,24 +13,16 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val NOT_A_DIGIT = "\\D".toRegex()
+private val NOT_A_DIGIT by lazy { "\\D".toRegex() }
 
 class GitHubReleaseItem(releaseStruct: GithubRelease) :
     AbstractItem<GitHubReleaseItem.ReleaseViewHolder>() {
 
-    val tagName: String
-    private val name: String
-    private val description: String
-    private val creationDate: Date
-    val apkUrl: String
-
-    init {
-        tagName = releaseStruct.tagName.replace("v", "")
-        name = releaseStruct.name
-        description = releaseStruct.body
-        creationDate = releaseStruct.creationDate
-        apkUrl = releaseStruct.getApkAssetUrl()
-    }
+    val tagName: String = releaseStruct.tagName.replace("v", "")
+    private val name: String = releaseStruct.name
+    private val description: String = releaseStruct.body
+    private val creationDate: Date = releaseStruct.creationDate
+    val apkUrl: String = releaseStruct.getApkAssetUrl()
 
     fun isTagPrior(tagName: String): Boolean {
         return getIntFromTagName(this.tagName) <= getIntFromTagName(tagName)
@@ -56,11 +48,10 @@ class GitHubReleaseItem(releaseStruct: GithubRelease) :
         get() = R.id.github_release
 
     class ReleaseViewHolder(view: View) : FastAdapter.ViewHolder<GitHubReleaseItem>(view) {
-        private val title: TextView
+        private val title: TextView = ViewCompat.requireViewById<TextView>(view, R.id.changelogReleaseTitle)
         private val itemAdapter = ItemAdapter<GitHubReleaseDescItem>()
 
         init {
-            title = ViewCompat.requireViewById<TextView>(view, R.id.changelogReleaseTitle)
             val releaseDescriptionAdapter = FastAdapter.with(itemAdapter)
             val releasedDescription = ViewCompat.requireViewById<RecyclerView>(
                 view, R.id.changelogReleaseDescription

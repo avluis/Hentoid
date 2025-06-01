@@ -19,6 +19,8 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicBoolean
 
+private val RETURN_PATTERN by lazy { "\\{[\\s]*return[\\s]+[0-9]+;[\\s]*\\}".toRegex() }
+
 class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
     private var client: SingleLoadWebViewClient
 
@@ -90,16 +92,10 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                     val body = response.body ?: throw IOException("Empty body")
                     if (response.code < 300) {
                         var jsFile = body.source().readString(StandardCharsets.UTF_8)
-                        jsFile = jsFile.replace(
-                            "\\{[\\s]*return[\\s]+[0-9]+;[\\s]*\\}".toRegex(),
-                            "{return o;}"
-                        )
+                        jsFile = jsFile.replace(RETURN_PATTERN, "{return o;}")
                         return okHttpResponseToWebkitResponse(
-                            response, ByteArrayInputStream(
-                                jsFile.toByteArray(
-                                    StandardCharsets.UTF_8
-                                )
-                            )
+                            response,
+                            ByteArrayInputStream(jsFile.toByteArray(StandardCharsets.UTF_8))
                         )
                     }
                 } catch (e: IOException) {

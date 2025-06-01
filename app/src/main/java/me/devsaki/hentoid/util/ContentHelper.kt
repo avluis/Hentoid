@@ -234,7 +234,7 @@ val contentItemDiffCallback: DiffCallback<ContentItem> =
 const val KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters"
 const val KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames"
 
-private val UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]".toRegex()
+private val UNAUTHORIZED_CHARS by lazy { "[^a-zA-Z0-9.-]".toRegex() }
 private val libraryStatus = intArrayOf(
     StatusContent.DOWNLOADED.code,
     StatusContent.MIGRATED.code,

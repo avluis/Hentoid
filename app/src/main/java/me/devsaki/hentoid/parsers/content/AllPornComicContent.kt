@@ -19,7 +19,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
 
-private val GALLERY_PATTERN = Pattern.compile(APC_GALLERY_PATTERN)
+private val GALLERY_PATTERN by lazy { Pattern.compile(APC_GALLERY_PATTERN) }
 
 class AllPornComicContent : BaseContentParser() {
 

@@ -120,7 +120,7 @@ import kotlin.math.round
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-private val GALLERY_REGEX = "\\b|/galleries|/gallery|/g|/entry\\b".toRegex()
+private val GALLERY_REGEX by lazy { "\\b|/galleries|/gallery|/g|/entry\\b".toRegex() }
 
 abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebActivity,
     BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {

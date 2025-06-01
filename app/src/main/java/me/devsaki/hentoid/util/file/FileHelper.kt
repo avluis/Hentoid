@@ -65,7 +65,7 @@ private const val TEST_FILE_NAME = "delete.me"
 const val DEFAULT_MIME_TYPE = "application/octet-steam"
 
 // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
-private val ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]".toRegex()
+private val ILLEGAL_FILENAME_CHARS by lazy { "[\"*/:<>\\?\\\\|]".toRegex() }
 
 const val URI_ELEMENTS_SEPARATOR = "%3A"
 

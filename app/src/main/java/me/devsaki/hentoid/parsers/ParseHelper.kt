@@ -8,7 +8,6 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
-import me.devsaki.hentoid.parsers.content.BaseContentParser
 import me.devsaki.hentoid.parsers.content.NO_TITLE
 import me.devsaki.hentoid.util.MAP_STRINGS
 import me.devsaki.hentoid.util.isNumeric
@@ -27,7 +26,7 @@ import java.util.regex.Pattern
 import kotlin.math.floor
 import kotlin.math.log10
 
-private val SQUARE_BRACKETS = Pattern.compile("\\[[^]]*\\]")
+private val SQUARE_BRACKETS by lazy { Pattern.compile("\\[[^]]*\\]") }
 
 /**
  * Remove counters from given string (e.g. "Futanari (2660)" => "Futanari")
