@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database.domains
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.annotation.Index
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.relation.ToOne
@@ -42,6 +43,7 @@ data class ImageFile(
     var imageHash: Long = 0,
     var isTransformed: Boolean = false,
     // Useful only during cleanup operations; no need to get it into the JSON
+    @Index
     var isFlaggedForDeletion: Boolean = false
 ) {
     lateinit var content: ToOne<Content>

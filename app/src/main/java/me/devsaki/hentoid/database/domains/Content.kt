@@ -124,6 +124,7 @@ data class Content(
     // No need to save that into the JSON file itself, obviously
     var jsonUri: String = "",
     // Useful only during cleanup operations; no need to get it into the JSON
+    @Index
     var isFlaggedForDeletion: Boolean = false,
     var lastEditDate: Long = 0
 ) {
