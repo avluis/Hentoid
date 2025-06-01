@@ -108,7 +108,7 @@ class EHentaiParser : ImageListParser {
                 if (getAuthState(site.url) != EhAuthState.LOGGED)
                     throw EmptyResultException("You need to be logged in to download full-size images.")
                 // Use full image URL, if available
-                val fullImgUrl = imageMetadata.fullUrlRelative
+                val fullImgUrl = imageMetadata.fullUrlRelative?:""
                 if (fullImgUrl.isNotEmpty()) imageUrl = fixUrl(fullImgUrl, site.url)
             }
             return Pair(imageUrl, null)
