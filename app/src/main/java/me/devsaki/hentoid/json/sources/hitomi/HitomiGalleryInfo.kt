@@ -1,102 +1,110 @@
-package me.devsaki.hentoid.json.sources.hitomi;
+package me.devsaki.hentoid.json.sources.hitomi
 
-import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
-import static me.devsaki.hentoid.util.HelperKt.parseDatetimeToEpoch;
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Attribute
+import me.devsaki.hentoid.database.domains.AttributeMap
+import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 
-import androidx.annotation.NonNull;
+@JsonClass(generateAdapter = true)
+data class HitomiGalleryInfo(
+    val parodys: List<HitomiParody>? = null,
+    val tags: List<HitomiTag>? = null,
+    val title: String? = null,
+    val characters: List<HitomiCharacter>? = null,
+    val groups: List<HitomiGroup>? = null,
+    // Format : "YYYY-MM-DD HH:MM:ss-05", "YYYY-MM-DD HH:MM:ss.SSS-05" or "YYYY-MM-DD HH:MM:ss.SS-05" (-05 being the timezone of the server ?)
+    val date: String? = null,
+    val language: String? = null,
+    @Json(name = "language_localname")
+    val languageName: String? = null,
+    @Json(name = "language_url")
+    val languageUrl: String? = null,
+    val artists: List<HitomiArtist>? = null,
+    val type: String? = null
+) {
 
-import java.util.List;
+    data class HitomiParody(
+        val parody: String,
+        val url: String
+    )
 
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class HitomiGalleryInfo {
-
-    private List<HitomiParody> parodys;
-    private List<HitomiTag> tags;
-    private String title;
-    private List<HitomiCharacter> characters;
-    private List<HitomiGroup> groups;
-    private String date; // Format : "YYYY-MM-DD HH:MM:ss-05", "YYYY-MM-DD HH:MM:ss.SSS-05" or "YYYY-MM-DD HH:MM:ss.SS-05" (-05 being the timezone of the server ?)
-    private String language;
-    private String language_localname;
-    private String language_url;
-    private List<HitomiArtist> artists;
-    private String type;
-
-    private static class HitomiParody {
-        private String parody;
-        private String url;
+    data class HitomiTag(
+        val url: String,
+        val tag: String? = null,
+        val female: String? = null,
+        val male: String? = null
+    ) {
+        val label: String
+            get() {
+                var result = tag ?: ""
+                if (female != null && female == "1") result += " ♀"
+                else if (male != null && male == "1") result += " ♂"
+                return result
+            }
     }
 
-    private static class HitomiTag {
-        private String url;
-        private String tag;
-        private String female;
-        private String male;
+    data class HitomiCharacter(
+        val url: String,
+        val character: String
+    )
 
-        String getLabel() {
-            String result = (null == tag) ? "" : tag;
-            if (female != null && female.equals("1")) result += " ♀";
-            else if (male != null && male.equals("1")) result += " ♂";
-            return result;
+    data class HitomiGroup(
+        val url: String,
+        val group: String
+    )
+
+    data class HitomiArtist(
+        val url: String,
+        val artist: String
+    )
+
+    private fun addAttribute(
+        attributeType: AttributeType,
+        name: String,
+        url: String,
+        map: AttributeMap
+    ) {
+        val attribute = Attribute(attributeType, name, url, Site.HITOMI)
+        map.add(attribute)
+    }
+
+    fun updateContent(content: Content) {
+        content.title = cleanup(title)
+
+        var uploadDate = parseDatetimeToEpoch(date!!, "yyyy-MM-dd HH:mm:ssx", false)
+        if (0L == uploadDate) uploadDate =
+            parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx", false)
+        if (0L == uploadDate) uploadDate =
+            parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSx", true)
+        content.uploadDate = uploadDate
+
+        val attributes = AttributeMap()
+        parodys?.forEach {
+            addAttribute(AttributeType.SERIE, it.parody, it.url, attributes)
         }
-    }
-
-    private static class HitomiCharacter {
-        private String url;
-        private String character;
-    }
-
-    private static class HitomiGroup {
-        private String url;
-        private String group;
-    }
-
-    private static class HitomiArtist {
-        private String url;
-        private String artist;
-    }
-
-    private void addAttribute(@NonNull AttributeType attributeType, @NonNull String name, @NonNull String url, @NonNull AttributeMap map) {
-        Attribute attribute = new Attribute(attributeType, name, url, Site.HITOMI);
-        map.add(attribute);
-    }
-
-    public void updateContent(@NonNull Content content) {
-        content.setTitle(cleanup(title));
-
-        long uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx", false);
-        if (0 == uploadDate)
-            uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx", false);
-        if (0 == uploadDate)
-            uploadDate = parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSx", true);
-        content.setUploadDate(uploadDate);
-
-        AttributeMap attributes = new AttributeMap();
-        if (parodys != null)
-            for (HitomiParody parody : parodys)
-                addAttribute(AttributeType.SERIE, parody.parody, parody.url, attributes);
-        if (tags != null)
-            for (HitomiTag tag : tags)
-                addAttribute(AttributeType.TAG, tag.getLabel(), tag.url, attributes);
-        if (characters != null)
-            for (HitomiCharacter chara : characters)
-                addAttribute(AttributeType.CHARACTER, chara.character, chara.url, attributes);
-        if (groups != null)
-            for (HitomiGroup group : groups)
-                addAttribute(AttributeType.CIRCLE, group.group, group.url, attributes);
-        if (artists != null)
-            for (HitomiArtist artist : artists)
-                addAttribute(AttributeType.ARTIST, artist.artist, artist.url, attributes);
-        if (language != null)
-            addAttribute(AttributeType.LANGUAGE, language, language_url, attributes);
-        if (type != null)
-            addAttribute(AttributeType.CATEGORY, type, "", attributes);
-        content.putAttributes(attributes);
+        tags?.forEach {
+            addAttribute(AttributeType.TAG, it.label, it.url, attributes)
+        }
+        characters?.forEach {
+            addAttribute(AttributeType.CHARACTER, it.character, it.url, attributes)
+        }
+        groups?.forEach {
+            addAttribute(AttributeType.CIRCLE, it.group, it.url, attributes)
+        }
+        artists?.forEach {
+            addAttribute(AttributeType.ARTIST, it.artist, it.url, attributes)
+        }
+        language?.let {
+            addAttribute(AttributeType.LANGUAGE, it, languageUrl ?: "", attributes)
+        }
+        type?.let {
+            addAttribute(AttributeType.CATEGORY, it, "", attributes)
+        }
+        content.putAttributes(attributes)
     }
 }
