@@ -1,11 +1,11 @@
-package me.devsaki.hentoid.util.string_similarity;
+package me.devsaki.hentoid.util.string_similarity
 
-import java.io.Serializable;
+import java.io.Serializable
 
 /**
  * @author Thibault Debatty
  */
-public interface StringSimilarity extends Serializable {
+interface StringSimilarity : Serializable {
     /**
      * Compute and return a measure of similarity between 2 strings.
      *
@@ -13,5 +13,5 @@ public interface StringSimilarity extends Serializable {
      * @param s2
      * @return similarity (0 means both strings are completely different)
      */
-    double similarity(String s1, String s2);
+    fun similarity(s1: String, s2: String): Double
 }

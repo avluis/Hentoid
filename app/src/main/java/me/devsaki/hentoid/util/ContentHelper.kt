@@ -49,7 +49,6 @@ import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.parsers.ContentParserFactory.getContentParserClass
-import me.devsaki.hentoid.parsers.ContentParserFactory.getImageListParser
 import me.devsaki.hentoid.util.AchievementsManager.trigger
 import me.devsaki.hentoid.util.LanguageHelper.getFlagFromLanguage
 import me.devsaki.hentoid.util.Settings.libraryGridCardWidthDP
@@ -65,6 +64,7 @@ import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.InnerNameNumberArchiveComparator
 import me.devsaki.hentoid.util.file.InnerNameNumberFileComparator
 import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
@@ -88,9 +88,6 @@ import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.removeFile
-import me.devsaki.hentoid.util.image.MIME_IMAGE_GENERIC
-import me.devsaki.hentoid.util.file.PdfManager
-import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.getScaledDownBitmap
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
@@ -100,7 +97,6 @@ import me.devsaki.hentoid.util.network.HEADER_USER_AGENT
 import me.devsaki.hentoid.util.network.WebkitPackageHelper.getWebViewAvailable
 import me.devsaki.hentoid.util.network.WebkitPackageHelper.getWebViewUpdating
 import me.devsaki.hentoid.util.network.fetchBodyFast
-import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.peekCookies
