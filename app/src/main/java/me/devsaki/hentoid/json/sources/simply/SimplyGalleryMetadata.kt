@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.sources.simply
 
 import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.json.sources.simply.SimplyContentMetadata.SimplyPageData
 
 @JsonClass(generateAdapter = true)
 data class SimplyGalleryMetadata(
@@ -12,7 +13,7 @@ data class SimplyGalleryMetadata(
         val pages = props.pageProps.data.pages.sortedBy { it.pageNum }
 
         for (page in pages) {
-            val url = page.fullUrl
+            val url = page.getFullUrl()
             if (url.isNotEmpty()) result.add(url)
         }
 
@@ -32,5 +33,5 @@ data class PageProps(
 
 @JsonClass(generateAdapter = true)
 data class PagesData(
-    val pages: List<SimplyContentMetadata.PageData>? = null
+    val pages: List<SimplyPageData>? = null
 )

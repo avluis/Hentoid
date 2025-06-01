@@ -24,7 +24,7 @@ data class PixivIllustPagesMetadata(
                 if (null == urls) return ""
                 var result = urls["original"]
                 if (null == result) result = urls["regular"]
-                return if ((null == result)) "" else result
+                return result ?: ""
             }
     }
 }

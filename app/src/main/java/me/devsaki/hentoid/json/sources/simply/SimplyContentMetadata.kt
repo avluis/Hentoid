@@ -1,125 +1,143 @@
-package me.devsaki.hentoid.json.sources.simply;
+package me.devsaki.hentoid.json.sources.simply
 
-import static me.devsaki.hentoid.parsers.ParseHelperKt.cleanup;
-import static me.devsaki.hentoid.util.HelperKt.parseDatetimeToEpoch;
+import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.database.domains.Attribute
+import me.devsaki.hentoid.database.domains.AttributeMap
+import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.util.parseDatetimeToEpoch
 
-import androidx.annotation.NonNull;
+@JsonClass(generateAdapter = true)
+data class SimplyContentMetadata(
+    val data: Data? = null
+) {
+    @JsonClass(generateAdapter = true)
+    data class Data(
+        val slug: String? = null,
+        val title: String? = null,
 
-import com.squareup.moshi.Json;
+        @Json(name = "created_at")
+        val createdAt: String = "",
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+        val preview: SimplyPageData? = null,
 
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
+        @Json(name = "image_count")
+        val imageCount: Int,
 
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class SimplyContentMetadata {
-    Data data;
-
-    private static class Data {
-        String slug;
-        String title;
-        private @Json(name = "created_at")
-        String createdAt;
-
-        PageData preview;
-        private @Json(name = "image_count")
-        Integer imageCount;
         //List<PageData> images; <-- only the first few
+        val language: LanguageData? = null,
+        val artists: List<MetadataEntry>? = null,
+        val characters: List<MetadataEntry>? = null,
+        val parodies: List<MetadataEntry?>? = null,
+        val series: MetadataEntry? = null,
+        val tags: List<MetadataEntry>? = null
+    )
 
-        LanguageData language;
-        List<MetadataEntry> artists;
-        List<MetadataEntry> characters;
-        List<MetadataEntry> parodies;
-        MetadataEntry series;
-        List<MetadataEntry> tags;
-    }
+    data class MetadataEntry(
+        val title: String? = null,
+        val slug: String? = null
+    )
 
-    private static class MetadataEntry {
-        String title;
-        String slug;
-    }
+    data class LanguageData(
+        val name: String? = null,
+        val slug: String? = null
+    )
 
-    private static class LanguageData {
-        String name;
-        String slug;
-    }
-
-    public static class PageData {
+    @JsonClass(generateAdapter = true)
+    data class SimplyPageData(
         @Json(name = "page_num")
-        Integer pageNum;
-        Map<String, String> sizes;
-
-        String getFullUrl() {
-            if (sizes.containsKey("full")) return sizes.get("full");
-            else if (sizes.containsKey("giant_thumb")) return sizes.get("giant_thumb");
-            else return "";
+        val pageNum: Int? = null,
+        val sizes: Map<String, String>? = null,
+    ) {
+        fun getFullUrl(): String {
+            if (null == sizes) return ""
+            return sizes["full"] ?: sizes["giant_thumb"] ?: ""
         }
 
-        String getThumbUrl() {
-            if (sizes.containsKey("small_thumb")) return sizes.get("small_thumb");
-            else if (sizes.containsKey("thumb")) return sizes.get("thumb");
-            else return "";
+        fun getThumbUrl(): String {
+            if (null == sizes) return ""
+            return sizes["small_thumb"] ?: sizes["thumb"] ?: ""
         }
     }
 
-    public Content update(@NonNull Content content, boolean updateImages) {
-        content.setSite(Site.SIMPLY);
+    fun update(content: Content, updateImages: Boolean): Content {
+        content.site = Site.SIMPLY
 
         if (null == data || null == data.title || null == data.slug) {
-            content.setStatus(StatusContent.IGNORED);
-            return content;
+            content.status = StatusContent.IGNORED
+            return content
         }
 
-        String url = Site.SIMPLY.getUrl() + "manga/" + data.slug;
+        val url = Site.SIMPLY.url + "manga/" + data.slug
 
-        content.setUrl(url);
-        if (!data.createdAt.isEmpty())
-            content.setUploadDate(parseDatetimeToEpoch(data.createdAt, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", true)); // e.g. 2022-10-23T19:47:08.717+02:00
+        content.url = url
+        if (!data.createdAt.isEmpty()) content.uploadDate = parseDatetimeToEpoch(
+            data.createdAt,
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX",
+            true
+        ) // e.g. 2022-10-23T19:47:08.717+02:00
 
-        content.setTitle(cleanup(data.title));
 
-        content.setQtyPages(data.imageCount);
-        content.setCoverImageUrl(data.preview.getThumbUrl());
+        content.title = cleanup(data.title)
 
-        AttributeMap attributes = new AttributeMap();
+        content.qtyPages = data.imageCount
+        data.preview?.let {
+            content.coverImageUrl = it.getThumbUrl()
+        }
+
+        val attributes = AttributeMap()
         if (data.language != null) {
-            String name = cleanup(data.language.name);
-            Attribute attribute = new Attribute(AttributeType.LANGUAGE, name, Site.SIMPLY.getUrl() + "language/" + data.language.slug, Site.SIMPLY);
-            attributes.add(attribute);
+            val name = cleanup(data.language.name)
+            val attribute = Attribute(
+                AttributeType.LANGUAGE,
+                name,
+                Site.SIMPLY.url + "language/" + data.language.slug,
+                Site.SIMPLY
+            )
+            attributes.add(attribute)
         }
         if (data.series != null) {
-            String name = cleanup(data.series.title);
-            Attribute attribute = new Attribute(AttributeType.SERIE, name, Site.SIMPLY.getUrl() + "series/" + data.series.slug, Site.SIMPLY);
-            attributes.add(attribute);
+            val name = cleanup(data.series.title)
+            val attribute = Attribute(
+                AttributeType.SERIE,
+                name,
+                Site.SIMPLY.url + "series/" + data.series.slug,
+                Site.SIMPLY
+            )
+            attributes.add(attribute)
         }
 
-        populateAttributes(attributes, data.artists, AttributeType.ARTIST, "artist");
-        populateAttributes(attributes, data.characters, AttributeType.CHARACTER, "character");
+        populateAttributes(attributes, data.artists, AttributeType.ARTIST, "artist")
+        populateAttributes(attributes, data.characters, AttributeType.CHARACTER, "character")
         //populateAttributes(attributes, data.parodies, AttributeType.SERIE, "parody");
-        populateAttributes(attributes, data.tags, AttributeType.TAG, "tag");
+        populateAttributes(attributes, data.tags, AttributeType.TAG, "tag")
 
-        content.putAttributes(attributes);
+        content.putAttributes(attributes)
 
         if (updateImages) {
-            content.setImageFiles(Collections.emptyList());
-            content.setQtyPages(0);
+            content.setImageFiles(mutableListOf<ImageFile>())
+            content.qtyPages = 0
         }
 
-        return content;
+        return content
     }
 
-    private void populateAttributes(@NonNull AttributeMap attributes, List<MetadataEntry> entries, AttributeType type, @NonNull String typeUrl) {
-        if (entries != null) for (MetadataEntry meta : entries) {
-            String name = cleanup(meta.title);
-            Attribute attribute = new Attribute(type, name, Site.SIMPLY.getUrl() + typeUrl + "/" + meta.slug, Site.SIMPLY);
-            attributes.add(attribute);
+    private fun populateAttributes(
+        attributes: AttributeMap,
+        entries: List<MetadataEntry>?,
+        type: AttributeType,
+        typeUrl: String
+    ) {
+        entries?.forEach {
+            val name = cleanup(it.title)
+            val attribute =
+                Attribute(type, name, Site.SIMPLY.url + typeUrl + "/" + it.slug, Site.SIMPLY)
+            attributes.add(attribute)
         }
     }
 }
