@@ -9,7 +9,7 @@ class ManhwaActivity : BaseWebActivity() {
         private const val DOMAIN_FILTER = "manhwahentai.me"
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+/$")
-        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads")
+        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads", "\$x//a[contains(@href,\"ourdream.ai\")]/..")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }
 
