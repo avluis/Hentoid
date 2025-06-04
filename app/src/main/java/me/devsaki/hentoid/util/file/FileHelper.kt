@@ -47,6 +47,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
 import java.math.BigInteger
+import java.net.URLDecoder
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.time.Instant
@@ -119,7 +120,6 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
 
 /**
  * Get the full, human-readable access path from the given Uri
- *
  *
  * Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
  *
@@ -686,14 +686,14 @@ private fun openFileWithIntent(context: Context, uri: Uri, mimeType: String?) {
 }
 
 /**
- * Returns the extension of the given filename, without the "."
+ * Returns the extension of the given filename, without the ".", in lowercase
  *
  * @param fileName Filename
- * @return Extension of the given filename, without the "."
+ * @return Extension of the given filename, without the ".", in lowercase
  */
 fun getExtension(fileName: String): String {
-    return if (fileName.contains(".")) fileName.substring(fileName.lastIndexOf('.') + 1)
-        .lowercase() else ""
+    val dotIdx = fileName.lastIndexOf('.')
+    return if (dotIdx > -1) fileName.substring(dotIdx + 1).lowercase() else ""
 }
 
 /**
@@ -1710,11 +1710,16 @@ class InnerNameNumberFileComparator : Comparator<DocumentFile?> {
 // DOCUMENTFILE EXTENSIONS
 
 fun DocumentFile.uniqueHash(): Long {
-    return hash64((this.name + "." + this.length()).toByteArray())
+    return hash64((this.name ?: "") + "." + this.length())
 }
 
 fun DocumentFile.getExtension(): String {
     return getExtension(this.name ?: "")
+}
+
+fun DocumentFile.formatDisplayUri(rootUri: String = ""): String {
+    val cleanRoot = this.uri.toString().replace(rootUri, "")
+    return URLDecoder.decode(cleanRoot, "UTF-8")
 }
 
 

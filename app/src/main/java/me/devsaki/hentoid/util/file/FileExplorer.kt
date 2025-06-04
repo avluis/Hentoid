@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
+import me.devsaki.hentoid.util.hash64
 import timber.log.Timber
 import java.io.Closeable
 import java.io.IOException
@@ -186,6 +187,16 @@ class FileExplorer : Closeable {
         return convertFromProperties(context, results)
     }
 
+    fun listDocumentProperties(
+        parent: DocumentFile,
+        nameFilter: NameFilter? = null,
+        listFolders: Boolean = true,
+        listFiles: Boolean = true,
+        stopFirst: Boolean = false
+    ): List<DocumentProperties> {
+        return queryDocumentFiles(parent, nameFilter, listFolders, listFiles, stopFirst)
+    }
+
     fun listDocumentFilesFw(
         context: Context,
         parent: DocumentFile,
@@ -353,14 +364,14 @@ class FileExplorer : Closeable {
      * @param properties Properties to convert
      * @return List of DocumentFile's built from the given properties
      */
-    private fun convertFromProperties(
+    fun convertFromProperties(
         context: Context,
         properties: List<DocumentProperties>
     ): List<DocumentFile> {
         return properties.mapNotNull { convertFromProperties(context, it) }
     }
 
-    private fun convertFromProperties(
+    fun convertFromProperties(
         context: Context,
         properties: DocumentProperties
     ): DocumentFile? {
@@ -396,11 +407,20 @@ class FileExplorer : Closeable {
     /**
      * Properties of a stored document
      */
-    internal data class DocumentProperties(
+    data class DocumentProperties(
         val uri: Uri,
         val name: String,
         val size: Long,
         val isDirectory: Boolean,
         val lastModified: Long
-    )
+    ) {
+        fun uniqueHash(): Long {
+            return hash64(this.name + "." + this.size)
+        }
+        fun getExtension(): String {
+            return getExtension(this.name)
+        }
+        val isFile: Boolean
+            get() = !isDirectory
+    }
 }

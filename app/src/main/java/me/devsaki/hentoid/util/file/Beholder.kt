@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.util.file.FileExplorer.DocumentProperties
 import timber.log.Timber
 import java.io.DataInputStream
 import java.io.DataOutputStream
@@ -12,6 +13,7 @@ import java.io.IOException
 
 private const val SNAPSHOT_LOCATION = "beholder.snapshot"
 
+// TODO don't save _all_ files but only useful files and number of children
 object Beholder {
 
     // Key : Root document Uri
@@ -40,12 +42,12 @@ object Beholder {
      * @param ctx Context to use
      * @return
      *  First : List of new scanned DocumentFiles that weren't referenced in initial
-     *      First : Root DocumentFiles of the files appearing in Second
+     *      First : Root DocumentFile of the files appearing in Second
      *      Second : New scanned DocumentFiles that weren't referenced in initial
      *  Second : Removed Content IDs whose Document was referenced in initial, but not found when scanning
      */
-    fun scanForDelta(ctx: Context): Pair<List<Pair<DocumentFile, List<DocumentFile>>>, Set<Long>> {
-        val allNewDocs = ArrayList<Pair<DocumentFile, List<DocumentFile>>>()
+    fun scanForDelta(ctx: Context): Pair<List<Pair<DocumentFile, List<DocumentProperties>>>, Set<Long>> {
+        val allNewDocs = ArrayList<Pair<DocumentFile, List<DocumentProperties>>>()
         val allDeletedDocs = HashSet<Long>()
         val allDeletedRoots = HashSet<String>()
 
@@ -53,13 +55,13 @@ object Beholder {
             if (BuildConfig.DEBUG) Timber.d("Root : $rootUriStr (${docs.size} docs)")
             getDocumentFromTreeUriString(ctx, rootUriStr)?.let { root ->
                 try {
-                    val newDocs = ArrayList<DocumentFile>()
+                    val newDocs = ArrayList<DocumentProperties>()
                     val deletedDocs = HashSet<Long>()
 
                     if (BuildConfig.DEBUG) Timber.d("  Folder found in storage")
                     FileExplorer(ctx, root).use { fe ->
-                        val files = fe.listDocumentFiles(
-                            ctx, root, null,
+                        val files = fe.listDocumentProperties(
+                            root, null,
                             listFolders = true,
                             listFiles = true,
                             stopFirst = false
@@ -84,7 +86,7 @@ object Beholder {
                             .plus(newDocs.associateBy({ it.uniqueHash() }, { -1 }))
 
                         // Update global result
-                        allNewDocs.add(Pair(root, newDocs))
+                        if (newDocs.isNotEmpty()) allNewDocs.add(Pair(root, newDocs))
                         allDeletedDocs.addAll(deletedDocs)
                     }
                 } catch (e: IOException) {
@@ -138,6 +140,13 @@ object Beholder {
         registerContent(ctx, map)
     }
 
+    /**
+     * @param contentDocs
+     * Key = Root Uri
+     * Value = List of documents inside the given root, with their associated content
+     *      First = DocumentFile
+     *      Second = Associated Content ID; -1 if no Content
+     */
     fun registerContent(
         ctx: Context,
         contentDocs: Map<String, List<Pair<DocumentFile, Long>>>
@@ -228,7 +237,14 @@ object Beholder {
         if (null == inFile || 0L == inFile.length()) return result
 
         if (BuildConfig.DEBUG)
-            Timber.d("Beholder snapshot : ${formatHumanReadableSize(inFile.length(), ctx.resources)}")
+            Timber.d(
+                "Beholder snapshot : ${
+                    formatHumanReadableSize(
+                        inFile.length(),
+                        ctx.resources
+                    )
+                }"
+            )
 
         inFile.inputStream().use {
             DataInputStream(it).use { dis ->
@@ -241,14 +257,16 @@ object Beholder {
 
     private fun logSnapshot() {
         if (BuildConfig.DEBUG) {
-            Timber.d("beholder dump start")
+            Timber.v("beholder dump start")
             snapshot.forEach { se ->
-                Timber.d("${se.key} : ${se.value.size} elements")
+                Timber.v("${se.key} : ${se.value.size} elements")
+                /*
                 se.value.forEach { sev ->
                     Timber.d("${sev.key} => ${sev.value}")
                 }
+                 */
             }
-            Timber.d("beholder dump end")
+            Timber.v("beholder dump end")
         }
     }
 }

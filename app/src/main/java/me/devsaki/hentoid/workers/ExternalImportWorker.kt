@@ -33,10 +33,10 @@ import me.devsaki.hentoid.util.existsInCollection
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.StorageCache
+import me.devsaki.hentoid.util.file.formatDisplayUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
-import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.isSupportedImage
@@ -49,7 +49,6 @@ import me.devsaki.hentoid.util.scanFolderRecursive
 import me.devsaki.hentoid.workers.data.ExternalImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 import java.net.URLDecoder
 import kotlin.math.roundToInt
@@ -215,11 +214,29 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             Timber.d("delta+ : ${delta.first.size} roots")
 
             // == Content to add
+            val libraryPath = (Settings.externalLibraryUri.toUri().path ?: "").split('/')
             delta.first.forEach { deltaPlus ->
                 val deltaPlusRoot = deltaPlus.first
-                FileExplorer(context, deltaPlusRoot).use { explorer ->
-                    scanAddedContentBH(context, explorer, deltaPlusRoot, deltaPlus, dao)
-                } // explorer
+                val deltaPlusUseful = deltaPlus.second.filter {
+                    return@filter if (it.isDirectory) true
+                    else if (it.isFile && isSupportedArchivePdf(it.name)) true
+                    else if (it.getExtension() == "json") true
+                    else false
+                }
+                if (deltaPlusUseful.isNotEmpty()) {
+                    FileExplorer(context, deltaPlusRoot).use { explorer ->
+                        scanAddedContentBH(
+                            context,
+                            explorer,
+                            deltaPlusRoot,
+                            deltaPlusUseful.mapNotNull {
+                                explorer.convertFromProperties(applicationContext, it)
+                            },
+                            dao,
+                            libraryPath.size
+                        )
+                    } // explorer
+                } // not empty
             } // deltaPlus roots
 
             // == Content to remove
@@ -249,30 +266,35 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         context: Context,
         explorer: FileExplorer,
         deltaPlusRoot: DocumentFile,
-        deltaPlus: Pair<DocumentFile, List<DocumentFile>>,
-        dao: CollectionDAO
+        deltaPlusDocs: List<DocumentFile>,
+        dao: CollectionDAO,
+        nbLibraryPathParts: Int
     ) {
         if (isStopped) return
+
         if (BuildConfig.DEBUG) {
-            val cleanRoot = deltaPlusRoot.uri.toString().replace(Settings.externalLibraryUri, "")
-            Timber.d("delta+ root has ${deltaPlus.second.size} documents : ${URLDecoder.decode(cleanRoot, "UTF-8")}")
+            val nbFiles = deltaPlusDocs.count { it.isFile }
+            val nbFolders = deltaPlusDocs.count { it.isDirectory }
+            Timber.d(
+                "delta+ root has $nbFiles useful files and $nbFolders useful folders : ${
+                    deltaPlusRoot.formatDisplayUri(Settings.externalLibraryUri)
+                }"
+            )
         }
+        if (deltaPlusDocs.isEmpty()) return
 
         // Pair siblings with the same name (e.g. archives and JSON files)
-        val deltaPlusPairs = deltaPlus.second.groupBy { getFileNameWithoutExtension(it.name ?: "") }
+        val deltaPlusPairs = deltaPlusDocs.groupBy { getFileNameWithoutExtension(it.name ?: "") }
 
         // Forge parent names using folder root path minus ext library root path
-        val extRootElts =
-            getFullPathFromUri(context, Settings.externalLibraryUri.toUri())
-                .split(File.separator)
-        val parentNames = getFullPathFromUri(context, deltaPlusRoot.uri)
-            .split(File.separator).toMutableList()
-        for (i in extRootElts.indices - 1) parentNames.removeAt(0)
+        val rootParts = (deltaPlusRoot.uri.path ?: "").split('/')
+        val parentNames = rootParts.subList(nbLibraryPathParts, rootParts.size)
         Timber.d("  parents : $parentNames")
 
         deltaPlusPairs.values.forEach { docs ->
             if (isStopped) return
-            if (BuildConfig.DEBUG) docs.forEach { Timber.d("delta+ => ${it.uri}") }
+            if (BuildConfig.DEBUG)
+                docs.forEach { Timber.d("delta+ => ${it.formatDisplayUri(Settings.externalLibraryUri)}") }
             val archivePdf = docs.firstOrNull { it.isFile && isSupportedArchivePdf(it.name ?: "") }
             val folder = docs.firstOrNull { it.isDirectory }
 
@@ -330,10 +352,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         dao: CollectionDAO
     ): Content? {
         val jsons =
-            docs.filter {
-                it.isFile && getExtension(it.name ?: "")
-                    .equals("json", true)
-            }
+            docs.filter { it.isFile && it.getExtension().equals("json", true) }
         val content = jsonToContent(context, dao, jsons, archivePdf.name ?: "")
         val c = scanArchivePdf(
             context,
