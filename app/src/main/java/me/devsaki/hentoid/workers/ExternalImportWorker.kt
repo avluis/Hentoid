@@ -230,7 +230,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             explorer,
                             deltaPlusRoot,
                             deltaPlusUseful.mapNotNull {
-                                explorer.convertFromProperties(applicationContext, it)
+                                explorer.convertFromProperties(
+                                    applicationContext,
+                                    deltaPlusRoot,
+                                    it
+                                )
                             },
                             dao,
                             libraryPath.size

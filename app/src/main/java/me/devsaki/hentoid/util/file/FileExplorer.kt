@@ -184,7 +184,7 @@ class FileExplorer : Closeable {
         stopFirst: Boolean = false
     ): List<DocumentFile> {
         val results = queryDocumentFiles(parent, nameFilter, listFolders, listFiles, stopFirst)
-        return convertFromProperties(context, results)
+        return convertFromProperties(context, parent, results)
     }
 
     fun listDocumentProperties(
@@ -208,11 +208,10 @@ class FileExplorer : Closeable {
             val cursor = getCursorFor(parent.uri)
             return queryDocumentFilesFw(
                 cursor,
-                parent,
                 nameFilter,
                 listFolders,
                 listFiles
-            ).mapNotNull { convertFromProperties(context, it) }
+            ).mapNotNull { convertFromProperties(context, parent, it) }
                 .onCompletion { cursor.close() }
         } catch (e: Exception) {
             Timber.w(e)
@@ -270,7 +269,7 @@ class FileExplorer : Closeable {
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                         results.add(
                             DocumentProperties(
-                                contract.buildDocumentUriUsingTree(parent.uri, documentId),
+                                documentId,
                                 documentName,
                                 documentSize,
                                 isFolder,
@@ -290,7 +289,6 @@ class FileExplorer : Closeable {
 
     private fun queryDocumentFilesFw(
         c: Cursor,
-        parent: DocumentFile,
         nameFilter: NameFilter?,
         listFolders: Boolean,
         listFiles: Boolean
@@ -307,7 +305,7 @@ class FileExplorer : Closeable {
                 if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                     emit(
                         DocumentProperties(
-                            contract.buildDocumentUriUsingTree(parent.uri, documentId),
+                            documentId,
                             documentName,
                             documentSize,
                             isFolder,
@@ -366,18 +364,21 @@ class FileExplorer : Closeable {
      */
     fun convertFromProperties(
         context: Context,
+        parent: DocumentFile,
         properties: List<DocumentProperties>
     ): List<DocumentFile> {
-        return properties.mapNotNull { convertFromProperties(context, it) }
+        return properties.mapNotNull { convertFromProperties(context, parent, it) }
     }
 
     fun convertFromProperties(
         context: Context,
+        parent: DocumentFile,
         properties: DocumentProperties
     ): DocumentFile? {
         // Following line should be the proper way to go but it's inefficient as it calls queryIntentContentProviders from scratch repeatedly
         //DocumentFile docFile = DocumentFile.fromTreeUri(context, uri.left);
-        return contract.fromTreeUri(context, properties.uri)?.let { doc ->
+        val uri = contract.buildDocumentUriUsingTree(parent.uri, properties.documentId)
+        return contract.fromTreeUri(context, uri)?.let { doc ->
             CachedDocumentFile(
                 doc,
                 properties.name,
@@ -408,7 +409,7 @@ class FileExplorer : Closeable {
      * Properties of a stored document
      */
     data class DocumentProperties(
-        val uri: Uri,
+        val documentId: String,
         val name: String,
         val size: Long,
         val isDirectory: Boolean,
@@ -417,9 +418,11 @@ class FileExplorer : Closeable {
         fun uniqueHash(): Long {
             return hash64(this.name + "." + this.size)
         }
+
         fun getExtension(): String {
             return getExtension(this.name)
         }
+
         val isFile: Boolean
             get() = !isDirectory
     }

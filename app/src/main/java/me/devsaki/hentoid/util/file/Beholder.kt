@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util.file
 
 import android.content.Context
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.file.FileExplorer.DocumentProperties
@@ -22,7 +23,7 @@ object Beholder {
     //      Value : Content ID if any; -1 if none
     private val snapshot: MutableMap<String, Map<Long, Long>> = HashMap()
 
-    // Key : Root document Uri
+    // Key : Root document Id
     private val ignoreList = HashSet<String>()
 
 
@@ -67,7 +68,7 @@ object Beholder {
                             stopFirst = false
                         ).associateBy({ it.uniqueHash() }, { it })
                         val validFiles =
-                            files.filterNot { ignoreList.contains(it.value.uri.toString()) }
+                            files.filterNot { ignoreList.contains(it.value.documentId) }
                         if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - validFiles.size)} ignored)")
 
                         // Select new docs
@@ -117,7 +118,7 @@ object Beholder {
      * Ignore given for all subsequent scanForDelta's until said folder is registered using registerContent
      */
     fun ignoreFolder(folder: DocumentFile) {
-        ignoreList.add(folder.uri.toString())
+        ignoreList.add(DocumentsContract.getTreeDocumentId(folder.uri))
     }
 
     fun registerRoot(
