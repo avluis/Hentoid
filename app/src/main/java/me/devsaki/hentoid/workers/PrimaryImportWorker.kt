@@ -769,7 +769,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     // Scan the folder
                     val storedContent = scanBookFolder(
                         context,
-                        parent,
+                        parent.uri,
                         bookFolder,
                         parentNames,
                         StatusContent.DOWNLOADED,

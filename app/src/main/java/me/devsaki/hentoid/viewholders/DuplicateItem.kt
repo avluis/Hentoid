@@ -176,7 +176,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             val context = tvPages.context
             val template = context.resources.getQuantityString(
                 R.plurals.work_pages_library,
-                content.getNbDownloadedPages().toInt(),
+                content.getNbDownloadedPages(),
                 content.getNbDownloadedPages(),
                 content.size * 1.0 / (1024 * 1024)
             )

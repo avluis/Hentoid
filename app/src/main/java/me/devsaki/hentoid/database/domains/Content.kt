@@ -560,8 +560,8 @@ data class Content(
         if (0L == downloadedBytes) downloadedBytes = imageFiles.sumOf { it.size }
     }
 
-    fun getNbDownloadedPages(): Long {
-        return imageList.count { (it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL || it.status == StatusContent.ONLINE) && it.isReadable } * 1L
+    fun getNbDownloadedPages(): Int {
+        return imageList.count { (it.status == StatusContent.DOWNLOADED || it.status == StatusContent.EXTERNAL || it.status == StatusContent.ONLINE) && it.isReadable }
     }
 
     private fun getDownloadedPagesSize(): Long {
@@ -703,6 +703,7 @@ data class Content(
                 && site == content.site
                 && downloadMode == content.downloadMode
                 && lastEditDate == content.lastEditDate
+                && qtyPages == content.qtyPages
     }
 
     override fun hashCode(): Int {
@@ -718,7 +719,8 @@ data class Content(
             coverImageUrl,
             site,
             downloadMode,
-            lastEditDate
+            lastEditDate,
+            qtyPages
         )
     }
 

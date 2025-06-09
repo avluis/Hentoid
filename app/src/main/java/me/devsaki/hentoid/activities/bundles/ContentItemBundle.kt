@@ -34,5 +34,9 @@ class ContentItemBundle(val bundle: Bundle = Bundle()) {
 
     var processed by bundle.boolean()
 
+    var qtyPages by bundle.int()
+
+    var size by bundle.long()
+
     val isEmpty get() = bundle.isEmpty
 }

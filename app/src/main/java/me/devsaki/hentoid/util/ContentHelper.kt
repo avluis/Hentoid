@@ -223,6 +223,12 @@ val contentItemDiffCallback: DiffCallback<ContentItem> =
             if (oldContent.downloadMode != newContent.downloadMode) {
                 diffBundleBuilder.downloadMode = newContent.downloadMode.value
             }
+            if (oldContent.qtyPages != newContent.qtyPages) {
+                diffBundleBuilder.qtyPages = newContent.qtyPages
+            }
+            if (oldContent.size != newContent.size) {
+                diffBundleBuilder.size = newContent.size
+            }
             if (oldItem.queueRecord != null && newItem.queueRecord != null && oldItem.queueRecord.frozen != newItem.queueRecord.frozen) {
                 diffBundleBuilder.frozen = newItem.queueRecord.frozen
             }

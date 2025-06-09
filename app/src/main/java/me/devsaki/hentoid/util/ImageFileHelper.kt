@@ -79,8 +79,10 @@ fun createImageListFromFiles(files: List<DocumentFile>): List<ImageFile> {
  * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
  */
 fun createImageListFromFiles(
-    files: List<DocumentFile>, targetStatus: StatusContent,
-    startingOrder: Int, namePrefix: String
+    files: List<DocumentFile>,
+    targetStatus: StatusContent,
+    startingOrder: Int,
+    namePrefix: String = ""
 ): List<ImageFile> {
     assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()

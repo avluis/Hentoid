@@ -293,28 +293,19 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
                 val bundleParser = ContentItemBundle(bundle)
-                var boolValue = bundleParser.isBeingDeleted
-                if (boolValue != null) item.content?.isBeingProcessed = boolValue
-                boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.content?.favourite = boolValue
-                var intValue = bundleParser.rating
-                if (intValue != null) item.content?.rating = intValue
-                boolValue = bundleParser.isCompleted
-                if (boolValue != null) item.content?.completed = boolValue
-                val longValue = bundleParser.reads
-                if (longValue != null) item.content?.reads = longValue
-                intValue = bundleParser.readPagesCount
-                if (intValue != null) item.content?.readPagesCount = intValue
-                var stringValue = bundleParser.coverUri
-                if (stringValue != null) item.content?.cover?.fileUri = stringValue
-                stringValue = bundleParser.title
-                if (stringValue != null) item.content?.title = stringValue
-                intValue = bundleParser.downloadMode
-                if (intValue != null) item.content?.downloadMode = DownloadMode.fromValue(intValue)
-                boolValue = bundleParser.frozen
-                if (boolValue != null) item.queueRecord?.frozen = boolValue
-                boolValue = bundleParser.processed
-                if (boolValue != null) item.content?.isBeingProcessed = boolValue
+                bundleParser.isBeingDeleted?.let { item.content?.isBeingProcessed = it }
+                bundleParser.isFavourite?.let { item.content?.favourite = it }
+                bundleParser.rating?.let { item.content?.rating = it }
+                bundleParser.isCompleted?.let { item.content?.completed = it }
+                bundleParser.reads?.let { item.content?.reads = it }
+                bundleParser.readPagesCount?.let { item.content?.readPagesCount = it }
+                bundleParser.coverUri?.let { item.content?.cover?.fileUri = it }
+                bundleParser.title?.let { item.content?.title = it }
+                bundleParser.downloadMode?.let { item.content?.downloadMode = DownloadMode.fromValue(it) }
+                bundleParser.frozen?.let { item.queueRecord?.frozen = it }
+                bundleParser.processed?.let { item.content?.isBeingProcessed = it }
+                bundleParser.qtyPages?.let { item.content?.qtyPages = it }
+                bundleParser.size?.let { item.content?.size = it }
             }
 
             if (BuildConfig.DEBUG) item.content?.apply {
@@ -363,7 +354,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 baseLayout.startAnimation(BlinkAnimation(500, 250))
             else baseLayout.clearAnimation()
 
-            if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED " + item.title)
+            if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED ${item.title}")
 
             // Unread indicator
             ivNew?.apply {

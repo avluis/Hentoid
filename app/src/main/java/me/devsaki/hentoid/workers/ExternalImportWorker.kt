@@ -19,6 +19,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.ObjectBoxDAOContainer
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -28,18 +29,22 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.StorageCache
+import me.devsaki.hentoid.util.file.formatDisplay
 import me.devsaki.hentoid.util.file.formatDisplayUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
-import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
+import me.devsaki.hentoid.util.isSupportedArchivePdf
 import me.devsaki.hentoid.util.jsonToContent
 import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -216,23 +221,26 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             // == Content to add
             val libraryPath = (Settings.externalLibraryUri.toUri().path ?: "").split('/')
             delta.first.forEach { deltaPlus ->
-                val deltaPlusRoot = deltaPlus.first
-                val deltaPlusUseful = deltaPlus.second.filter {
+                val parent = deltaPlus.first
+                val usefulFiles = deltaPlus.second
+                /*
+                val usefulFiles = deltaPlus.second.filter {
                     return@filter if (it.isDirectory) true
                     else if (it.isFile && isSupportedArchivePdf(it.name)) true
                     else if (it.getExtension() == "json") true
                     else false
                 }
-                if (deltaPlusUseful.isNotEmpty()) {
-                    FileExplorer(context, deltaPlusRoot).use { explorer ->
+                 */
+                if (usefulFiles.isNotEmpty()) {
+                    FileExplorer(context, parent).use { explorer ->
                         scanAddedContentBH(
                             context,
                             explorer,
-                            deltaPlusRoot,
-                            deltaPlusUseful.mapNotNull {
+                            parent.uri,
+                            usefulFiles.mapNotNull {
                                 explorer.convertFromProperties(
                                     applicationContext,
-                                    deltaPlusRoot,
+                                    parent,
                                     it
                                 )
                             },
@@ -243,9 +251,42 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 } // not empty
             } // deltaPlus roots
 
+            // == Folders to scan and/or Content to update
+            val updates = delta.second
+            Timber.d("delta* : ${updates.size}")
+            FileExplorer(context, Settings.externalLibraryUri.toUri()).use { explorer ->
+                updates.forEach { update ->
+                    if (isStopped) return
+                    Timber.d("delta* => ${update.formatDisplayUri(Settings.externalLibraryUri)}")
+                    try {
+                        dao.selectContentByStorageUri(update.uri.toString(), false)?.let {
+                            // Existing content => Add new images
+                            scanChangedUpdatedContentBH(
+                                applicationContext,
+                                explorer,
+                                it,
+                                update,
+                                dao
+                            )
+                        } ?: run {
+                            // New content
+                            scanChangedNewContentBH(
+                                applicationContext,
+                                explorer,
+                                update,
+                                dao,
+                                libraryPath.size
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                    }
+                }
+            }
+
             // == Content to remove
-            val toRemove = delta.second.filter { it > 0 }
-            Timber.d("delta- : ${toRemove.size} useful / ${delta.second.size} total")
+            val toRemove = delta.third.filter { it > 0 }
+            Timber.d("delta- : ${toRemove.size} useful / ${delta.third.size} total")
             toRemove.forEach { idToRemove ->
                 if (isStopped) return
                 Timber.d("delta- => $idToRemove")
@@ -269,7 +310,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     private fun scanAddedContentBH(
         context: Context,
         explorer: FileExplorer,
-        deltaPlusRoot: DocumentFile,
+        parent: Uri,
         deltaPlusDocs: List<DocumentFile>,
         dao: CollectionDAO,
         nbLibraryPathParts: Int
@@ -281,7 +322,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             val nbFolders = deltaPlusDocs.count { it.isDirectory }
             Timber.d(
                 "delta+ root has $nbFiles useful files and $nbFolders useful folders : ${
-                    deltaPlusRoot.formatDisplayUri(Settings.externalLibraryUri)
+                    parent.formatDisplay(Settings.externalLibraryUri)
                 }"
             )
         }
@@ -291,7 +332,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val deltaPlusPairs = deltaPlusDocs.groupBy { getFileNameWithoutExtension(it.name ?: "") }
 
         // Forge parent names using folder root path minus ext library root path
-        val rootParts = (deltaPlusRoot.uri.path ?: "").split('/')
+        val rootParts = (parent.path ?: "").split('/')
         val parentNames = rootParts.subList(nbLibraryPathParts, rootParts.size)
         Timber.d("  parents : $parentNames")
 
@@ -304,13 +345,13 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
             // Import new archive
             if (archivePdf != null) {
-                importArchivePdf(context, docs, deltaPlusRoot, archivePdf, dao)
-                    ?.let { onContentFoundBH(context, explorer, dao, deltaPlusRoot, it) }
+                importArchivePdf(context, docs, parent, archivePdf, dao)
+                    ?.let { onContentFoundBH(context, explorer, dao, parent, it) }
             } else if (folder != null) { // Import new folder
                 scanFolderRecursive(
                     context,
                     dao,
-                    deltaPlusRoot,
+                    parent,
                     folder,
                     explorer,
                     null,
@@ -318,10 +359,82 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     logs,
                     isCanceled = this::isStopped,
                     { f -> Beholder.registerRoot(context, f.uri) },
-                    { c -> onContentFoundBH(context, explorer, dao, deltaPlusRoot, c) }
+                    { c -> onContentFoundBH(context, explorer, dao, parent, c) }
                 )
             }
         }
+    }
+
+    private fun scanChangedNewContentBH(
+        context: Context,
+        explorer: FileExplorer,
+        folder: DocumentFile,
+        dao: CollectionDAO,
+        nbLibraryPathParts: Int
+    ) {
+        // Forge parent names using folder root path minus ext library root path
+        val rootParts = (folder.uri.path ?: "").split('/')
+        val parentNames = rootParts.subList(nbLibraryPathParts, rootParts.size)
+        Timber.d("  parents : $parentNames")
+
+        val parent = getParent(
+            applicationContext,
+            Settings.externalLibraryUri.toUri(),
+            folder.uri
+        ) ?: throw IOException("Couldn't find parent")
+
+        scanFolderRecursive(
+            context,
+            dao,
+            parent,
+            folder,
+            explorer,
+            null,
+            parentNames,
+            logs,
+            isCanceled = this::isStopped,
+            { f -> Beholder.registerRoot(context, f.uri) },
+            { c -> onContentFoundBH(context, explorer, dao, parent, c) }
+        )
+    }
+
+    private fun scanChangedUpdatedContentBH(
+        context: Context,
+        explorer: FileExplorer,
+        content: Content,
+        folder: DocumentFile,
+        dao: CollectionDAO
+    ) {
+        val targetImgs = ArrayList<ImageFile>()
+
+        val imageFiles = explorer.listFiles(context, folder, imageNamesFilter)
+            .associateBy({ it.uri.toString() }, { it })
+        val contentImgKeys = content.imageList.associateBy({ it.fileUri }, { it })
+
+        // Keep images that are present on storage
+        targetImgs.addAll(
+            contentImgKeys.entries
+                .filter { imageFiles.containsKey(it.key) }
+                .map { it.value })
+
+        // Add extra detected images
+        val newImageFiles = imageFiles.entries
+            .filter { !contentImgKeys.containsKey(it.key) }
+            .map { it.value }
+
+        targetImgs.addAll(
+            createImageListFromFiles(
+                newImageFiles,
+                StatusContent.EXTERNAL,
+                targetImgs.maxOf { it.order } + 1)
+        )
+
+        content.setImageFiles(targetImgs)
+        content.qtyPages = content.getNbDownloadedPages()
+        content.computeSize()
+
+        dao.replaceImageList(content.id, targetImgs)
+        dao.insertContentCore(content)
     }
 
     // Write JSON file for every found book and persist it in the DB
@@ -329,7 +442,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         context: Context,
         explorer: FileExplorer,
         dao: CollectionDAO,
-        deltaPlusRoot: DocumentFile,
+        parent: Uri,
         content: Content,
     ) {
         if (!existsInCollection(content, dao, true, logs)) {
@@ -340,7 +453,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         content.getStorageDoc()?.let { storageDoc ->
             Beholder.registerContent(
                 context,
-                content.parentStorageUri ?: deltaPlusRoot.uri.toString(),
+                content.parentStorageUri ?: parent.toString(),
                 storageDoc,
                 content.id
             )
@@ -351,7 +464,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     private fun importArchivePdf(
         context: Context,
         docs: List<DocumentFile>,
-        deltaPlusRoot: DocumentFile,
+        parent: Uri,
         archivePdf: DocumentFile,
         dao: CollectionDAO
     ): Content? {
@@ -360,7 +473,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val content = jsonToContent(context, dao, jsons, archivePdf.name ?: "")
         val c = scanArchivePdf(
             context,
-            deltaPlusRoot,
+            parent,
             archivePdf,
             emptyList(),
             StatusContent.EXTERNAL,
@@ -381,10 +494,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             )
         }
         return null
-    }
-
-    private fun isSupportedArchivePdf(fileName: String): Boolean {
-        return isSupportedArchive(fileName) || getExtension(fileName).equals("pdf", true)
     }
 
     private fun eventProgress(step: Int, booksOK: Int, progressPc: Float) {

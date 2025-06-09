@@ -876,10 +876,8 @@ fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, 
  * If a file with the same target name already exists, it is overwritten
  *
  * @param context         Context to use
- * @param sourceFileUri   Uri of the source file to copy
  * @param targetFolderUri Uri of the folder where to copy the source file
  * @param forceMime        Mime-type of the source file
- * @param newName         Filename to give of the copy
  * @return Uri of the copied file, if successful; null if failed
  * @throws IOException If something terrible happens
  */
@@ -1718,7 +1716,11 @@ fun DocumentFile.getExtension(): String {
 }
 
 fun DocumentFile.formatDisplayUri(rootUri: String = ""): String {
-    val cleanRoot = this.uri.toString().replace(rootUri, "")
+    return this.uri.formatDisplay(rootUri)
+}
+
+fun Uri.formatDisplay(rootUri: String = ""): String {
+    val cleanRoot = this.toString().replace(rootUri, "")
     return URLDecoder.decode(cleanRoot, "UTF-8")
 }
 

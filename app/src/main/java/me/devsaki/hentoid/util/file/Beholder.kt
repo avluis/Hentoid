@@ -6,22 +6,40 @@ import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.file.FileExplorer.DocumentProperties
+import me.devsaki.hentoid.util.image.startsWith
+import me.devsaki.hentoid.util.isSupportedArchivePdf
 import timber.log.Timber
+import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.IOException
+import java.nio.charset.StandardCharsets
 
+private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 private const val SNAPSHOT_LOCATION = "beholder.snapshot"
+private val SNAPSHOT_VERSION_2 = "SC2".toByteArray(CHARSET_LATIN_1)
 
-// TODO don't save _all_ files but only useful files and number of children
+/**
+ * A/ Takes a snapshot of a list of folders (called "roots") and records :
+ * - Subfolders
+ * - Useful files (archives, PDFs and JSONs)
+ * - Number of files
+ *
+ * B/ Peforms a quick scan of all roots and identify which elements have changed, using :
+ * - Name
+ * - Size
+ * - Number of files
+ */
 object Beholder {
 
     // Key : Root document Uri
     // Value
-    //      Key : hash64(name, size)
-    //      Value : Content ID if any; -1 if none
-    private val snapshot: MutableMap<String, Map<Long, Long>> = HashMap()
+    //      First : Number of files
+    //      Second : Useful DocumentFiles
+    //          Key : hash64(name, size)
+    //          Value : Content ID if any; -1 if none
+    private val snapshot: MutableMap<String, Pair<Int, Map<Long, Long>>> = HashMap()
 
     // Key : Root document Id
     private val ignoreList = HashSet<String>()
@@ -32,7 +50,7 @@ object Beholder {
 
         val entries = loadSnapshot(ctx)
         entries.forEach {
-            snapshot[it.uri] = it.documents
+            snapshot[it.uri] = Pair(it.nbFiles, it.documents)
         }
         logSnapshot()
     }
@@ -45,15 +63,19 @@ object Beholder {
      *  First : List of new scanned DocumentFiles that weren't referenced in initial
      *      First : Root DocumentFile of the files appearing in Second
      *      Second : New scanned DocumentFiles that weren't referenced in initial
-     *  Second : Removed Content IDs whose Document was referenced in initial, but not found when scanning
+     *  Second : List of folders whose number of files has changed
+     *  Third : Removed Content IDs whose Document was referenced in initial, but not found when scanning
      */
-    fun scanForDelta(ctx: Context): Pair<List<Pair<DocumentFile, List<DocumentProperties>>>, Set<Long>> {
+    fun scanForDelta(ctx: Context): Triple<List<Pair<DocumentFile, List<DocumentProperties>>>, List<DocumentFile>, Set<Long>> {
         val allNewDocs = ArrayList<Pair<DocumentFile, List<DocumentProperties>>>()
+        val allChangedDocs = ArrayList<DocumentFile>()
         val allDeletedDocs = HashSet<Long>()
         val allDeletedRoots = HashSet<String>()
 
         snapshot.forEach { (rootUriStr, docs) ->
-            if (BuildConfig.DEBUG) Timber.d("Root : $rootUriStr (${docs.size} docs)")
+            val nbFiles = docs.first
+            val usefulDocs: Map<Long, Long> = docs.second
+            if (BuildConfig.DEBUG) Timber.d("Root : $rootUriStr (${nbFiles} files, ${usefulDocs.size} useful docs)")
             getDocumentFromTreeUriString(ctx, rootUriStr)?.let { root ->
                 try {
                     val newDocs = ArrayList<DocumentProperties>()
@@ -67,24 +89,35 @@ object Beholder {
                             listFiles = true,
                             stopFirst = false
                         ).associateBy({ it.uniqueHash() }, { it })
-                        val validFiles =
+
+                        val usefulFiles =
                             files.filterNot { ignoreList.contains(it.value.documentId) }
-                        if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - validFiles.size)} ignored)")
+                                .filter { isUseful(it.value) }
+                        if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - usefulFiles.size)} ignored)")
 
                         // Select new docs
-                        val newKeys = validFiles.keys.asSequence().minus(docs.keys)
-                        newDocs.addAll(validFiles.filterKeys { it in newKeys }.values)
+                        val newKeys = usefulFiles.keys.asSequence().minus(usefulDocs.keys)
+                        newDocs.addAll(usefulFiles.filterKeys { it in newKeys }.values)
                         if (BuildConfig.DEBUG) Timber.d("  New : ${newKeys.count()} - ${newDocs.size}")
 
                         // Select deleted docs
-                        val deletedKeys = docs.keys.asSequence().minus(files.keys).toSet()
-                        deletedDocs.addAll(docs.filterKeys { it in deletedKeys }.values)
+                        val deletedKeys = usefulDocs.keys.asSequence().minus(files.keys).toSet()
+                        deletedDocs.addAll(docs.second.filterKeys { it in deletedKeys }.values)
                         if (BuildConfig.DEBUG) Timber.d("  Deleted : ${deletedKeys.count()} - ${deletedDocs.size}")
 
+                        // Select docs with changed number of children
+                        if (nbFiles != files.size) {
+                            allChangedDocs.add(root)
+                            if (BuildConfig.DEBUG) Timber.d("  Changed : true")
+                        }
+
                         // Update snapshot in memory
-                        snapshot[rootUriStr] = docs
-                            .minus(deletedKeys)
-                            .plus(newDocs.associateBy({ it.uniqueHash() }, { -1 }))
+                        snapshot[rootUriStr] = Pair(
+                            files.size,
+                            usefulDocs
+                                .minus(deletedKeys)
+                                .plus(newDocs.associateBy({ it.uniqueHash() }, { -1L }))
+                        )
 
                         // Update global result
                         if (newDocs.isNotEmpty()) allNewDocs.add(Pair(root, newDocs))
@@ -96,12 +129,12 @@ object Beholder {
             } ?: run { // Snapshot root not found in storage
                 if (BuildConfig.DEBUG) {
                     Timber.d("  Folder not found in storage")
-                    Timber.d("  Deleted : ${docs.count()}")
+                    Timber.d("  Deleted : ${usefulDocs.count()}")
                 }
 
                 // Update global result
                 allDeletedRoots.add(rootUriStr)
-                allDeletedDocs.addAll(docs.values)
+                allDeletedDocs.addAll(usefulDocs.values)
             } // Root Document
         } // Snapshot elements
 
@@ -111,7 +144,7 @@ object Beholder {
         // Save snapshot file
         saveSnapshot(ctx)
 
-        return Pair(allNewDocs, allDeletedDocs)
+        return Triple(allNewDocs, allChangedDocs, allDeletedDocs)
     }
 
     /**
@@ -153,26 +186,31 @@ object Beholder {
         contentDocs: Map<String, List<Pair<DocumentFile, Long>>>
     ) {
         val result: MutableList<FolderEntry> = ArrayList()
-        contentDocs.forEach { (uri, docs) ->
+        contentDocs.forEach { (rootUri, docs) ->
             val contentDocsMap = HashMap<String, Pair<DocumentFile, Long>>()
             // Add new values to register
             docs.forEach {
                 contentDocsMap[it.first.uri.toString()] = Pair(it.first, it.second)
-                ignoreList.remove(it.first.uri.toString())
+                if (ignoreList.isNotEmpty())
+                    ignoreList.remove(DocumentsContract.getTreeDocumentId(it.first.uri))
             }
-            getDocumentFromTreeUriString(ctx, uri)?.let { doc ->
+            getDocumentFromTreeUriString(ctx, rootUri)?.let { doc ->
                 try {
                     FileExplorer(ctx, doc).use { fe ->
-                        val files = fe.listDocumentFiles(
-                            ctx, doc, null,
+                        val files = fe.listDocumentProperties(
+                            doc, null,
                             listFolders = true,
                             listFiles = true,
                             stopFirst = false
                         )
+                        val usefulFiles = files
+                            .filter { isUseful(it) }
+                            .mapNotNull { fe.convertFromProperties(ctx, doc, it) }
                         result.add(
                             FolderEntry(
-                                uri,
-                                files.associateBy(
+                                rootUri,
+                                files.size,
+                                usefulFiles.associateBy(
                                     { it.uniqueHash() },
                                     { contentDocsMap[it.uri.toString()]?.second ?: -1 }
                                 )
@@ -188,17 +226,24 @@ object Beholder {
         // Store result
         result.forEach {
             // Merge new values with known values
-            val target: MutableMap<Long, Long> = HashMap(it.documents)
-            if (snapshot.contains(it.uri)) {
-                snapshot[it.uri]?.forEach { snap ->
-                    if (snap.value > -1) target[snap.key] = snap.value
-                }
+            val targetMap: MutableMap<Long, Long> = HashMap(it.documents)
+            val target: Pair<Int, MutableMap<Long, Long>> = Pair(it.nbFiles, targetMap)
+
+            snapshot[it.uri]?.second?.forEach { snap ->
+                if (snap.value > -1) targetMap[snap.key] = snap.value
             }
 
             snapshot.remove(it.uri)
             snapshot[it.uri] = target
         }
         saveSnapshot(ctx)
+    }
+
+    private fun isUseful(doc: DocumentProperties): Boolean {
+        return if (doc.isDirectory) true
+        else if (doc.isFile && isSupportedArchivePdf(doc.name)) true
+        else if (doc.getExtension() == "json") true
+        else false
     }
 
     fun clearSnapshot(ctx: Context) {
@@ -218,9 +263,10 @@ object Beholder {
 
         getOutputStream(outFile).use {
             DataOutputStream(it).use { dos ->
+                dos.write(SNAPSHOT_VERSION_2)
                 dos.writeInt(snapshot.size)
                 snapshot.forEach { se ->
-                    FolderEntry(se.key, se.value).toStream(dos)
+                    FolderEntry(se.key, se.value.first, se.value.second).toStream(dos)
                 }
             }
         }
@@ -247,10 +293,22 @@ object Beholder {
                 }"
             )
 
-        inFile.inputStream().use {
-            DataInputStream(it).use { dis ->
-                val nbEntries = dis.readInt()
-                repeat(nbEntries) { result.add(FolderEntry.fromStream(dis)) }
+        inFile.inputStream().use { fis ->
+            BufferedInputStream(fis).use { bis ->
+                DataInputStream(bis).use { dis ->
+                    bis.mark(3)
+                    val signature = ByteArray(3)
+                    dis.read(signature)
+
+                    var version = 2
+                    if (!signature.startsWith(SNAPSHOT_VERSION_2)) {
+                        version = 1
+                        bis.reset()
+                    }
+
+                    val nbEntries = dis.readInt()
+                    repeat(nbEntries) { result.add(FolderEntry.fromStream(dis, version)) }
+                }
             }
         }
         return result
@@ -260,7 +318,7 @@ object Beholder {
         if (BuildConfig.DEBUG) {
             Timber.v("beholder dump start")
             snapshot.forEach { se ->
-                Timber.v("${se.key} : ${se.value.size} elements")
+                Timber.v("${se.key} : ${se.value.first} files, ${se.value.second} useful docs")
                 /*
                 se.value.forEach { sev ->
                     Timber.d("${sev.key} => ${sev.value}")
@@ -272,15 +330,21 @@ object Beholder {
     }
 }
 
+/**
+ * Pivot class for snapshot serialization & deserialization
+ */
 data class FolderEntry(
     val uri: String,
-    // Key : hash64(name, size)
-    // Value : Content ID if any; -1 if none
+    val nbFiles: Int,
+    // Useful DocumentFiles and associated Content ID
+    //   Key : hash64(name, size)
+    //   Value : Content ID if any; -1 if none
     val documents: Map<Long, Long>
 ) {
     companion object {
-        fun fromStream(dis: DataInputStream): FolderEntry {
+        fun fromStream(dis: DataInputStream, version: Int): FolderEntry {
             val entryUri = dis.readUTF()
+            val nbFiles = if (version > 1) dis.readInt() else 0
             val nbDocs = dis.readInt()
             val docs = HashMap<Long, Long>()
             repeat(nbDocs) {
@@ -288,16 +352,17 @@ data class FolderEntry(
                 val value = dis.readLong()
                 docs[key] = value
             }
-            return FolderEntry(entryUri, docs)
+            return FolderEntry(entryUri, nbFiles, docs)
         }
     }
 
     fun toStream(dos: DataOutputStream) {
         dos.writeUTF(uri)
+        dos.writeInt(nbFiles)
         dos.writeInt(documents.size)
-        documents.forEach { doc ->
-            dos.writeLong(doc.key)
-            dos.writeLong(doc.value)
+        documents.forEach {
+            dos.writeLong(it.key)
+            dos.writeLong(it.value)
         }
     }
 }

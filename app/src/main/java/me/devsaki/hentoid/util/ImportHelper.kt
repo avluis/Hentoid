@@ -618,7 +618,7 @@ fun runExternalImport(
 fun scanFolderRecursive(
     context: Context,
     dao: CollectionDAO,
-    parent: DocumentFile?,
+    parent: Uri?,
     toScan: DocumentFile,
     explorer: FileExplorer,
     progress: ProgressManager?,
@@ -701,7 +701,7 @@ fun scanFolderRecursive(
         for (archive in archivesPdf) {
             val content = jsonToContent(context, dao, jsons, archive.name ?: "")
             val c = scanArchivePdf(
-                context, toScan, archive, parentNames, StatusContent.EXTERNAL, content
+                context, toScan.uri, archive, parentNames, StatusContent.EXTERNAL, content
             )
             // Valid archive
             if (0 == c.first) onContentFound(c.second!!)
@@ -752,7 +752,7 @@ fun scanFolderRecursive(
         scanFolderRecursive(
             context,
             dao,
-            toScan,
+            toScan.uri,
             subfolder,
             explorer,
             progress,
@@ -769,7 +769,7 @@ fun scanFolderRecursive(
  * Create a Content from the given folder
  *
  * @param context      Context to use
- * @param parentFolder Parent folder of bookFolder (cuz DocumentFile.getParentFile can't stand on its own)
+ * @param parentUri Parent folder of bookFolder (cuz DocumentFile.getParentFile can't stand on its own)
  * @param bookFolder   Folder to analyze
  * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of bookFolder
  * @param targetStatus Target status of the Content to create
@@ -781,7 +781,7 @@ fun scanFolderRecursive(
  */
 fun scanBookFolder(
     context: Context,
-    parentFolder: DocumentFile?,
+    parentUri: Uri?,
     bookFolder: DocumentFile,
     parentNames: List<String>,
     targetStatus: StatusContent,
@@ -818,7 +818,7 @@ fun scanBookFolder(
     if (isExternal) result.addAttributes(newExternalAttribute())
     result.status = targetStatus
     result.setStorageDoc(bookFolder)
-    if (null != parentFolder) result.parentStorageUri = parentFolder.uri.toString()
+    if (null != parentUri) result.parentStorageUri = parentUri.toString()
     if (0L == result.downloadDate) result.downloadDate = now
     if (isExternal) result.downloadCompletionDate = now
     result.lastEditDate = now
@@ -1093,7 +1093,7 @@ fun scanForArchivesPdf(
             val content = jsonToContent(context, dao, jsons, archive.name ?: "")
             val c = scanArchivePdf(
                 context,
-                subfolder,
+                subfolder.uri,
                 archive,
                 parentNames,
                 StatusContent.EXTERNAL,
@@ -1161,7 +1161,7 @@ fun scanForArchivesPdf(
  * NB : any returned Content with the IGNORED status shouldn't be taken into account by the caller
  *
  * @param context       Context to use
- * @param parentFolder  Parent folder where the archive is located
+ * @param parent  Parent folder where the archive is located
  * @param doc           Archive file to scan
  * @param parentNames   Names of parent folders, for formatting purposes; last of the list is the immediate parent of parentFolder
  * @param targetStatus  Target status of the Content to create
@@ -1175,7 +1175,7 @@ fun scanForArchivesPdf(
  */
 fun scanArchivePdf(
     context: Context,
-    parentFolder: DocumentFile,
+    parent: Uri,
     doc: DocumentFile,
     parentNames: List<String>,
     targetStatus: StatusContent,
@@ -1224,7 +1224,7 @@ fun scanArchivePdf(
         addAttributes(newExternalAttribute())
         status = targetStatus
         setStorageDoc(doc) // Here storage URI is a file URI, not a folder
-        parentStorageUri = parentFolder.uri.toString()
+        parentStorageUri = parent.toString()
         if (0L == downloadDate) downloadDate = now
         downloadCompletionDate = now
         lastEditDate = now

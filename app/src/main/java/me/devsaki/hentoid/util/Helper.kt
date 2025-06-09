@@ -45,6 +45,7 @@ import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
+import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import timber.log.Timber
@@ -590,6 +591,10 @@ fun getScreenDimensionsPx(context: Context): Point {
         wMgr.defaultDisplay.getRealSize(result)
         return result
     }
+}
+
+fun isSupportedArchivePdf(fileName: String): Boolean {
+    return isSupportedArchive(fileName) || getExtension(fileName).equals("pdf", true)
 }
 
 /**
