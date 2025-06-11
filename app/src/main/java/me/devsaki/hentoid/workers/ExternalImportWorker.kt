@@ -227,22 +227,20 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     },
                     { parent, usefulFiles ->
                         Timber.d("delta+ : ${usefulFiles.size} roots")
-                        if (usefulFiles.isNotEmpty()) {
-                            scanAddedContentBH(
-                                context,
-                                explorer,
-                                parent.uri,
-                                usefulFiles.mapNotNull {
-                                    explorer.convertFromProperties(
-                                        applicationContext,
-                                        parent,
-                                        it
-                                    )
-                                },
-                                dao,
-                                libraryPath.size
-                            )
-                        } // not empty
+                        scanAddedContentBH(
+                            context,
+                            explorer,
+                            parent.uri,
+                            usefulFiles.mapNotNull {
+                                explorer.convertFromProperties(
+                                    applicationContext,
+                                    parent,
+                                    it
+                                )
+                            },
+                            dao,
+                            libraryPath.size
+                        )
                     },
                     { changed ->
                         Timber.d("delta* => ${changed.formatDisplayUri(Settings.externalLibraryUri)}")
@@ -292,99 +290,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             dao.cleanup()
         }
         Timber.d("delta end")
-        /*
-                //val dao = ObjectBoxDAO()
-                try {
-                    Timber.d("delta+ : ${delta.first.size} roots")
-
-                    // == Content to add
-                    val libraryPath = (Settings.externalLibraryUri.toUri().path ?: "").split('/')
-                    delta.first.forEach { deltaPlus ->
-                        val parent = deltaPlus.first
-                        val usefulFiles = deltaPlus.second
-                        /*
-                        val usefulFiles = deltaPlus.second.filter {
-                            return@filter if (it.isDirectory) true
-                            else if (it.isFile && isSupportedArchivePdf(it.name)) true
-                            else if (it.getExtension() == "json") true
-                            else false
-                        }
-                         */
-                        if (usefulFiles.isNotEmpty()) {
-                            FileExplorer(context, parent).use { explorer ->
-                                scanAddedContentBH(
-                                    context,
-                                    explorer,
-                                    parent.uri,
-                                    usefulFiles.mapNotNull {
-                                        explorer.convertFromProperties(
-                                            applicationContext,
-                                            parent,
-                                            it
-                                        )
-                                    },
-                                    dao,
-                                    libraryPath.size
-                                )
-                            } // explorer
-                        } // not empty
-                    } // deltaPlus roots
-
-                    // == Folders to scan and/or Content to update
-                    val updates = delta.second
-                    Timber.d("delta* : ${updates.size}")
-                    FileExplorer(context, Settings.externalLibraryUri.toUri()).use { explorer ->
-                        updates.forEach { update ->
-                            if (isStopped) return
-                            Timber.d("delta* => ${update.formatDisplayUri(Settings.externalLibraryUri)}")
-                            try {
-                                dao.selectContentByStorageUri(update.uri.toString(), false)?.let {
-                                    // Existing content => Add new images
-                                    scanChangedUpdatedContentBH(
-                                        applicationContext,
-                                        explorer,
-                                        it,
-                                        update,
-                                        dao
-                                    )
-                                } ?: run {
-                                    // New content
-                                    scanChangedNewContentBH(
-                                        applicationContext,
-                                        explorer,
-                                        update,
-                                        dao,
-                                        libraryPath.size
-                                    )
-                                }
-                            } catch (e: Exception) {
-                                Timber.w(e)
-                            }
-                        }
-                    }
-
-                    // == Content to remove
-                    val toRemove = delta.third.filter { it > 0 }
-                    Timber.d("delta- : ${toRemove.size} useful / ${delta.third.size} total")
-                    toRemove.forEach { idToRemove ->
-                        if (isStopped) return
-                        Timber.d("delta- => $idToRemove")
-                        try {
-                            Content().apply {
-                                id = idToRemove
-                                site = Site.NONE
-                                removeContent(context, dao, this)
-                            }
-                        } catch (e: Exception) {
-                            Timber.w(e)
-                        }
-                    }
-                } catch (e: Exception) {
-                    Timber.w(e)
-                } finally {
-                    dao.cleanup()
-                }
-                 */
     }
 
     private fun scanAddedContentBH(
