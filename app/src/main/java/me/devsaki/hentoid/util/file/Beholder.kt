@@ -58,7 +58,8 @@ object Beholder {
     /**
      * Scan folders
      *
-     * @param ctx Context to use
+     * @param ctx        Context to use
+     * @param onProgress Progress callback, passes the total number of items
      * @return
      *  First : List of new scanned DocumentFiles that weren't referenced in initial
      *      First : Root DocumentFile of the files appearing in Second
@@ -66,63 +67,64 @@ object Beholder {
      *  Second : List of folders whose number of files has changed
      *  Third : Removed Content IDs whose Document was referenced in initial, but not found when scanning
      */
-    fun scanForDelta(ctx: Context): Triple<List<Pair<DocumentFile, List<DocumentProperties>>>, List<DocumentFile>, Set<Long>> {
-        val allNewDocs = ArrayList<Pair<DocumentFile, List<DocumentProperties>>>()
-        val allChangedDocs = ArrayList<DocumentFile>()
-        val allDeletedDocs = HashSet<Long>()
-        val allDeletedRoots = HashSet<String>()
+    fun scanForDelta(
+        ctx: Context,
+        explorer: FileExplorer,
+        isCanceled: () -> Boolean,
+        onProgress: ((Int, Int) -> Unit)? = null,
+        onNew: ((DocumentFile, Collection<DocumentProperties>) -> Unit)? = null,
+        onChanged: ((DocumentFile) -> Unit)? = null,
+        onDeleted: ((Long) -> Unit)? = null,
+    ) {
+        val allDeletedRoots = ArrayList<String>()
+        var index = 0
 
         snapshot.forEach { (rootUriStr, docs) ->
             val nbFiles = docs.first
             val usefulDocs: Map<Long, Long> = docs.second
             if (BuildConfig.DEBUG) Timber.d("Root : $rootUriStr (${nbFiles} files, ${usefulDocs.size} useful docs)")
+            if (isCanceled.invoke()) return@forEach
+            onProgress?.invoke(++index, snapshot.size)
+
             getDocumentFromTreeUriString(ctx, rootUriStr)?.let { root ->
                 try {
-                    val newDocs = ArrayList<DocumentProperties>()
-                    val deletedDocs = HashSet<Long>()
-
                     if (BuildConfig.DEBUG) Timber.d("  Folder found in storage")
-                    FileExplorer(ctx, root).use { fe ->
-                        val files = fe.listDocumentProperties(
-                            root, null,
-                            listFolders = true,
-                            listFiles = true,
-                            stopFirst = false
-                        ).associateBy({ it.uniqueHash() }, { it })
+                    val files = explorer.listDocumentProperties(
+                        root, null,
+                        listFolders = true,
+                        listFiles = true,
+                        stopFirst = false
+                    ).associateBy({ it.uniqueHash }, { it })
 
-                        val usefulFiles =
-                            files.filterNot { ignoreList.contains(it.value.documentId) }
-                                .filter { isUseful(it.value) }
-                        if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - usefulFiles.size)} ignored)")
+                    val usefulFiles =
+                        files.filterNot { ignoreList.contains(it.value.documentId) }
+                            .filter { isUseful(it.value) }
+                    if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - usefulFiles.size)} ignored)")
 
-                        // Select new docs
-                        val newKeys = usefulFiles.keys.asSequence().minus(usefulDocs.keys)
-                        newDocs.addAll(usefulFiles.filterKeys { it in newKeys }.values)
-                        if (BuildConfig.DEBUG) Timber.d("  New : ${newKeys.count()} - ${newDocs.size}")
+                    // Select new docs
+                    val newKeys = usefulFiles.keys.minus(usefulDocs.keys)
+                    val newDocs = usefulFiles.filterKeys { it in newKeys }.values
+                    if (newDocs.isNotEmpty()) onNew?.invoke(root, newDocs)
+                    if (BuildConfig.DEBUG) Timber.d("  New : ${newKeys.count()} - ${newDocs.size}")
 
-                        // Select deleted docs
-                        val deletedKeys = usefulDocs.keys.asSequence().minus(files.keys).toSet()
-                        deletedDocs.addAll(docs.second.filterKeys { it in deletedKeys }.values)
-                        if (BuildConfig.DEBUG) Timber.d("  Deleted : ${deletedKeys.count()} - ${deletedDocs.size}")
+                    // Select deleted docs
+                    val deletedKeys = usefulDocs.keys.minus(files.keys)
+                    deletedKeys.forEach { onDeleted?.invoke(it) }
+                    if (BuildConfig.DEBUG) Timber.d("  Deleted : ${deletedKeys.count()} - ${deletedKeys.size}")
 
-                        // Select docs with changed number of children
-                        if (nbFiles != files.size) {
-                            allChangedDocs.add(root)
-                            if (BuildConfig.DEBUG) Timber.d("  Changed : true")
-                        }
-
-                        // Update snapshot in memory
-                        snapshot[rootUriStr] = Pair(
-                            files.size,
-                            usefulDocs
-                                .minus(deletedKeys)
-                                .plus(newDocs.associateBy({ it.uniqueHash() }, { -1L }))
-                        )
-
-                        // Update global result
-                        if (newDocs.isNotEmpty()) allNewDocs.add(Pair(root, newDocs))
-                        allDeletedDocs.addAll(deletedDocs)
+                    // Select docs with changed number of children
+                    if (nbFiles != files.size) {
+                        onChanged?.invoke(root)
+                        if (BuildConfig.DEBUG) Timber.d("  Changed : true")
                     }
+
+                    // Update snapshot in memory
+                    snapshot[rootUriStr] = Pair(
+                        files.size,
+                        usefulDocs
+                            .minus(deletedKeys)
+                            .plus(newDocs.associateBy({ it.uniqueHash }, { -1L }))
+                    )
                 } catch (e: IOException) {
                     Timber.w(e)
                 }
@@ -131,10 +133,6 @@ object Beholder {
                     Timber.d("  Folder not found in storage")
                     Timber.d("  Deleted : ${usefulDocs.count()}")
                 }
-
-                // Update global result
-                allDeletedRoots.add(rootUriStr)
-                allDeletedDocs.addAll(usefulDocs.values)
             } // Root Document
         } // Snapshot elements
 
@@ -143,8 +141,6 @@ object Beholder {
 
         // Save snapshot file
         saveSnapshot(ctx)
-
-        return Triple(allNewDocs, allChangedDocs, allDeletedDocs)
     }
 
     /**
@@ -242,7 +238,7 @@ object Beholder {
     private fun isUseful(doc: DocumentProperties): Boolean {
         return if (doc.isDirectory) true
         else if (doc.isFile && isSupportedArchivePdf(doc.name)) true
-        else if (doc.getExtension() == "json") true
+        else if (doc.extension == "json") true
         else false
     }
 

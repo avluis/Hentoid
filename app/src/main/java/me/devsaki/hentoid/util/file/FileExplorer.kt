@@ -415,15 +415,8 @@ class FileExplorer : Closeable {
         val isDirectory: Boolean,
         val lastModified: Long
     ) {
-        fun uniqueHash(): Long {
-            return hash64(this.name + "." + this.size)
-        }
-
-        fun getExtension(): String {
-            return getExtension(this.name)
-        }
-
-        val isFile: Boolean
-            get() = !isDirectory
+        val uniqueHash by lazy { hash64(this.name + "." + this.size) }
+        val extension by lazy { getExtension(this.name) }
+        val isFile by lazy { !isDirectory }
     }
 }
