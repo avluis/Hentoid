@@ -35,11 +35,7 @@ private val SNAPSHOT_VERSION_3 = "SC3".toByteArray(CHARSET_LATIN_1)
 object Beholder {
 
     // Key : Root document Uri
-    // Value
-    //      First : Number of files
-    //      Second : Useful DocumentFiles
-    //          Key : hash64(name, size)
-    //          Value : Content ID if any; -1 if none
+    // Value : Description of the scanned folder
     private val snapshot: MutableMap<String, FolderEntry> = HashMap()
 
     // Key : Root document Id
@@ -57,16 +53,16 @@ object Beholder {
     }
 
     /**
-     * Scan folders
+     * Scan folders for differences with latest snapshot
+     * Snaphot is updated at the end of processing
      *
-     * @param ctx        Context to use
-     * @param onProgress Progress callback, passes the total number of items
-     * @return
-     *  First : List of new scanned DocumentFiles that weren't referenced in initial
-     *      First : Root DocumentFile of the files appearing in Second
-     *      Second : New scanned DocumentFiles that weren't referenced in initial
-     *  Second : List of folders whose number of files has changed
-     *  Third : Removed Content IDs whose Document was referenced in initial, but not found when scanning
+     * @param isCanceled Kill switch
+     * @param onProgress Progress callback
+     * @param onNew      New scanned DocumentFiles that weren't referenced in initial snapshot
+     *      First : Root DocumentFile of those newly scanned files
+     *      Second : New scanned DocumentFiles that weren't referenced in initial snapshot
+     * @param onChanged  Folder whose number of files has changed
+     * @param onDeleted  Removed Content IDs whose Document was referenced in initial, but not found when scanning
      */
     fun scanForDelta(
         ctx: Context,
@@ -371,7 +367,10 @@ object Beholder {
  */
 data class FolderEntry(
     val uri: String,
+    // Number of files found inside the folder
     val nbFiles: Int,
+    // Is the folder a leaf or a node ?
+    // NB : A "node" is a folder that contains nothing at all, or at least one subfolder
     val isLeaf: Boolean,
     // Useful DocumentFiles and associated Content ID
     //   Key : hash64(name, size)
