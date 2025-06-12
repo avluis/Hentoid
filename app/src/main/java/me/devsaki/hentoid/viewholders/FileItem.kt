@@ -50,7 +50,8 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         isEmpty = false
         isSelectable = (d.type != Type.ADD_BUTTON && d.type != Type.UP_BUTTON)
         identifier = doc.id
-        isEnabled = enabled
+        isEnabled =
+            enabled || d.type == Type.ADD_BUTTON || d.type == Type.UP_BUTTON || d.type == Type.ROOT_FOLDER
     }
 
     override fun getViewHolder(v: View): ViewHolder {
@@ -116,7 +117,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 debugStr = "empty item"
                 return  // Ignore placeholders from PagedList
             }
-            if (BuildConfig.DEBUG) Timber.d("binding begin ${item.doc.name}")
 
             // Payloads are set when the content stays the same but some properties alone change
             if (payloads.isNotEmpty()) {
@@ -148,8 +148,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             attachTitle(item.doc)
             attachMetrics(item.doc)
             attachButtons(item)
-
-            if (BuildConfig.DEBUG) Timber.d("binding end ${item.doc.name}")
         }
 
         private fun updateLayoutVisibility(item: FileItem, doc: DisplayFile) {
