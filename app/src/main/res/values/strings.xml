@@ -313,6 +313,7 @@
     <string name="refresh_options_remove_1">Remove folders where JSON file is absent (recommended)</string>
     <string name="refresh_options_remove_2">Remove folders where no image has been downloaded</string>
     <string name="refresh_options_remove_or">or</string>
+    <string name="refresh_auto_processing">Auto-refreshing external library (%d/%d)</string>
 
     <!-- Mass operations -->
     <string name="mass_operation">Operation</string>

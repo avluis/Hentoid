@@ -61,8 +61,9 @@ import kotlin.math.roundToInt
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.external_import_service, "import_external") {
 
-    private var booksOK = 0 // Number of books imported
-    private var booksKO = 0 // Number of folders found with no valid book inside
+    private var itemsOK = 0 // Number of books imported
+    private var itemsKO = 0 // Number of folders found with no valid book inside
+    private var totalItems = 0 // Total number of items to display the progress bar
 
     companion object {
         fun isRunning(context: Context): Boolean {
@@ -81,12 +82,30 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     override suspend fun onClear(logFile: DocumentFile?) {
         // Final event; should be step 4
         eventComplete(
-            STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile
+            STEP_4_QUEUE_FINAL, itemsOK + itemsKO, itemsOK, itemsKO, logFile
         )
     }
 
+    /**
+     * Run progress notification for Beholder import
+     * Manual import is using a custom implementation
+     */
     override fun runProgressNotification() {
-        // Using custom implementation
+        if (itemsOK < totalItems) {
+            notificationManager.notify(
+                ImportProgressNotification(
+                    applicationContext.resources.getString(
+                        R.string.refresh_auto_processing,
+                        itemsOK,
+                        totalItems
+                    ),
+                    itemsOK,
+                    totalItems
+                )
+            )
+        } else {
+            notificationManager.notify(ImportCompleteNotification(itemsOK, itemsKO))
+        }
     }
 
     override suspend fun getToWork(input: Data) {
@@ -157,10 +176,10 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
                 trace(
                     Log.INFO,
-                    "Import books complete - $booksOK OK; $booksKO KO; ${booksOK + booksKO} final count"
+                    "Import books complete - $itemsOK OK; $itemsKO KO; ${itemsOK + itemsKO} final count"
                 )
                 eventComplete(
-                    STEP_3_BOOKS, booksOK + booksKO, booksOK, booksKO, null
+                    STEP_3_BOOKS, itemsOK + itemsKO, itemsOK, itemsKO, null
                 )
 
                 // Clear disk cache as import may reuse previous image IDs
@@ -173,7 +192,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             Timber.w(e)
             logException(e, context)
         } finally {
-            notificationManager.notify(ImportCompleteNotification(booksOK, booksKO))
+            notificationManager.notify(ImportCompleteNotification(itemsOK, itemsKO))
         }
     }
 
@@ -187,7 +206,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         content: Content,
     ) {
         if (existsInCollection(content, dao.dao, true, logs)) {
-            booksKO++
+            itemsKO++
             return
         }
         createJsonFileFor(context, content, explorer, logs)
@@ -199,33 +218,37 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             addedContent[parentUri] = entry
             content.getStorageDoc()?.let { it -> entry.add(Pair(it, content.id)) }
         }
-        booksOK++
+        itemsOK++
 
         newContentEvent(content, explorer.root, progress)
 
         // Clear the DAO every 1000 iterations to optimize memory
-        if (0 == booksOK % 1000) dao.reset()
+        if (0 == itemsOK % 1000) dao.reset()
     }
 
     private suspend fun updateWithBeholder(context: Context) {
         logName = "refresh_external_auto"
-        val libraryPath = (Settings.externalLibraryUri.toUri().path ?: "").split('/')
+        val externalUri = Settings.externalLibraryUri.toUri()
+        val libraryPath = (externalUri.path ?: "").split('/')
 
         Timber.d("delta init")
         Beholder.init(context)
 
         val dao = ObjectBoxDAO()
         try {
-            FileExplorer(context, Settings.externalLibraryUri.toUri()).use { explorer ->
+            FileExplorer(context, externalUri).use { explorer ->
                 Beholder.scanForDelta(
                     context,
                     explorer,
                     this::isStopped,
-                    { idx, count ->
-                        booksOK = idx
-                        launchProgressNotification() // TODO implement
+                    onProgress = { idx, count ->
+                        // Don't refresh constantly
+                        if (!(0 == idx % 10 || idx == totalItems)) return@scanForDelta
+                        itemsOK = idx
+                        totalItems = count
+                        launchProgressNotification()
                     },
-                    { parent, usefulFiles ->
+                    onNew = { parent, usefulFiles ->
                         Timber.d("delta+ : ${usefulFiles.size} roots")
                         scanAddedContentBH(
                             context,
@@ -242,7 +265,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             libraryPath.size
                         )
                     },
-                    { changed ->
+                    onChanged = { changed ->
                         Timber.d("delta* => ${changed.formatDisplayUri(Settings.externalLibraryUri)}")
                         try {
                             dao.selectContentByStorageUri(changed.uri.toString(), false)?.let {
@@ -268,7 +291,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                             Timber.w(e)
                         }
                     },
-                    { deleted ->
+                    onDeleted = { deleted ->
                         Timber.d("delta- => $deleted")
                         try {
                             Content().apply {
@@ -484,7 +507,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     private fun eventProgress(step: Int, booksOK: Int, progressPc: Float) {
         EventBus.getDefault().post(
             ProcessEvent(
-                ProcessEvent.Type.PROGRESS, R.id.import_external, step, booksOK, booksKO, progressPc
+                ProcessEvent.Type.PROGRESS, R.id.import_external, step, booksOK, itemsKO, progressPc
             )
         )
     }
@@ -499,7 +522,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             notificationManager.notify(
                 ImportProgressNotification(content.title, progressPc, 100)
             )
-            eventProgress(STEP_3_BOOKS, booksOK, progress.getGlobalProgress())
+            eventProgress(STEP_3_BOOKS, itemsOK, progress.getGlobalProgress())
         }
     }
 
