@@ -56,7 +56,10 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.net.URLDecoder
+import java.time.Instant
 import kotlin.math.roundToInt
+
+private const val BEHOLDER_DELAY_MS = 2 * 60 * 1000 // 2 min
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.external_import_service, "import_external") {
@@ -227,6 +230,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private suspend fun updateWithBeholder(context: Context) {
+        // Wait at least X minutes between auto-refreshes to limit resource consumption
+        val now = Instant.now().toEpochMilli()
+        if (now - Settings.latestBeholderTimestamp < BEHOLDER_DELAY_MS) return
+        Settings.latestBeholderTimestamp = now
+
         logName = "refresh_external_auto"
         val externalUri = Settings.externalLibraryUri.toUri()
         val libraryPath = (externalUri.path ?: "").split('/')

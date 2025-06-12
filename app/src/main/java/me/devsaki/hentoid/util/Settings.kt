@@ -447,7 +447,7 @@ object Settings {
     var achievements: ULong by ULongSetting(Key.ACHIEVEMENTS, 0UL)
     var nbAIRescale: Int by IntSettingStr(Key.ACHIEVEMENTS_NB_AI_RESCALE, 0)
 
-    // STORAGE
+    // STORAGE / IMPORT
     private var storageUri: String by StringSetting(Key.PRIMARY_STORAGE_URI, "")
     private var storageUri2: String by StringSetting(Key.PRIMARY_STORAGE_URI_2, "")
     var externalLibraryUri: String by StringSetting(Key.EXTERNAL_LIBRARY_URI, "")
@@ -481,6 +481,7 @@ object Settings {
     var memoryAlertThreshold: Int by IntSettingStr("pref_memory_alert", 110)
     val isDeleteExternalLibrary: Boolean by BoolSetting(Key.EXTERNAL_LIBRARY_DELETE, false)
     val folderTruncationNbChars: Int by IntSettingStr("pref_folder_trunc_lists", 100)
+    var latestBeholderTimestamp: Long by LongSetting("pref_latest_beholder_timestamp", 0)
 
     // DUPLICATE DETECTOR
     var duplicateSensitivity: Int by IntSettingStr("duplicate_sensitivity", 1)
