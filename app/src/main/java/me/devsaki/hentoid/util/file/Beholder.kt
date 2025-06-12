@@ -139,8 +139,11 @@ object Beholder {
                 val usefulFiles =
                     files.filterNot { ignoreList.contains(it.value.documentId) }
                         .filter { isUseful(it.value) }
-                val hasSubfolders = files.values.any { !it.isFile }
-                val isEmpty = files.isEmpty()
+
+                // Node if empty or contains at least a subfolder, or contains at least an archive/PDF
+                var isNode = files.isEmpty() || (files.values.any {
+                    !it.isFile || (it.isFile && isSupportedArchivePdf(it.name))
+                })
                 if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - usefulFiles.size)} ignored)")
 
                 // Select new docs
@@ -164,7 +167,7 @@ object Beholder {
                 snapshot[rootUriStr] = FolderEntry(
                     rootUriStr,
                     files.size,
-                    !(hasSubfolders || isEmpty),
+                    !isNode,
                     entry.documents
                         .minus(deletedKeys)
                         .plus(newDocs.associateBy({ it.uniqueHash }, { -1L }))
