@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Query
+import retrofit2.http.Path
 
 object KemonoServer {
     private const val KEMONO_URL = "https://kemono.su/api/v1/"
@@ -32,8 +32,8 @@ object KemonoServer {
     interface Api {
         @GET("{service}/user/{id}/profile")
         fun getArtist(
-            @Query("service") service: String,
-            @Query("id") id: String,
+            @Path("service") service: String,
+            @Path("id") id: String,
             @Header("cookie") cookies: String,
             @Header("accept") accept: String,
             @Header("user-agent") userAgent: String
@@ -41,9 +41,9 @@ object KemonoServer {
 
         @GET("{service}/user/{user_id}/post/{id}")
         fun getGallery(
-            @Query("service") service: String,
-            @Query("user_id") userId: String,
-            @Query("id") id: String,
+            @Path("service") service: String,
+            @Path("user_id") userId: String,
+            @Path("id") id: String,
             @Header("cookie") cookies: String,
             @Header("accept") accept: String,
             @Header("user-agent") userAgent: String

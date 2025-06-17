@@ -25,18 +25,20 @@ data class KemonoGallery(
         val title: String,
         val published: String?,
         val tags: List<String>?,
-        val attachments: List<Attachment>,
+        val file: Attachment?,
+        val attachments: List<Attachment>
     )
 
+    @JsonClass(generateAdapter = true)
     data class Attachment(
         val server: String?,
-        val name: String,
-        val path: String,
+        val name: String?,
+        val path: String
     )
 
     fun update(content: Content, galleryUrl: String, updateImages: Boolean): Content {
         content.site = Site.KEMONO
-        content.url = galleryUrl
+        content.url = galleryUrl.replace("/api/v1/", "/")
         content.title = cleanup(post.title)
         content.status = StatusContent.SAVED
         content.uploadDate = 0L
@@ -62,22 +64,25 @@ data class KemonoGallery(
         content.putAttributes(attributes)
 
         // Map thumb server to picture URL
-        val thumbs = previews.associateBy({ it.name }, { it })
+        val thumbs = previews.associateBy({ it.path }, { it })
         val imageUrls = post.attachments
-            .filter { isSupportedImage(it.name) }
-            // Sorted by ??
+            .filter { isSupportedImage(it.path) }
             .map {
-                val server = thumbs[it.name]?.server ?: ""
+                val server = thumbs[it.path]?.server ?: ""
                 "$server/data/${it.path}"
-            }
+            }.distinct()
         if (imageUrls.isNotEmpty()) {
-            content.coverImageUrl = imageUrls[0]
+            post.file?.let {
+                content.coverImageUrl = "https://img.kemono.su/thumbnail/data/${it.path}"
+            } ?: run {
+                content.coverImageUrl = imageUrls[0]
+            }
             if (updateImages) {
                 content.qtyPages = imageUrls.size
                 content.setImageFiles(
                     urlsToImageFiles(
                         imageUrls,
-                        imageUrls[0],
+                        content.coverImageUrl,
                         StatusContent.SAVED
                     )
                 )

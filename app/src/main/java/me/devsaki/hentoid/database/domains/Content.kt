@@ -319,6 +319,8 @@ data class Content(
                     ""
                 )
 
+                Site.KEMONO -> return url.replace(site.url, "")
+
                 Site.MANGAGO -> return url.replace(site.url + "read-manga/", "")
                 Site.PORNCOMIX -> return url
                 else -> return url
@@ -396,6 +398,12 @@ data class Content(
                 // Last part of the URL
                 paths = url.split("/")
                 return paths[paths.size - 1]
+            }
+
+            Site.KEMONO -> {
+                // Service, user ID and content ID
+                paths = url.split("/")
+                return paths[paths.size - 5] + paths[paths.size - 3] + paths[paths.size - 1]
             }
 
             Site.DOUJINS -> {

@@ -691,6 +691,17 @@
                     android:pathPattern="/contents/..*"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="kemono.su"
+                    android:pathPattern="/..*/user/..*/post/..*"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <activity

@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
-import android.net.Uri
+import androidx.core.net.toUri
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
@@ -20,7 +20,7 @@ class PixivContent : BaseContentParser() {
             id = id.substring(0, id.indexOf("?"))
         }
         val entity = urlParts[urlParts.size - 2]
-        val uri = Uri.parse(url)
+        val uri = url.toUri()
         when (entity) {
             "artworks", "illust" -> if (!isNumeric(id)) id =
                 uri.getQueryParameter("illust_id") ?: ""
