@@ -7,6 +7,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.isNumeric
+import me.devsaki.hentoid.util.network.ACCEPT_ALL
 import me.devsaki.hentoid.util.network.getCookies
 import timber.log.Timber
 import java.io.IOException
@@ -38,25 +39,24 @@ class PixivContent : BaseContentParser() {
                     Site.PIXIV.useWebviewAgent
                 )
                 val userAgent = getUserAgent(Site.PIXIV)
-                val acceptAll = "*/*"
                 when (entity) {
                     "artworks", "illust" -> {
                         val metadata =
-                            PixivServer.api.getIllustMetadata(id, cookieStr, acceptAll, userAgent)
+                            PixivServer.api.getIllustMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
                                 .execute().body()
                         if (metadata != null) return metadata.update(content, url, updateImages)
                     }
 
                     "series_content", "series" -> {
                         val seriesData =
-                            PixivServer.api.getSeriesMetadata(id, cookieStr, acceptAll, userAgent)
+                            PixivServer.api.getSeriesMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
                                 .execute().body()
                         if (seriesData != null) return seriesData.update(content, updateImages)
                     }
 
                     "user", "users" -> {
                         val userData =
-                            PixivServer.api.getUserMetadata(id, cookieStr, acceptAll, userAgent)
+                            PixivServer.api.getUserMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
                                 .execute().body()
                         if (userData != null) return userData.update(content, updateImages)
                     }

@@ -14,9 +14,9 @@ import me.devsaki.hentoid.parsers.cleanup
 data class EHentaiGalleriesMetadata(
     val gmetadata: List<EHentaiGalleryMetadata>? = null
 ) {
-    fun update(content: Content, url: String, site: Site, updatePages: Boolean): Content {
+    fun update(content: Content, site: Site, updatePages: Boolean): Content {
         return if (gmetadata != null && !gmetadata.isEmpty()) gmetadata[0]
-            .update(content, url, site, updatePages) else Content()
+            .update(content, site, updatePages) else Content()
     }
 
     @JsonClass(generateAdapter = true)
@@ -31,7 +31,7 @@ data class EHentaiGalleriesMetadata(
         val tags: List<String>? = null
     ) {
 
-        fun update(content: Content, url: String, site: Site, updatePages: Boolean): Content {
+        fun update(content: Content, site: Site, updatePages: Boolean): Content {
             val attributes = AttributeMap()
 
             content.site = site

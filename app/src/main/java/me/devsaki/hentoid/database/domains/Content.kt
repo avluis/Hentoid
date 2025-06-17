@@ -27,6 +27,7 @@ import me.devsaki.hentoid.activities.sources.HentaifoxActivity
 import me.devsaki.hentoid.activities.sources.HiperdexActivity
 import me.devsaki.hentoid.activities.sources.HitomiActivity
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity
+import me.devsaki.hentoid.activities.sources.KemonoActivity
 import me.devsaki.hentoid.activities.sources.LusciousActivity
 import me.devsaki.hentoid.activities.sources.MangagoActivity
 import me.devsaki.hentoid.activities.sources.Manhwa18Activity
@@ -222,6 +223,7 @@ data class Content(
                 Site.HIPERDEX -> HiperdexActivity::class.java
                 Site.NOVELCROW -> NovelcrowActivity::class.java
                 Site.TMO -> TmoActivity::class.java
+                Site.KEMONO -> KemonoActivity::class.java
                 else -> BaseWebActivity::class.java
             }
         }

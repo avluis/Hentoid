@@ -80,6 +80,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     HIPERDEX(34, "Hiperdex", "https://hiperdex.com/", R.drawable.ic_site_hiperdex),
     NOVELCROW(35, "Novelcrow", "https://novelcrow.com/", R.drawable.ic_site_novelcrow),
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
+    KEMONO(37, "Kemono.su", "https://kemono.su/", R.drawable.ic_site_kemono),
 
     // Used for associating attributes to sites in Preferences
     ANY(97, "any", "", R.drawable.ic_hentoid_shape),

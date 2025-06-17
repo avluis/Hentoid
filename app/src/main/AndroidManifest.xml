@@ -144,6 +144,9 @@
             android:name=".activities.sources.TmoActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.KemonoActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"

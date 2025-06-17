@@ -38,6 +38,7 @@ const val HEADER_CONTENT_TYPE = "Content-Type"
 const val HEADER_USER_AGENT = "user-agent"
 
 const val POST_MIME_TYPE = "application/x-www-form-urlencoded"
+const val ACCEPT_ALL = "*/*"
 
 // To display sites with desktop layouts
 private const val DESKTOP_USER_AGENT_PATTERN =
