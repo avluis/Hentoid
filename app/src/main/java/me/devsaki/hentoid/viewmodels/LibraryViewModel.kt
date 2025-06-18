@@ -283,12 +283,25 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             // Display roots (level 0)
             withContext(Dispatchers.IO) {
                 val entries = ArrayList<DisplayFile>()
+                // "Add root" button
                 entries.add(
                     DisplayFile(
                         ctx.resources.getString(R.string.add_root),
                         DisplayFile.Type.ADD_BUTTON
                     )
                 )
+                // External library (if plugged)
+                if (Settings.externalLibraryUri.isNotBlank()) {
+                    entries.add(
+                        DisplayFile(
+                            ctx.resources.getString(R.string.external_library),
+                            DisplayFile.Type.ROOT_FOLDER,
+                            DisplayFile.SubType.EXTERNAL_LIB,
+                            Settings.externalLibraryUri.toUri()
+                        )
+                    )
+                }
+                // Root entries
                 Settings.libraryFoldersRoots.forEach {
                     getDocumentFromTreeUriString(ctx, it)?.let { entries.add(DisplayFile(it)) }
                 }
@@ -424,7 +437,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     ?.let {
                         getParent(getApplication(), it.toUri(), currentFolder)
                             ?.let { setFolderRoot(it) }
-                    }
+                    } ?: run { setFolderRoot(Uri.EMPTY) }
             }
     }
 

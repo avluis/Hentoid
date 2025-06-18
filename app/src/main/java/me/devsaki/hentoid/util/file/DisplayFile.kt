@@ -10,7 +10,7 @@ class DisplayFile {
     }
 
     enum class SubType {
-        ARCHIVE, PDF, OTHER
+        EXTERNAL_LIB, ARCHIVE, PDF, OTHER
     }
 
     val id: Long
@@ -59,14 +59,14 @@ class DisplayFile {
     }
 
     // Used for the "Add root" and "Go up one level" buttons
-    constructor(name: String, type: Type) {
-        uri = Uri.EMPTY
+    constructor(name: String, type: Type, subType: SubType = SubType.OTHER, uri: Uri = Uri.EMPTY) {
+        this.uri = uri
         id = hash64(type.name.toByteArray())
         parent = Uri.EMPTY
         this.name = name
         lastModified = 0
         this.type = type
-        subType = SubType.OTHER
+        this.subType = subType
     }
 
     override fun equals(other: Any?): Boolean {
