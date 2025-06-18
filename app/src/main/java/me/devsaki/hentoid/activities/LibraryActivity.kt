@@ -132,6 +132,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private var editMenu: MenuItem? = null
     private var deleteMenu: MenuItem? = null
     private var detachMenu: MenuItem? = null
+    private var refreshMenu: MenuItem? = null
     private var completedMenu: MenuItem? = null
     private var resetReadStatsMenu: MenuItem? = null
     private var rateMenu: MenuItem? = null
@@ -855,6 +856,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 editMenu = findItem(R.id.action_edit)
                 deleteMenu = findItem(R.id.action_delete)
                 detachMenu = findItem(R.id.action_detach)
+                refreshMenu = findItem(R.id.action_refresh)
                 completedMenu = findItem(R.id.action_completed)
                 resetReadStatsMenu = findItem(R.id.action_reset_read)
                 rateMenu = findItem(R.id.action_rate)
@@ -1092,13 +1094,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     fun updateSelectionToolbar(
-        selectedTotalCount: Long,
-        selectedProcessedCount: Long,
-        selectedLocalCount: Long,
-        selectedStreamedCount: Long,
-        selectedNonArchivePdfExternalCount: Long,
-        selectedArchivePdfExternalCount: Long,
-        selectedRoots: Long = 0
+        selectedTotalCount: Int,
+        selectedProcessedCount: Int,
+        selectedLocalCount: Int,
+        selectedStreamedCount: Int,
+        selectedNonArchivePdfExternalCount: Int,
+        selectedArchivePdfExternalCount: Int,
+        selectedRoots: Int = 0,
+        insideExtLib: Boolean = false
     ) {
         val isMultipleSelection = selectedTotalCount > 1
         val hasProcessed = selectedProcessedCount > 0
@@ -1113,8 +1116,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         if (isGroupDisplayed()) {
             editMenu?.isVisible = !hasProcessed && !isMultipleSelection
                     && Settings.getGroupingDisplayG().canReorderGroups
-            detachMenu?.isVisible = false
             deleteMenu?.isVisible = !hasProcessed
+            detachMenu?.isVisible = false
+            refreshMenu?.isVisible = false
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false
             resetReadStatsMenu?.isVisible = false
@@ -1132,15 +1136,16 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             exportMetaMenu?.isVisible = selectedTotalCount > 0
         } else if (isFoldersDisplayed()) {
             editMenu?.isVisible = false
-            deleteMenu?.isVisible = selectedTotalCount > 0 && 0L == selectedRoots
-            detachMenu?.isVisible = selectedRoots > 0
+            deleteMenu?.isVisible = selectedTotalCount > 0 && 0 == selectedRoots
+            detachMenu?.isVisible = selectedRoots > 0 && !insideExtLib
+            refreshMenu?.isVisible = insideExtLib && 1 == selectedTotalCount && 0 == selectedRoots
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false
             resetReadStatsMenu?.isVisible = false
             rateMenu?.isVisible = false
             archiveMenu?.isVisible = false
             changeGroupMenu?.isVisible = false
-            folderMenu?.isVisible = selectedTotalCount > 0
+            folderMenu?.isVisible = 1 == selectedTotalCount
             redownloadMenu?.isVisible = false
             downloadStreamedMenu?.isVisible = false
             streamMenu?.isVisible = false
@@ -1151,9 +1156,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             exportMetaMenu?.isVisible = false
         } else { // Books
             editMenu?.isVisible = !hasProcessed
-            detachMenu?.isVisible = false
             deleteMenu?.isVisible =
-                !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0L == selectedExternalCount || selectedExternalCount > 0 && Settings.isDeleteExternalLibrary)
+                !hasProcessed && ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount || selectedExternalCount > 0 && Settings.isDeleteExternalLibrary)
+            detachMenu?.isVisible = false
+            refreshMenu?.isVisible = false
             completedMenu?.isVisible = true
             resetReadStatsMenu?.isVisible = true
             rateMenu?.isVisible = isMultipleSelection
@@ -1168,14 +1174,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 !isMultipleSelection && Settings.getGroupingDisplayG() != Grouping.FLAT
             // Can only merge downloaded, streamed or non-archive external content together
             mergeMenu?.isVisible = !hasProcessed && (
-                    selectedLocalCount > 1 && 0L == selectedStreamedCount && 0L == selectedExternalCount
-                            || selectedStreamedCount > 1 && 0L == selectedLocalCount && 0L == selectedExternalCount
-                            || selectedExternalCount > 1 && 0L == selectedLocalCount && 0L == selectedStreamedCount
+                    selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount
+                            || selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount
+                            || selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount
                     )
             splitMenu?.isVisible =
-                !hasProcessed && !isMultipleSelection && (1L == selectedLocalCount || 1L == selectedExternalCount)
+                !hasProcessed && !isMultipleSelection && (1 == selectedLocalCount || 1 == selectedExternalCount)
             transformMenu?.isVisible =
-                !hasProcessed && 0L == selectedStreamedCount && 0L == selectedArchivePdfExternalCount
+                !hasProcessed && 0 == selectedStreamedCount && 0 == selectedArchivePdfExternalCount
             exportMetaMenu?.isVisible = false
         }
     }

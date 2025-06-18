@@ -937,12 +937,12 @@ class LibraryGroupsFragment : Fragment(),
             selectExtension!!.selectOnLongClick = true
         } else {
             val selectedProcessedCount =
-                selectedItems.map { gi -> gi.group }.count { obj -> obj.isBeingProcessed }
-            val selectedLocalCount = selectedItems.map { gi -> gi.group }.count()
+                selectedItems.map { it.group }.count { it.isBeingProcessed }
+            val selectedLocalCount = selectedItems.map { it.group }.count()
             activity.get()!!.updateSelectionToolbar(
-                selectedCount.toLong(),
-                selectedProcessedCount.toLong(),
-                selectedLocalCount.toLong(),
+                selectedCount,
+                selectedProcessedCount,
+                selectedLocalCount,
                 0,
                 0,
                 0

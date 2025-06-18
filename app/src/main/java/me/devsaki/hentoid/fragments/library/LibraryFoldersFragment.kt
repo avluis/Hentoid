@@ -53,6 +53,7 @@ import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.DisplayFile.SubType
 import me.devsaki.hentoid.util.file.DisplayFile.Type
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
 import me.devsaki.hentoid.util.file.fileExists
@@ -284,6 +285,7 @@ class LibraryFoldersFragment : Fragment(),
         when (menuItem.itemId) {
             R.id.action_detach -> detachSelectedItems()
             R.id.action_delete -> deleteSelectedItems()
+            R.id.action_refresh -> refreshSelectedItems()
             R.id.action_open_folder -> openItemFolder()
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
@@ -350,6 +352,16 @@ class LibraryFoldersFragment : Fragment(),
                 it.map { it.doc.uri }
             ) { viewModel.searchFolder() }
         }
+    }
+
+    /**
+     * Callback for the "refresh item" action button
+     */
+    private fun refreshSelectedItems() {
+        val selectedItems: Set<FileItem> = selectExtension!!.selectedItems
+        if (selectedItems.isEmpty()) return
+
+        // TODO
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -662,8 +674,15 @@ class LibraryFoldersFragment : Fragment(),
             selectExtension?.selectOnLongClick = true
         } else {
             activity.get()?.apply {
-                val nbRoots = selectedItems.count { it.doc.type == Type.ROOT_FOLDER }.toLong()
-                updateSelectionToolbar(selectedCount.toLong(), 0, 0, 0, 0, 0, nbRoots)
+                val nbRoots = selectedItems.count { it.doc.type == Type.ROOT_FOLDER }
+                val nbFolders = selectedItems.count { it.doc.type == Type.FOLDER }
+                var insideExtLib =
+                    Settings.libraryFoldersRoot.startsWith(Settings.externalLibraryUri)
+                            && (1 == nbFolders
+                            || selectedItems.count { it.doc.subType == SubType.EXTERNAL_LIB } > 0
+                            )
+
+                updateSelectionToolbar(selectedCount, 0, 0, 0, 0, 0, nbRoots, insideExtLib)
                 getSelectionToolbar()?.visibility = View.VISIBLE
             }
         }

@@ -1657,12 +1657,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val selectedArchivePdfExternalCount =
                 contentList.count { it.status == StatusContent.EXTERNAL && (it.isArchive || it.isPdf) }
             activity.get()?.updateSelectionToolbar(
-                selectedCount.toLong(),
-                selectedProcessedCount.toLong(),
-                selectedLocalCount.toLong(),
-                selectedStreamedCount.toLong(),
-                selectedNonArchivePdfExternalCount.toLong(),
-                selectedArchivePdfExternalCount.toLong()
+                selectedCount,
+                selectedProcessedCount,
+                selectedLocalCount,
+                selectedStreamedCount,
+                selectedNonArchivePdfExternalCount,
+                selectedArchivePdfExternalCount
             )
             activity.get()?.getSelectionToolbar()?.visibility = View.VISIBLE
         }
