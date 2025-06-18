@@ -2,6 +2,7 @@ package me.devsaki.hentoid.retrofit.sources
 
 import me.devsaki.hentoid.json.sources.kemono.KemonoArtist
 import me.devsaki.hentoid.json.sources.kemono.KemonoGallery
+import me.devsaki.hentoid.json.sources.kemono.KemonoPosts
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -33,11 +34,20 @@ object KemonoServer {
         @GET("{service}/user/{id}/profile")
         fun getArtist(
             @Path("service") service: String,
-            @Path("id") id: String,
+            @Path("id") userId: String,
             @Header("cookie") cookies: String,
             @Header("accept") accept: String,
             @Header("user-agent") userAgent: String
         ): Call<KemonoArtist>
+
+        @GET("{service}/user/{id}/posts-legacy")
+        fun getArtistGalleries(
+            @Path("service") service: String,
+            @Path("id") userId: String,
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
+        ): Call<KemonoPosts>
 
         @GET("{service}/user/{user_id}/post/{id}")
         fun getGallery(

@@ -403,7 +403,14 @@ data class Content(
             Site.KEMONO -> {
                 // Service, user ID and content ID
                 paths = url.split("/")
-                return paths[paths.size - 5] + paths[paths.size - 3] + paths[paths.size - 1]
+                val userIdx = paths.indexOf("user")
+                val postIdx = paths.indexOf("post")
+                val elements = ArrayList<String>()
+                if (userIdx > -1) elements.add(paths[userIdx - 1]) // Service
+                if (userIdx > -1) elements.add(paths[userIdx + 1]) // User id
+                if (postIdx > -1) elements.add(paths[postIdx + 1]) // Post id
+
+                return TextUtils.join("-", elements)
             }
 
             Site.DOUJINS -> {

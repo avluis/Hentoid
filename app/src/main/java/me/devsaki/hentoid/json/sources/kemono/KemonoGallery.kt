@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.parseDatetimeToEpoch
 @JsonClass(generateAdapter = true)
 data class KemonoGallery(
     val post: Post,
-    val previews: List<Attachment>
+    val previews: List<KemonoAttachment>
 ) {
     @JsonClass(generateAdapter = true)
     data class Post(
@@ -25,15 +25,8 @@ data class KemonoGallery(
         val title: String,
         val published: String?,
         val tags: List<String>?,
-        val file: Attachment?,
-        val attachments: List<Attachment>
-    )
-
-    @JsonClass(generateAdapter = true)
-    data class Attachment(
-        val server: String?,
-        val name: String?,
-        val path: String
+        val file: KemonoAttachment?,
+        val attachments: List<KemonoAttachment>
     )
 
     fun update(content: Content, galleryUrl: String, updateImages: Boolean): Content {
@@ -66,7 +59,7 @@ data class KemonoGallery(
         // Map thumb server to picture URL
         val thumbs = previews.associateBy({ it.path }, { it })
         val imageUrls = post.attachments
-            .filter { isSupportedImage(it.path) }
+            .filter { isSupportedImage(it.path ?: "") }
             .map {
                 val server = thumbs[it.path]?.server ?: ""
                 "$server/data/${it.path}"
