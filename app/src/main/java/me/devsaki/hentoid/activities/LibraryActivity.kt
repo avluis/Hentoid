@@ -1155,7 +1155,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             editMenu?.isVisible = false
             deleteMenu?.isVisible = selectedTotalCount > 0 && 0 == selectedRoots
             detachMenu?.isVisible = selectedRoots > 0 && !insideExtLib
-            refreshMenu?.isVisible = insideExtLib && 1 == selectedTotalCount && 0 == selectedRoots
+            refreshMenu?.isVisible = insideExtLib && selectedTotalCount > 0 && 0 == selectedRoots
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false
             resetReadStatsMenu?.isVisible = false
