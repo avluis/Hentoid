@@ -459,7 +459,12 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun considerRefreshExtLib() {
         if (Settings.externalLibraryUri.isEmpty()) return
-        runExternalImport(this, true)
+        val dao: CollectionDAO = ObjectBoxDAO()
+        try {
+            if (dao.countAllExternalBooks() < 1000) runExternalImport(this, true)
+        } finally {
+            dao.cleanup()
+        }
     }
 
     override fun onResume() {

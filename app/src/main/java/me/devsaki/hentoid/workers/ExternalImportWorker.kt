@@ -34,6 +34,7 @@ import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
 import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.FileExplorer
+import me.devsaki.hentoid.util.file.FileExplorer.DocumentProperties
 import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.formatDisplay
 import me.devsaki.hentoid.util.file.formatDisplayUri
@@ -114,7 +115,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     override suspend fun getToWork(input: Data) {
         val data = ExternalImportData.Parser(inputData)
         withContext(Dispatchers.IO) {
-            if (data.behold) updateWithBeholder(applicationContext)
+            if (data.behold) updateWithBeholder(applicationContext, data.folders)
             else startImport(applicationContext)
         }
     }
@@ -229,15 +230,20 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         if (0 == itemsOK % 1000) dao.reset()
     }
 
-    private suspend fun updateWithBeholder(context: Context) {
+    private suspend fun updateWithBeholder(context: Context, folders: List<String>) {
         // Wait at least X minutes between auto-refreshes to limit resource consumption
-        val now = Instant.now().toEpochMilli()
-        if (now - Settings.latestBeholderTimestamp < BEHOLDER_DELAY_MS) return
-        Settings.latestBeholderTimestamp = now
+        if (folders.isEmpty()) {
+            val now = Instant.now().toEpochMilli()
+            if (now - Settings.latestBeholderTimestamp < BEHOLDER_DELAY_MS) {
+                Timber.d("External library auto-refresh delay not passed")
+                return
+            }
+            Settings.latestBeholderTimestamp = now
+        }
 
         logName = "refresh_external_auto"
         val externalUri = Settings.externalLibraryUri.toUri()
-        val libraryPath = (externalUri.path ?: "").split('/')
+        val libraryPathSize = (externalUri.path ?: "").split('/').size
 
         Timber.d("delta init")
         Beholder.init(context)
@@ -245,75 +251,42 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         val dao = ObjectBoxDAO()
         try {
             FileExplorer(context, externalUri).use { explorer ->
-                Beholder.scanForDelta(
-                    context,
-                    explorer,
-                    this::isStopped,
-                    onProgress = { idx, count ->
-                        // Don't refresh constantly
-                        if (!(0 == idx % 10 || idx == totalItems)) return@scanForDelta
-                        itemsOK = idx
-                        totalItems = count
-                        launchProgressNotification()
-                    },
-                    onNew = { parent, usefulFiles ->
-                        Timber.d("delta+ : ${usefulFiles.size} roots")
-                        scanAddedContentBH(
-                            context,
-                            explorer,
-                            parent.uri,
-                            usefulFiles.mapNotNull {
-                                explorer.convertFromProperties(
-                                    applicationContext,
-                                    parent,
-                                    it
-                                )
-                            },
-                            dao,
-                            libraryPath.size
-                        )
-                    },
-                    onChanged = { changed ->
-                        Timber.d("delta* => ${changed.formatDisplayUri(Settings.externalLibraryUri)}")
-                        try {
-                            dao.selectContentByStorageUri(changed.uri.toString(), false)?.let {
-                                // Existing content => Add new images
-                                scanChangedUpdatedContentBH(
-                                    applicationContext,
-                                    explorer,
-                                    it,
-                                    changed,
-                                    dao
-                                )
-                            } ?: run {
-                                // New content
-                                scanChangedNewContentBH(
-                                    applicationContext,
-                                    explorer,
-                                    changed,
-                                    dao,
-                                    libraryPath.size
-                                )
-                            }
-                        } catch (e: Exception) {
-                            Timber.w(e)
-                        }
-                    },
-                    onDeleted = { deleted ->
-                        Timber.d("delta- => $deleted")
-                        try {
-                            Content().apply {
-                                id = deleted
-                                site = Site.NONE
-                                GlobalScope.launch(Dispatchers.IO) {
-                                    removeContent(context, dao, this@apply)
-                                }
-                            }
-                        } catch (e: Exception) {
-                            Timber.w(e)
-                        }
-                    }
-                )
+                if (folders.isEmpty()) {
+                    Beholder.scanAll(
+                        context,
+                        explorer,
+                        this::isStopped,
+                        onProgress = { idx, count ->
+                            // Don't refresh constantly
+                            if (!(0 == idx % 10 || idx == totalItems)) return@scanAll
+                            itemsOK = idx
+                            totalItems = count
+                            launchProgressNotification()
+                        },
+                        onNew = { parent, usefulFiles ->
+                            onNewBH(context, parent, usefulFiles, explorer, dao, libraryPathSize)
+                        },
+                        onChanged = { onChangedBH(it, explorer, dao, libraryPathSize) },
+                        onDeleted = { onDeletedBH(context, it, dao) }
+                    )
+                } else {
+                    Beholder.scanFolders(
+                        context,
+                        explorer,
+                        folders.toSet(),
+                        this::isStopped,
+                        onProgress = { idx, count ->
+                            itemsOK = idx
+                            totalItems = count
+                            launchProgressNotification()
+                        },
+                        onNew = { parent, usefulFiles ->
+                            onNewBH(context, parent, usefulFiles, explorer, dao, libraryPathSize)
+                        },
+                        onChanged = { onChangedBH(it, explorer, dao, libraryPathSize) },
+                        onDeleted = { onDeletedBH(context, it, dao) }
+                    )
+                }
             }
         } catch (e: Exception) {
             Timber.w(e)
@@ -321,6 +294,82 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             dao.cleanup()
         }
         Timber.d("delta end")
+    }
+
+    private fun onNewBH(
+        context: Context,
+        parent: DocumentFile,
+        usefulFiles: Collection<DocumentProperties>,
+        explorer: FileExplorer,
+        dao: CollectionDAO,
+        libraryPathSize: Int
+    ) {
+        Timber.d("delta+ : ${usefulFiles.size} roots")
+        scanAddedContentBH(
+            context,
+            explorer,
+            parent.uri,
+            usefulFiles.mapNotNull {
+                explorer.convertFromProperties(
+                    applicationContext,
+                    parent,
+                    it
+                )
+            },
+            dao,
+            libraryPathSize
+        )
+    }
+
+    private fun onChangedBH(
+        changed: DocumentFile,
+        explorer: FileExplorer,
+        dao: CollectionDAO,
+        libraryPathSize: Int
+    ) {
+        Timber.d("delta* => ${changed.formatDisplayUri(Settings.externalLibraryUri)}")
+        try {
+            dao.selectContentByStorageUri(changed.uri.toString(), false)?.let {
+                // Existing content => Add new images
+                scanChangedUpdatedContentBH(
+                    applicationContext,
+                    explorer,
+                    it,
+                    changed,
+                    dao
+                )
+            } ?: run {
+                // New content
+                scanChangedNewContentBH(
+                    applicationContext,
+                    explorer,
+                    changed,
+                    dao,
+                    libraryPathSize
+                )
+            }
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
+    }
+
+    private fun onDeletedBH(
+        context: Context,
+        deleted: Long,
+        dao: CollectionDAO
+    ) {
+        Timber.d("delta- => $deleted")
+        try {
+            Content().apply {
+                id = deleted
+                site = Site.NONE
+                GlobalScope.launch(Dispatchers.IO) {
+                    removeContent(context, dao, this@apply)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
     }
 
     private fun scanAddedContentBH(

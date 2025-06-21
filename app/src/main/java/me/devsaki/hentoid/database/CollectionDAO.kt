@@ -102,6 +102,8 @@ interface CollectionDAO {
 
 
     // External library
+    fun countAllExternalBooks(): Long
+
     fun deleteAllExternalBooks()
 
     fun flagAllExternalContents()

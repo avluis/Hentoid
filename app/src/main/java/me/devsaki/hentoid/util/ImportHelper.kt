@@ -584,12 +584,14 @@ private fun runPrimaryImport(
  */
 fun runExternalImport(
     context: Context,
-    behold: Boolean = false
+    behold: Boolean = false,
+    folders : List<String> = emptyList<String>()
 ): Boolean {
     if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
     me.devsaki.hentoid.notification.import_.init(context)
     val builder = ExternalImportData.Builder()
     builder.setBehold(behold)
+    if (behold) builder.setFolders(folders)
     val workManager = WorkManager.getInstance(context)
     workManager.enqueueUniqueWork(
         R.id.external_import_service.toString(), ExistingWorkPolicy.REPLACE,

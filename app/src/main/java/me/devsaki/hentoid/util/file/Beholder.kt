@@ -64,7 +64,7 @@ object Beholder {
      * @param onChanged  Folder whose number of files has changed
      * @param onDeleted  Removed Content IDs whose Document was referenced in initial, but not found when scanning
      */
-    fun scanForDelta(
+    fun scanAll(
         ctx: Context,
         explorer: FileExplorer,
         isCanceled: () -> Boolean,
@@ -107,6 +107,43 @@ object Beholder {
                 onDeleted
             )
             onProgress?.invoke(++index, snapshot.size)
+        }
+
+        // Save snapshot file
+        saveSnapshot(ctx)
+    }
+
+    fun scanFolders(
+        ctx: Context,
+        explorer: FileExplorer,
+        folders: Set<String>,
+        isCanceled: () -> Boolean,
+        onProgress: ((Int, Int) -> Unit)? = null,
+        onNew: ((DocumentFile, Collection<DocumentProperties>) -> Unit)? = null,
+        onChanged: ((DocumentFile) -> Unit)? = null,
+        onDeleted: ((Long) -> Unit)? = null,
+    ) {
+        val existingFolders = snapshot.filter { folders.contains(it.key) }
+        val newFolders = folders.filter { !existingFolders.containsKey(it) }
+
+        var index = 0
+        existingFolders.forEach {
+            scanEntryForDelta(
+                ctx,
+                it.key,
+                it.value,
+                explorer,
+                isCanceled,
+                onNew,
+                onChanged,
+                onDeleted
+            )
+            onProgress?.invoke(++index, folders.size)
+        }
+
+        newFolders.forEach {
+            registerRoot(ctx, it, onNew, explorer)
+            onProgress?.invoke(++index, folders.size)
         }
 
         // Save snapshot file
@@ -193,22 +230,35 @@ object Beholder {
 
     fun registerRoot(
         ctx: Context,
-        rootUri: Uri
+        rootUri: Uri,
+        onNew: ((DocumentFile, Collection<DocumentProperties>) -> Unit)? = null,
+        explorer: FileExplorer? = null
+    ) {
+        registerRoot(ctx, rootUri.toString(), onNew, explorer)
+    }
+
+    fun registerRoot(
+        ctx: Context,
+        rootUriStr: String,
+        onNew: ((DocumentFile, Collection<DocumentProperties>) -> Unit)? = null,
+        explorer: FileExplorer? = null
     ) {
         val map = HashMap<String, List<Pair<DocumentFile, Long>>>()
-        map[rootUri.toString()] = listOf()
-        registerContent(ctx, map)
+        map[rootUriStr] = listOf()
+        registerContent(ctx, map, onNew, explorer)
     }
 
     fun registerContent(
         ctx: Context,
         parentUri: String,
         contentDoc: DocumentFile,
-        contentId: Long
+        contentId: Long,
+        onNew: ((DocumentFile, Collection<DocumentProperties>) -> Unit)? = null,
+        explorer: FileExplorer? = null
     ) {
         val map = HashMap<String, List<Pair<DocumentFile, Long>>>()
         map[parentUri] = listOf(Pair(contentDoc, contentId))
-        registerContent(ctx, map)
+        registerContent(ctx, map, onNew, explorer)
     }
 
     /**
@@ -220,7 +270,9 @@ object Beholder {
      */
     fun registerContent(
         ctx: Context,
-        contentDocs: Map<String, List<Pair<DocumentFile, Long>>>
+        contentDocs: Map<String, List<Pair<DocumentFile, Long>>>,
+        onNew: ((DocumentFile, Collection<DocumentProperties>) -> Unit)? = null,
+        inExplorer: FileExplorer? = null
     ) {
         val result: MutableList<FolderEntry> = ArrayList()
         contentDocs.forEach { (rootUri, docs) ->
@@ -232,31 +284,36 @@ object Beholder {
                     ignoreList.remove(DocumentsContract.getTreeDocumentId(it.first.uri))
             }
             getDocumentFromTreeUriString(ctx, rootUri)?.let { doc ->
+                val explorer = inExplorer ?: FileExplorer(ctx, doc)
                 try {
-                    FileExplorer(ctx, doc).use { fe ->
-                        val files = fe.listDocumentProperties(
-                            doc, null,
-                            listFolders = true,
-                            listFiles = true,
-                            stopFirst = false
-                        )
-                        val usefulFiles = files
-                            .filter { isUseful(it) }
-                            .mapNotNull { fe.convertFromProperties(ctx, doc, it) }
-                        result.add(
-                            FolderEntry(
-                                rootUri,
-                                files.size,
-                                true, // A content is always a leaf
-                                usefulFiles.associateBy(
-                                    { it.uniqueHash() },
-                                    { contentDocsMap[it.uri.toString()]?.second ?: -1 }
-                                )
+                    val files = explorer.listDocumentProperties(
+                        doc, null,
+                        listFolders = true,
+                        listFiles = true,
+                        stopFirst = false
+                    )
+                    val usefulEntries = files.filter { isUseful(it) }
+                    onNew?.invoke(doc, usefulEntries)
+
+                    val usefulDocs = usefulEntries
+                        .mapNotNull { explorer.convertFromProperties(ctx, doc, it) }
+
+                    result.add(
+                        FolderEntry(
+                            rootUri,
+                            files.size,
+                            true, // A content is always a leaf
+                            usefulDocs.associateBy(
+                                { it.uniqueHash() },
+                                { contentDocsMap[it.uri.toString()]?.second ?: -1 }
                             )
                         )
-                    }
+                    )
                 } catch (e: IOException) {
                     Timber.w(e)
+                } finally {
+                    // Close the explorer if it has been created locally
+                    if (null == inExplorer) explorer.close()
                 }
             }
         }

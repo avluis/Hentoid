@@ -468,6 +468,10 @@ class ObjectBoxDAO : CollectionDAO {
         }
     }
 
+    override fun countAllExternalBooks(): Long {
+        return ObjectBoxDB.selectAllExternalContentsQ().safeCount()
+    }
+
     override fun deleteAllExternalBooks() {
         ObjectBoxDB.deleteContentById(ObjectBoxDB.selectAllExternalContentsQ().safeFindIds())
     }
@@ -791,7 +795,10 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     override fun flagAllErrorBooksWithJson() {
-        ObjectBoxDB.flagContentsForDeletion(ObjectBoxDB.selectAllErrorJsonBooksQ().safeFindIds(), true)
+        ObjectBoxDB.flagContentsForDeletion(
+            ObjectBoxDB.selectAllErrorJsonBooksQ().safeFindIds(),
+            true
+        )
     }
 
     override fun deleteAllQueuedBooks() {

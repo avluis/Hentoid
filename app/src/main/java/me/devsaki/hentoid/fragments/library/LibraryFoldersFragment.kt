@@ -60,6 +60,7 @@ import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
+import me.devsaki.hentoid.util.runExternalImport
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewholders.FileItem
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -361,7 +362,8 @@ class LibraryFoldersFragment : Fragment(),
         val selectedItems: Set<FileItem> = selectExtension!!.selectedItems
         if (selectedItems.isEmpty()) return
 
-        // TODO
+        runExternalImport(requireContext(), true, selectedItems.map { it.doc.uri.toString() })
+        leaveSelectionMode()
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
