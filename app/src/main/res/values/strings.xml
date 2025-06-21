@@ -300,6 +300,7 @@
     <!-- Refresh library -->
     <string name="refresh_title">Refresh location</string>
     <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
+    <string name="refresh_quick">Quick refresh</string>
     <string name="refresh_options">Cleanup options</string>
     <string name="refresh_location_internal">Primary library (all)</string>
     <string name="refresh_location_internal_1">Primary library 1</string>

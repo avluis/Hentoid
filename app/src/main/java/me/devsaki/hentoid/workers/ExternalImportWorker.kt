@@ -57,10 +57,7 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.net.URLDecoder
-import java.time.Instant
 import kotlin.math.roundToInt
-
-private const val BEHOLDER_DELAY_MS = 2 * 60 * 1000 // 2 min
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.external_import_service, "import_external") {
@@ -96,6 +93,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
      */
     override fun runProgressNotification() {
         if (itemsOK < totalItems) {
+            eventProgress(STEP_3_BOOKS, itemsOK, itemsOK * 1f / totalItems)
             notificationManager.notify(
                 ImportProgressNotification(
                     applicationContext.resources.getString(
@@ -108,6 +106,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
         } else {
+            eventComplete(STEP_3_BOOKS, totalItems, itemsOK, 0)
             notificationManager.notify(ImportCompleteNotification(itemsOK, itemsKO))
         }
     }
@@ -224,26 +223,17 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
         itemsOK++
 
-        newContentEvent(content, explorer.root, progress)
+        newContentEvent(content, explorer.root, progress.getGlobalProgress())
 
         // Clear the DAO every 1000 iterations to optimize memory
         if (0 == itemsOK % 1000) dao.reset()
     }
 
     private suspend fun updateWithBeholder(context: Context, folders: List<String>) {
-        // Wait at least X minutes between auto-refreshes to limit resource consumption
-        if (folders.isEmpty()) {
-            val now = Instant.now().toEpochMilli()
-            if (now - Settings.latestBeholderTimestamp < BEHOLDER_DELAY_MS) {
-                Timber.d("External library auto-refresh delay not passed")
-                return
-            }
-            Settings.latestBeholderTimestamp = now
-        }
-
         logName = "refresh_external_auto"
         val externalUri = Settings.externalLibraryUri.toUri()
         val libraryPathSize = (externalUri.path ?: "").split('/').size
+        eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null) // Artificial
 
         Timber.d("delta init")
         Beholder.init(context)
@@ -570,21 +560,21 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private fun newContentEvent(content: Content, root: Uri, progress: ProgressManager) {
+    private fun newContentEvent(content: Content, root: Uri, progress: Float) {
         // Handle notifications on another coroutine not to steal focus for unnecessary stuff
         GlobalScope.launch(Dispatchers.Default) {
-            val progressPc = (100 * progress.getGlobalProgress()).roundToInt()
+            val progressPc = (100 * progress).roundToInt()
             val bookLocation = content.storageUri.replace(root.toString(), "")
             trace(Log.INFO, "Import book OK : ${URLDecoder.decode(bookLocation, "UTF-8")}")
             notificationManager.notify(
                 ImportProgressNotification(content.title, progressPc, 100)
             )
-            eventProgress(STEP_3_BOOKS, itemsOK, progress.getGlobalProgress())
+            eventProgress(STEP_3_BOOKS, itemsOK, progress)
         }
     }
 
     private fun eventComplete(
-        step: Int, nbBooks: Int, booksOK: Int, booksKO: Int, cleanupLogFile: DocumentFile?
+        step: Int, nbBooks: Int, booksOK: Int, booksKO: Int, cleanupLogFile: DocumentFile? = null
     ) {
         EventBus.getDefault().postSticky(
             ProcessEvent(

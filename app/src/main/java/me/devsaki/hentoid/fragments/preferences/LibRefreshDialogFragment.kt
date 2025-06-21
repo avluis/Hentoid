@@ -54,6 +54,10 @@ import kotlin.math.roundToInt
  * - Set/replace download folder
  * - Library refresh
  */
+private const val SHOW_OPTIONS = "show_options"
+private const val CHOOSE_FOLDER = "choose_folder"
+private const val LOCATION = "location"
+
 class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Parent>() {
     // == UI
     private var binding1: DialogPrefsRefreshBinding? = null
@@ -66,11 +70,31 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
 
     private var isServiceGracefulClose = false
 
+
+    companion object {
+        fun invoke(
+            fragmentManager: FragmentManager,
+            showOptions: Boolean,
+            chooseFolder: Boolean,
+            location: StorageLocation
+        ) {
+            val fragment = LibRefreshDialogFragment()
+
+            val args = Bundle()
+            args.putBoolean(SHOW_OPTIONS, showOptions)
+            args.putBoolean(CHOOSE_FOLDER, chooseFolder)
+            args.putInt(LOCATION, location.ordinal)
+            fragment.arguments = args
+
+            fragment.show(fragmentManager, null)
+        }
+    }
+
+
     private val pickFolder =
         registerForActivityResult(PickFolderContract()) { result: Pair<PickerResult, Uri> ->
             onFolderPickerResult(result.first, result.second)
         }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
@@ -101,7 +125,19 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
         super.onViewCreated(rootView, savedInstanceState)
         if (showOptions) { // Show option screen first
             binding1?.apply {
+                val canQuickRefresh = (location == StorageLocation.EXTERNAL && !chooseFolder)
+                quickRefresh.isVisible = canQuickRefresh
+                quickRefresh.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        refreshOptions.isVisible = false
+                        refreshOptionsSubgroup.isVisible = false
+                        refreshOptions.isChecked = false
+                    } else {
+                        refreshOptions.isVisible = true
+                    }
+                }
                 refreshOptions.setOnCheckedChangeListener { _, isChecked ->
+                    quickRefresh.isVisible = !isChecked && canQuickRefresh
                     if (isChecked) {
                         refreshOptionsSubgroup.visibility = View.VISIBLE
                         val warningVisibility =
@@ -121,17 +157,15 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 }
 
                 actionButton.setOnClickListener {
-                    showImportProgressLayout(
-                        false,
-                        location
-                    )
+                    showImportProgressLayout(false, location)
                     runImport(
                         location,
-                        refreshOptionsRename.isChecked,
-                        refreshOptionsRemovePlaceholders.isChecked,
-                        refreshOptionsRenumberPages.isChecked,
-                        refreshOptionsRemove1.isChecked,
-                        refreshOptionsRemove2.isChecked
+                        refreshOptions.isChecked && refreshOptionsRename.isChecked,
+                        refreshOptions.isChecked && refreshOptionsRemovePlaceholders.isChecked,
+                        refreshOptions.isChecked && refreshOptionsRenumberPages.isChecked,
+                        refreshOptions.isChecked && refreshOptionsRemove1.isChecked,
+                        refreshOptions.isChecked && refreshOptionsRemove2.isChecked,
+                        quickRefresh.isChecked
                     )
                 }
             }
@@ -147,7 +181,8 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
         removePlaceholders: Boolean = false,
         renumberPages: Boolean = false,
         cleanAbsent: Boolean = false,
-        cleanNoImages: Boolean = false
+        cleanNoImages: Boolean = false,
+        quickScan: Boolean = false
     ) {
         isCancelable = false
 
@@ -157,7 +192,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             lifecycleScope.launch {
                 val res = withContext(Dispatchers.IO) {
                     try {
-                        val res = setAndScanExternalFolder(requireContext(), externalUri)
+                        val res = setAndScanExternalFolder(requireContext(), externalUri, quickScan)
                         return@withContext res.first
                     } catch (e: Exception) {
                         Timber.w(e)
@@ -293,11 +328,9 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
             PickerResult.OK -> {
                 lifecycleScope.launch {
                     val res = withContext(Dispatchers.IO) {
-                        return@withContext if (location == StorageLocation.EXTERNAL) setAndScanExternalFolder(
-                            requireContext(), uri
-                        ) else setAndScanPrimaryFolder(
-                            requireContext(), uri, location, true, null
-                        )
+                        return@withContext if (location == StorageLocation.EXTERNAL)
+                            setAndScanExternalFolder(requireContext(), uri)
+                        else setAndScanPrimaryFolder(requireContext(), uri, location, true, null)
                     }
                     onScanHentoidFolderResult(res.first, res.second)
                 }
@@ -539,29 +572,6 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
                 { dismissAllowingStateLoss() },
                 3000
             )
-        }
-    }
-
-    companion object {
-        const val SHOW_OPTIONS = "show_options"
-        const val CHOOSE_FOLDER = "choose_folder"
-        const val LOCATION = "location"
-
-        fun invoke(
-            fragmentManager: FragmentManager,
-            showOptions: Boolean,
-            chooseFolder: Boolean,
-            location: StorageLocation
-        ) {
-            val fragment = LibRefreshDialogFragment()
-
-            val args = Bundle()
-            args.putBoolean(SHOW_OPTIONS, showOptions)
-            args.putBoolean(CHOOSE_FOLDER, chooseFolder)
-            args.putInt(LOCATION, location.ordinal)
-            fragment.arguments = args
-
-            fragment.show(fragmentManager, null)
         }
     }
 

@@ -346,7 +346,7 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
                     } else {
                         LibRefreshDialogFragment.invoke(
                             supportFragmentManager,
-                            showOptions = location != StorageLocation.EXTERNAL,
+                            showOptions = true,
                             chooseFolder = false,
                             location
                         )

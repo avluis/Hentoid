@@ -353,7 +353,8 @@ fun setAndScanPrimaryFolder(
  */
 fun setAndScanExternalFolder(
     context: Context,
-    treeUri: Uri
+    treeUri: Uri,
+    quickScan: Boolean = false
 ): Pair<ProcessFolderResult, String> {
     // Persist I/O permissions; keep existing ones if present
     persistLocationCredentials(context, treeUri, StorageLocation.EXTERNAL)
@@ -397,7 +398,7 @@ fun setAndScanExternalFolder(
     Settings.externalLibraryUri = folderUri
 
     // Start the import
-    return if (runExternalImport(context)) Pair(ProcessFolderResult.OK_LIBRARY_DETECTED, folderUri)
+    return if (runExternalImport(context, quickScan)) Pair(ProcessFolderResult.OK_LIBRARY_DETECTED, folderUri)
     else Pair(ProcessFolderResult.KO_ALREADY_RUNNING, folderUri)
 }
 
@@ -585,7 +586,7 @@ private fun runPrimaryImport(
 fun runExternalImport(
     context: Context,
     behold: Boolean = false,
-    folders : List<String> = emptyList<String>()
+    folders: List<String> = emptyList<String>()
 ): Boolean {
     if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
     me.devsaki.hentoid.notification.import_.init(context)

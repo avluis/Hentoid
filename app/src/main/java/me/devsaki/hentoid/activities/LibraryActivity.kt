@@ -90,6 +90,9 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
+import java.time.Instant
+
+private const val BEHOLDER_DELAY_MS = 2 * 60 * 1000 // 2 min
 
 class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
@@ -459,6 +462,15 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     private fun considerRefreshExtLib() {
         if (Settings.externalLibraryUri.isEmpty()) return
+
+        // Wait at least X minutes between auto-refreshes to limit resource consumption
+        val now = Instant.now().toEpochMilli()
+        if (now - Settings.latestBeholderTimestamp < BEHOLDER_DELAY_MS) {
+            Timber.d("External library auto-refresh delay not passed")
+            return
+        }
+        Settings.latestBeholderTimestamp = now
+
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             if (dao.countAllExternalBooks() < 1000) runExternalImport(this, true)
