@@ -43,6 +43,7 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.isSupportedArchivePdf
@@ -122,7 +123,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
     /**
      * Import books from external folder
      */
-    private fun startImport(context: Context) {
+    private suspend fun startImport(context: Context) {
         logNoDataMessage = "No content detected."
         val rootFolder = getDocumentFromTreeUriString(context, Settings.externalLibraryUri)
         if (null == rootFolder) {
@@ -185,9 +186,6 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     STEP_3_BOOKS, itemsOK + itemsKO, itemsOK, itemsKO, null
                 )
 
-                // Clear disk cache as import may reuse previous image IDs
-                StorageCache.clear(applicationContext, READER_CACHE)
-
                 // Update the beholder
                 Beholder.registerContent(context, addedContent)
             }
@@ -197,6 +195,10 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         } finally {
             notificationManager.notify(ImportCompleteNotification(itemsOK, itemsKO))
         }
+
+        // Clear disk cache as import may reuse previous image IDs
+        StorageCache.clear(applicationContext, READER_CACHE)
+        clearCoilCache(applicationContext)
     }
 
     // Write JSON file for every found book and persist it in the DB
@@ -284,6 +286,10 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             dao.cleanup()
         }
         Timber.d("delta end")
+
+        // Clear disk cache as import may reuse previous image IDs
+        StorageCache.clear(applicationContext, READER_CACHE)
+        clearCoilCache(applicationContext)
     }
 
     private fun onNewBH(

@@ -60,6 +60,7 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getPathRoot
+import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.importBookmarks
 import me.devsaki.hentoid.util.importRenamingRules
@@ -361,6 +362,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
                 // Clear disk cache as import may reuse previous image IDs
                 StorageCache.clear(applicationContext, READER_CACHE)
+                clearCoilCache(applicationContext)
 
                 // 4th pass : Import queue, bookmarks and renaming rules JSON
                 dao = ObjectBoxDAO()
