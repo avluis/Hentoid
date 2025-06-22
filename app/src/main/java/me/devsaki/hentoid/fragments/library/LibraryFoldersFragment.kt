@@ -720,13 +720,15 @@ class LibraryFoldersFragment : Fragment(),
      * Callback for the rating dialog
      */
     fun leaveSelectionMode() {
-        selectExtension!!.selectOnLongClick = true
-        // Warning : next line makes FastAdapter cycle through all items,
-        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
-        // flagging the end of the list as being the last displayed position
-        val selection = selectExtension!!.selections
-        if (selection.isNotEmpty()) selectExtension!!.deselect(selection.toMutableSet())
-        activity.get()!!.getSelectionToolbar()!!.visibility = View.GONE
+        selectExtension?.apply {
+            selectOnLongClick = true
+            // Warning : next line makes FastAdapter cycle through all items,
+            // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+            // flagging the end of the list as being the last displayed position
+            val selection = selections
+            if (selection.isNotEmpty()) deselect(selection.toMutableSet())
+        }
+        activity.get()?.getSelectionToolbar()?.visibility = View.GONE
     }
 
     override fun getPopupText(view: View, position: Int): CharSequence {
