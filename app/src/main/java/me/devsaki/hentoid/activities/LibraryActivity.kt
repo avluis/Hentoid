@@ -1154,7 +1154,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         } else if (isFoldersDisplayed()) {
             editMenu?.isVisible = false
             deleteMenu?.isVisible = selectedTotalCount > 0 && 0 == selectedRoots
+            // Can't detach external library root (that's the job of the storage screen)
             detachMenu?.isVisible = selectedRoots > 0 && !insideExtLib
+            // Can't refresh external library root (that's the job of the storage screen)
             refreshMenu?.isVisible = insideExtLib && selectedTotalCount > 0 && 0 == selectedRoots
             shareMenu?.isVisible = false
             completedMenu?.isVisible = false

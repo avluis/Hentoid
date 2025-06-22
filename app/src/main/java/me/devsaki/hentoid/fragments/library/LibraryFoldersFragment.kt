@@ -677,11 +677,12 @@ class LibraryFoldersFragment : Fragment(),
         } else {
             activity.get()?.apply {
                 val nbRoots = selectedItems.count { it.doc.type == Type.ROOT_FOLDER }
-                val nbFolders = selectedItems.count { it.doc.type == Type.FOLDER }
+                val nbRefreshable = selectedItems.count {
+                    it.doc.type == Type.FOLDER || it.doc.type == Type.SUPPORTED_FILE || it.doc.type == Type.BOOK_FOLDER
+                }
                 var insideExtLib =
-                    Settings.libraryFoldersRoot.startsWith(Settings.externalLibraryUri)
-                            && (nbFolders > 0
-                            || selectedItems.count { it.doc.subType == SubType.EXTERNAL_LIB } > 0)
+                    (Settings.libraryFoldersRoot.startsWith(Settings.externalLibraryUri) && nbRefreshable > 0)
+                            || (selectedItems.count { it.doc.type == Type.ROOT_FOLDER && it.doc.subType == SubType.EXTERNAL_LIB } > 0)
 
                 updateSelectionToolbar(selectedCount, 0, 0, 0, 0, 0, nbRoots, insideExtLib)
                 getSelectionToolbar()?.visibility = View.VISIBLE

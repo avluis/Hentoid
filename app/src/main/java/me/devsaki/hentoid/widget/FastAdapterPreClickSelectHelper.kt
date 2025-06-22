@@ -11,12 +11,12 @@ class FastAdapterPreClickSelectHelper<T : IItem<out RecyclerView.ViewHolder>>(
 ) {
     fun onPreClickListener(position: Int): Boolean {
         // Toggle selection while select mode is on
-        if (!selectExtension.selectOnLongClick) {
+        if (!selectExtension.selectOnLongClick && fastAdapter.getItem(position)?.isSelectable == true) {
+            selectExtension.toggleSelection(position)
+
             val selectedPositions = selectExtension.selections
             if (selectedPositions.contains(position) && 1 == selectedPositions.size)
                 selectExtension.selectOnLongClick = true
-            if (fastAdapter.getItem(position)?.isSelectable == true)
-                selectExtension.toggleSelection(position)
             return true
         }
         return false
@@ -24,7 +24,7 @@ class FastAdapterPreClickSelectHelper<T : IItem<out RecyclerView.ViewHolder>>(
 
     fun onPreLongClickListener(position: Int): Boolean {
         val selectedPositions = selectExtension.selections
-        if (selectExtension.selectOnLongClick) {
+        if (selectExtension.selectOnLongClick && fastAdapter.getItem(position)?.isSelectable == true) {
             selectExtension.selectOnLongClick = false
             // No selection -> select things
             if (selectedPositions.isEmpty())
