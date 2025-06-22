@@ -435,7 +435,7 @@ class LibraryFoldersFragment : Fragment(),
                 } else if (Settings.libraryFoldersRoot.toUri() != Uri.EMPTY) {
                     viewModel.goUpOneFolder()
                 } else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
-                    callback!!.remove()
+                    callback?.remove()
                     onBackPressedDispatcher.onBackPressed()
                 } else {
                     backButtonPressed = SystemClock.elapsedRealtime()
@@ -680,9 +680,8 @@ class LibraryFoldersFragment : Fragment(),
                 val nbFolders = selectedItems.count { it.doc.type == Type.FOLDER }
                 var insideExtLib =
                     Settings.libraryFoldersRoot.startsWith(Settings.externalLibraryUri)
-                            && (1 == nbFolders
-                            || selectedItems.count { it.doc.subType == SubType.EXTERNAL_LIB } > 0
-                            )
+                            && (nbFolders > 0
+                            || selectedItems.count { it.doc.subType == SubType.EXTERNAL_LIB } > 0)
 
                 updateSelectionToolbar(selectedCount, 0, 0, 0, 0, 0, nbRoots, insideExtLib)
                 getSelectionToolbar()?.visibility = View.VISIBLE
