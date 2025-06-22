@@ -41,7 +41,7 @@ import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.bundles.FileItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
-import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
+import me.devsaki.hentoid.databinding.FragmentLibraryFoldersBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -95,7 +95,7 @@ class LibraryFoldersFragment : Fragment(),
 
 
     // ======== UI
-    private var binding: FragmentLibraryGroupsBinding? = null
+    private var binding: FragmentLibraryFoldersBinding? = null
 
     // LayoutManager of the recyclerView
     private var llm: LinearLayoutManager? = null
@@ -193,7 +193,7 @@ class LibraryFoldersFragment : Fragment(),
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentLibraryGroupsBinding.inflate(inflater, container, false)
+        binding = FragmentLibraryFoldersBinding.inflate(inflater, container, false)
         initUI()
         activity.get()?.initFragmentToolbars(
             selectExtension!!,
@@ -249,12 +249,19 @@ class LibraryFoldersFragment : Fragment(),
                 dpToPx(requireContext(), Settings.libraryGridCardWidthDP)
             )
 
-        binding?.recyclerView?.let {
-            it.layoutManager = llm
-            FastScrollerBuilder(it)
-                .setPopupTextProvider(this)
+        binding?.apply {
+            recyclerView.layoutManager = llm
+            FastScrollerBuilder(recyclerView)
+                .setPopupTextProvider(this@LibraryFoldersFragment)
                 .useMd2Style()
                 .build()
+            swipeContainer.setOnRefreshListener { viewModel.searchFolder() }
+            swipeContainer.setColorSchemeResources(
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light
+            )
         }
 
         // Pager
@@ -563,6 +570,7 @@ class LibraryFoldersFragment : Fragment(),
      * => Update details of folders that are already on display
      */
     private fun onFoldersDetail(result: List<DisplayFile>) {
+        binding?.swipeContainer?.isRefreshing = false
         // Copy result to new list to avoid concurrency issues when processing updated list
         lifecycleScope.launch {
             val updatedItems = withContext(Dispatchers.Default) {
