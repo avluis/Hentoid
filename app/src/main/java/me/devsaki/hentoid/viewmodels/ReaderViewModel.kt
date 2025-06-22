@@ -11,6 +11,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
@@ -51,8 +52,8 @@ import me.devsaki.hentoid.util.download.downloadToFileCached
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.LimitReachedException
-import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
 import me.devsaki.hentoid.util.file.findFile
@@ -63,14 +64,9 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.formatCacheKey
 import me.devsaki.hentoid.util.getPictureFilesFromContent
-import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.matchFilesToImageList
-import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
-import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
-import me.devsaki.hentoid.util.network.getCookies
-import me.devsaki.hentoid.util.network.peekCookies
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
@@ -946,7 +942,7 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    setAndSaveContentCover(page, dao, getApplication())
+                    setAndSaveContentCover(getApplication(), page, dao)
                     dao.cleanup()
                 }
             } catch (t: Throwable) {
@@ -1373,7 +1369,11 @@ class ReaderViewModel(
                 hasExistingUris = true
             } else {
                 extractInstructions.add(
-                    Triple(img.url.replace(c.storageUri + File.separator, ""), img.id, formatCacheKey(img))
+                    Triple(
+                        img.url.replace(c.storageUri + File.separator, ""),
+                        img.id,
+                        formatCacheKey(img)
+                    )
                 )
                 indexExtractInProgress.add(index)
             }
@@ -1528,142 +1528,29 @@ class ReaderViewModel(
      * The return value is empty if the download fails
      */
     private fun downloadPic(
-        pageIndex: Int, stopDownload: AtomicBoolean
+        pageIndex: Int,
+        stopDownload: AtomicBoolean
     ): Pair<Int, String>? {
         assertNonUiThread()
         if (viewerImagesInternal.size <= pageIndex) return null
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
+
         // Already downloaded
-        if (img.fileUri.isNotEmpty() && StorageCache.getFile(
-                READER_CACHE,
-                formatCacheKey(img)
-            ) != null
+        if (img.fileUri.isNotEmpty() &&
+            StorageCache.getFile(READER_CACHE, formatCacheKey(img)) != null
+        ) return Pair(pageIndex, img.fileUri)
+
+        // Run actual download
+        return me.devsaki.hentoid.util.download.downloadPic(
+            application,
+            content,
+            img,
+            pageIndex,
+            null,
+            this::notifyDownloadProgress,
+            stopDownload
         )
-            return Pair(pageIndex, img.fileUri)
-
-        // Initiate download
-        try {
-            val targetFile: File
-
-            // Prepare request headers
-            val headers: MutableList<Pair<String, String>> = ArrayList()
-            headers.add(
-                Pair(HEADER_REFERER_KEY, content.readerUrl)
-            ) // Useful for Hitomi and Toonily
-            val result: Uri?
-            if (img.needsPageParsing) {
-                val pageUrl = fixUrl(img.pageUrl, content.site.url)
-                // Get cookies from the app jar
-                var cookieStr = getCookies(pageUrl)
-                // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr = peekCookies(pageUrl)
-                if (cookieStr.isNotEmpty()) headers.add(
-                    Pair(HEADER_COOKIE_KEY, cookieStr)
-                )
-                result = downloadPictureFromPage(
-                    content, img, pageIndex, headers, stopDownload
-                )
-            } else {
-                val imgUrl = fixUrl(img.url, content.site.url)
-                // Get cookies from the app jar
-                var cookieStr = getCookies(imgUrl)
-                // If nothing found, peek from the site
-                if (cookieStr.isEmpty()) cookieStr = peekCookies(content.galleryUrl)
-                if (cookieStr.isNotEmpty()) headers.add(
-                    Pair(HEADER_COOKIE_KEY, cookieStr)
-                )
-                result = downloadToFileCached(
-                    getApplication(),
-                    content.site,
-                    imgUrl,
-                    headers,
-                    stopDownload,
-                    formatCacheKey(img),
-                    resourceId = pageIndex
-                ) { f: Float ->
-                    notifyDownloadProgress(f, pageIndex)
-                }
-            }
-
-            val targetFileUri = result ?: throw ParseException("Resource is not available")
-            targetFile = File(targetFileUri.path!!)
-
-            return Pair(pageIndex, Uri.fromFile(targetFile).toString())
-        } catch (_: DownloadInterruptedException) {
-            Timber.d("Download interrupted for pic %d", pageIndex)
-        } catch (e: Exception) {
-            Timber.w(e)
-        }
-        return null
-    }
-
-    /**
-     * Download the picture represented by the given ImageFile to the given storage location
-     *
-     * @param content           Corresponding Content
-     * @param img               ImageFile of the page to download
-     * @param pageIndex         Index of the page to download
-     * @param requestHeaders    HTTP request headers to use
-     * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
-     * @return Pair containing
-     * - Left : Downloaded file
-     * - Right : Detected mime-type of the downloaded resource
-     * @throws UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException in case something horrible happens
-     */
-    @Throws(
-        UnsupportedContentException::class,
-        IOException::class,
-        LimitReachedException::class,
-        EmptyResultException::class,
-        DownloadInterruptedException::class
-    )
-    private fun downloadPictureFromPage(
-        content: Content,
-        img: ImageFile,
-        pageIndex: Int,
-        requestHeaders: List<Pair<String, String>>,
-        interruptDownload: AtomicBoolean
-    ): Uri? {
-        val site = content.site
-        val pageUrl = fixUrl(img.pageUrl, site.url)
-        val parser = ContentParserFactory.getImageListParser(content.site)
-        val pages: Pair<String, String?>
-        try {
-            pages = parser.parseImagePage(pageUrl, requestHeaders)
-        } finally {
-            parser.clear()
-        }
-        img.url = pages.first
-        // Download the picture
-        try {
-            return downloadToFileCached(
-                getApplication(),
-                content.site,
-                img.url,
-                requestHeaders,
-                interruptDownload,
-                formatCacheKey(img),
-                resourceId = pageIndex
-            ) { f: Float ->
-                notifyDownloadProgress(f, pageIndex)
-            }
-        } catch (e: IOException) {
-            if (pages.second != null) Timber.d("First download failed; trying backup URL") else throw e
-        }
-        // Trying with backup URL
-        img.url = pages.second ?: ""
-        return downloadToFileCached(
-            getApplication(),
-            content.site,
-            img.url,
-            requestHeaders,
-            interruptDownload,
-            formatCacheKey(img),
-            resourceId = pageIndex
-        ) { f: Float ->
-            notifyDownloadProgress(f, pageIndex)
-        }
     }
 
     /**

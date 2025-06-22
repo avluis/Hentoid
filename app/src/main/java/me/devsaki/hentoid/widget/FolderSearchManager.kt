@@ -20,11 +20,10 @@ import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.StorageCache
-import me.devsaki.hentoid.util.file.getExtension
-import me.devsaki.hentoid.util.file.isSupportedArchive
-import me.devsaki.hentoid.util.getFirstPictureThumbCached
+import me.devsaki.hentoid.util.getPictureThumbCached
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.int
+import me.devsaki.hentoid.util.isSupportedArchivePdf
 import me.devsaki.hentoid.util.string
 import timber.log.Timber
 
@@ -153,9 +152,9 @@ class FolderSearchManager() {
                         // Extract archive and PDF covers using private storage (same as bona library books)
                         val fileName = it.name ?: ""
                         val archiveCover =
-                            if (isSupportedArchive(fileName) ||  getExtension(fileName) == "pdf") {
-                                getFirstPictureThumbCached(
-                                    context, it.uri, 100,
+                            if (isSupportedArchivePdf(fileName)) {
+                                getPictureThumbCached(
+                                    context, it.uri, 100, null,
                                     StorageCache.createFinder(THUMBS_CACHE),
                                     StorageCache.createCreator(THUMBS_CACHE)
                                 ) ?: Uri.EMPTY

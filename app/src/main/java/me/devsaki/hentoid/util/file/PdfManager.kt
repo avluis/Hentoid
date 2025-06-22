@@ -304,8 +304,9 @@ class PdfManager {
      * @param context              Context to use
      * @param pdf                  PDF file to extract from
      * @param entriesToExtract     Entries to extract; null to extract everything
-     *      left : path of the resource (format is "pageNumber.indexInPage.extension")
-     *      right : Resource identifier set by the caller (for remapping purposes)
+     *      first : Path of the resource (format is "pageNumber.indexInPage.extension")
+     *      second : Resource identifier set by the caller (for remapping purposes)
+     *      third : Target file name
      * @param interrupt            Kill switch
      * @param onExtract            Extraction callback
      *      Long : Resource identifier set by the caller; internal hash if none

@@ -36,7 +36,7 @@ import java.nio.ByteBuffer
 
 private val stillImageLoader: ImageLoader by lazy { initStillImageLoader() }
 
-suspend fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = true) {
+suspend fun clearCoilCache(context: Context, memory: Boolean = true, file: Boolean = true) =
     withContext(Dispatchers.IO) {
         context.imageLoader.apply {
             if (memory) memoryCache?.clear()
@@ -46,6 +46,16 @@ suspend fun clearCoilCache(context: Context, memory: Boolean = true, file: Boole
             if (memory) memoryCache?.clear()
             if (file) diskCache?.clear()
         }
+    }
+
+suspend fun clearCoilKey(context: Context, key: String) = withContext(Dispatchers.IO) {
+    context.imageLoader.apply {
+        memoryCache?.remove(MemoryCache.Key(key))
+        diskCache?.remove(key)
+    }
+    stillImageLoader.apply {
+        memoryCache?.remove(MemoryCache.Key(key))
+        diskCache?.remove(key)
     }
 }
 
@@ -91,7 +101,7 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
     this.visibility = View.VISIBLE
 
     // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-    val isOnline = thumbLocation.startsWith("http")
+    val isOnline = content.cover.isOnline
     val networkHeaders = if (isOnline) {
         val headers = NetworkHeaders.Builder()
         getContentHeaders(content).forEach {

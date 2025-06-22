@@ -255,7 +255,7 @@ data class ImageFile(
             var result = ""
             if (isInLibrary(status)) result = fileUri
             if (result.isEmpty()) result = url
-            if (result.isEmpty() && !content.isNull) result = content.target.coverImageUrl
+            if (result.isEmpty()) result = linkedContent?.coverImageUrl ?: ""
 
             return result
         }
@@ -273,6 +273,11 @@ data class ImageFile(
         get() {
             val lowerUri = url.lowercase(Locale.getDefault())
             return (lowerUri.contains(".pdf" + File.separator))
+        }
+
+    val isOnline: Boolean
+        get() {
+            return usableUri.startsWith("http")
         }
 
     val needsPageParsing: Boolean

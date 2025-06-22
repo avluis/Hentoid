@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -110,13 +111,12 @@ class MetadataEditViewModel(
         val content = contentList.value?.get(0) ?: return
         val imageFiles = content.imageFiles
 
-        val img = imageFiles.find { it.order == order }
-        if (img != null) {
+        imageFiles.find { it.order == order }?.let { img ->
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     try {
-                        setContentCover(content, imageFiles, img)
-                        contentList.postValue(mutableListOf(content))
+                        if (setContentCover(application, content, imageFiles, img))
+                            contentList.postValue(mutableListOf(content))
                     } catch (t: Throwable) {
                         Timber.e(t)
                     } finally {

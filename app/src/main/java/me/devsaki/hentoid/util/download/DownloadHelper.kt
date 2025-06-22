@@ -6,14 +6,19 @@ import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.DownloadEvent
+import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
+import me.devsaki.hentoid.util.exception.EmptyResultException
+import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.NetworkingException
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
 import me.devsaki.hentoid.util.file.StorageCache
@@ -25,14 +30,20 @@ import me.devsaki.hentoid.util.file.getMimeTypeFromStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.formatCacheKey
 import me.devsaki.hentoid.util.keepDigits
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
+import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
+import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.fixUrl
+import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getOnlineResourceDownloader
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.peekCookies
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Document
 import timber.log.Timber
+import java.io.File
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.atomic.AtomicBoolean
@@ -40,6 +51,187 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 // NB : Actual size of read bytes may be smaller
 private const val DL_IO_BUFFER_SIZE_B = 50 * 1024
+
+/**
+ * Download the picture at the given index to the given folder
+ *
+ * @param pageIndex    Index of the picture to download
+ * @param stopDownload Switch to interrupt the download
+ * @return Optional triple with
+ * - The page index
+ * - The Uri of the downloaded file
+ *
+ * The return value is empty if the download fails
+ */
+fun downloadPic(
+    context: Context,
+    content: Content,
+    img: ImageFile,
+    resourceId: Int,
+    targetFolderUri: Uri? = null,
+    onProgress: ((Float, Int) -> Unit)? = null,
+    stopDownload: AtomicBoolean? = null
+): Pair<Int, String>? {
+    assertNonUiThread()
+
+    try {
+        val targetFile: File
+
+        // Prepare request headers
+        val headers: MutableList<Pair<String, String>> = ArrayList()
+        headers.add(
+            Pair(HEADER_REFERER_KEY, content.readerUrl)
+        ) // Useful for Hitomi and Toonily
+        val result: Uri?
+        if (img.needsPageParsing) {
+            val pageUrl = fixUrl(img.pageUrl, content.site.url)
+            // Get cookies from the app jar
+            var cookieStr = getCookies(pageUrl)
+            // If nothing found, peek from the site
+            if (cookieStr.isEmpty()) cookieStr = peekCookies(pageUrl)
+            if (cookieStr.isNotEmpty()) headers.add(
+                Pair(HEADER_COOKIE_KEY, cookieStr)
+            )
+            result = downloadPictureFromPage(
+                context,
+                content,
+                img,
+                resourceId,
+                headers,
+                targetFolderUri,
+                onProgress,
+                stopDownload
+            )
+        } else {
+            val imgUrl = fixUrl(img.url, content.site.url)
+            // Get cookies from the app jar
+            var cookieStr = getCookies(imgUrl)
+            // If nothing found, peek from the site
+            if (cookieStr.isEmpty()) cookieStr = peekCookies(content.galleryUrl)
+            if (cookieStr.isNotEmpty()) headers.add(
+                Pair(HEADER_COOKIE_KEY, cookieStr)
+            )
+            result = downloadToFile(
+                context,
+                content.site,
+                imgUrl,
+                headers,
+                if (null == targetFolderUri) { _, _ ->
+                    StorageCache.createFile(
+                        READER_CACHE,
+                        formatCacheKey(img)
+                    )
+                }
+                else { ctx, mimeType ->
+                    createFile(
+                        ctx,
+                        targetFolderUri,
+                        formatCacheKey(img),
+                        mimeType
+                    )
+                },
+                stopDownload,
+                resourceId = resourceId
+            ) { onProgress?.invoke(it, resourceId) }
+        }
+
+        val targetFileUri = result ?: throw ParseException("Resource is not available")
+        targetFile = File(targetFileUri.path!!)
+
+        return Pair(resourceId, Uri.fromFile(targetFile).toString())
+    } catch (_: DownloadInterruptedException) {
+        Timber.d("Download interrupted for pic %d", resourceId)
+    } catch (e: Exception) {
+        Timber.w(e)
+    }
+    return null
+}
+
+/**
+ * Download the picture represented by the given ImageFile to the given storage location
+ *
+ * @param content           Corresponding Content
+ * @param img               ImageFile of the page to download
+ * @param resourceId        Internal ID for the page to download, for remapping purposes (usually, the page index)
+ * @param requestHeaders    HTTP request headers to use
+ * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+ * @return Pair containing
+ * - Left : Downloaded file
+ * - Right : Detected mime-type of the downloaded resource
+ * @throws UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException in case something horrible happens
+ */
+@Throws(
+    UnsupportedContentException::class,
+    IOException::class,
+    LimitReachedException::class,
+    EmptyResultException::class,
+    DownloadInterruptedException::class
+)
+private fun downloadPictureFromPage(
+    context: Context,
+    content: Content,
+    img: ImageFile,
+    resourceId: Int,
+    requestHeaders: List<Pair<String, String>>,
+    targetFolderUri: Uri? = null,
+    onProgress: ((Float, Int) -> Unit)? = null,
+    interruptDownload: AtomicBoolean? = null
+): Uri? {
+    val site = content.site
+    val pageUrl = fixUrl(img.pageUrl, site.url)
+    val parser = ContentParserFactory.getImageListParser(content.site)
+    val pages: Pair<String, String?>
+    try {
+        pages = parser.parseImagePage(pageUrl, requestHeaders)
+    } finally {
+        parser.clear()
+    }
+    img.url = pages.first
+    // Download the picture
+    try {
+        return downloadToFile(
+            context,
+            content.site,
+            img.url,
+            requestHeaders,
+            if (null == targetFolderUri) { _, _ ->
+                StorageCache.createFile(
+                    READER_CACHE,
+                    formatCacheKey(img)
+                )
+            }
+            else { ctx, mimeType ->
+                createFile(
+                    ctx,
+                    targetFolderUri,
+                    formatCacheKey(img),
+                    mimeType
+                )
+            },
+            interruptDownload,
+            resourceId = resourceId
+        ) { onProgress?.invoke(it, resourceId) }
+    } catch (e: IOException) {
+        if (pages.second != null) Timber.d("First download failed; trying backup URL") else throw e
+    }
+    // Trying with backup URL
+    img.url = pages.second ?: ""
+    return downloadToFile(
+        context,
+        content.site,
+        img.url,
+        requestHeaders,
+        if (null == targetFolderUri) { _, _ ->
+            StorageCache.createFile(
+                READER_CACHE,
+                formatCacheKey(img)
+            )
+        }
+        else { ctx, mimeType -> createFile(ctx, targetFolderUri, formatCacheKey(img), mimeType) },
+        interruptDownload,
+        resourceId = resourceId
+    ) { onProgress?.invoke(it, resourceId) }
+}
 
 @Throws(
     IOException::class,
@@ -122,7 +314,7 @@ private fun downloadToFile(
     rawUrl: String,
     requestHeaders: List<Pair<String, String>>,
     fileCreator: (Context, String) -> Uri,
-    interruptDownload: AtomicBoolean,
+    interruptDownload: AtomicBoolean? = null,
     forceMimeType: String? = null,
     failFast: Boolean = true,
     resourceId: Int,
@@ -130,7 +322,7 @@ private fun downloadToFile(
 ): Uri? {
     assertNonUiThread()
     val url = fixUrl(rawUrl, site.url)
-    if (interruptDownload.get()) throw DownloadInterruptedException("Download interrupted")
+    if (interruptDownload?.get() == true) throw DownloadInterruptedException("Download interrupted")
     Timber.d("DOWNLOADING %d %s", resourceId, url)
     val response = if (failFast) getOnlineResourceFast(
         url,
@@ -172,7 +364,7 @@ private fun downloadToFile(
     body.use { bdy ->
         bdy.byteStream().use { stream ->
             while (stream.read(buffer).also { len = it } > -1) {
-                if (interruptDownload.get()) break
+                if (interruptDownload?.get() == true) break
                 processed += len.toLong()
 
                 // First iteration
@@ -200,7 +392,7 @@ private fun downloadToFile(
                 }
             }
             // End of download
-            if (!interruptDownload.get()) {
+            if (interruptDownload?.get() != true) {
                 notifyProgress?.invoke(100f)
                 out?.flush()
                 if (targetFileUri != null) {
@@ -210,7 +402,7 @@ private fun downloadToFile(
                         "DOWNLOAD %d [%s] WRITTEN TO %s (%s)",
                         resourceId,
                         mimeType,
-                        targetFileUri!!.path,
+                        targetFileUri.path,
                         formatHumanReadableSize(
                             targetFileSize,
                             context.resources

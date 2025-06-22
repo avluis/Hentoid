@@ -52,6 +52,7 @@ import me.devsaki.hentoid.parsers.ContentParserFactory.getContentParserClass
 import me.devsaki.hentoid.util.AchievementsManager.trigger
 import me.devsaki.hentoid.util.LanguageHelper.getFlagFromLanguage
 import me.devsaki.hentoid.util.Settings.libraryGridCardWidthDP
+import me.devsaki.hentoid.util.download.downloadPic
 import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -88,6 +89,7 @@ import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.image.clearCoilKey
 import me.devsaki.hentoid.util.image.getScaledDownBitmap
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedException
@@ -729,10 +731,11 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     // Extract the cover to the app's persistent folder if the book is an archive or a PDF
     if (content.isArchive || content.isPdf) {
         val targetFolder = context.filesDir
-        getFirstPictureThumbCached(
+        getPictureThumbCached(
             context,
             content.storageUri.toUri(),
             libraryGridCardWidthDP,
+            null,
             { fileName -> findFile(targetFolder, fileName)?.toUri() },
             { fileName ->
                 val file = File(targetFolder, fileName)
@@ -752,10 +755,15 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     return newContentId
 }
 
-fun getFirstPictureThumbCached(
+fun getArchivePdfThumbFileName(archivePdfUri: Uri): String {
+    return EXT_THUMB_FILE_PREFIX + hash64(archivePdfUri.toString())
+}
+
+fun getPictureThumbCached(
     context: Context,
     archivePdfUri: Uri,
     maxDimDp: Int,
+    resource: String? = null,
     cacheFinder: (String) -> Uri?,
     cacheCreator: (String) -> Uri?
 ): Uri? {
@@ -764,7 +772,7 @@ fun getFirstPictureThumbCached(
     val isPdf = ext == "pdf"
     if (!isArchive && !isPdf) return null
 
-    val targetFileName = EXT_THUMB_FILE_PREFIX + hash64(archivePdfUri.toString())
+    val targetFileName = getArchivePdfThumbFileName(archivePdfUri)
     val existing = cacheFinder.invoke(targetFileName)
     if (existing != null) return existing
 
@@ -772,11 +780,17 @@ fun getFirstPictureThumbCached(
         try {
             val tempFolder = context.cacheDir.toUri()
             val results = if (isArchive) {
-                val entries = context.getArchiveEntries(archive)
-                    .filter { isSupportedImage(it.path) }.filter { it.size > 0 }
-                    .sortedWith(InnerNameNumberArchiveComparator())
+                val entries = if (resource.isNullOrBlank()) {
+                    // No targeted resource => take the first one
+                    context.getArchiveEntries(archive)
+                        .filter { isSupportedImage(it.path) }.filter { it.size > 0 }
+                        .sortedWith(InnerNameNumberArchiveComparator())
+                } else {
+                    // Get targeted resource
+                    context.getArchiveEntries(archive)
+                        .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
+                }
                 if (entries.isEmpty()) return null
-
                 context.extractArchiveEntriesBlocking(
                     archive.uri,
                     tempFolder,
@@ -784,13 +798,18 @@ fun getFirstPictureThumbCached(
                 )
             } else {
                 val mgr = PdfManager()
-                val firstEntry = mgr.getEntries(context, archive, true)
-                if (firstEntry.isEmpty()) return null
+                val entries = if (resource.isNullOrBlank()) {
+                    mgr.getEntries(context, archive, true)
+                } else {
+                    mgr.getEntries(context, archive)
+                        .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
+                }
+                if (entries.isEmpty()) return null
                 mgr.extractImagesBlocking(
                     context,
                     archive,
                     tempFolder,
-                    listOf(Triple(firstEntry[0].path, 0, targetFileName))
+                    listOf(Triple(entries[0].path, 0, targetFileName))
                 )
             }
             if (results.isEmpty()) return null
@@ -854,25 +873,24 @@ fun addAttribute(
  * @param dao      DAO to be used
  * @param context  Context to be used
  */
-fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Context) {
-    assertNonUiThread()
+suspend fun setAndSaveContentCover(context: Context, newCover: ImageFile, dao: CollectionDAO) =
+    withContext(Dispatchers.IO) {
+        // Get all images from the DB
+        val content = dao.selectContent(newCover.content.targetId) ?: return@withContext
+        val images = content.imageList.toMutableList()
 
-    // Get all images from the DB
-    val content = dao.selectContent(newCover.content.targetId) ?: return
-    val images = content.imageFiles
+        // Remove current cover from the set
+        if (!setContentCover(context, content, images, newCover)) return@withContext
 
-    // Remove current cover from the set
-    setContentCover(content, images, newCover)
+        // Update images directly
+        dao.insertImageFiles(images)
 
-    // Update images directly
-    dao.insertImageFiles(images)
+        // Update the whole list
+        dao.insertContentCore(content)
 
-    // Update the whole list
-    dao.insertContent(content)
-
-    // Update content JSON if it exists (i.e. if book is not queued)
-    if (content.jsonUri.isNotEmpty()) updateJson(context, content)
-}
+        // Update content JSON if it exists (i.e. if book is not queued)
+        if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+    }
 
 /**
  * Set one of the given Content's ImageFile as the Content's cover
@@ -882,7 +900,51 @@ fun setAndSaveContentCover(newCover: ImageFile, dao: CollectionDAO, context: Con
  * @param images   Images of the given Content
  * @param newCover ImageFile to be used as a cover for the Content it is related to
  */
-fun setContentCover(content: Content, images: MutableList<ImageFile>, newCover: ImageFile) {
+suspend fun setContentCover(
+    context: Context,
+    content: Content,
+    images: MutableList<ImageFile>,
+    newCover: ImageFile
+): Boolean = withContext(Dispatchers.IO) {
+    // Duplicate given picture and set it as a cover
+    val cover = ImageFile.newCover(newCover.url, newCover.status)
+    cover.fileUri = newCover.fileUri
+
+    // If selected cover is a transient file, make it permanent
+    val targetFolder = context.filesDir
+    if (newCover.isPdf || newCover.isArchived) {
+        val archivePdfUri = content.storageUri.toUri()
+        getPictureThumbCached(
+            context,
+            archivePdfUri,
+            libraryGridCardWidthDP,
+            newCover.url,
+            { fileName -> null }, // Force creation of new file
+            { fileName ->
+                val file = File(targetFolder, fileName)
+                if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
+                file.toUri()
+            }
+        )?.let { cachedThumbUri ->
+            cover.status = StatusContent.DOWNLOADED
+            cover.fileUri = cachedThumbUri.toString()
+            clearCoilKey(context, cover.usableUri)
+        } ?: run {
+            Timber.w("Couldn't create thumb from archive for ${content.storageUri}")
+            return@withContext false
+        }
+    }
+
+    if (newCover.isOnline) {
+        downloadPic(context, content, newCover, 0, targetFolder.toUri())?.let {
+            cover.status = StatusContent.DOWNLOADED
+            cover.fileUri = it.second
+        } ?: run {
+            Timber.w("Couldn't create thumb from stream for ${content.storageUri}")
+            return@withContext false
+        }
+    }
+
     // Remove current cover from the set
     for (i in images.indices) if (images[i].isCover) {
         if (images[i].isReadable) images[i].isCover = false
@@ -890,13 +952,14 @@ fun setContentCover(content: Content, images: MutableList<ImageFile>, newCover: 
         break
     }
 
-    // Duplicate given picture and set it as a cover
-    val cover = ImageFile.newCover(newCover.url, newCover.status)
-    cover.fileUri = newCover.fileUri
+    // Add new cover to the set
     images.add(0, cover)
 
-    // Update cover URL to "ping" the content to be updated too (useful for library screen that only detects "direct" content updates)
+    // Update Content properties (useful for library screen that only detects "direct" content updates)
     content.coverImageUrl = newCover.url
+    content.lastEditDate = Instant.now().toEpochMilli()
+    Timber.d("Change cover : success")
+    return@withContext true
 }
 
 /**

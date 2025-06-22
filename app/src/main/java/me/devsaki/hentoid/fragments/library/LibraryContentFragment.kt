@@ -252,7 +252,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     diffBundleBuilder.readPagesCount = newItem.readPagesCount
                 }
                 if (oldItem.coverImageUrl != newItem.coverImageUrl) {
-                    diffBundleBuilder.coverUri = newItem.cover.fileUri
+                    diffBundleBuilder.coverUri = newItem.cover.usableUri
                 }
                 if (oldItem.isBeingProcessed != newItem.isBeingProcessed) {
                     diffBundleBuilder.processed = newItem.isBeingProcessed
