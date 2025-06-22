@@ -939,6 +939,7 @@ suspend fun setContentCover(
         downloadPic(context, content, newCover, 0, targetFolder.toUri())?.let {
             cover.status = StatusContent.DOWNLOADED
             cover.fileUri = it.second
+            clearCoilKey(context, cover.usableUri)
         } ?: run {
             Timber.w("Couldn't create thumb from stream for ${content.storageUri}")
             return@withContext false
