@@ -253,7 +253,7 @@ fun Context.extractArchiveEntriesBlocking(
 
     // List once, search the map during extraction
     val targetFolderList = listFiles(this, targetFolder)
-        .groupBy { UriParts(it.toString()).entireFileName }
+        .groupBy { UriParts(it.toString()).fileNameFull }
     val fileFinder: (String) -> Uri? =
         { it -> targetFolderList[it]?.firstOrNull() }
 

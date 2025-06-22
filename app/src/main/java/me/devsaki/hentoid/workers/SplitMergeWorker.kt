@@ -399,7 +399,7 @@ abstract class BaseSplitMergeWorker(
             img.computeName(nbMaxDigits)
 
             val uriParts = UriParts(Uri.decode(img.fileUri))
-            val sourceFileName = uriParts.entireFileName
+            val sourceFileName = uriParts.fileNameFull
             val targetFileName = img.name + "." + uriParts.extension
             // Only post actual renaming jobs
             if (!sourceFileName.equals(targetFileName, true)) {

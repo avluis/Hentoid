@@ -96,6 +96,7 @@ import me.devsaki.hentoid.util.network.CloudflareHelper.CloudflareProtectedExcep
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.HEADER_USER_AGENT
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.WebkitPackageHelper.getWebViewAvailable
 import me.devsaki.hentoid.util.network.WebkitPackageHelper.getWebViewUpdating
 import me.devsaki.hentoid.util.network.fetchBodyFast
@@ -789,6 +790,11 @@ fun getPictureThumbCached(
                     // Get targeted resource
                     context.getArchiveEntries(archive)
                         .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
+                        .filter {
+                            // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
+                            val pathParts = it.path.split('/')
+                            UriParts(resource).fileNameFull == pathParts[pathParts.size -1]
+                        }
                 }
                 if (entries.isEmpty()) return null
                 context.extractArchiveEntriesBlocking(
@@ -803,6 +809,11 @@ fun getPictureThumbCached(
                 } else {
                     mgr.getEntries(context, archive)
                         .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
+                        .filter {
+                            // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
+                            val pathParts = it.path.split('/')
+                            UriParts(resource).fileNameFull == pathParts[pathParts.size -1]
+                        }
                 }
                 if (entries.isEmpty()) return null
                 mgr.extractImagesBlocking(

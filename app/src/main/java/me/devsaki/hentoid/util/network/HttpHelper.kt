@@ -923,6 +923,9 @@ class UriParts(uri: String, lowercase: Boolean = false) {
     var query: String // Query alone (e.g. query=here)
     private var fragment: String // Fragment alone (e.g. anchor)
 
+    val fileNameFull: String
+        get() = "$fileNameNoExt.$extension"
+
     init {
         var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri
         val fragmentIndex = uriNoParams.lastIndexOf('#')
@@ -960,7 +963,4 @@ class UriParts(uri: String, lowercase: Boolean = false) {
         if (fragment.isNotEmpty()) result.append("#").append(fragment)
         return result.toString()
     }
-
-    val entireFileName: String
-        get() = "$fileNameNoExt.$extension"
 }
