@@ -9,7 +9,6 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import coil3.dispose
-import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -32,9 +31,9 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
     IExtendedDraggable<FileItem.ViewHolder>, ISwipeable {
 
     val doc: DisplayFile
+    var refreshComplete: Boolean = false
 
     private val showDragHandle: Boolean
-    private val isEmpty: Boolean
     private var deleteAction: Consumer<FileItem>? = null
 
     // Drag, drop & swipe
@@ -42,16 +41,15 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
     override val isSwipeable: Boolean
 
     // Constructor for split
-    constructor(d: DisplayFile, enabled: Boolean = false) {
+    constructor(d: DisplayFile, refreshed: Boolean = false) {
         doc = d
+        refreshComplete = refreshed
         touchHelper = null
         showDragHandle = false
         isSwipeable = false
-        isEmpty = false
         isSelectable = (d.type != Type.ADD_BUTTON && d.type != Type.UP_BUTTON)
         identifier = doc.id
-        isEnabled =
-            enabled || d.type == Type.ADD_BUTTON || d.type == Type.UP_BUTTON || d.type == Type.ROOT_FOLDER
+        Timber.d("CREATE ${doc.name} ${doc.id}")
     }
 
     override fun getViewHolder(v: View): ViewHolder {
@@ -82,28 +80,8 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         private val baseLayout: View = view.requireById(R.id.item)
         private val tvTitle: TextView = view.requireById(R.id.tvTitle)
         private val ivCover: ImageView = view.requireById(R.id.ivCover)
-        private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
-        private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
-        private val ivError: ImageView? = view.findViewById(R.id.ivError)
-        private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
         override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
-        private val deleteButton: View? = view.findViewById(R.id.delete_btn)
-
-        // Specific to library content
-        private var ivNew: View? = view.findViewById(R.id.lineNew)
-        private var tvTags: TextView? = view.findViewById(R.id.tvTags)
-        private var tvSeries: TextView? = view.findViewById(R.id.tvSeries)
-        private var ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
-        private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
-        private var ivExternal: ImageView? = view.findViewById(R.id.ivExternal)
-        private var readingProgress: CircularProgressIndicator? =
-            view.findViewById(R.id.reading_progress)
-        private var ivCompleted: ImageView? = view.findViewById(R.id.ivCompleted)
-        private var ivChapters: ImageView? = view.findViewById(R.id.ivChapters)
-        private var tvChapters: TextView? = view.findViewById(R.id.tvChapters)
-        private var ivStorage: ImageView? = view.findViewById(R.id.ivStorage)
-        private var tvStorage: TextView? = view.findViewById(R.id.tvStorage)
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
         private var deleteActionRunnable: Runnable? = null
@@ -113,11 +91,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
 
 
         override fun bindView(item: FileItem, payloads: List<Any>) {
-            if (item.isEmpty) {
-                debugStr = "empty item"
-                return  // Ignore placeholders from PagedList
-            }
-
             // Payloads are set when the content stays the same but some properties alone change
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
@@ -129,7 +102,9 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 bundleParser.processed?.let { item.doc.isBeingProcessed = it }
                 bundleParser.type?.let { item.doc.type = Type.entries[it] }
                 bundleParser.subType?.let { item.doc.subType = SubType.entries[it] }
-                bundleParser.enabled?.let { item.isEnabled = it }
+                bundleParser.refreshed?.let { item.refreshComplete = it }
+
+                if (BuildConfig.DEBUG) Timber.d("DIFF ${item.doc.name} ${item.isSelected}")
             }
 
             item.deleteAction?.apply {
@@ -151,7 +126,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun updateLayoutVisibility(item: FileItem, doc: DisplayFile) {
-            baseLayout.isVisible = !item.isEmpty
+            baseLayout.isVisible = true
             selectionBorder?.isVisible = item.isSelected
 
             if (doc.isBeingProcessed)

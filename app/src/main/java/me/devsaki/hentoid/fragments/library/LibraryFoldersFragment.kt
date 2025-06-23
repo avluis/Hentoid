@@ -143,7 +143,7 @@ class LibraryFoldersFragment : Fragment(),
                             && oldItem.doc.nbChildren == newItem.doc.nbChildren
                             && oldItem.doc.contentId == newItem.doc.contentId
                             && oldItem.doc.coverUri == newItem.doc.coverUri
-                            && oldItem.isEnabled == newItem.isEnabled
+                            && oldItem.refreshComplete == newItem.refreshComplete
                 }
 
                 override fun getChangePayload(
@@ -165,8 +165,8 @@ class LibraryFoldersFragment : Fragment(),
                     if (oldItem.doc.contentId != newItem.doc.contentId) {
                         diffBundleBuilder.contentId = newItem.doc.contentId
                     }
-                    if (oldItem.isEnabled != newItem.isEnabled) {
-                        diffBundleBuilder.enabled = newItem.isEnabled
+                    if (oldItem.refreshComplete != newItem.refreshComplete) {
+                        diffBundleBuilder.refreshed = newItem.refreshComplete
                     }
                     return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
                 }
@@ -578,7 +578,11 @@ class LibraryFoldersFragment : Fragment(),
                 var updatedItems = itemAdapter.adapterItems.toList()
                 // Merge detailed results data into existing items
                 updatedItems.map { up ->
-                    inItems.firstOrNull { it.id == up.identifier }?.let { FileItem(it, true) } ?: up
+                    inItems.firstOrNull { it.id == up.identifier }?.let {
+                        val newItem = FileItem(it, true)
+                        newItem.isSelected = up.isSelected
+                        newItem
+                    } ?: up
                 }
             }
             withContext(Dispatchers.Main) {
@@ -614,9 +618,10 @@ class LibraryFoldersFragment : Fragment(),
                 }
 
                 Type.BOOK_FOLDER, Type.SUPPORTED_FILE -> {
-                    folderSearchBundle?.let {
-                        if (item.isEnabled) openReaderForResource(requireContext(), item.doc, it)
-                    }
+                    if (item.refreshComplete)
+                        folderSearchBundle?.let {
+                            openReaderForResource(requireContext(), item.doc, it)
+                        }
                 }
 
                 else -> {
