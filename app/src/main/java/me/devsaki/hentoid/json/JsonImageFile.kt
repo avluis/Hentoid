@@ -37,11 +37,11 @@ data class JsonImageFile(
         val result = if (url.isEmpty()) ImageFile.fromPageUrl(order, pageUrl ?: "", status, name)
         else ImageFile.fromImageUrl(order, url, status, name)
         result.name = name
-        result.isCover = isCover ?: false
-        result.favourite = favourite ?: false
-        result.read = isRead ?: false
+        result.isCover = isCover == true
+        result.favourite = favourite == true
+        result.read = isRead == true
         result.imageHash = pHash ?: 0
-        result.isTransformed = isTransformed ?: false
+        result.isTransformed = isTransformed == true
 
         if (chapters.isNotEmpty() && (chapterOrder ?: -1) > -1) {
             chapters.firstOrNull { it.order == chapterOrder }?.let {

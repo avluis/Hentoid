@@ -15,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.file.getSupportedExtensions
 import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.isInLibrary
+import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
 import java.io.File
 import java.util.Locale
 import java.util.Objects
@@ -316,5 +317,15 @@ data class ImageFile(
         if (0L == uniqueHash) uniqueHash =
             hash64((id.toString() + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.targetId).toByteArray())
         return uniqueHash
+    }
+
+    /**
+     * Comparator to be used to sort ImageFiles according to the Uri of their files
+     */
+    class UriImageFileComparator : Comparator<ImageFile> {
+        override fun compare(o1: ImageFile, o2: ImageFile): Int {
+            return CaseInsensitiveSimpleNaturalComparator.getInstance<CharSequence>()
+                .compare(o1.fileUri, o2.fileUri)
+        }
     }
 }

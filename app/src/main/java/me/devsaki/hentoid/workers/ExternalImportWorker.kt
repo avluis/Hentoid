@@ -15,11 +15,13 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.READER_CACHE
+import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.ObjectBoxDAOContainer
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.domains.ImageFile.UriImageFileComparator
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -58,6 +60,8 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.net.URLDecoder
+import kotlin.math.floor
+import kotlin.math.log10
 import kotlin.math.roundToInt
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
@@ -489,6 +493,22 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                 StatusContent.EXTERNAL,
                 targetImgs.maxOf { it.order } + 1)
         )
+
+        // Sort all images (old + new) according to their filename
+        targetImgs.sortWith(UriImageFileComparator())
+
+        // Rebuild order
+        var idx = 1
+        val nbMaxChars = floor(log10(targetImgs.size.toDouble()) + 1).toInt()
+        targetImgs.forEach {
+            if (!it.isCover) {
+                it.order = idx++
+                it.computeName(nbMaxChars)
+            } else {
+                it.order = 0
+                it.name = THUMB_FILE_NAME
+            }
+        }
 
         content.setImageFiles(targetImgs)
         content.qtyPages = content.getNbDownloadedPages()

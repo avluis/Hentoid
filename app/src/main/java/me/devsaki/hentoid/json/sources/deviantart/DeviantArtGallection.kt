@@ -13,7 +13,7 @@ data class DeviantArtGallection(
 ) {
     fun getImages(): List<ImageFile> {
         val result: MutableList<ImageFile> = ArrayList()
-        results.forEach {res ->
+        results.forEach { res ->
             val imgs = res.getImages()
             result.addAll(imgs.filter { it.isReadable }.map { ImageFile(it, true, true) })
             if (null == result.find { it.isCover }) {
@@ -22,10 +22,11 @@ data class DeviantArtGallection(
             }
         }
         var idx = 1
+        val nbMaxDigits = floor(log10(result.size.toDouble()) + 1).toInt()
         result.forEach { imageFile ->
             if (!imageFile.isCover) {
                 imageFile.order = idx++
-                imageFile.computeName(floor(log10(result.size.toDouble()) + 1).toInt())
+                imageFile.computeName(nbMaxDigits)
             }
         }
         return result
