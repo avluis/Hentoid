@@ -17,6 +17,7 @@ import me.devsaki.hentoid.parsers.content.HentaifoxContent
 import me.devsaki.hentoid.parsers.content.HiperdexContent
 import me.devsaki.hentoid.parsers.content.HitomiContent
 import me.devsaki.hentoid.parsers.content.ImhentaiContent
+import me.devsaki.hentoid.parsers.content.KemonoContent
 import me.devsaki.hentoid.parsers.content.LusciousContent
 import me.devsaki.hentoid.parsers.content.MangagoContent
 import me.devsaki.hentoid.parsers.content.Manhwa18Content
@@ -48,6 +49,7 @@ import me.devsaki.hentoid.parsers.images.HiperdexParser
 import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.parsers.images.ImageListParser
 import me.devsaki.hentoid.parsers.images.ImhentaiParser
+import me.devsaki.hentoid.parsers.images.KemonoParser
 import me.devsaki.hentoid.parsers.images.LusciousParser
 import me.devsaki.hentoid.parsers.images.MangagoParser
 import me.devsaki.hentoid.parsers.images.Manhwa18Parser
@@ -98,6 +100,7 @@ object ContentParserFactory {
             Site.HIPERDEX -> HiperdexContent::class.java
             Site.NOVELCROW -> NovelcrowContent::class.java
             Site.TMO -> TmoContent::class.java
+            Site.KEMONO -> KemonoContent::class.java
             else -> DummyContent::class.java
         }
     }
@@ -137,6 +140,7 @@ object ContentParserFactory {
             Site.HIPERDEX -> HiperdexParser()
             Site.NOVELCROW -> NovelcrowParser()
             Site.TMO -> TmoParser()
+            Site.KEMONO -> KemonoParser()
             else -> DummyParser()
         }
     }

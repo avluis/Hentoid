@@ -105,6 +105,12 @@
       "useWebviewAgent": false,
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 2
+    },
+    "KEMONO": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false,
+      "requestsCapPerSecond": 1,
+      "parallelDownloadCap": 1
     }
   }
 }

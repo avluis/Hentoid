@@ -23,7 +23,7 @@ class LusciousParser : BaseImageListParser() {
         val result: MutableList<ImageFile> = ArrayList()
 
         val cats = onlineContent.attributeMap[AttributeType.CATEGORY]
-        val isManga = (!cats.isNullOrEmpty() && cats.first().name.equals("manga"))
+        val isManga = (!cats.isNullOrEmpty() && cats.first().name == "manga")
 
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
         progressStart(onlineContent)

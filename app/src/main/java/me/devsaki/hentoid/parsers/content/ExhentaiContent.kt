@@ -21,7 +21,6 @@ class ExhentaiContent : BaseContentParser() {
                     EHentaiServer.exentaiApi.getGalleryMetadata(query, cookiesStr).execute().body()
                 if (metadata != null) return metadata.update(
                     content,
-                    url,
                     Site.EXHENTAI,
                     updateImages
                 )

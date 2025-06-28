@@ -20,6 +20,7 @@ import me.devsaki.hentoid.util.download.DownloadRateLimiter.take
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.isNumeric
+import me.devsaki.hentoid.util.network.ACCEPT_ALL
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.waitBlocking429
 import me.devsaki.hentoid.util.parseDownloadParams
@@ -61,7 +62,6 @@ class PixivParser : BaseImageListParser() {
                 useMobileAgent, useHentoidAgent, useWebviewAgent
             )
             val userAgent = getUserAgent(Site.PIXIV)
-            val acceptAll = "*/*"
 
             // API calls seem to be protected against request spam; 2 is arbitrary
             setRateLimit(2)
@@ -69,18 +69,18 @@ class PixivParser : BaseImageListParser() {
                 onlineContent,
                 storedContent,
                 cookieStr,
-                acceptAll,
+                ACCEPT_ALL,
                 userAgent
             ) else if (onlineContent.url.contains("/artworks/")) return parseIllust(
                 onlineContent,
                 cookieStr,
-                acceptAll,
+                ACCEPT_ALL,
                 userAgent
             ) else if (onlineContent.url.contains("users/")) return parseUser(
                 onlineContent,
                 storedContent,
                 cookieStr,
-                acceptAll,
+                ACCEPT_ALL,
                 userAgent
             )
         } catch (e: Exception) {

@@ -18,7 +18,6 @@ class EhentaiContent : BaseContentParser() {
                     EHentaiServer.ehentaiApi.getGalleryMetadata(query, null).execute().body()
                 if (metadata != null) return metadata.update(
                     content,
-                    url,
                     Site.EHENTAI,
                     updateImages
                 )

@@ -27,6 +27,7 @@ import me.devsaki.hentoid.activities.sources.HentaifoxActivity
 import me.devsaki.hentoid.activities.sources.HiperdexActivity
 import me.devsaki.hentoid.activities.sources.HitomiActivity
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity
+import me.devsaki.hentoid.activities.sources.KemonoActivity
 import me.devsaki.hentoid.activities.sources.LusciousActivity
 import me.devsaki.hentoid.activities.sources.MangagoActivity
 import me.devsaki.hentoid.activities.sources.Manhwa18Activity
@@ -222,6 +223,7 @@ data class Content(
                 Site.HIPERDEX -> HiperdexActivity::class.java
                 Site.NOVELCROW -> NovelcrowActivity::class.java
                 Site.TMO -> TmoActivity::class.java
+                Site.KEMONO -> KemonoActivity::class.java
                 else -> BaseWebActivity::class.java
             }
         }
@@ -317,6 +319,8 @@ data class Content(
                     ""
                 )
 
+                Site.KEMONO -> return url.replace(site.url, "")
+
                 Site.MANGAGO -> return url.replace(site.url + "read-manga/", "")
                 Site.PORNCOMIX -> return url
                 else -> return url
@@ -394,6 +398,19 @@ data class Content(
                 // Last part of the URL
                 paths = url.split("/")
                 return paths[paths.size - 1]
+            }
+
+            Site.KEMONO -> {
+                // Service, user ID and content ID
+                paths = url.split("/")
+                val userIdx = paths.indexOf("user")
+                val postIdx = paths.indexOf("post")
+                val elements = ArrayList<String>()
+                if (userIdx > -1) elements.add(paths[userIdx - 1]) // Service
+                if (userIdx > -1) elements.add(paths[userIdx + 1]) // User id
+                if (postIdx > -1) elements.add(paths[postIdx + 1]) // Post id
+
+                return TextUtils.join("-", elements)
             }
 
             Site.DOUJINS -> {

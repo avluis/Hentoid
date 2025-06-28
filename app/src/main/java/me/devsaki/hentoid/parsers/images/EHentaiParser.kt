@@ -24,6 +24,7 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.network.ACCEPT_ALL
 import me.devsaki.hentoid.util.network.HEADER_ACCEPT_KEY
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
@@ -454,7 +455,7 @@ class EHentaiParser : ImageListParser {
             val headers: MutableList<Pair<String, String>> = java.util.ArrayList()
             headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
             headers.add(Pair(HEADER_REFERER_KEY, content.site.url))
-            headers.add(Pair(HEADER_ACCEPT_KEY, "*/*"))
+            headers.add(Pair(HEADER_ACCEPT_KEY, ACCEPT_ALL))
 
             /*
              * A/ Without multipage viewer
