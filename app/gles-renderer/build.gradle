@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    namespace 'me.devsaki.hentoid.gles_renderer'
-    compileSdk 35
+    namespace = 'me.devsaki.hentoid.gles_renderer'
+    compileSdk = 35
 
     defaultConfig {
-        minSdk 26
-        targetSdk 35
+        minSdk = 26
+        targetSdk = 35
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

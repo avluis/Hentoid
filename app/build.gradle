@@ -24,7 +24,7 @@ aboutLibraries {
 }
 
 android {
-    compileSdk 35
+    compileSdk = 35
     compileOptions {
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
@@ -52,8 +52,8 @@ android {
 // Only include complete translations
     }
     buildFeatures {
-        viewBinding true
-        buildConfig true
+        viewBinding = true
+        buildConfig = true
     }
     buildTypes {
         debug {
@@ -82,7 +82,7 @@ android {
     }
     packagingOptions {
         jniLibs {
-            useLegacyPackaging true
+            useLegacyPackaging = true
         }
     }
     testOptions {
@@ -92,7 +92,7 @@ android {
         informational 'MissingTranslation'
         informational 'ExtraTranslation'
     }
-    namespace 'me.devsaki.hentoid'
+    namespace = 'me.devsaki.hentoid'
 }
 
 dependencies {

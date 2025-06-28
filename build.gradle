@@ -4,8 +4,8 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" } // About library plugin
-        maven { url 'https://repo1.maven.org/maven2' } // androidndkgif
+        maven { url="https://plugins.gradle.org/m2/" } // About library plugin
+        maven { url='https://repo1.maven.org/maven2' } // androidndkgif
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.11.0'
@@ -25,8 +25,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://jitpack.io' } // AppIntro
-        maven { url "https://plugins.gradle.org/m2/" } // Sonarcloud
+        maven { url='https://jitpack.io' } // AppIntro
+        maven { url="https://plugins.gradle.org/m2/" } // Sonarcloud
     }
 }
 

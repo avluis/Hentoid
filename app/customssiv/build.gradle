@@ -4,7 +4,7 @@ apply plugin: 'org.jetbrains.kotlin.android'
 
 
 android {
-    compileSdk 35
+    compileSdk = 35
     compileOptions {
         targetCompatibility JavaVersion.VERSION_17
         sourceCompatibility JavaVersion.VERSION_17
@@ -27,7 +27,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    namespace 'me.devsaki.hentoid.customssiv'
+    namespace = 'me.devsaki.hentoid.customssiv'
 
 }
 
