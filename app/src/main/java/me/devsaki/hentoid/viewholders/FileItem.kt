@@ -49,7 +49,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         isSwipeable = false
         isSelectable = (d.type != Type.ADD_BUTTON && d.type != Type.UP_BUTTON)
         identifier = doc.id
-        Timber.d("CREATE ${doc.name} ${doc.id}")
     }
 
     override fun getViewHolder(v: View): ViewHolder {
@@ -103,8 +102,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 bundleParser.type?.let { item.doc.type = Type.entries[it] }
                 bundleParser.subType?.let { item.doc.subType = SubType.entries[it] }
                 bundleParser.refreshed?.let { item.refreshComplete = it }
-
-                if (BuildConfig.DEBUG) Timber.d("DIFF ${item.doc.name} ${item.isSelected}")
             }
 
             item.deleteAction?.apply {
@@ -132,8 +129,6 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
             if (doc.isBeingProcessed)
                 baseLayout.startAnimation(BlinkAnimation(500, 250))
             else baseLayout.clearAnimation()
-
-            if (item.isSelected && BuildConfig.DEBUG) Timber.d("SELECTED ${doc.name}")
         }
 
         private fun attachCover(doc: DisplayFile) {
