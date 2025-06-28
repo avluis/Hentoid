@@ -230,7 +230,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 if (oldItem.readPagesCount != newItem.readPagesCount) return false
                 if (oldItem.coverImageUrl != newItem.coverImageUrl) return false
                 if (oldItem.isBeingProcessed != newItem.isBeingProcessed) return false
-                if (oldItem.title != newItem.title) return false
+                if (oldItem.downloadMode != newItem.downloadMode) return false
+                if (oldItem.qtyPages != newItem.qtyPages) return false
+                if (oldItem.size != newItem.size) return false
                 return true
             }
 
@@ -259,6 +261,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 }
                 if (oldItem.title != newItem.title) {
                     diffBundleBuilder.title = newItem.title
+                }
+                if (oldItem.downloadMode != newItem.downloadMode) {
+                    diffBundleBuilder.downloadMode = newItem.downloadMode.value
+                }
+                if (oldItem.qtyPages != newItem.qtyPages) {
+                    diffBundleBuilder.qtyPages = newItem.qtyPages
+                }
+                if (oldItem.size != newItem.size) {
+                    diffBundleBuilder.size = newItem.size
                 }
                 return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
             }
