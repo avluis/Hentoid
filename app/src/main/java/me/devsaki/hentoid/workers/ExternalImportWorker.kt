@@ -487,12 +487,14 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             .filter { !contentImgKeys.containsKey(it.key) }
             .map { it.value }
 
-        targetImgs.addAll(
-            createImageListFromFiles(
-                newImageFiles,
-                StatusContent.EXTERNAL,
-                targetImgs.maxOf { it.order } + 1)
-        )
+        if (newImageFiles.isNotEmpty()) {
+            targetImgs.addAll(
+                createImageListFromFiles(
+                    newImageFiles,
+                    StatusContent.EXTERNAL,
+                    targetImgs.maxOf { it.order } + 1)
+            )
+        }
 
         // Sort all images (old + new) according to their filename
         targetImgs.sortWith(UriImageFileComparator())
