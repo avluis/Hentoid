@@ -295,10 +295,6 @@ data class Content(
                     .replace("/gallery", "").replace("/g/", "/")
 
                 Site.PIXIV -> return url.replace(site.url, "").replace("^[a-z]{2}/".toRegex(), "")
-                Site.ALLPORNCOMIC, Site.DOUJINS, Site.HENTAI2READ, Site.HBROWSE, Site.MANHWA, Site.MULTPORN, Site.TOONILY, Site.SIMPLY, Site.HDPORNCOMICS, Site.DEVIANTART -> return url.replace(
-                    site.url,
-                    ""
-                )
 
                 Site.EHENTAI, Site.EXHENTAI, Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.ANCHIRA -> return url.replace(
                     site.url + "/g",
@@ -320,11 +316,10 @@ data class Content(
                     ""
                 )
 
-                Site.KEMONO -> return url.replace(site.url, "")
-
                 Site.MANGAGO -> return url.replace(site.url + "read-manga/", "")
                 Site.PORNCOMIX -> return url
-                else -> return url
+
+                else -> return url.replace(site.url, "")
             }
         }
     }
@@ -437,7 +432,7 @@ data class Content(
                 return if (url.contains("artworks")) url.substring(url.lastIndexOf('/') + 1)
                 else url
 
-            else -> return ""
+            else -> return url
         }
     }
 
