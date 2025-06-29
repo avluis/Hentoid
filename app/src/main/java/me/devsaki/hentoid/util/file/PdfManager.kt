@@ -165,7 +165,7 @@ class PdfManager {
                         val image = Image(
                             ImageDataFactory.create(
                                 if (!ImageDataFactory.isSupportedType(data)) {
-                                    var params = TransformParams(
+                                    val params = TransformParams(
                                         false, 0, 0, 0, 0, 0, 1, PictureEncoder.PNG,
                                         PictureEncoder.JPEG, PictureEncoder.PNG, 90
                                     )
@@ -216,8 +216,8 @@ class PdfManager {
         pdf: DocumentFile,
         entriesToExtract: List<Triple<String, Long, String>>?,
         interrupt: (() -> Boolean)? = null,
-        onExtracted: ((Long, Uri) -> Unit)?,
-        onComplete: () -> Unit
+        onExtracted: ((Long, Uri) -> Unit)? = null,
+        onComplete: (() -> Unit)? = null
     ) {
         extractImages(
             context,

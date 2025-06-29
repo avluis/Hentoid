@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities
 
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
@@ -170,20 +169,20 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
     }
 
     private fun updateAttrsFilter() {
-        val items = allAttributeTypes.map { attrType ->
+        val items = allAttributeTypes.map {
             AttributeTypeFilterItem(
-                attrType,
+                it,
                 selectedAttributeTypes.size < allAttributeTypes.size
-                        && selectedAttributeTypes.contains(attrType)
+                        && selectedAttributeTypes.contains(it)
             )
         }
         itemFilterAdapter.set(items)
     }
 
     private fun updateAttrsList() {
-        val items = contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
+        val items = contentAttributes.filter { selectedAttributeTypes.contains(it.type) }
             .sortedWith(compareBy({ it.type }, { -it.count }, { it.name }))
-            .map { attr -> AttributeItem(attr, contents.size > 1) }
+            .map { AttributeItem(it, contents.size > 1) }
 
         FastAdapterDiffUtil.set(itemAdapter, items, attributeItemDiffCallback)
     }
@@ -291,11 +290,11 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
 
             // Flag
             it.ivFlag.setOnClickListener {
-                binding?.let { b2 ->
+                binding?.apply {
                     viewModel.setAttributeTypes(listOf(AttributeType.LANGUAGE))
-                    b2.titleNew.visibility = View.GONE
-                    b2.tags.visibility = View.VISIBLE
-                    b2.tagsFab.visibility = View.VISIBLE
+                    titleNew.visibility = View.GONE
+                    tags.visibility = View.VISIBLE
+                    tagsFab.visibility = View.VISIBLE
                 }
             }
 
@@ -309,18 +308,10 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                             BaseTransientBottomBar.LENGTH_SHORT
                         ).show()
                     } else {
-                        if (contents[0].isArchive) {
-                            Snackbar.make(
-                                b2.root,
-                                R.string.meta_cover_archive_warning,
-                                BaseTransientBottomBar.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            val imgs = contents[0].imageFiles.filter { i -> i.isReadable }
-                            b2.titleNew.visibility = View.GONE
-                            b2.tagsFab.visibility = View.GONE
-                            GalleryPickerDialogFragment.invoke(this, imgs)
-                        }
+                        val imgs = contents[0].imageFiles.filter { i -> i.isReadable }
+                        b2.titleNew.visibility = View.GONE
+                        b2.tagsFab.visibility = View.GONE
+                        GalleryPickerDialogFragment.invoke(this, imgs)
                     }
                 }
             }

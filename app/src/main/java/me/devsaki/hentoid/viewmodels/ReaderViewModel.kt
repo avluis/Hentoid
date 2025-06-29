@@ -33,7 +33,6 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
@@ -48,11 +47,7 @@ import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.deleteChapters
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
-import me.devsaki.hentoid.util.download.downloadToFileCached
-import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
-import me.devsaki.hentoid.util.exception.LimitReachedException
-import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.StorageCache
 import me.devsaki.hentoid.util.file.extractArchiveEntriesCached
@@ -66,7 +61,6 @@ import me.devsaki.hentoid.util.formatCacheKey
 import me.devsaki.hentoid.util.getPictureFilesFromContent
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
-import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeContent
@@ -88,7 +82,6 @@ import me.devsaki.hentoid.workers.data.SplitMergeData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.File
-import java.io.IOException
 import java.util.Collections
 import java.util.Queue
 import java.util.Random
@@ -1361,7 +1354,7 @@ class ReaderViewModel(
         for (index in indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size) continue
             val img = viewerImagesInternal[index]
-            val c = img.content.target
+            val c = img.linkedContent ?: continue
 
             val existingUri = StorageCache.getFile(READER_CACHE, formatCacheKey(img))
             if (existingUri != null) {
