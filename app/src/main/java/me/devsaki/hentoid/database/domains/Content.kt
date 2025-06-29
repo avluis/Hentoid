@@ -64,6 +64,7 @@ import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
 import java.io.IOException
 import java.util.Objects
+import kotlin.math.max
 
 enum class DownloadMode(val value: Int) {
     DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images
@@ -395,9 +396,10 @@ data class Content(
 
             Site.MUSES -> return url.replace("/comics/album/", "").replace("/", ".")
             Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART, Site.HIPERDEX, Site.NOVELCROW, Site.TMO -> {
-                // Last part of the URL
+                val indexDelta = if (url.endsWith('/')) 2 else 1
+                // Last useful part of the URL
                 paths = url.split("/")
-                return paths[paths.size - 1]
+                return paths[max(0, paths.size - indexDelta)]
             }
 
             Site.KEMONO -> {
@@ -429,7 +431,8 @@ data class Content(
                 } else return ""
             }
 
-            Site.PIXIV ->                 // - If artworks, ID is the artwork ID
+            Site.PIXIV ->
+                // - If artworks, ID is the artwork ID
                 // - If not, ID is the whole URL
                 return if (url.contains("artworks")) url.substring(url.lastIndexOf('/') + 1)
                 else url
