@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import dev.skomlach.biometric.compat.AuthenticationFailureReason
 import dev.skomlach.biometric.compat.AuthenticationResult
 import dev.skomlach.biometric.compat.BiometricApi
 import dev.skomlach.biometric.compat.BiometricAuthRequest
@@ -72,16 +71,15 @@ fun FragmentActivity.startBiometric(
             resultHandler.invoke(true)
         }
 
-        override fun onCanceled() {
-            BiometricLoggerImpl.e("CheckBiometric.onCanceled()")
+        override fun onCanceled(canceled: Set<AuthenticationResult>) {
+            BiometricLoggerImpl.e("CheckBiometric.onCanceled() - ${canceled.firstOrNull()?.reason}")
             resultHandler.invoke(false)
         }
 
         override fun onFailed(
-            reason: AuthenticationFailureReason?,
-            dialogDescription: CharSequence?
+            canceled: Set<AuthenticationResult>
         ) {
-            BiometricLoggerImpl.e("CheckBiometric.onFailed() - $reason")
+            BiometricLoggerImpl.e("CheckBiometric.onFailed() - ${canceled.firstOrNull()?.reason}")
             resultHandler.invoke(false)
         }
 

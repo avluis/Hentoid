@@ -288,7 +288,7 @@ dependencies {
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // Biometrics
-    implementation 'dev.skomlach:biometric:2.2.46'
+    implementation 'dev.skomlach:biometric:2.2.51'
 
     // Searchable prefs
     implementation 'com.github.ByteHamster:SearchPreference:2.7.2'
