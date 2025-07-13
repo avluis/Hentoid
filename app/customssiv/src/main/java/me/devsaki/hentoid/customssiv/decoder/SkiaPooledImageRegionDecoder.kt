@@ -12,6 +12,7 @@ import android.graphics.ColorSpace
 import android.graphics.Point
 import android.graphics.Rect
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.Keep
 import timber.log.Timber
 import java.io.File
@@ -44,7 +45,8 @@ private const val FILE_PREFIX = "file://"
 private const val ASSET_PREFIX = "$FILE_PREFIX/android_asset/"
 private const val RESOURCE_PREFIX = ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
 
-internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Config) : ImageRegionDecoder {
+internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Config) :
+    ImageRegionDecoder {
     private var debug: Boolean = false
 
     private var decoderPool: DecoderPool? = DecoderPool()
@@ -120,6 +122,7 @@ internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Con
      * Initialises a new [BitmapRegionDecoder] and adds it to the pool, unless the pool has
      * been recycled while it was created.
      */
+    @Suppress("DEPRECATION")
     @Throws(IOException::class, PackageManager.NameNotFoundException::class)
     private fun initialiseDecoder() {
         val uriString = uri.toString()
@@ -131,10 +134,12 @@ internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Con
                 context!!.resources.openRawResourceFd(id).use { descriptor ->
                     localFileLength = descriptor.length
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Pooling disabled
             }
-            decoder =
+            decoder = if (Build.VERSION.SDK_INT >= 31)
+                BitmapRegionDecoder.newInstance(context!!.resources.openRawResource(id))
+            else
                 BitmapRegionDecoder.newInstance(context!!.resources.openRawResource(id), false)
         } else if (uriString.startsWith(ASSET_PREFIX)) {
             val assetName = uriString.substring(ASSET_PREFIX.length)
@@ -142,50 +147,61 @@ internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Con
                 context!!.assets.openFd(assetName).use { descriptor ->
                     localFileLength = descriptor.length
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Pooling disabled
             }
-            decoder = BitmapRegionDecoder.newInstance(
+            decoder = if (Build.VERSION.SDK_INT >= 31)
+                BitmapRegionDecoder.newInstance(
+                    context!!.assets.open(
+                        assetName,
+                        AssetManager.ACCESS_RANDOM
+                    )
+                )
+            else BitmapRegionDecoder.newInstance(
                 context!!.assets.open(
                     assetName,
                     AssetManager.ACCESS_RANDOM
                 ), false
             )
         } else if (uriString.startsWith(FILE_PREFIX)) {
-            decoder =
+            decoder = if (Build.VERSION.SDK_INT >= 31)
+                BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length))
+            else
                 BitmapRegionDecoder.newInstance(uriString.substring(FILE_PREFIX.length), false)
+
             try {
                 val file = File(uriString)
                 if (file.exists()) {
                     localFileLength = file.length()
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Pooling disabled
             }
         } else {
             val contentResolver = context!!.contentResolver
             contentResolver.openInputStream(uri!!).use { input ->
                 if (input == null) throw RuntimeException("Content resolver returned null stream. Unable to initialise with uri.")
-                decoder = BitmapRegionDecoder.newInstance(input, false)
+                decoder = if (Build.VERSION.SDK_INT >= 31)
+                    BitmapRegionDecoder.newInstance(input)
+                else
+                    BitmapRegionDecoder.newInstance(input, false)
                 try {
                     contentResolver.openAssetFileDescriptor(uri!!, "r").use { descriptor ->
                         if (descriptor != null) {
                             localFileLength = descriptor.length
                         }
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Stick with MAX_LENGTH
                 }
             }
         }
 
         this.fileLength = localFileLength
-        imageDimensions[decoder!!.width] = decoder!!.height
+        decoder?.let { imageDimensions[it.width] = it.height }
         decoderLock.writeLock().lock()
         try {
-            if (decoderPool != null) {
-                decoderPool!!.add(decoder)
-            }
+            decoderPool?.add(decoder)
         } finally {
             decoderLock.writeLock().unlock()
         }
@@ -270,7 +286,7 @@ internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Con
      * @param fileLength       the size of the image file in bytes. Creating another decoder will use approximately this much native memory.
      * @return true if another decoder can be created.
      */
-    protected fun allowAdditionalDecoder(numberOfDecoders: Int, fileLength: Long): Boolean {
+    private fun allowAdditionalDecoder(numberOfDecoders: Int, fileLength: Long): Boolean {
         if (numberOfDecoders >= 4) {
             debug("No additional decoders allowed, reached hard limit (4)")
             return false

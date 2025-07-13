@@ -54,6 +54,7 @@ internal fun getScreenDpi(context: Context): Float {
     return if (((abs((generalDpi - averageDpi).toDouble()) / averageDpi) > 1)) generalDpi else averageDpi
 }
 
+@Suppress("DEPRECATION")
 internal fun getScreenDimensionsPx(context: Context): Point {
     val wMgr = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     if (Build.VERSION.SDK_INT >= 30) {

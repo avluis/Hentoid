@@ -1,11 +1,11 @@
 package me.devsaki.hentoid.activities
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import dev.skomlach.biometric.compat.BiometricAuthRequest
@@ -38,6 +38,15 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
             goToNextActivity()
             return
         }
+
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // We don't want the back button to remove the unlock screen displayed upon app restore
+                moveTaskToBack(true)
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, callback)
+
         if (savedInstanceState == null) {
             if (1 == Settings.lockType) UnlockPinDialogFragment.invoke(supportFragmentManager)
             else if (2 == Settings.lockType) {
@@ -73,13 +82,6 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
                 }
             }
         }
-    }
-
-    @SuppressLint("MissingSuperCall")
-    @Deprecated("Deprecated in Java", ReplaceWith("moveTaskToBack(true)"))
-    override fun onBackPressed() {
-        // We don't want the back button to remove the unlock screen displayed upon app restore
-        moveTaskToBack(true)
     }
 
     @Suppress("DEPRECATION")
