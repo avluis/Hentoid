@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<resources>
+<resources xmlns:x="http://schemas.android.com/apk/res-auto">
     <string name="app_intro">환영합니다</string>
     <string name="yes">네</string>
     <string name="no">아니오</string>
@@ -372,7 +372,9 @@
     <string name="stream_external_streamed_content">선택한 작품 중 하나가 이미 스트리밍 형식이거나 외부 컨텐츠입니다\n이 작품은 무시됩니다.</string>
     <string name="help_search">제목, 작가, 태그\n및 실행 코드 등 무엇이든 검색하세요!</string>
     <string name="help_page_slider">페이지 번호를 슬라이드하여 더 빠르게 탐색할 수 있습니다.</string>
-    <string name="items_selected">%d개 선택</string>
+    <plurals name="items_selected">
+        <item quantity="other"><x:g example="2" id="count">%d</x:g>개 선택</item>
+    </plurals>
     <string name="folder_undefined">오류 - 올바르지 않은 폴더</string>
     <string name="malformed_url">오류 - 잘못된 URL</string>
     <string name="unsupported_site">오류 - 지원되지 않는 사이트</string>

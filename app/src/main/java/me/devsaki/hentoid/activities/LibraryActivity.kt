@@ -1127,8 +1127,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             selectedNonArchivePdfExternalCount + selectedArchivePdfExternalCount
         binding?.selectionToolbar?.title = resources.getQuantityString(
             R.plurals.items_selected,
-            selectedTotalCount.toInt(),
-            selectedTotalCount.toInt()
+            selectedTotalCount,
+            selectedTotalCount
         )
         if (isGroupDisplayed()) {
             editMenu?.isVisible = !hasProcessed && !isMultipleSelection
