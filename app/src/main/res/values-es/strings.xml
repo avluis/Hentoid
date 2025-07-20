@@ -631,7 +631,6 @@
     <string name="image_extracting">Extrayendo imagen…</string>
     <string name="book_prefs">Configuración del libro</string>
     <string name="goto_app_prefs">Configuración de la aplicación </string>
-    <string name="use_app_prefs">Usar la configuración de la aplicación (%s)</string>
     <string name="page_favourite_success">Página marcada como favorita</string>
     <string name="page_unfavourite_success">Página desmarcada como favorita</string>
     <string name="book_favourite_success">Libro marcado como favorito</string>
