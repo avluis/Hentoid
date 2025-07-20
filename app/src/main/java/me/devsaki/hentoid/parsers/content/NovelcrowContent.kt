@@ -25,9 +25,6 @@ class NovelcrowContent : BaseContentParser() {
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private lateinit var coverUrl: String
 
-    @Selector(value = ".breadcrumb a")
-    private var breadcrumbs: List<Element>? = null
-
     @Selector(value = "head script.yoast-schema-graph")
     private var metadata: Element? = null
 
@@ -83,14 +80,8 @@ class NovelcrowContent : BaseContentParser() {
     }
 
     private fun updateGallery(content: Content, updateImages: Boolean): Content {
-        content.coverImageUrl = coverUrl
         var title = NO_TITLE
-        breadcrumbs?.let {
-            if (it.isNotEmpty())
-                title = cleanup(it[it.size - 1].text())
-        }
-        content.title = title
-        content.populateUniqueSiteId()
+        content.coverImageUrl = coverUrl
         metadata?.let {
             if (it.childNodeSize() > 0) {
                 try {
@@ -98,6 +89,8 @@ class NovelcrowContent : BaseContentParser() {
                         it.childNode(0).toString(),
                         YoastGalleryMetadata::class.java
                     )?.let { galleryMeta ->
+                        if (galleryMeta.getName().isNotBlank()) title = galleryMeta.getName()
+
                         val publishDate =
                             galleryMeta.getDatePublished() // e.g. 2021-01-27T15:20:38+00:00
                         if (publishDate.isNotEmpty()) content.uploadDate =
@@ -108,6 +101,10 @@ class NovelcrowContent : BaseContentParser() {
                 }
             }
         }
+
+        content.title = title
+        content.populateUniqueSiteId()
+
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.NOVELCROW)
         parseAttributes(attributes, AttributeType.CHARACTER, characters, false, Site.NOVELCROW)

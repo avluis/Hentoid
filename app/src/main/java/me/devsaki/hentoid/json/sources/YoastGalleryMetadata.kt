@@ -12,6 +12,7 @@ data class YoastGalleryMetadata(
     data class GraphData(
         @Json(name = "@type")
         val type: String?,
+        val name: String?,
         val datePublished: String?,
         val itemListElement: List<ItemListElement>?
     )
@@ -22,6 +23,15 @@ data class YoastGalleryMetadata(
         val url: String?,
         val position: Int
     )
+
+    fun getName(): String {
+        graph?.forEach { data ->
+            if (data.type != null && data.type.equals("webpage", ignoreCase = true)) {
+                return data.name?.replace(" - NovelCrow", "") ?: ""
+            }
+        }
+        return ""
+    }
 
     fun getDatePublished(): String {
         graph?.forEach { data ->
