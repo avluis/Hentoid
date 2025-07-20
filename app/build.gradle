@@ -150,7 +150,7 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
     // For ViewModel to work
-    def android_lifecycle_version = '2.9.1'
+    def android_lifecycle_version = '2.9.2'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
@@ -176,7 +176,7 @@ dependencies {
     def APNG4Android_version = '3.0.5'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
 
-    // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
+    // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif (using the 16kb fork for now)
     implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2'
 
     // PDF creator/extractor
