@@ -1068,14 +1068,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             R.id.action_select_queue_top -> {
-                selectedPositions = selectedItems.map { i -> fastAdapter.getPosition(i) }.sorted()
-                selectExtension.apply {
-                    deselect(selections.toMutableSet())
-                }
-                if (selectedPositions.isNotEmpty()) processMove(
-                    selectedPositions
-                ) { relativePositions: List<Int> ->
-                    viewModel.moveTop(relativePositions)
+                selectedPositions = selectedItems.map { fastAdapter.getPosition(it) }.sorted()
+                selectExtension.apply { deselect(selections.toMutableSet()) }
+                if (selectedPositions.isNotEmpty()) processMove(selectedPositions) {
+                    viewModel.moveTop(it)
                 }
             }
 

@@ -140,8 +140,9 @@ class QueueViewModel(
         // Update queue in DB
         dao.updateQueue(localQueue)
 
-        // If the 1st item is involved, signal it being skipped
-        if (0 == newPosition || 0 == oldPosition)
+        // If the 1st unfrozen item is involved, signal it being skipped
+        val firstUnfrozenIdx = localQueue.indexOfFirst { !it.frozen }
+        if (firstUnfrozenIdx == newPosition || firstUnfrozenIdx == oldPosition)
             EventBus.getDefault().post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_SKIP))
     }
 
