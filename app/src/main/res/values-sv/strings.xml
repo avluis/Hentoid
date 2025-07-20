@@ -104,6 +104,7 @@
     <string name="bookmark_current">Bokmärk nuvarande sida</string>
     <string name="bookmark_edit_title">Ändra bokmärkestitel</string>
     <string name="bookmark_homepage">Hemsida</string>
+    <string name="bookmark_sort_ask">Anpassad ordning kommer gå förlorad. Vill du verkligen det här?</string>
     <string name="bookmark_toggle_welcome">Växla bokmärkes-URL som välkomstsida</string>
     <string name="browse_mode_warning">Surfa-endast-läge är aktiverat\nDu använder appen utan lagringstillstånd.</string>
     <string name="cancel">Avbryt</string>
@@ -786,6 +787,7 @@
     </plurals>
     <string name="redownloaded_updating_webview">Webbvyn uppdaterar just nu, kan inte hämta ännu</string>
     <string name="refresh_allow_write">Vänligen tillåt skrivtillstånd</string>
+    <string name="refresh_auto_processing">Fräschar upp externt bibliotek automatiskt (%d/%d)</string>
     <string name="refresh_caption">Automatiskt fräscha upp biblioteksdata genom att omskanna filer och mappar.</string>
     <string name="refresh_location_external">Externt bibliotek</string>
     <string name="refresh_location_internal">Primärbibliotek (alla)</string>
@@ -799,6 +801,7 @@
     <string name="refresh_options_remove_placeholders">Ta bort platshållarböcker importerade genom metadata</string>
     <string name="refresh_options_rename">Döp om alla mappar enligt nuvarande namn-och maxlängdsinställningar</string>
     <string name="refresh_options_renumber_pages">Omnumrera sidor</string>
+    <string name="refresh_quick">Snabbuppfräschning</string>
     <string name="refresh_renumber_warning">Det här kommer kontrollera alla böcker och rätta till sidnumreringsmisstag.\nRäkna med att den här inställningen kommer sakta ner behandlingen rejält.</string>
     <string name="refresh_select_folder">Vänligen välj en existerande primärmapp. Platsen för den visas på skärmen.</string>
     <string name="refresh_step1">Primärmapp</string>
