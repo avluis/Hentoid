@@ -36,6 +36,7 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.json.core.JsonSiteSettings
 import me.devsaki.hentoid.receiver.PlugEventsReceiver
+import me.devsaki.hentoid.receiver.PowerEventReceiver
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.StorageCache
@@ -139,7 +140,7 @@ object AppStartup {
             this::searchForUpdates,
             this::sendFirebaseStats,
             this::createBookmarksJson,
-            this::createPlugReceiver,
+            this::createHardwareReceivers,
             this::activateTextIntent,
             this::checkAchievements
         )
@@ -264,7 +265,7 @@ object AppStartup {
         Timber.i("Create bookmarks JSON : done")
     }
 
-    private fun createPlugReceiver(context: Context, emitter: (Float) -> Unit) {
+    private fun createHardwareReceivers(context: Context, emitter: (Float) -> Unit) {
         Timber.i("Create plug receiver : start")
         val rcv = PlugEventsReceiver()
         val filter = IntentFilter()
@@ -273,6 +274,13 @@ object AppStartup {
         filter.addAction(Intent.ACTION_HEADSET_PLUG)
         context.registerReceiver(rcv, filter)
         Timber.i("Create plug receiver : done")
+
+        Timber.i("Create power receiver : start")
+        val rcv2 = PowerEventReceiver()
+        val filter2 = IntentFilter()
+        filter2.addAction(Intent.ACTION_SCREEN_OFF)
+        context.registerReceiver(rcv2, filter2)
+        Timber.i("Create power receiver : done")
     }
 
     private fun initStorageCaches(context: Context, emitter: (Float) -> Unit) {

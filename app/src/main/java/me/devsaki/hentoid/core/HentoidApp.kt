@@ -125,8 +125,7 @@ class HentoidApp : Application() {
     class LifeCycleListener : DefaultLifecycleObserver, LifecycleObserver {
         override fun onStop(owner: LifecycleOwner) {
             Timber.d("App moving to background")
-            if (enabled && isUnlocked && Settings.lockType > 0 && Settings.lockOnAppRestore
-            ) {
+            if (enabled && isUnlocked && Settings.lockType > 0 && Settings.lockOnAppRestore) {
                 setUnlocked(false)
                 setLockInstant(Instant.now().toEpochMilli())
             }
