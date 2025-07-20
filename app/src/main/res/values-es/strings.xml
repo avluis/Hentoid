@@ -404,6 +404,7 @@
     <string name="help_page_slider">Puedes buscar más rápido deslizando a través de los números de página. </string>
     <plurals name="items_selected">
         <item quantity="one"><x:g example="1" id="count">%d</x:g> elemento seleccionado</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> elementos seleccionados</item>
         <item quantity="many"><x:g example="2" id="count">%d</x:g> elementos seleccionados</item>
     </plurals>
     <string name="folder_undefined">Error - carpeta contenedora no definida</string>
@@ -835,10 +836,12 @@
     <string name="gallery_edit_name">Editar nombre</string>
     <plurals name="ask_delete_chapters">
         <item quantity="one">¿Borrar capítulo seleccionado\?\nNB : Esto eliminará las filas de imagen.</item>
+        <item quantity="many">¿Borrar <x:g example="2" id="count">%d</x:g> capítulos seleccionados\?\nNB : Esto eliminará las filas de imagen.</item>
         <item quantity="other">¿Borrar <x:g example="2" id="count">%d</x:g> capítulos seleccionados\?\nNB : Esto eliminará las filas de imagen.</item>
     </plurals>
     <plurals name="ask_delete_chapters_no_imgs">
         <item quantity="one">¿Borrar capítulo seleccionado\?\nNB : Esto no eliminará las filas de imagen.</item>
+        <item quantity="many">¿Borrar <x:g example="2" id="count">%d</x:g> capítulos seleccionados\?\nNB : Esto no eliminará las filas de imagen.</item>
         <item quantity="other">¿Borrar <x:g example="2" id="count">%d</x:g> capítulos seleccionados\?\nNB : Esto no eliminará las filas de imagen.</item>
     </plurals>
     <string name="notif_stream_complete">Transmisión completa</string>
