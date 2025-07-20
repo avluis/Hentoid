@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import me.devsaki.hentoid.core.Consumer
 import kotlin.math.max
 
-class CarouselDecorator(context: Context, @LayoutRes private val itemLayout: Int) {
+class CarouselDecorator(context: Context, @param:LayoutRes private val itemLayout: Int) {
     private val adapter: CarouselAdapter
     private val layoutManager: LinearLayoutManager
 

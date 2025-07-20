@@ -9,9 +9,9 @@ data class Achievement(
     val id: Int,
     val type: Type,
     val himitsu: Boolean,
-    @StringRes val title: Int,
-    @StringRes val description: Int,
-    @DrawableRes val icon: Int
+    @param:StringRes val title: Int,
+    @param:StringRes val description: Int,
+    @param:DrawableRes val icon: Int
 ) {
     enum class Type {
         BRONZE,

@@ -7,11 +7,11 @@ import java.util.Date
 
 @JsonClass(generateAdapter = true)
 data class GithubRelease(
-    @Json(name = "tag_name")
+    @param:Json(name = "tag_name")
     val tagName: String,
     val name: String,
     val body: String,
-    @Json(name = "created_at")
+    @param:Json(name = "created_at")
     val creationDate: Date,
     val assets: List<GithubAsset>,
     val prerelease: Boolean,
@@ -33,9 +33,9 @@ data class GithubRelease(
 
     @JsonClass(generateAdapter = true)
     data class GithubAsset(
-        @Json(name = "browser_download_url")
+        @param:Json(name = "browser_download_url")
         val browserDownloadUrl: String,
-        @Json(name = "content_type")
+        @param:Json(name = "content_type")
         val contentType: String
     )
 }

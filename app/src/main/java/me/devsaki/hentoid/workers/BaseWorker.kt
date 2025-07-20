@@ -29,7 +29,7 @@ import timber.log.Timber
 abstract class BaseWorker(
     context: Context,
     parameters: WorkerParameters,
-    @IdRes val serviceId: Int,
+    @param:IdRes val serviceId: Int,
     logName: String?
 ) : CoroutineWorker(context, parameters) {
     protected lateinit var notificationManager: NotificationManager

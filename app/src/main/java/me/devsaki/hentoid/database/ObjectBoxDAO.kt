@@ -364,8 +364,8 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectContentEndWithStorageUri(docPart, onlyFlagged)
     }
 
-    override fun selectContentByStorageRootUri(folderUri: String): List<Content> {
-        return ObjectBoxDB.selectContentStartWithStorageUri(folderUri)
+    override fun selectContentByStorageRootUri(rootUri: String): List<Content> {
+        return ObjectBoxDB.selectContentStartWithStorageUri(rootUri)
     }
 
     override fun insertContent(content: Content): Long {

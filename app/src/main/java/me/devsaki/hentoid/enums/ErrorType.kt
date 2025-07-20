@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import io.objectbox.converter.PropertyConverter
 import me.devsaki.hentoid.R
 
-enum class ErrorType(val code: Int, @StringRes val displayName: Int, val engName: String) {
+enum class ErrorType(val code: Int, @param:StringRes val displayName: Int, val engName: String) {
     PARSING(0, R.string.errortype_parsing, "Parsing"),
     NETWORKING(1, R.string.errortype_networking, "Networking"),
     IO(2, R.string.errortype_io, "I/O"),
@@ -22,7 +22,7 @@ enum class ErrorType(val code: Int, @StringRes val displayName: Int, val engName
             if (databaseValue == null) {
                 return null
             }
-            for (type in ErrorType.values()) {
+            for (type in entries) {
                 if (type.code == databaseValue) {
                     return type
                 }
@@ -37,7 +37,7 @@ enum class ErrorType(val code: Int, @StringRes val displayName: Int, val engName
 
     companion object {
         fun searchByCode(code: Int): ErrorType {
-            for (entry in ErrorType.values()) {
+            for (entry in entries) {
                 if (entry.code == code) return entry
             }
             return UNDEFINED

@@ -5,7 +5,7 @@ import me.devsaki.hentoid.R
 
 enum class Grouping(
     val id: Int,
-    @StringRes val displayName: Int,
+    @param:StringRes val displayName: Int,
     val canReorderGroups: Boolean,
     val canDeleteGroups: Boolean,
     val canReorderBooks: Boolean

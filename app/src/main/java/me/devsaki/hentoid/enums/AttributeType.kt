@@ -9,10 +9,10 @@ import me.devsaki.hentoid.R
 
 enum class AttributeType(
     val code: Int,
-    @StringRes val displayName: Int,
-    @StringRes val accusativeName: Int,
+    @param:StringRes val displayName: Int,
+    @param:StringRes val accusativeName: Int,
     val icon: Int,
-    @ColorRes val color: Int
+    @param:ColorRes val color: Int
 ) {
     // Attributes stored in Attributes table of the DB
     ARTIST(

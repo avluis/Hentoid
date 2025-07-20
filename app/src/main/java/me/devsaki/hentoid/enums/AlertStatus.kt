@@ -7,7 +7,7 @@ import me.devsaki.hentoid.R
 /**
  * Site issues alert levels
  */
-enum class AlertStatus(@ColorRes val color: Int, @DrawableRes val icon: Int) {
+enum class AlertStatus(@param:ColorRes val color: Int, @param:DrawableRes val icon: Int) {
     ORANGE(R.color.orange, R.drawable.ic_exclamation),
     RED(R.color.red, R.drawable.ic_error),
     GREY(R.color.dark_gray, R.drawable.ic_warning),
