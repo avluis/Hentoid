@@ -32,6 +32,7 @@ data class KemonoGallery(
     fun update(content: Content, galleryUrl: String, updateImages: Boolean): Content {
         content.site = Site.KEMONO
         content.url = galleryUrl.replace("/api/v1/", "/")
+            .replace("/posts-legacy", "/")
         content.title = cleanup(post.title)
         content.status = StatusContent.SAVED
         content.uploadDate = 0L
