@@ -60,7 +60,6 @@ import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
-import me.devsaki.hentoid.util.removeContentFromGrouping
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateJson
@@ -178,7 +177,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         synchronized(contentSearchManager) {
             currentSource?.let { libraryPaged.removeSource(it) }
             currentSource = newSource
-            currentSource?.let { libraryPaged.addSource(it) { libraryPaged.value = it } }
+            currentSource?.let { libraryPaged.addSource(it) { s -> libraryPaged.value = s } }
         }
         contentSearchBundle.postValue(contentSearchManager.toBundle())
     }
@@ -248,15 +247,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 val newTotalSource = groupSearchManager.getAllGroups(dao)
 
                 // Send results and total count with the same LiveData
-                val combined = MergerLiveData.Two<List<Group>, List<Group>, Pair<List<Group>, Int>>(
-                    newSource, newTotalSource
-                ) { data1, data2 -> Pair(data1, data2.size) }
+                val combined =
+                    MergerLiveData.Two(newSource, newTotalSource, false) { data1, data2 ->
+                        Pair(data1, data2.size)
+                    }
 
                 withContext(Dispatchers.Main) {
                     synchronized(groupSearchManager) {
                         currentGroupsSource?.let { groups.removeSource(it) }
                         currentGroupsSource = combined
-                        currentGroupsSource?.let { groups.addSource(it) { groups.value = it } }
+                        currentGroupsSource?.let { groups.addSource(it) { s -> groups.value = s } }
                     }
                 }
             } finally {

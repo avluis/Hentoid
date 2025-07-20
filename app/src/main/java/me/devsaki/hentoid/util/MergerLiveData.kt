@@ -14,12 +14,7 @@ sealed class MergerLiveData<TargetType> : MediatorLiveData<TargetType>() {
             super.onActive()
 
             addSource(firstSource) { value ->
-                val newValue =
-                    merging(
-                        value,
-                        secondSource.value ?: return@addSource
-                    )
-
+                val newValue = merging(value, secondSource.value ?: return@addSource)
                 postValue(
                     distinctUntilChanged = distinctUntilChanged,
                     newValue = newValue
@@ -27,12 +22,7 @@ sealed class MergerLiveData<TargetType> : MediatorLiveData<TargetType>() {
             }
 
             addSource(secondSource) { value ->
-                val newValue =
-                    merging(
-                        firstSource.value ?: return@addSource,
-                        value
-                    )
-
+                val newValue = merging(firstSource.value ?: return@addSource, value)
                 postValue(
                     distinctUntilChanged = distinctUntilChanged,
                     newValue = newValue
@@ -43,7 +33,6 @@ sealed class MergerLiveData<TargetType> : MediatorLiveData<TargetType>() {
         override fun onInactive() {
             removeSource(firstSource)
             removeSource(secondSource)
-
             super.onInactive()
         }
     }

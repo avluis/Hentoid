@@ -209,7 +209,7 @@ class LibraryGroupsFragment : Fragment(),
         super.onViewCreated(view, savedInstanceState)
         firstLibraryLoad = true
 
-        viewModel.groups.observe(viewLifecycleOwner) { onGroups2Changed(it) }
+        viewModel.groups.observe(viewLifecycleOwner) { onGroupsChanged(it) }
 
         viewModel.libraryPaged.observe(viewLifecycleOwner) { onLibraryChanged(it) }
 
@@ -844,7 +844,7 @@ class LibraryGroupsFragment : Fragment(),
         }
     }
 
-    private fun onGroups2Changed(data: Pair<List<Group>, Int>) {
+    private fun onGroupsChanged(data: Pair<List<Group>, Int>) {
         val enabled = activity.get()?.isGroupDisplayed() == true
         val result = data.first
         Timber.i(">> Groups changed ! Size=${result.size} enabled=$enabled")

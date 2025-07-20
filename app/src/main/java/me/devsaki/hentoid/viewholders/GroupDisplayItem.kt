@@ -23,6 +23,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
 import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.image.loadStill
+import timber.log.Timber
 
 class GroupDisplayItem(
     val group: Group,
@@ -85,12 +86,10 @@ class GroupDisplayItem(
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
                 val bundleParser = GroupItemBundle(bundle)
-                val stringValue = bundleParser.coverUri
-                if (stringValue != null) coverUri = stringValue
-                val boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.group.favourite = boolValue
-                val intValue = bundleParser.rating
-                if (intValue != null) item.group.rating = intValue
+                bundleParser.coverUri?.let { coverUri = it }
+                bundleParser.isFavourite?.let { item.group.favourite = it }
+                bundleParser.rating?.let { item.group.rating = it }
+                Timber.d("GROUP UPDATE")
             }
 
             if (item.group.isBeingProcessed)
