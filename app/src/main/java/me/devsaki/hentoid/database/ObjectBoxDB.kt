@@ -505,7 +505,8 @@ object ObjectBoxDB {
     fun selectContentByUrlOrCover(
         site: Site,
         contentUrl: String,
-        coverUrlStart: String
+        coverUrlStart: String,
+        searchChapters: Boolean = true
     ): Content? {
         val contentUrlCondition =
             Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
@@ -516,10 +517,14 @@ object ObjectBoxDB {
                     )
                 )
                 .and(Content_.site.equal(site.code))
-        val chapterUrlCondition: QueryCondition<Content> =
-            Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
-        val urlCondition = contentUrlCondition.or(chapterUrlCondition)
-        return if (coverUrlStart.isNotEmpty()) {
+
+        val urlCondition = if (searchChapters) {
+            val chapterUrlCondition: QueryCondition<Content> =
+                Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
+            contentUrlCondition.or(chapterUrlCondition)
+        } else contentUrlCondition
+
+        return if (coverUrlStart.isNotBlank()) {
             val coverCondition =
                 Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
                     .and(

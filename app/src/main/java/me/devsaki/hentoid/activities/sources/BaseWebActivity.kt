@@ -425,17 +425,19 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             currentContent != null,
             if (currentContent != null) currentContent!!.title else ""
         )
-        if (currentContent != null && url != null && createWebClient().isGalleryPage(url)) {
+        if (url != null && createWebClient().isGalleryPage(url)) {
             // TODO Cancel whichever process was happening before
-            lifecycleScope.launch {
-                try {
-                    val status = withContext(Dispatchers.IO) {
-                        processContent(currentContent!!, false)
+            currentContent?.let { cc ->
+                lifecycleScope.launch {
+                    try {
+                        val status = withContext(Dispatchers.IO) {
+                            processContent(cc, false)
+                        }
+                        onContentProcessed(cc, status, false)
+                    } catch (t: Throwable) {
+                        Timber.e(t)
+                        onContentProcessed(cc, ContentStatus.UNKNOWN, false)
                     }
-                    onContentProcessed(status, false)
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                    onContentProcessed(ContentStatus.UNKNOWN, false)
                 }
             }
         }
@@ -856,7 +858,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Listener for the Action button : download content, view queue or read content
      */
     protected open fun onActionClick() {
-        if (null == currentContent) return
+        val theContent = currentContent
+        if (null == theContent) return
         val needsDuplicateAlert =
             Settings.downloadDuplicateAsk && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD
         when (actionButtonMode) {
@@ -868,6 +871,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     duplicateSimilarity,
                     false
                 ) else processDownload(
+                    theContent,
                     quickDownload = false,
                     isDownloadPlus = false,
                     isReplaceDuplicate = false
@@ -882,6 +886,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     duplicateSimilarity,
                     true
                 ) else processDownload(
+                    theContent,
                     quickDownload = false,
                     isDownloadPlus = true,
                     isReplaceDuplicate = false
@@ -976,15 +981,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @param isReplaceDuplicate True if the action has been triggered by a "download and replace existing duplicate book" action
      */
     fun processDownload(
+        content: Content?,
         quickDownload: Boolean,
         isDownloadPlus: Boolean,
         isReplaceDuplicate: Boolean
     ) {
-        if (null == currentContent) return
         val dao: CollectionDAO = ObjectBoxDAO()
-        if (currentContent!!.id > 0) currentContent = dao.selectContent(currentContent!!.id)
-        if (null == currentContent) return
-        if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent!!.status) {
+        var theContent =
+            if (content != null && content.id > 0) dao.selectContent(content.id) else currentContent!!
+        if (null == theContent) return
+        if (!isDownloadPlus && StatusContent.DOWNLOADED == theContent.status) {
             toast(R.string.already_downloaded)
             if (!quickDownload) lifecycleScope.launch { setActionMode(ActionMode.READ) }
             return
@@ -992,22 +998,22 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         var replacementTitle: String? = null
         if (isDownloadPlus) {
             // Copy the _current_ content's download params to the extra images
-            val downloadParamsStr = currentContent!!.downloadParams
+            val downloadParamsStr = theContent.downloadParams
             if (downloadParamsStr.length > 2) {
                 for (i in extraImages) i.downloadParams = downloadParamsStr
             }
 
             // Determine base book : browsed downloaded book or best duplicate ?
-            if (!isInLibrary(currentContent!!.status) && duplicateId > 0) {
-                currentContent = dao.selectContent(duplicateId)
-                if (null == currentContent) return
+            if (!isInLibrary(theContent.status) && duplicateId > 0) {
+                theContent = dao.selectContent(duplicateId)
+                if (null == theContent) return
             }
 
             // Append additional pages & chapters to the base book's list of pages & chapters
             val updatedImgs: MutableList<ImageFile> = ArrayList() // Entire image set to update
             val existingImageUrls: MutableSet<String> = HashSet() // URLs of known images
             val existingChapterOrders: MutableSet<Int> = HashSet() // Positions of known chapters
-            currentContent?.imageFiles?.let {
+            theContent.imageFiles.let {
                 existingImageUrls.addAll(it.map { img -> img.url })
                 existingChapterOrders.addAll(
                     it.map { img ->
@@ -1024,10 +1030,10 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             }
             if (additionalNonExistingImages.isNotEmpty()) {
                 updatedImgs.addAll(additionalNonExistingImages)
-                currentContent!!.setImageFiles(updatedImgs)
+                theContent.setImageFiles(updatedImgs)
                 // Update content title if extra pages are found and title has changed
                 if (onlineContentTitle.isNotEmpty()
-                    && !onlineContentTitle.equals(currentContent!!.title, ignoreCase = true)
+                    && !onlineContentTitle.equals(theContent.title, ignoreCase = true)
                 ) replacementTitle = onlineContentTitle
             }
             // Save additional chapters to stored book
@@ -1035,16 +1041,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 additionalNonExistingImages.mapNotNull { it.linkedChapter }
                     .filterNot { ch -> existingChapterOrders.contains(ch.order) }
             if (additionalNonExistingChapters.isNotEmpty()) {
-                val updatedChapters = currentContent!!.chaptersList.toMutableList()
+                val updatedChapters = theContent.chaptersList.toMutableList()
                 updatedChapters.addAll(additionalNonExistingChapters)
-                currentContent!!.setChapters(updatedChapters)
+                theContent.setChapters(updatedChapters)
             }
-            currentContent!!.status = StatusContent.SAVED
-            dao.insertContent(currentContent!!)
+            theContent.status = StatusContent.SAVED
+            dao.insertContent(theContent)
         } // isDownloadPlus
 
         // Check if the tag blocker applies here
-        val blockedTagsLocal = getBlockedTags(currentContent!!)
+        val blockedTagsLocal = getBlockedTags(theContent)
         if (blockedTagsLocal.isNotEmpty()) {
             if (Settings.tagBlockingBehaviour == Settings.Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 toast(R.string.blocked_tag, blockedTagsLocal[0])
@@ -1053,17 +1059,17 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 errors.add(
                     ErrorRecord(
                         type = ErrorType.BLOCKED,
-                        url = currentContent!!.url,
+                        url = theContent.url,
                         contentPart = "tags",
                         description = "blocked tags : " + TextUtils.join(", ", blockedTagsLocal),
                         timestamp = Instant.now()
                     )
                 )
-                currentContent!!.setErrorLog(errors)
-                currentContent!!.downloadMode = Settings.getBrowserDlAction()
-                currentContent!!.status = StatusContent.ERROR
-                if (isReplaceDuplicate) currentContent!!.setContentIdToReplace(duplicateId)
-                dao.insertContent(currentContent!!)
+                theContent.setErrorLog(errors)
+                theContent.downloadMode = Settings.getBrowserDlAction()
+                theContent.status = StatusContent.ERROR
+                if (isReplaceDuplicate) theContent.setContentIdToReplace(duplicateId)
+                dao.insertContent(theContent)
                 toast(R.string.blocked_tag_queued, blockedTagsLocal[0])
                 lifecycleScope.launch { setActionMode(ActionMode.VIEW_QUEUE) }
             }
@@ -1078,6 +1084,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     webView, this,
                     { position2, _ ->
                         addToQueue(
+                            theContent,
                             if (0 == position1) QueuePosition.TOP else QueuePosition.BOTTOM,
                             if (0 == position2) DownloadMode.DOWNLOAD else DownloadMode.STREAM,
                             isReplaceDuplicate,
@@ -1089,6 +1096,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         } else if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             showAddQueueMenu(this, webView, this) { position, _ ->
                 addToQueue(
+                    theContent,
                     if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
                     Settings.getBrowserDlAction(),
                     isReplaceDuplicate,
@@ -1099,6 +1107,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             showDownloadModeMenu(
                 this, webView, this, { position, _ ->
                     addToQueue(
+                        theContent,
                         QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                         if (0 == position) DownloadMode.DOWNLOAD else DownloadMode.STREAM,
                         isReplaceDuplicate,
@@ -1108,6 +1117,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             )
         } else {
             addToQueue(
+                theContent,
                 QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                 Settings.getBrowserDlAction(),
                 isReplaceDuplicate,
@@ -1125,12 +1135,13 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * @param isReplaceDuplicate True if existing duplicate book has to be replaced upon download completion
      */
     private fun addToQueue(
+        content: Content,
         position: QueuePosition,
         downloadMode: DownloadMode,
         isReplaceDuplicate: Boolean,
         replacementTitle: String?
     ) {
-        if (null == currentContent) return
+        Timber.i("Adding to queue  ${content.url} ${content.galleryUrl}")
         binding?.apply {
             val coords = getCenter(quickDlFeedback)
             if (coords != null && View.VISIBLE == quickDlFeedback.visibility) {
@@ -1154,11 +1165,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 if (binding != null) animatedCheck.visibility = View.GONE
             }, 1000)
         }
-        currentContent!!.downloadMode = downloadMode
+        content.downloadMode = downloadMode
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             dao.addContentToQueue(
-                currentContent!!,
+                content,
                 null,
                 null,
                 position,
@@ -1223,14 +1234,19 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (onlineContent.url.isEmpty()) return ContentStatus.UNDOWNLOADABLE
         if (onlineContent.status == StatusContent.IGNORED) return ContentStatus.UNDOWNLOADABLE
         currentContent = null
-        Timber.i("Content Site, URL : %s, %s", onlineContent.site.code, onlineContent.url)
+        Timber.i("Processing ${onlineContent.site.name} Content @ ${onlineContent.url} ${onlineContent.coverImageUrl}")
         val searchUrl =
             if (getStartSite().hasCoverBasedPageUpdates) onlineContent.coverImageUrl else ""
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             val contentDB =
-                dao.selectContentByUrlOrCover(onlineContent.site, onlineContent.url, searchUrl)
+                dao.selectContentByUrlOrCover(
+                    onlineContent.site,
+                    onlineContent.url,
+                    searchUrl,
+                    false
+                )
             val isInCollection = contentDB != null && isInLibrary(contentDB.status)
             val isInQueue = contentDB != null && isInQueue(contentDB.status)
             if (!isInCollection && !isInQueue) {
@@ -1284,10 +1300,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             // Content ID of the duplicate candidate of the currently viewed Content
                             val duplicateSameSite = duplicateResult.first.site == onlineContent.site
                             // Same site and similar => enable download button by default, but look for extra pics just in case
-                            if (duplicateSameSite && Settings.downloadPlusDuplicateTry && !quickDownload) searchForExtraImages(
-                                duplicateResult.first,
-                                onlineContent
-                            )
+                            if (duplicateSameSite && Settings.downloadPlusDuplicateTry && !quickDownload)
+                                searchForExtraImages(duplicateResult.first, onlineContent)
                         }
                     } catch (e: Exception) {
                         Timber.w(e)
@@ -1297,9 +1311,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     onlineContent.status = StatusContent.SAVED
                     addContent(this, dao, onlineContent)
                 } else {
+                    onlineContent.id = contentDB.id
                     currentContent = contentDB
                 }
             } else {
+                onlineContent.id = contentDB.id
                 currentContent = contentDB
             }
             if (null == currentContent) currentContent = onlineContent
@@ -1313,26 +1329,29 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
     }
 
-    override fun onContentReady(result: Content, quickDownload: Boolean) {
+    override fun onContentReady(content: Content, quickDownload: Boolean) {
         // TODO Cancel whichever process was happening before
         if (Settings.isBrowserMode) return
 
         lifecycleScope.launch {
             try {
                 val status = withContext(Dispatchers.IO) {
-                    processContent(result, quickDownload)
+                    processContent(content, quickDownload)
                 }
-                onContentProcessed(status, quickDownload)
+                onContentProcessed(content, status, quickDownload)
             } catch (t: Throwable) {
                 Timber.e(t)
-                onContentProcessed(ContentStatus.UNKNOWN, false)
+                onContentProcessed(content, ContentStatus.UNKNOWN, false)
             }
         }
     }
 
-    private fun onContentProcessed(status: ContentStatus, quickDownload: Boolean) {
+    private fun onContentProcessed(
+        content: Content,
+        status: ContentStatus,
+        quickDownload: Boolean
+    ) {
         binding?.quickDlFeedback?.visibility = View.INVISIBLE
-        if (null == currentContent) return
         when (status) {
             ContentStatus.UNDOWNLOADABLE -> onResultFailed()
             ContentStatus.UNKNOWN -> {
@@ -1340,10 +1359,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                     if (duplicateId > -1 && Settings.downloadDuplicateAsk) DuplicateDialogFragment.invoke(
                         this,
                         duplicateId,
-                        currentContent!!.qtyPages,
+                        content.qtyPages,
                         duplicateSimilarity,
                         false
                     ) else processDownload(
+                        content,
                         quickDownload = true,
                         isDownloadPlus = false,
                         isReplaceDuplicate = false
@@ -1361,7 +1381,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 lifecycleScope.launch { setActionMode(ActionMode.VIEW_QUEUE) }
             }
         }
-        blockedTags = getBlockedTags(currentContent!!).toMutableList()
+        blockedTags = getBlockedTags(content).toMutableList()
     }
 
     override fun onNoResult() {
@@ -1470,9 +1490,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         ) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
             val storedUrls: MutableSet<String> = HashSet()
-            storedContent.imageFiles.let {
+            storedContent.imageFiles.let { imgs ->
                 storedUrls.addAll(
-                    it
+                    imgs
                         .filter { isInLibrary(it.status) }.map { it.url }.toList()
                 )
             }
@@ -1604,11 +1624,14 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     }
 
     override fun onDownloadDuplicate(actionMode: DuplicateDialogFragment.ActionMode) {
-        processDownload(
-            false,
-            actionMode == DuplicateDialogFragment.ActionMode.DOWNLOAD_PLUS,
-            actionMode == DuplicateDialogFragment.ActionMode.REPLACE
-        )
+        currentContent?.let { cc ->
+            processDownload(
+                cc,
+                false,
+                actionMode == DuplicateDialogFragment.ActionMode.DOWNLOAD_PLUS,
+                actionMode == DuplicateDialogFragment.ActionMode.REPLACE
+            )
+        }
     }
 
 

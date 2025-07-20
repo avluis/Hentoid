@@ -66,7 +66,7 @@ class TsuminoActivity : BaseWebActivity() {
                 downloadFabPressed = false
                 val currentIndex: Int = webView.copyBackForwardList().currentIndex
                 webView.goBackOrForward(historyIndex - currentIndex)
-                processDownload(false, isDownloadPlus = false, isReplaceDuplicate = false)
+                processDownload(null,false, isDownloadPlus = false, isReplaceDuplicate = false)
             }
         }
     }

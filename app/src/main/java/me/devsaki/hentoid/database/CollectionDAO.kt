@@ -40,7 +40,7 @@ interface CollectionDAO {
 
     fun selectContentByStorageRootUri(rootUri: String): List<Content>
 
-    fun selectContentByUrlOrCover(site: Site, contentUrl: String, coverUrl: String?): Content?
+    fun selectContentByUrlOrCover(site: Site, contentUrl: String, coverUrl: String?, searchChapters: Boolean = true): Content?
 
     fun selectContentsByUrl(site: Site, contentUrl: String): Set<Content>
 
