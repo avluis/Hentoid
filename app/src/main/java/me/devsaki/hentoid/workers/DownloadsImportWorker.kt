@@ -116,7 +116,7 @@ class DownloadsImportWorker(
         notifyProcessEnd()
     }
 
-    private fun importGallery(
+    private suspend fun importGallery(
         url: String,
         queuePosition: QueuePosition,
         importAsStreamed: Boolean,

@@ -60,6 +60,7 @@ import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
+import me.devsaki.hentoid.util.removeContentFromGrouping
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateJson
@@ -718,7 +719,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
                                 // Reparse content itself
-                                res = reparseFromScratch(c)
+                                res = reparseFromScratch(c, dao)
                             }
 
                             // Reparse chapters from scratch if images are KO
@@ -736,7 +737,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             }
                             res?.let {
                                 it.setChapters(chaps)
-                                it.setImageFiles(chaps.flatMap { it.imageList })
+                                it.setImageFiles(chaps.flatMap { ch -> ch.imageList })
                             }
                         } else { // Classic content
                             val isDownloadable = isDownloadable(c)
@@ -745,7 +746,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 if (!isDownloadable) msg += " (pages unreachable)"
                                 Timber.d(msg)
                                 // Reparse content itself
-                                res = reparseFromScratch(c, reparseImages)
+                                res = reparseFromScratch(c, dao, reparseImages)
                             }
                         }
 

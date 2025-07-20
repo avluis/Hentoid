@@ -259,13 +259,13 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private fun streamContent(content: Content) {
+    private suspend fun streamContent(content: Content) {
         Timber.d("Checking pages availability")
         // Reparse content from scratch if images KO
         val res = if (!isDownloadable(content)) {
             trace(Log.INFO, "Pages unreachable; reparsing content %s", content.title)
             // Reparse content itself
-            val newContent = reparseFromScratch(content)
+            val newContent = reparseFromScratch(content, dao)
             if (null == newContent) null
             else {
                 // Reparse pages

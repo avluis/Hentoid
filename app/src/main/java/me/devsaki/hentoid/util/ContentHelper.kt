@@ -793,7 +793,7 @@ fun getPictureThumbCached(
                         .filter {
                             // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
                             val pathParts = it.path.split('/')
-                            UriParts(resource).fileNameFull == pathParts[pathParts.size -1]
+                            UriParts(resource).fileNameFull == pathParts[pathParts.size - 1]
                         }
                 }
                 if (entries.isEmpty()) return null
@@ -812,7 +812,7 @@ fun getPictureThumbCached(
                         .filter {
                             // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
                             val pathParts = it.path.split('/')
-                            UriParts(resource).fileNameFull == pathParts[pathParts.size -1]
+                            UriParts(resource).fileNameFull == pathParts[pathParts.size - 1]
                         }
                 }
                 if (entries.isEmpty()) return null
@@ -1281,16 +1281,26 @@ fun getBlockedTags(content: Content): List<String> {
  * @param keepUris  True to keep JSON and folder Uri values inside the result
  * @return Content updated from its online source, or null if something went wrong
  */
-fun reparseFromScratch(content: Content, keepUris: Boolean = false): Content? {
+suspend fun reparseFromScratch(
+    content: Content,
+    dao: CollectionDAO,
+    keepUris: Boolean = false
+): Content? = withContext(Dispatchers.IO) {
     try {
-        return reparseFromScratch(content.galleryUrl, content, keepUris)
+        val result = reparseFromScratch(content.galleryUrl, content, keepUris)
+
+        // Clear attached artists groups (in case they'd be updated)
+        result?.let {
+            removeContentFromGrouping(Grouping.ARTIST, it, dao)
+        }
+
+        return@withContext result
     } catch (e: IOException) {
         Timber.w(e)
-        return null
     } catch (e: CloudflareProtectedException) {
         Timber.w(e)
-        return null
     }
+    return@withContext null
 }
 
 /**
@@ -1301,7 +1311,7 @@ fun reparseFromScratch(content: Content, keepUris: Boolean = false): Content? {
  * @throws IOException If something horrible happens during parsing
  */
 @Throws(IOException::class, CloudflareProtectedException::class)
-fun parseFromScratch(url: String): Content? {
+suspend fun parseFromScratch(url: String): Content? {
     return reparseFromScratch(url, null)
 }
 
@@ -1315,13 +1325,11 @@ fun parseFromScratch(url: String): Content? {
  * @throws IOException If something horrible happens during parsing
  */
 @Throws(IOException::class, CloudflareProtectedException::class)
-private fun reparseFromScratch(
+private suspend fun reparseFromScratch(
     url: String,
     content: Content?,
     keepUris: Boolean = false
-): Content? {
-    assertNonUiThread()
-
+): Content? = withContext(Dispatchers.IO) {
     val urlToLoad: String
     val site: Site?
     if (null == content) {
@@ -1331,11 +1339,11 @@ private fun reparseFromScratch(
         urlToLoad = content.galleryUrl
         site = content.site
     }
-    if (null == site || Site.NONE == site) return null
+    if (null == site || Site.NONE == site) return@withContext null
 
     val fetchResponse = fetchBodyFast(urlToLoad, site, null, "text/html")
     fetchResponse.first.use { body ->
-        if (null == body) return null
+        if (null == body) return@withContext null
         val c = getContentParserClass(site)
         val jspoon = Jspoon.create()
         val htmlAdapter = jspoon.adapter(c) // Unchecked but alright
@@ -1353,7 +1361,7 @@ private fun reparseFromScratch(
 
         if (newContent.status == StatusContent.IGNORED) {
             val canonicalUrl = contentParser.canonicalUrl
-            return if (canonicalUrl.isNotEmpty() && !canonicalUrl.equals(
+            return@withContext if (canonicalUrl.isNotEmpty() && !canonicalUrl.equals(
                     urlToLoad,
                     ignoreCase = true
                 )
@@ -1371,7 +1379,7 @@ private fun reparseFromScratch(
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
 
         newContent.downloadParams = serializeToJson<Map<String, String>>(params, MAP_STRINGS)
-        return newContent
+        return@withContext newContent
     }
 }
 

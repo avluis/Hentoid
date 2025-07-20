@@ -838,9 +838,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             val isPreviousDownload = content.downloadCompletionDate > 0
 
             // Set error state if less pages than initially detected - More than 10% difference in number of pages
-            if (content.qtyPages > 0 && nbImages < content.qtyPages && !isPreviousDownload && abs(
-                    nbImages - content.qtyPages
-                ) > content.qtyPages * 0.1
+            if (content.qtyPages > 0 && nbImages < content.qtyPages && !isPreviousDownload
+                && abs(nbImages - content.qtyPages) > content.qtyPages * 0.1
             ) {
                 val errorMsg = String.format(
                     "The number of images found (%s) does not match the book's number of pages (%s)",
