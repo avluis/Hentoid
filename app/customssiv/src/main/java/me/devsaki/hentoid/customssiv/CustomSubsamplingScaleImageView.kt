@@ -2440,11 +2440,6 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             )
 
             ScaleType.STRETCH_SCREEN -> return 1f
-
-            else -> return min(
-                viewWidth / sWidth().toFloat(),
-                viewHeight / sHeight().toFloat()
-            )
         }
     }
 
