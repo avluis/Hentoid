@@ -2,6 +2,7 @@
 <resources>
   <plurals name="add_to_queue">
     <item quantity="one">%1$d/%2$d elemento aggiunto alla coda</item>
+    <item quantity="other">%1$d/%2$d elementi aggiunti alla coda</item>
     <item quantity="many">%1$d/%2$d elementi aggiunti alla coda</item>
   </plurals>
   <string name="already_downloaded">Già scaricato</string>
@@ -10,6 +11,7 @@
   <string name="download_complete">Download completato</string>
   <plurals name="download_completed">
     <item quantity="one">Download completato</item>
+    <item quantity="other">%d downloads completati</item>
     <item quantity="many">%d downloads completati</item>
   </plurals>
   <string name="download_error">Download completato, ma si è verificato un errore</string>
