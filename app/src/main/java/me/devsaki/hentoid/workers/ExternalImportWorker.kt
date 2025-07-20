@@ -353,6 +353,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun onDeletedBH(
         context: Context,
         deleted: Long,
