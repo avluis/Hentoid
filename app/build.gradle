@@ -172,7 +172,7 @@ dependencies {
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
-    implementation 'io.github.waynejo:androidndkgif:1.0.1'
+    implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2'
 
     // PDF creator/extractor
     implementation 'com.itextpdf:itext7-core:8.0.5'
