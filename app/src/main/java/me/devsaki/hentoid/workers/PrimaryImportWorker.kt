@@ -250,7 +250,10 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         0,
                         f.name ?: ""
                     )
-                    bookFolders.addAll(explorer.listFolders(context, f))
+                    // Ignore syncthing subfolders
+                    bookFolders.addAll(
+                        explorer.listFolders(context, f)
+                            .filterNot { (it.name ?: "").startsWith(".st") })
                 }
                 eventComplete(
                     STEP_2_BOOK_FOLDERS,
@@ -676,6 +679,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
             } else { // JSON not found
                 val subfolders = explorer.listFolders(context, bookFolder)
+                    .filterNot { (it.name ?: "").startsWith(".st") } // Ignore syncthing subfolders
                 if (subfolders.isNotEmpty()) { // Folder doesn't contain books but contains subdirectories
                     bookFolders.addAll(subfolders)
                     trace(

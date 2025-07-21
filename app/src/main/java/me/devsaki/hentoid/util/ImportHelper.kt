@@ -398,7 +398,10 @@ fun setAndScanExternalFolder(
     Settings.externalLibraryUri = folderUri
 
     // Start the import
-    return if (runExternalImport(context, quickScan)) Pair(ProcessFolderResult.OK_LIBRARY_DETECTED, folderUri)
+    return if (runExternalImport(context, quickScan)) Pair(
+        ProcessFolderResult.OK_LIBRARY_DETECTED,
+        folderUri
+    )
     else Pair(ProcessFolderResult.KO_ALREADY_RUNNING, folderUri)
 }
 
@@ -475,7 +478,6 @@ fun showExistingLibraryDialog(
 /**
  * Detect whether the given folder contains books or not
  * by counting the elements inside each site's download folder (but not its subfolders)
- *
  *
  * NB : this method works approximately because it doesn't try to count JSON files
  * However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
@@ -635,8 +637,12 @@ fun scanFolderRecursive(
     if (isCanceled?.invoke() == true) return
     if (parentNames.size > 4) return  // We've descended too far
     val rootName = toScan.name ?: ""
+
     Timber.d(">>>> scan root ${URLDecoder.decode(toScan.uri.toString(), "UTF-8")}")
+    // Ignore syncthing subfolders
     val files = explorer.listDocumentFiles(context, toScan)
+        .filterNot { it.isDirectory && (it.name ?: "").startsWith(".st") }
+
     val subFolders: MutableList<DocumentFile> = ArrayList()
     val images: MutableList<DocumentFile> = ArrayList()
     val archivesPdf: MutableList<DocumentFile> = ArrayList()
