@@ -76,6 +76,7 @@ android {
         release {
             debuggable false
             minifyEnabled true
+            shrinkResources true
 
             buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/"'
 
