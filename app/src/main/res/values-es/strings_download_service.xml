@@ -1,10 +1,18 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="download_completed">Descarga finalizada</string>
-  <string name="download_complete">Descarga finalizada</string>
-  <string name="download_cancelled">Descarga cancelada</string>
-  <string name="download_error">Descarga completada pero hay un error</string>
-  <string name="add_to_queue">%1$d%2$d artículo agregado a la cola de descarga</string>
-  <string name="already_downloaded">Ya había sido descargado</string>
-  <string name="already_queued">Ya había sido agregado a la cola</string>
+    <plurals name="add_to_queue">
+        <item quantity="one">%1$d/%2$d artículo añadido a la cola</item>
+        <item quantity="other">%1$d/%2$d artículos añadidos a la cola</item>
+        <item quantity="many">%1$d/%2$d artículos añadidos a la cola</item>
+    </plurals>
+    <string name="already_downloaded">Ya había sido descargado</string>
+    <string name="already_queued">Ya había sido agregado a la cola</string>
+    <string name="download_cancelled">Descarga cancelada</string>
+    <string name="download_complete">Descarga completada</string>
+    <plurals name="download_completed">
+        <item quantity="one">Descarga completada</item>
+        <item quantity="other">Descargas completadas</item>
+        <item quantity="many">Descargas completadas</item>
+    </plurals>
+    <string name="download_error">Descarga completada pero hay un error</string>
 </resources>
