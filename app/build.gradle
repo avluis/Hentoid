@@ -180,7 +180,7 @@ dependencies {
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     //implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2' <-- messes up with the theme
-    implementation 'io.github.waynejo:androidndkgif:v1.0.1'
+    implementation 'io.github.waynejo:androidndkgif:1.0.1'
 
     // PDF creator/extractor
     implementation 'com.itextpdf:itext7-core:8.0.5'
