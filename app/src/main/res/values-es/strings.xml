@@ -41,18 +41,18 @@
     <string name="archive_progress">Archivando libros</string>
     <string name="archive_progress_subtitle">Completado: %s</string>
     <plurals name="archive_success">
-        <item quantity="one">%d libro archivado en tu carpeta de descargas</item>
         <item quantity="many">%d libros archivados en tu carpeta de descargas</item>
+        <item quantity="one">%d libro archivado en tu carpeta de descargas</item>
         <item quantity="other">%d libros archivados en tu carpeta de descargas</item>
     </plurals>
     <plurals name="ask_archive_multiple">
-        <item quantity="one">¿Archivar el elemento seleccionado?</item>
         <item quantity="many">¿Archivar %d elementos seleccionados?</item>
+        <item quantity="one">¿Archivar el elemento seleccionado?</item>
         <item quantity="other">¿Archivar %d elementos seleccionados?</item>
     </plurals>
     <plurals name="ask_cancel_multiple">
-        <item quantity="one">¿Cancelar el elemento seleccionado?</item>
         <item quantity="many">¿Cancelar los elementos seleccionados?</item>
+        <item quantity="one">¿Cancelar el elemento seleccionado?</item>
         <item quantity="other">¿Cancelar los elementos seleccionados?</item>
     </plurals>
     <string name="ask_clear_chapters">¿Eliminar todos los capítulos?</string>
@@ -67,8 +67,8 @@
         <item quantity="other">¿Borrar %d capítulos seleccionados? Nota : Esto no eliminará las filas de imagen.</item>
     </plurals>
     <plurals name="ask_delete_multiple">
-        <item quantity="one">¿Eliminar el elemento seleccionado?</item>
         <item quantity="many">¿Eliminar %d elementos seleccionados?</item>
+        <item quantity="one">¿Eliminar el elemento seleccionado?</item>
         <item quantity="other">¿Eliminar %d elementos seleccionados?</item>
     </plurals>
     <string name="background_color">Color de fondo</string>
@@ -79,34 +79,34 @@
     <string name="blocked_tag">El libro tiene una etiqueta bloqueada (%s)\nDescarga cancelada</string>
     <string name="blocked_tag_queued">El libro tiene una etiqueta bloqueada (%s)\nPuesto en la cola de descargas como error</string>
     <plurals name="book">
+        <item quantity="many">Libros</item>
         <item quantity="one">libro</item>
         <item quantity="other">Libros</item>
-        <item quantity="many">Libros</item>
     </plurals>
     <plurals name="book_delete">
-        <item quantity="one">Eliminar %1$d libro</item>
         <item quantity="many">Eliminar %1$d libros</item>
+        <item quantity="one">Eliminar %1$d libro</item>
         <item quantity="other">Eliminar %1$d libros</item>
     </plurals>
     <string name="book_edit_title">Editar título del libro</string>
     <string name="book_favourite_success">Libro marcado como favorito</string>
     <plurals name="book_keep">
+        <item quantity="many">Conservar %1$d libros</item>
         <item quantity="one">Conserve %1$d libro</item>
         <item quantity="other">Conservar %1$d libros</item>
-        <item quantity="many">Conservar %1$d libros</item>
     </plurals>
     <string name="book_launchcode">Código nuclear: %s</string>
-    <string name="book_list_loading_failed">Error al cargar la lista de libros</string>
+    <string name="book_list_loading_failed">Falló al cargar la lista de libros</string>
     <string name="book_prefs">Configuración del libro</string>
     <plurals name="book_progress">
+        <item quantity="many">%1$d / %2$d libros</item>
         <item quantity="one">%1$d / %2$d libro</item>
         <item quantity="other">%1$d / %2$d libros</item>
-        <item quantity="many">%1$d / %2$d libros</item>
     </plurals>
     <string name="book_settings">Configuración del libro</string>
     <plurals name="book_stream">
-        <item quantity="one">Cambiar %1$d libro a streaming</item>
         <item quantity="many">Cambiar %1$d libros a streaming</item>
+        <item quantity="one">Cambiar %1$d libro a streaming</item>
         <item quantity="other">Cambiar %1$d libros a streaming</item>
     </plurals>
     <string name="book_unfavourite_success">Libro desmarcado como favorito</string>
@@ -141,7 +141,7 @@
     <string name="chapters_remove_failed">No se pudieron eliminar los capítulos</string>
     <string name="checking_file">Comprobando archivo…</string>
     <string name="checking_updates">Buscando actualizaciones</string>
-    <string name="clear_rating">Borrar valoración</string>
+    <string name="clear_rating">Borrar apreciación</string>
     <string name="clear_search_history">Limpiar historial de búsqueda</string>
     <string name="clear_search_history_confirm">¿Limpiar historial de búsqueda?</string>
     <string name="close_drawer">Cerrar panel </string>
@@ -162,9 +162,9 @@
     <string name="copy_target_folder_fail">No se pudo escribir en la carpeta de destino</string>
     <string name="copy_target_folder_success">Copiado a la carpeta de destino</string>
     <plurals name="create_archive">
+        <item quantity="many">Crear archivos</item>
         <item quantity="one">Crear archivo</item>
         <item quantity="other">Crear archivos</item>
-        <item quantity="many">Crear archivos</item>
     </plurals>
     <string name="create_generic">Crear</string>
     <string name="dark_grey">Gris oscuro</string>
@@ -172,17 +172,17 @@
     <string name="delete_chapters_progress">Eliminando capítulos</string>
     <string name="delete_images_progress">Eliminando imágenes</string>
     <string name="delete_limit">No se pueden eliminar más de 1000 libros a la vez</string>
-    <string name="delete_pages_progress">Eliminar páginas</string>
-    <string name="delete_success">Eliminados</string>
+    <string name="delete_pages_progress">Eliminando páginas</string>
+    <string name="delete_success">Eliminado</string>
     <plurals name="delete_success_books">
+        <item quantity="many">%d libros</item>
         <item quantity="one">%d libro</item>
         <item quantity="other">%d libros</item>
-        <item quantity="many">%d libros</item>
     </plurals>
     <plurals name="delete_success_groups">
+        <item quantity="many">%d grupos</item>
         <item quantity="one">%d grupo</item>
         <item quantity="other">%d grupos</item>
-        <item quantity="many">%d grupos</item>
     </plurals>
     <string name="dialog_prompt">Elegir Carpeta</string>
     <string name="disabled_generic">Desactivado</string>
@@ -193,15 +193,15 @@
     <string name="download_canceled">Descarga cancelada-libro no disponible online </string>
     <string name="download_canceled_merged">Descarga cancelada: al menos un capítulo no está disponible en línea</string>
     <plurals name="download_confirm">
+        <item quantity="many">¿Descargar libros de seleccionados?</item>
         <item quantity="one">¿Descargar libro seleccionado?</item>
         <item quantity="other">¿Descargar libros de seleccionados?</item>
-        <item quantity="many">¿Descargar libros de seleccionados?</item>
     </plurals>
     <string name="download_missing_webview">Descarga cancelada - WebView no disponible</string>
     <plurals name="download_non_streamed_content">
+        <item quantity="many">%d libros seleccionados ya están descargados, serán ignorados.</item>
         <item quantity="one">Uno de los libros seleccionados ya está descargado. Este libro será ignorado.</item>
         <item quantity="other">%d libros seleccionados ya están descargados, serán ignorados.</item>
-        <item quantity="many">%d libros seleccionados ya están descargados, serán ignorados.</item>
     </plurals>
     <string name="download_notif_failed">Descarga fallida</string>
     <string name="download_notif_failed_details">No se puede descargar %1$s: no se puede crear carpeta %2$s. Revisa tu Carpeta principal e intenta descargar usando el botón \'!\'.</string>
@@ -224,17 +224,17 @@
     <string name="duplicate_artist_score">Artista: %.0f%%</string>
     <string name="duplicate_artist_score_nodata">Artista: sin datos</string>
     <plurals name="duplicate_count">
+        <item quantity="many">%d duplicados</item>
         <item quantity="one">%d duplicado</item>
         <item quantity="other">%d duplicados</item>
-        <item quantity="many">%d duplicados</item>
     </plurals>
     <string name="duplicate_cover_score">Portada: %.0f%%</string>
     <string name="duplicate_cover_score_nodata">Portada: sin datos</string>
     <string name="duplicate_delete">Borrar</string>
     <plurals name="duplicate_detail_title">
+        <item quantity="many">%d duplicados</item>
         <item quantity="one">%d duplicado</item>
         <item quantity="other">%d duplicados</item>
-        <item quantity="many">%d duplicados</item>
     </plurals>
     <string name="duplicate_empty_first_use">Nada para mostrar - Ejecutar una nueva búsqueda de duplicados</string>
     <string name="duplicate_empty_no_result">No se han encontrado duplicados</string>
@@ -246,14 +246,14 @@
     <string name="duplicate_index_covers">Indexando imágenes de portada</string>
     <string name="duplicate_keep">Guardar</string>
     <plurals name="duplicate_main_title">
+        <item quantity="many">%d elementos restantes</item>
         <item quantity="one">%d elemento restante</item>
         <item quantity="other">%d elementos restantes</item>
-        <item quantity="many">%d elementos restantes</item>
     </plurals>
     <plurals name="duplicate_notif_complete_desc">
+        <item quantity="many">%d duplicados detectados</item>
         <item quantity="one">%d duplicado detectado</item>
         <item quantity="other">%d duplicados detectados</item>
-        <item quantity="many">%d duplicados detectados</item>
     </plurals>
     <string name="duplicate_notif_complete_title">Detección de duplicados completada</string>
     <string name="duplicate_notif_start">Iniciando de la detección de duplicados</string>
@@ -305,19 +305,19 @@
     <string name="export_failed">Exportación fallida</string>
     <string name="export_favs_only">Exportar solo favoritos</string>
     <plurals name="export_file_bookmarks">
+        <item quantity="many">Exportar marcadores (%d elementos)</item>
         <item quantity="one">Exportar marcador (%d elemento)</item>
         <item quantity="other">Exportar marcadores (%d elementos)</item>
-        <item quantity="many">Exportar marcadores (%d elementos)</item>
     </plurals>
     <plurals name="export_file_library">
+        <item quantity="many">Exportar biblioteca principal (%d libros)</item>
         <item quantity="one">Exportar biblioteca principal (%d libro)</item>
         <item quantity="other">Exportar biblioteca principal (%d libros)</item>
-        <item quantity="many">Exportar biblioteca principal (%d libros)</item>
     </plurals>
     <plurals name="export_file_queue">
+        <item quantity="many">Exportar cola de descargas (%d libros)</item>
         <item quantity="one">Exportar cola de descargas (%d libro)</item>
         <item quantity="other">Exportar cola de descargas (%d libros)</item>
-        <item quantity="many">Exportar cola de descargas (%d libros)</item>
     </plurals>
     <string name="export_groups">Exportar grupos personalizados</string>
     <string name="export_location">Ubicación : %s</string>
@@ -331,22 +331,22 @@
     <string name="external_library">Biblioteca externa</string>
     <string name="external_library_subtitle">Archivos, libros de terceros</string>
     <plurals name="external_not_removed">
+        <item quantity="many">%d libros de la biblioteca externa no se eliminarán</item>
         <item quantity="one">Un libro de la biblioteca externa no será removido</item>
         <item quantity="other">%d libros de la biblioteca externa no se eliminarán</item>
-        <item quantity="many">%d libros de la biblioteca externa no se eliminarán</item>
     </plurals>
     <string name="fav_help">Marcar/desmarcar como favorito</string>
     <string name="fav_pages">Páginas favoritas</string>
     <plurals name="file">
+        <item quantity="many">archivos</item>
         <item quantity="one">archivo</item>
         <item quantity="other">archivos</item>
-        <item quantity="many">archivos</item>
     </plurals>
-    <string name="file_removal_failed">Error al remover el archivo</string>
+    <string name="file_removal_failed">Falló al remover el archivo</string>
     <string name="filter_by_source">Filtrar por fuente</string>
     <string name="filter_completed">Mostrar solo completados</string>
     <string name="filter_not_completed">Mostrar solo no completados</string>
-    <string name="filter_rating">Filtrar por valoración</string>
+    <string name="filter_rating">Filtrar por apreciación</string>
     <string name="fix_permissions">Reparar</string>
     <string name="folder_device_downloads">Carpeta de Descargas del dispositivo</string>
     <string name="folder_other">Seleccionar carpeta…</string>
@@ -374,19 +374,19 @@
     <string name="group_change">Mover a grupo personalizado</string>
     <string name="group_delete_nothing">Nada que borrar - verificar \"Permitir borrar contenido externo\" para solucionarlo</string>
     <plurals name="group_delete_selected_book">
+        <item quantity="many">Eliminar %d libros</item>
         <item quantity="one">Eliminar %d libro</item>
         <item quantity="other">Eliminar %d libros</item>
-        <item quantity="many">Eliminar %d libros</item>
     </plurals>
     <plurals name="group_delete_selected_group">
+        <item quantity="many">Eliminar grupos</item>
         <item quantity="one">Eliminar grupo</item>
         <item quantity="other">Eliminar grupos</item>
-        <item quantity="many">Eliminar grupos</item>
     </plurals>
     <plurals name="group_delete_selected_group_books">
+        <item quantity="many">Eliminar grupos + libros</item>
         <item quantity="one">Eliminar grupo + libros</item>
         <item quantity="other">Eliminar grupos + libros</item>
-        <item quantity="many">Eliminar grupos + libros</item>
     </plurals>
     <string name="group_edit_name">Editar nombre de grupo</string>
     <string name="group_existing">Grupo existente</string>
@@ -401,9 +401,9 @@
     <string name="group_no_group">Sin agrupar</string>
     <string name="group_not_selected">¡No se ha seleccionado un grupo!</string>
     <plurals name="group_progress">
+        <item quantity="many">%1$d / %2$d grupos</item>
         <item quantity="one">%1$d / %2$d grupo</item>
         <item quantity="other">%1$d / %2$d grupos</item>
-        <item quantity="many">%1$d / %2$d grupos</item>
     </plurals>
     <string name="group_remove">Separar de grupo actual</string>
     <string name="group_rename_forbidden">¡No se puede renombrar ese grupo!</string>
@@ -431,31 +431,31 @@
     <string name="image_streaming">Transmitiendo imagen…</string>
     <string name="import_app_folder">No se puede seleccionar la carpeta de aplicación como una carpeta externa - selecciona una diferente</string>
     <plurals name="import_bookmarks_found">
+        <item quantity="many">%d encontraron marcadores válidos</item>
         <item quantity="one">%d marcador válido encontrado</item>
         <item quantity="other">%d encontraron marcadores válidos</item>
-        <item quantity="many">%d encontraron marcadores válidos</item>
     </plurals>
     <string name="import_bookmarks_title">Importar marcadores</string>
     <string name="import_canceled">Importación cancelada</string>
     <string name="import_complete">Importación completada</string>
     <plurals name="import_complete_details_failure">
+        <item quantity="many">%s falló</item>
         <item quantity="one">%s fallaron</item>
         <item quantity="other">%s falló</item>
-        <item quantity="many">%s falló</item>
     </plurals>
     <plurals name="import_complete_details_success">
+        <item quantity="many">%s importados con éxito</item>
         <item quantity="one">%s importado con éxito</item>
         <item quantity="other">%s importados con éxito</item>
-        <item quantity="many">%s importados con éxito</item>
     </plurals>
     <string name="import_create_fail">Creación de carpeta principal fallida - selecciona otra ubicación</string>
     <string name="import_current_site">Solo importar %s marcadores</string>
     <string name="import_download_folder">No deberías seleccionar la carpeta Descargas de tu dispositivo - crea o selecciona otra</string>
     <string name="import_downloads">Importar descargas</string>
     <plurals name="import_downloads_found">
+        <item quantity="many">%d descargas válidas encontradas</item>
         <item quantity="one">%d descarga válida encontrada</item>
         <item quantity="other">%d descargas válidas encontradas</item>
-        <item quantity="many">%d descargas válidas encontradas</item>
     </plurals>
     <string name="import_downloads_title">Importar descargas</string>
     <string name="import_empty">La carpeta no tiene libros</string>
@@ -465,30 +465,30 @@
     <string name="import_ext_name_pattern_c">Título (Artista)</string>
     <string name="import_ext_test_artist_not_found">Ningún artista encontrado</string>
     <string name="import_ext_test_artist_warning">Advertencia : No hay patrón de artista establecido</string>
-    <string name="import_ext_test_file_name">Nombre de fila</string>
+    <string name="import_ext_test_file_name">Nombre de archivo</string>
     <string name="import_ext_test_pattern">Patrón de prueba</string>
     <string name="import_ext_test_title_not_found">No se encontró ningún título</string>
     <string name="import_ext_test_title_warning">Advertencia : No hay patrón de título establecido</string>
     <plurals name="import_file_bookmarks">
+        <item quantity="many">Importar marcadores (%d items)</item>
         <item quantity="one">Importar marcador (%d elemento)</item>
         <item quantity="other">Importar marcadores (%d items)</item>
-        <item quantity="many">Importar marcadores (%d items)</item>
     </plurals>
     <plurals name="import_file_groups">
+        <item quantity="many">Importar grupos personalizados (%d grupos)</item>
         <item quantity="one">Importar grupo personalizado (grupo %d)</item>
         <item quantity="other">Importar grupos personalizados (%d grupos)</item>
-        <item quantity="many">Importar grupos personalizados (%d grupos)</item>
     </plurals>
     <string name="import_file_invalid">El archivo %s no es válido</string>
     <plurals name="import_file_library">
+        <item quantity="many">Importar biblioteca (%d libros)</item>
         <item quantity="one">Importar biblioteca (%d libro)</item>
         <item quantity="other">Importar biblioteca (%d libros)</item>
-        <item quantity="many">Importar biblioteca (%d libros)</item>
     </plurals>
     <plurals name="import_file_queue">
+        <item quantity="many">Importar cola de descargas (%d libros)</item>
         <item quantity="one">Importar cola de descargas (%d libro)</item>
         <item quantity="other">Importar cola de descargas (%d libros)</item>
-        <item quantity="many">Importar cola de descargas (%d libros)</item>
     </plurals>
     <string name="import_invalid">Carpeta no válida - selecciona otra</string>
     <string name="import_invalid_uri">Carpeta no reconocida - seleccione de nuevo</string>
@@ -498,25 +498,25 @@
     <string name="import_other_external_inside_primary">Ubicación principal y externa deben tener carpetas base distintas</string>
     <string name="import_other_primary">Ambas ubicaciones principales deben tener carpetas base distintas</string>
     <plurals name="import_result">
+        <item quantity="many">%1$d / %2$d elementos importados con éxito</item>
         <item quantity="one">%1$d / %2$d elemento importado con éxito</item>
         <item quantity="other">%1$d / %2$d elementos importados con éxito</item>
-        <item quantity="many">%1$d / %2$d elementos importados con éxito</item>
     </plurals>
     <plurals name="import_result_bookmarks">
+        <item quantity="many">%d marcadores importados con éxito</item>
         <item quantity="one">%d marcador importado con éxito</item>
         <item quantity="other">%d marcadores importados con éxito</item>
-        <item quantity="many">%d marcadores importados con éxito</item>
     </plurals>
     <plurals name="import_result_books">
+        <item quantity="many">%d libros importados con éxito</item>
         <item quantity="one">%d libro importado con éxito</item>
         <item quantity="other">%d libros importados con éxito</item>
-        <item quantity="many">%d libros importados con éxito</item>
     </plurals>
     <string name="import_run">INICIAR IMPORTACIÓN</string>
     <string name="import_select_file">Seleccionar archivo para importar</string>
     <string name="import_settings_success">Importado</string>
     <string name="import_settings_title">Importar ajustes</string>
-    <string name="import_streamed">Importar como libros con lectura vía internet</string>
+    <string name="import_streamed">Importar como libros con transmisión</string>
     <string name="import_title">Importar metadatos</string>
     <string name="import_unexpected">La importación se ha detenido inesperadamente</string>
     <string name="importing_downloads">Importando descargas…</string>
@@ -526,9 +526,9 @@
     <string name="invalid_selection_generic">Selección no válida</string>
     <string name="invert_queue">Invertir cola de descarga</string>
     <plurals name="item">
+        <item quantity="many">elementos</item>
         <item quantity="one">elemento</item>
         <item quantity="other">elementos</item>
-        <item quantity="many">elementos</item>
     </plurals>
     <plurals name="items_selected">
         <item quantity="many">%d elementos seleccionados</item>
@@ -585,7 +585,7 @@
     <string name="mass_external_tip">Nota: Los libros externos se eliminarán con esta operación.</string>
     <string name="mass_operation">Operación</string>
     <string name="mass_operation_1">Borrar</string>
-    <string name="mass_operation_2">Cambiar a transmisión</string>
+    <string name="mass_operation_2">Cambiar a transmisión de internet</string>
     <string name="mass_operation_scope">Alcance</string>
     <string name="mass_operation_scope_1">Filtro actual de la pantalla de la biblioteca</string>
     <string name="mass_operation_scope_2">Todos los libros excepto el filtro actual de la pantalla de la biblioteca</string>
@@ -618,7 +618,7 @@
     <string name="menu_group_new">Nuevo grupo</string>
     <string name="menu_mark_fav">Cambiar favorito</string>
     <string name="menu_open_folder">Abrir carpeta contenedora</string>
-    <string name="menu_rate">Porcentaje</string>
+    <string name="menu_rate">Apreciación</string>
     <string name="menu_redownload">Volver a descargar</string>
     <string name="menu_redownload_scratch">Volver a descargar desde cero </string>
     <string name="menu_reset_read">Marcar como no leído</string>
@@ -629,7 +629,7 @@
     <string name="menu_share_title">URL del libro</string>
     <string name="menu_sort">Clasificar</string>
     <string name="menu_sort_filter">Ordenar y filtrar</string>
-    <string name="menu_stream">Cambiar a lectura vía internet</string>
+    <string name="menu_stream">Cambiar a lectura vía transmisión</string>
     <string name="merge_delete_after_merging">Borrar libros después de unir</string>
     <string name="merge_fail">No se pudo fusionar el contenido</string>
     <string name="merge_merge">Unir</string>
@@ -667,23 +667,23 @@
     <string name="none">Ninguno</string>
     <string name="notif_archive_complete">Archivo completado</string>
     <plurals name="notif_archive_complete_details">
+        <item quantity="many">%d libros archivados con éxito</item>
         <item quantity="one">%d libro archivado con éxito</item>
         <item quantity="other">%d libros archivados con éxito</item>
-        <item quantity="many">%d libros archivados con éxito</item>
     </plurals>
-    <string name="notif_archive_fail">Archivo fallido</string>
+    <string name="notif_archive_fail">No se pudo archivar</string>
     <plurals name="notif_archive_fail_details">
+        <item quantity="many">%d libros no pudieron archivarse</item>
         <item quantity="one">%d libro no pudo ser archivado</item>
         <item quantity="other">%d libros no pudieron archivarse</item>
-        <item quantity="many">%d libros no pudieron archivarse</item>
     </plurals>
     <string name="notif_archive_title">Archivo de contenido</string>
     <string name="notif_delete_complete">Eliminación completada</string>
     <string name="notif_delete_fail">Eliminación fallida</string>
     <plurals name="notif_delete_fail_details">
+        <item quantity="many">%d elementos fallaron</item>
         <item quantity="one">%d elemento falló</item>
         <item quantity="other">%d elementos fallaron</item>
-        <item quantity="many">%d elementos fallaron</item>
     </plurals>
     <string name="notif_delete_prepurge_complete">Volver a descargar/Transmitir previo a la purga completado</string>
     <string name="notif_delete_prepurge_fail">Volver a descargar/Transmitir previo a la purga falló</string>
@@ -692,9 +692,9 @@
     <string name="notif_json_progress">Actualización de JSON en progreso</string>
     <string name="notif_json_title">Actualización de JSON</string>
     <plurals name="notif_process_complete_details">
+        <item quantity="many">%d libros procesados con éxito</item>
         <item quantity="one">%d libro procesado con éxito</item>
         <item quantity="other">%d libros procesados con éxito</item>
-        <item quantity="many">%d libros procesados con éxito</item>
     </plurals>
     <string name="notif_split_merge">Dividir / fusionar</string>
     <string name="notif_stream_complete">Transmisión completa</string>
@@ -703,14 +703,14 @@
     <string name="notification_user_action_needed">Se necesita acción de usuario</string>
     <string name="notification_user_action_title">Acciones de usuario</string>
     <plurals name="number_of_book_search_results">
+        <item quantity="many">%1$d/%2$d resultados</item>
         <item quantity="one">%1$d/%2$d resultado</item>
         <item quantity="other">%1$d/%2$d resultados</item>
-        <item quantity="many">%1$d/%2$d resultados</item>
     </plurals>
     <plurals name="number_of_items">
+        <item quantity="many">%d elementos </item>
         <item quantity="one">%d elemento</item>
         <item quantity="other">%d elementos </item>
-        <item quantity="many">%d elementos </item>
     </plurals>
     <string name="object_artist">Artista</string>
     <string name="object_category">Categoría</string>
@@ -731,9 +731,9 @@
     <string name="open_folder">Abrir carpeta</string>
     <string name="open_settings">Abrir configuración </string>
     <plurals name="page">
+        <item quantity="many">páginas</item>
         <item quantity="one">página</item>
         <item quantity="other">páginas</item>
-        <item quantity="many">páginas</item>
     </plurals>
     <string name="page_copy_help">Copiar la página en la carpeta Descargas de Android</string>
     <string-array name="page_delete_choices">
@@ -744,7 +744,7 @@
     <string name="page_delete_help">Eliminar página</string>
     <string name="page_fav_help">Marcar/desmarcar página como favorita</string>
     <string name="page_favourite_success">Página marcada como favorita</string>
-    <string name="page_removal_failed">Error al remover la página</string>
+    <string name="page_removal_failed">Falló al remover la página</string>
     <string name="page_share_help">Compartir página usando otra aplicación</string>
     <string name="page_unfavourite_success">Página desmarcada como favorita</string>
     <string name="pause">Pausar</string>
@@ -779,9 +779,9 @@
     <string name="queue_add_bottom">Añadir hasta abajo</string>
     <string name="queue_add_top">Añadir hasta arriba</string>
     <plurals name="queue_bottom_bar_errors">
+        <item quantity="many">(%d errores)</item>
         <item quantity="one">(%d error)</item>
         <item quantity="other">(%d errores)</item>
-        <item quantity="many">(%d errores)</item>
     </plurals>
     <string name="queue_bottom_bar_processed">%1$s/%2$d procesadas</string>
     <string name="queue_bottom_bar_retry">reintentar %1$d/%2$d</string>
@@ -796,7 +796,7 @@
     <string name="queue_preparing">Preparando descarga</string>
     <string name="queue_queue_tab">En progreso</string>
     <string name="range_check">El valor debe estar entre %1$d y %2$d</string>
-    <string name="rating_help">Valoración</string>
+    <string name="rating_help">Apreciación</string>
     <string name="read_log">Leer registro</string>
     <string name="reader_two_pages_mode">Modo de dos páginas (libro)</string>
     <string name="redl_refresh">Solo actualizar metadatos</string>
@@ -804,16 +804,16 @@
     <string name="redownload_action">VOLVER A DESCARGAR</string>
     <string name="redownload_all">Volver a descargar todo</string>
     <plurals name="redownload_confirm">
+        <item quantity="many">¿Volver a descargar libros seleccionados desde cero?</item>
         <item quantity="one">¿Volver a descargar el libro seleccionado desde cero?</item>
         <item quantity="other">¿Volver a descargar libros seleccionados desde cero?</item>
-        <item quantity="many">¿Volver a descargar libros seleccionados desde cero?</item>
     </plurals>
     <string name="redownload_dialog_message">Total de imágenes en la descarga: %1$d\nImágenes sin errores: %2$d\nImágenes con errores: %3$d</string>
     <string name="redownload_dialog_title">¿Intentar volver a descargar? </string>
     <plurals name="redownload_external_content">
+        <item quantity="many">%d libros seleccionados están almacenados en la biblioteca externa y no se pueden volver a descargar, serán ignorados.</item>
         <item quantity="one">Uno de los libros seleccionados está almacenado en la biblioteca externa y no se puede descargar, este libro será ignorado.</item>
         <item quantity="other">%d libros seleccionados están almacenados en la biblioteca externa y no se pueden volver a descargar, serán ignorados.</item>
-        <item quantity="many">%d libros seleccionados están almacenados en la biblioteca externa y no se pueden volver a descargar, serán ignorados.</item>
     </plurals>
     <string name="redownload_first_error">Primer error: %s</string>
     <string name="redownload_generating_log_file">Generando archivo de registro…</string>
@@ -824,9 +824,9 @@
     <string name="redownloaded_error">Ha ocurrido un error al volver a descargar - cancelada</string>
     <string name="redownloaded_missing_webview">WebView no disponible, no es posible volver a descargar ahora</string>
     <plurals name="redownloaded_scratch">
+        <item quantity="many">%1$d/%2$d elementos listos para volver a descargarse</item>
         <item quantity="one">%1$d/%2$ elemento listo para volver a descargarse</item>
         <item quantity="other">%1$d/%2$d elementos listos para volver a descargarse</item>
-        <item quantity="many">%1$d/%2$d elementos listos para volver a descargarse</item>
     </plurals>
     <string name="redownloaded_updating_webview">La WebView se está actualizando, no se puede volver a descargar aún</string>
     <string name="refresh_allow_write">Por favor autoriza el permiso de escritura</string>
@@ -880,9 +880,9 @@
     <string name="revive_wait">Permanece en esta pantalla mientras se recupera tu descarga</string>
     <string name="search_bookid_label">Buscar \'%s\' en…</string>
     <plurals name="search_button">
+        <item quantity="many">%s Resultados encontrados</item>
         <item quantity="one">%s Resultado encontrado</item>
         <item quantity="other">%s Resultados encontrados</item>
-        <item quantity="many">%s Resultados encontrados</item>
     </plurals>
     <string name="search_category">%s buscar</string>
     <string name="search_entry_not_found">No está aquí, anda a descargarlo.</string>
@@ -893,7 +893,7 @@
     <string name="search_type">Tipo</string>
     <string name="search_type_entries_1">Todos los tipos de libros</string>
     <string name="search_type_entries_2">Carpeta</string>
-    <string name="search_type_entries_3">Vía internet </string>
+    <string name="search_type_entries_3">Transmitido</string>
     <string name="search_type_entries_4">Archivar</string>
     <string name="search_type_entries_5">Marcador de posición</string>
     <string name="search_type_entries_6">PDF</string>
@@ -964,22 +964,22 @@
     <string name="storage_strategy_fallover">Colapsar</string>
     <string name="storage_strategy_fallover_desc">Hentoid descarga en la Ubicación 1 hasta que se llene el %d%% de la capacidad, y procede a descargar en la Ubicación 2</string>
     <string name="storage_strategy_title">Estrategia de descarga: %s</string>
-    <string name="stream_canceled">Lectura vía internet cancelada - libro no disponible online</string>
+    <string name="stream_canceled">Transmitido cancelado - libro no disponible online</string>
     <plurals name="stream_confirm">
-        <item quantity="one">¿Cambiar el libro seleccionado a streaming?</item>
-        <item quantity="other">¿Cambiar los libros seleccionados a streaming?</item>
-        <item quantity="many">¿Cambiar los libros seleccionados a streaming?</item>
+        <item quantity="many">¿Cambiar los libros seleccionados a transmisión de internet?</item>
+        <item quantity="one">¿Cambiar el libro seleccionado a transmisión de internet?</item>
+        <item quantity="other">¿Cambiar los libros seleccionados a transmisión de internet?</item>
     </plurals>
     <plurals name="stream_external_streamed_content">
-        <item quantity="one">Uno de los libros seleccionados ya está en streaming o es externo, este libro será ignorado.</item>
-        <item quantity="other">%d libros seleccionados ya están configurados para ser streaming o están en una biblioteca externa. Serán ignorados.</item>
-        <item quantity="many">%d libros seleccionados ya están configurados para ser streaming o están en una biblioteca externa. Serán ignorados.</item>
+        <item quantity="many">%d libros seleccionados ya están configurados para ser transmisión o están en una biblioteca externa. Serán ignorados.</item>
+        <item quantity="one">Uno de los libros seleccionados ya está en transmisión o es externo, este libro será ignorado.</item>
+        <item quantity="other">%d libros seleccionados ya están configurados para ser transmisión o están en una biblioteca externa. Serán ignorados.</item>
     </plurals>
     <string name="stream_limit">No se pueden transmitir más de 1000 libros a la vez</string>
-    <string name="stream_missing_webview">Lectura vía internet cancelada - WebView no disponible</string>
+    <string name="stream_missing_webview">Transmitido cancelado - WebView no disponible</string>
     <string name="stream_progress">Transmitiendo libros</string>
-    <string name="stream_updating_webview">Lectura vía internet cancelada - WebView actualizándose</string>
-    <string name="streamed_help">Libro vía internet</string>
+    <string name="stream_updating_webview">Transmisión cancelada - WebView actualizándose</string>
+    <string name="streamed_help">Libro transmitido</string>
     <string name="tap_to_download">Toca para descargar</string>
     <string name="tap_to_install">Toca para instalar</string>
     <string name="tap_to_retry">Toca para volver a intentar</string>
@@ -997,7 +997,7 @@
     <string name="title_activity_queue">Cola</string>
     <string name="title_activity_rules">Reglas al renombrar</string>
     <string name="title_activity_search">Búsqueda Avanzada</string>
-    <string name="title_activity_settings">Ajustes</string>
+    <string name="title_activity_settings">Configuraciones</string>
     <string name="title_activity_storage">Gestión de almacenamiento</string>
     <string name="title_startup">Inicio</string>
     <string name="title_startup_complete">Inicialización completa</string>
@@ -1012,9 +1012,9 @@
     <string name="transform">Transformar</string>
     <string name="transform_complete">Transformación completa</string>
     <plurals name="transform_complete_details">
+        <item quantity="many">%d imágenes transformadas con éxito</item>
         <item quantity="one">%d imagen transformada con éxito</item>
         <item quantity="other">%d imágenes transformadas con éxito</item>
-        <item quantity="many">%d imágenes transformadas con éxito</item>
     </plurals>
     <string name="transform_limit">No se pueden transformar más de 1000 libros a la vez</string>
     <string name="transform_pics">Transformar imágenes</string>
@@ -1038,12 +1038,12 @@
     <string name="updates_title">Actualizaciones</string>
     <string name="user_generic">Usuario</string>
     <string name="view_book">Leer el libro</string>
-    <string name="view_changelog">Leer el registro de cambios​</string>
+    <string name="view_changelog">Leer el registro de cambios</string>
     <string name="view_changelog_flagged">Leer el registro de cambios​*</string>
     <string name="view_queue">Ver cola de descargas</string>
     <string name="view_source_help">Ver fuente en navegador</string>
     <string name="viewer_ask_cover">¿Establecer esta imagen como portada? </string>
-    <string name="viewer_ask_delete_page">¿Eliminar est página?</string>
+    <string name="viewer_ask_delete_page">¿Eliminar esta página?</string>
     <string name="viewer_choose_direction">Elige el sentido de lectura</string>
     <string name="viewer_delete_book">Borrar libro</string>
     <string name="viewer_direction_ltr">De izquierda a derecha</string>
@@ -1085,14 +1085,14 @@
     <string name="work_pages_duplicate_dialog_queue">Páginas (en cola): %d</string>
     <string name="work_pages_duplicate_dialog_source">Páginas (fuente): %d</string>
     <plurals name="work_pages_library">
+        <item quantity="many">%1$d páginas / %2$.1f MB</item>
         <item quantity="one">%1$d página / %2$.1f MB</item>
         <item quantity="other">%1$d páginas / %2$.1f MB</item>
-        <item quantity="many">%1$d páginas / %2$.1f MB</item>
     </plurals>
     <plurals name="work_pages_missing">
+        <item quantity="many">(%d faltantes)</item>
         <item quantity="one">(%d faltantes)</item>
         <item quantity="other">(%d faltantes)</item>
-        <item quantity="many">(%d faltantes)</item>
     </plurals>
     <string name="work_pages_queue">Páginas: %1$s%2$s</string>
     <string name="work_series">Serie: %s</string>

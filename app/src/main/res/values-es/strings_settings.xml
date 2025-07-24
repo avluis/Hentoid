@@ -25,7 +25,7 @@
     <string name="pref_browser_augmented_on">Eliminación del espacio de publicidad y análisis rápido</string>
     <string name="pref_browser_augmented_title">Navegador aumentado</string>
     <string name="pref_browser_behaviour">Comportamiento</string>
-    <string name="pref_browser_blocked_tags_summary">Tip: separa las etiquetas con comas</string>
+    <string name="pref_browser_blocked_tags_summary">Consejo: separa las etiquetas con comas</string>
     <string name="pref_browser_blocked_tags_title">Etiquetas bloqueadas</string>
     <string name="pref_browser_clear_cookies">Borrar cookies</string>
     <string name="pref_browser_clear_cookies_ko">No hay cookies para borrar</string>
@@ -51,7 +51,7 @@
     <string name="pref_browser_force_lightmode_title">Modo de luz forzada</string>
     <string name="pref_browser_language_filter_off">Botón de filtro de idioma desactivado\nNB: Solo funciona en Hitomi</string>
     <string name="pref_browser_language_filter_on">Botón de filtro de idioma activado\nNB: Solo funciona en Hitomi</string>
-    <string name="pref_browser_language_filter_setting_summary">Tip: Introduce el idioma en inglés</string>
+    <string name="pref_browser_language_filter_setting_summary">Consejo: Introduce el idioma en inglés</string>
     <string name="pref_browser_language_filter_setting_title">Configuración de filtro de idioma</string>
     <string name="pref_browser_language_filter_title">Botón de filtro de idioma</string>
     <string name="pref_browser_mark_blocked_off">Los libros con etiquetas bloqueadas no tienen presentación especial</string>
@@ -106,7 +106,7 @@
     <string name="pref_display_grid_storage_title">Información de almacenamiento</string>
     <string name="pref_display_grid_title_title">Título</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Comportamiento del bloqueo</string>
-    <string name="pref_dl_blocked_tags_summary">Bloquea la descarga de libros con etiquetas específicas\nTip: separa las etiquetas usando comas</string>
+    <string name="pref_dl_blocked_tags_summary">Bloquea la descarga de libros con etiquetas específicas\nConsejo: separa las etiquetas usando comas</string>
     <string name="pref_dl_blocked_tags_title">Etiquetas bloqueadas</string>
     <string name="pref_dl_eh_hires_off">Descargar imágenes que se muestran en la página web</string>
     <string name="pref_dl_eh_hires_on">Descargar imágenes en alta resolución cuando esté disponible\nPRECAUCIÓN: Activar esta opción consumirá tu límite de visualización de imágenes de E-hentai/Exhentai</string>
