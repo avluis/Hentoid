@@ -178,8 +178,9 @@ dependencies {
     def APNG4Android_version = '3.0.5'
     implementation "com.github.penfeizhou.android.animation:apng:$APNG4Android_version"
 
-    // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif (using the 16kb fork for now)
-    implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2'
+    // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
+    //implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2' <-- messes up with the theme
+    implementation 'io.github.waynejo:androidndkgif:v1.0.1'
 
     // PDF creator/extractor
     implementation 'com.itextpdf:itext7-core:8.0.5'
@@ -285,7 +286,8 @@ dependencies {
     // Archive management
     //implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
     // https://mvnrepository.com/artifact/com.sorrowblue.sevenzipjbinding/7-Zip-JBinding-4Android // Not 16kb aligned (abandoned?)
-    implementation("com.sorrowblue.sevenzipjbinding:7-Zip-JBinding-4Android:16.02-2.03") // Most recent has an (even) larger artifact and adds nothing new
+    implementation("com.sorrowblue.sevenzipjbinding:7-Zip-JBinding-4Android:16.02-2.03")
+    // Most recent has an (even) larger artifact and adds nothing new
 
     // Natural strings comparator
     implementation 'net.grey-panther:natural-comparator:1.1'
