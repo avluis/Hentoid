@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="searchpreference_search">Búsqueda…</string>
+    <string name="searchpreference_clear">Limpiar</string>
+    <string name="searchpreference_more">Más</string>
+    <string name="searchpreference_clear_history">Limpiar historial de búsqueda</string>
+    <string name="searchpreference_no_results">Sin resultados</string>
+
     <string name="doh_warning">Algunos sitios web no funcionan bien con DNS mediante HTTPS. Utiliza una aplicación DNS externa si experimentas problemas durante la navegación (p. ej. páginas en blanco o formularios de inicio de sesión que no responden)</string>
     <string name="download_eh_hires_title">Descargar imágenes en alta resolución</string>
     <string name="download_hitomi_avif_off">Descargar imágenes en formato WEBP</string>
