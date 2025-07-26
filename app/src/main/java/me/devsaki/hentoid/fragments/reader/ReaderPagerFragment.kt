@@ -845,7 +845,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 } else {
                     adapter.resetScaleAtPosition(scrollPosition)
                 }
-                // Reactivate snap to avoid shuffling through all pages while zoom is on
+                // Reactivate snap to avoid shuffling through multiple pages while zoom is on
                 pageSnapWidget.setPageSnapEnabled(true)
             }
 
@@ -872,6 +872,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     }
 
     private fun onPageChanged(absImageIndex: Int, scrollDirection: Int) {
+        Timber.d("onPageChanged $absImageIndex")
         currentImg?.let {
             it.linkedContent?.apply {
                 adjustDisplay(this.site, bookPreferences, absImageIndex)

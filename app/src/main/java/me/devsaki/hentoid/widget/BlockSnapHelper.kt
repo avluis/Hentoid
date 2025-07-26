@@ -17,7 +17,7 @@ import kotlin.math.max
 private const val MILLISECONDS_PER_INCH = 100f
 
 /**
- * https://gist.github.com/Moes81/0cfbb1f2d8492025a7ddaa9549f870e7
+ * Inspired by https://gist.github.com/Moes81/0cfbb1f2d8492025a7ddaa9549f870e7 + LinearSnapHelper.findCenterView
  *
  * A custom [SnapHelper] implementation for the [RecyclerView] that snaps to a whole page of items, instead of the
  * single recycler view items as with the `LinearSnapHelper`.
@@ -56,11 +56,6 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
     private var snapBlockCallback: SnapBlockCallback? = null
 
     /**
-     * When snapping, used to determine direction of snap.
-     */
-    private var priorFirstPosition = RecyclerView.NO_POSITION
-
-    /**
      * Our private scroller
      */
     private lateinit var scroller: Scroller
@@ -73,7 +68,8 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
     /**
      * LTR/RTL helper
      */
-    private var layoutDirectionHelper: LayoutDirectionHelper? = null
+    private val layoutDirectionHelper: LayoutDirectionHelper by lazy { LayoutDirectionHelper() }
+
 
     @Throws(IllegalStateException::class)
     override fun attachToRecyclerView(recyclerView: RecyclerView?) {
@@ -90,7 +86,7 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
                 else -> throw IllegalStateException("RecyclerView must be scrollable")
             }
             scroller = Scroller(this.recyclerView.context, sInterpolator)
-            initItemDimensionIfNeeded(layoutManager)
+            refreshItemDimension(layoutManager)
             displayMetrics = recyclerView.context.resources.displayMetrics
         }
         super.attachToRecyclerView(recyclerView)
@@ -103,11 +99,10 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
         targetView: View
     ): IntArray {
         val out = IntArray(2)
-        initLayoutDirectionHelperIfNeeded()
         if (layoutManager.canScrollHorizontally())
-            out[0] = layoutDirectionHelper!!.getScrollToAlignView(targetView)
+            out[0] = layoutDirectionHelper.getScrollToAlignView(targetView)
         if (layoutManager.canScrollVertically())
-            out[1] = layoutDirectionHelper!!.getScrollToAlignView(targetView)
+            out[1] = layoutDirectionHelper.getScrollToAlignView(targetView)
 
         if (out[0] == 0 && out[1] == 0)
             snapBlockCallback?.onBlockSnapped(layoutManager.getPosition(targetView))
@@ -122,9 +117,8 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
         velocityX: Int,
         velocityY: Int
     ): Int {
-        initLayoutDirectionHelperIfNeeded()
         val lm = layoutManager as LinearLayoutManager
-        initItemDimensionIfNeeded(layoutManager)
+        refreshItemDimension(layoutManager)
         scroller.fling(
             0,
             0,
@@ -136,13 +130,13 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
             Integer.MAX_VALUE
         )
         return when {
-            velocityX != 0 -> layoutDirectionHelper!!.getPositionsToMove(
+            velocityX != 0 -> layoutDirectionHelper.getPositionsToMove(
                 lm,
                 scroller.finalX,
                 itemDimension
             )
 
-            velocityY != 0 -> layoutDirectionHelper!!.getPositionsToMove(
+            velocityY != 0 -> layoutDirectionHelper.getPositionsToMove(
                 lm,
                 scroller.finalY,
                 itemDimension
@@ -160,6 +154,7 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
         val snapPos = calcTargetPosition(layoutManager as LinearLayoutManager)
         val snapView = if (snapPos == RecyclerView.NO_POSITION) null
         else layoutManager.findViewByPosition(snapPos)
+        snapView?.tag = snapPos
         return snapView
     }
 
@@ -199,45 +194,31 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
         snapBlockCallback = callback
     }
 
-    private fun initLayoutDirectionHelperIfNeeded() {
-        if (layoutDirectionHelper == null) layoutDirectionHelper = LayoutDirectionHelper()
-    }
-
-    // Does the heavy lifting for findSnapView.
+    // Does the heavy lifting for findSnapView
     private fun calcTargetPosition(layoutManager: LinearLayoutManager): Int {
-        val snapPos: Int
-        initLayoutDirectionHelperIfNeeded()
         val firstVisiblePos = layoutManager.findFirstVisibleItemPosition()
-        if (firstVisiblePos == RecyclerView.NO_POSITION)
-            return RecyclerView.NO_POSITION
-        initItemDimensionIfNeeded(layoutManager)
-        if (firstVisiblePos >= priorFirstPosition) {
-            // Scrolling toward bottom of data
-            val firstCompletePosition = layoutManager.findFirstCompletelyVisibleItemPosition()
-            snapPos =
-                if (firstCompletePosition != RecyclerView.NO_POSITION && firstCompletePosition % blocksize == 0)
-                    firstCompletePosition
-                else
-                    roundDownToBlockSize(firstVisiblePos + blocksize)
-        } else {
-            // Scrolling toward top of data
-            snapPos = roundDownToBlockSize(firstVisiblePos)
-            // Check to see if target view exists. If it doesn't, force a smooth scroll.
-            // SnapHelper only snaps to existing views and will not scroll to a non-existent one.
-            // If limiting fling to single block, then the following is not needed since the
-            // views are likely to be in the RecyclerView pool.
-            if (layoutManager.findViewByPosition(snapPos) == null) {
-                val toScroll =
-                    layoutDirectionHelper!!.calculateDistanceToScroll(layoutManager, snapPos)
-                recyclerView.smoothScrollBy(toScroll[0], toScroll[1], sInterpolator)
+        if (firstVisiblePos == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION
+
+        val center: Int = orientationHelper.startAfterPadding + orientationHelper.totalSpace / 2
+        var absClosest = Int.Companion.MAX_VALUE
+
+        var closestChildPos = RecyclerView.NO_POSITION
+        for (i in firstVisiblePos..<layoutManager.childCount) {
+            val child = layoutManager.getChildAt(i)
+            val childCenter: Int = (orientationHelper.getDecoratedStart(child)
+                    + (orientationHelper.getDecoratedMeasurement(child) / 2))
+            val absDistance = abs(childCenter - center)
+
+            // if child center is closer than previous closest, set it as closest
+            if (absDistance < absClosest) {
+                absClosest = absDistance
+                closestChildPos = i
             }
         }
-        priorFirstPosition = firstVisiblePos
-        return snapPos
+        return closestChildPos
     }
 
-    private fun initItemDimensionIfNeeded(layoutManager: RecyclerView.LayoutManager) {
-        if (itemDimension != 0) return
+    private fun refreshItemDimension(layoutManager: RecyclerView.LayoutManager) {
         val child = layoutManager.getChildAt(0) ?: return
         if (layoutManager.canScrollHorizontally()) {
             itemDimension = child.width
@@ -327,23 +308,21 @@ class BlockSnapHelper(var maxFlingBlocks: Int) : SnapHelper() {
          */
         fun getPositionsToMove(llm: LinearLayoutManager, scroll: Int, itemSize: Int): Int {
             if (0 == itemSize) return 0
-            var positionsToMove: Int
-            positionsToMove = roundUpToBlockSize(abs(scroll) / itemSize)
-            if (positionsToMove < blocksize)
+            var positionsToMove = roundUpToBlockSize(abs(scroll) / itemSize)
+
             // Must move at least one block
-                positionsToMove = blocksize
-            else if (positionsToMove > getMaxPositionsToMove())
+            if (positionsToMove < blocksize) positionsToMove = blocksize
+
             // Clamp number of positions to move so we don't get wild flinging.
+            else if (positionsToMove > getMaxPositionsToMove())
                 positionsToMove = getMaxPositionsToMove()
-            if (scroll < 0)
-                positionsToMove *= -1
-            if (isRTL)
-                positionsToMove *= -1
-            return if (layoutDirectionHelper!!.isDirectionToBottom(scroll < 0)) {
-                // Scrolling toward the bottom of data.
+
+            if (scroll < 0) positionsToMove *= -1
+            if (isRTL) positionsToMove *= -1
+
+            return if (layoutDirectionHelper.isDirectionToBottom(scroll < 0)) {
                 roundDownToBlockSize(llm.findFirstVisibleItemPosition()) + positionsToMove
             } else roundDownToBlockSize(llm.findLastVisibleItemPosition()) + positionsToMove
-            // Scrolling toward the top of the data.
         }
 
         fun isDirectionToBottom(velocityNegative: Boolean): Boolean =

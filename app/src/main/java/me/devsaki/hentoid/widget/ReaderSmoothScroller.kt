@@ -8,7 +8,7 @@ import timber.log.Timber
 
 // See https://stackoverflow.com/questions/32459696/get-scroll-y-of-recyclerview-or-webview
 class ReaderSmoothScroller(context: Context) : LinearSmoothScroller(context) {
-    private var speed = 25f // LinearSmoothScroller.MILLISECONDS_PER_INCH
+    private var speed = 25f // LinearSmoothScroller.MILLISECONDS_PER_INCH is 25f
 
     private var currentScrollY = 0
     private var itemHeight = 0
