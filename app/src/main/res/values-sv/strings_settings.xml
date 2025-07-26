@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--Sök-->
+    <string name="searchpreference_search">Sök…</string>
+    <string name="searchpreference_clear">Rensa</string>
+    <string name="searchpreference_more">Mer</string>
+    <string name="searchpreference_clear_history">Rensa historik</string>
+    <string name="searchpreference_no_results">Inga resultat</string>
+    <!--Sök slut-->
     <string name="doh_warning">Vissa webbplatser kommer inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
     <string name="download_eh_hires_title">Ladda ner högupplösta bilder</string>
     <string name="download_hitomi_avif_off">Ladda ner bilder i WEBP-format</string>
