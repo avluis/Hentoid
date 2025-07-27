@@ -1469,6 +1469,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         adapterRescaleDebouncer.submit(scale)
         if (LinearLayoutManager.HORIZONTAL == displayParams?.orientation) {
             pageSnapWidget.apply {
+                // If snapping is on while zooming, users can't zoom on the edge on big images (goes immediately to the next)
                 if (scale - 1.0 < 0.05 && !isEnabled) setPageSnapEnabled(true)
                 else if (scale - 1.0 > 0.05 && isEnabled) setPageSnapEnabled(false)
             }
