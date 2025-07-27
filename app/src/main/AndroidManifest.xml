@@ -698,7 +698,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="kemono.su"
+                    android:host="kemono.cr"
                     android:pathPattern="/..*/user/..*/post/..*"
                     android:scheme="https" />
             </intent-filter>
