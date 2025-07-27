@@ -1271,11 +1271,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                             getStartSite().useWebviewAgent
                         )
                         val coverBody = onlineCover.body
-                        if (coverBody != null) {
-                            val bodyStream = coverBody.byteStream()
-                            val b = getCoverBitmapFromStream(bodyStream)
-                            pHash = calcPhash(getHashEngine(), b)
-                        }
+                        val bodyStream = coverBody.byteStream()
+                        val b = getCoverBitmapFromStream(bodyStream)
+                        pHash = calcPhash(getHashEngine(), b)
                     } catch (e: IOException) {
                         Timber.w(e)
                     } catch (e: IllegalArgumentException) {

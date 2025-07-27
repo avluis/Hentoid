@@ -81,10 +81,7 @@ fun getOnlineDocument(
     useWebviewAgent: Boolean
 ): Document? {
     getOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent).body
-        .use { resource ->
-            if (resource != null) return Jsoup.parse(resource.string())
-        }
-    return null
+        .use { return Jsoup.parse(it.string()) }
 }
 
 @Throws(IOException::class)
@@ -103,10 +100,7 @@ fun postOnlineDocument(
         useWebviewAgent,
         body,
         mimeType
-    ).body.use { resource ->
-        if (resource != null) return Jsoup.parse(resource.string())
-    }
-    return null
+    ).body.use { return Jsoup.parse(it.string()) }
 }
 
 /**

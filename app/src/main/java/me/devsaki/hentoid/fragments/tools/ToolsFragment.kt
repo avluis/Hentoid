@@ -44,7 +44,6 @@ import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
-import okhttp3.internal.format
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
 
@@ -168,13 +167,8 @@ class ToolsFragment : PreferenceFragmentCompat(),
                     systemHeap.second,
                     resources
                 )
-                val msg = format(
-                    "Used app RAM (heap) : %s\nUsed app RAM (total) : %s\nSystem heap (used) : %s\nSystem heap (free) : %s",
-                    usedAppHeap,
-                    usedAppTotal,
-                    systemHeapUsed,
-                    systemHeapFree
-                )
+                val msg =
+                    "Used app RAM (heap) : $usedAppHeap\nUsed app RAM (total) : $usedAppTotal\nSystem heap (used) : $systemHeapUsed\nSystem heap (free) : $systemHeapFree"
                 val materialDialog: AlertDialog = MaterialAlertDialogBuilder(requireContext())
                     .setMessage(msg)
                     .setCancelable(true)
