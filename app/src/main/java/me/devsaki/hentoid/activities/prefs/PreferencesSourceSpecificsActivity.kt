@@ -103,7 +103,7 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
                     it.entries.mapIndexed { i, s -> flagAppDefault(s, i, values, appValue) }
 
                 items.add(
-                    ListPickerItem<PreferenceItem>(
+                    ListPickerItem(
                         category + " : " + (it.title ?: ""),
                         site.ico,
                         entries,

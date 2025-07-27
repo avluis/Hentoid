@@ -128,7 +128,7 @@ class PreferencesParser internal constructor() {
             }
         }
         result.isGlobal =
-            getAttribute(xpp, "isGlobal").let { if (it.isEmpty()) true else it.toBoolean() }
+            getAttribute(xpp, "isGlobal").let { if (it.isEmpty()) false else it.toBoolean() }
 
         Timber.tag("PreferenceParser").d("Found: ${xpp.name}/$result")
         return result

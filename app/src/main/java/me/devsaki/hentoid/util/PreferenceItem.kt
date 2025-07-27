@@ -34,7 +34,7 @@ class PreferenceItem {
     var sites: MutableSet<Site> = HashSet()
 
     @JvmField
-    var isGlobal: Boolean = true
+    var isGlobal: Boolean = false
 
     @JvmField
     var defaultValue: String? = null
