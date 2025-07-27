@@ -280,7 +280,7 @@ dependencies {
     }
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text/
-    implementation 'org.apache.commons:commons-text:1.13.1'
+    implementation 'org.apache.commons:commons-text:1.14.0'
 
     // Archive management
     //implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
