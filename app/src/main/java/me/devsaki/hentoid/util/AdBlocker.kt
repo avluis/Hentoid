@@ -251,7 +251,7 @@ class AdBlocker(val site: Site) {
                     Timber.d(">> grey file KO (%d) : %s", response.code, url)
                     return false // Better safe than sorry
                 }
-                val body = response.body ?: throw IOException("Empty body")
+                val body = response.body
                 Timber.d(">> grey file downloaded : %s", url)
                 // Handle "grey files" by analyzing its contents
                 val jsBody = body.string().lowercase(Locale.getDefault())

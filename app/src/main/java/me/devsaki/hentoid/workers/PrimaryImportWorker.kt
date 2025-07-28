@@ -1290,7 +1290,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
                 contentV2.jsonUri = newJson.uri.toString()
                 return contentV2
-            } ?: throw ParseException("Error reading JSON (old) file")
+            }
+            throw ParseException("Error reading JSON (old) file")
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (old) file")
             throw ParseException("Error reading JSON (old) file : " + e.message)
@@ -1323,7 +1324,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
                 contentV2.jsonUri = newJson.uri.toString()
                 return contentV2
-            } ?: throw ParseException("Error reading JSON (v1) file")
+            }
+            throw ParseException("Error reading JSON (v1) file")
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (v1) file")
             throw ParseException("Error reading JSON (v1) file : " + e.message)
@@ -1347,7 +1349,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 result.jsonUri = json.uri.toString()
                 result.setStorageDoc(parentFolder)
                 return result
-            } ?: throw ParseException("Error reading JSON (v2) file")
+            }
+            throw ParseException("Error reading JSON (v2) file")
         } catch (e: IOException) {
             Timber.e(e, "Error reading JSON (v2) file")
             throw ParseException("Error reading JSON (v2) file : " + e.message, e)

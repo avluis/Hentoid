@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.net.Uri
-import android.text.TextUtils
+import androidx.core.text.isDigitsOnly
 
 @Throws(PackageManager.NameNotFoundException::class)
 internal fun getResourceId(context: Context, uri: Uri): Int {
@@ -23,10 +23,10 @@ internal fun getResourceId(context: Context, uri: Uri): Int {
     if (size == 2 && segments[0] == "drawable") {
         val resName = segments[1]
         result = res.getIdentifier(resName, "drawable", packageName)
-    } else if (size == 1 && TextUtils.isDigitsOnly(segments[0])) {
+    } else if (size == 1 && segments[0].isDigitsOnly()) {
         try {
             result = segments[0].toInt()
-        } catch (ignored: NumberFormatException) {
+        } catch (_: NumberFormatException) {
             // Ignored exception
         }
     }

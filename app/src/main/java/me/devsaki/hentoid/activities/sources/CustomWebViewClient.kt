@@ -418,7 +418,7 @@ open class CustomWebViewClient : WebViewClient {
             site.useHentoidAgent,
             site.useWebviewAgent
         ).use { onlineFileResponse ->
-            val body = onlineFileResponse.body ?: throw IOException("Empty response from server")
+            val body = onlineFileResponse.body
             val cacheDir = context.cacheDir
             // Using a random file name rather than the original name to avoid errors caused by path length
             val file = File(
@@ -553,7 +553,7 @@ open class CustomWebViewClient : WebViewClient {
                 ).use { response ->
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
-                    val body = response.body ?: throw IOException("Empty body")
+                    val body = response.body
                     return okHttpResponseToWebkitResponse(response, body.byteStream())
                 }
             } catch (e: IOException) {
@@ -664,7 +664,7 @@ open class CustomWebViewClient : WebViewClient {
                 if (contentType.first.isNotEmpty() && contentType.first != "text/html") return null
 
                 // Scram if the response is empty
-                val body = response.body ?: throw IOException("Empty body")
+                val body = response.body
                 val parserStream: InputStream?
                 val result: WebResourceResponse?
                 if (canUseSingleOkHttpRequest()) {

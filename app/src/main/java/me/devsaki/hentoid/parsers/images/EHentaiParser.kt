@@ -109,7 +109,7 @@ class EHentaiParser : ImageListParser {
                 if (getAuthState(site.url) != EhAuthState.LOGGED)
                     throw EmptyResultException("You need to be logged in to download full-size images.")
                 // Use full image URL, if available
-                val fullImgUrl = imageMetadata.fullUrlRelative?:""
+                val fullImgUrl = imageMetadata.fullUrlRelative ?: ""
                 if (fullImgUrl.isNotEmpty()) imageUrl = fixUrl(fullImgUrl, site.url)
             }
             return Pair(imageUrl, null)
@@ -247,7 +247,6 @@ class EHentaiParser : ImageListParser {
                 JSON_MIME_TYPE
             ).use { response ->
                 val body = response.body
-                    ?: throw EmptyResultException("API " + imageInfo.apiUrl + " returned an empty body")
                 bodyStr = body.string()
             }
             if (!bodyStr.contains("{") || !bodyStr.contains("}")) throw EmptyResultException("API " + imageInfo.apiUrl + " returned non-JSON data")
@@ -369,7 +368,7 @@ class EHentaiParser : ImageListParser {
 
         private fun getFullImageUrl(doc: Document): String {
             val element = doc.selectFirst("a[href*=fullimg]")
-            return if (element != null) element.attr("href") else ""
+            return element?.attr("href") ?: ""
         }
 
         private fun getBackupPageUrl(doc: Document, queryUrl: String): String? {

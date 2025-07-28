@@ -344,7 +344,6 @@ private fun downloadToFile(
         null
     )
     val body = response.body
-        ?: throw IOException("Could not read response : empty body for $url")
     val size = body.contentLength()
     val sizeStr =
         if (size < 1) "unknown" else formatHumanReadableSize(size, context.resources)

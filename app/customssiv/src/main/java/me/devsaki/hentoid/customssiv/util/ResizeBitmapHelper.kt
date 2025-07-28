@@ -2,6 +2,7 @@ package me.devsaki.hentoid.customssiv.util
 
 import android.graphics.Bitmap
 import android.graphics.PointF
+import androidx.core.graphics.scale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.gles_renderer.GPUImage
@@ -89,7 +90,7 @@ private fun resizeBitmapNonProportional(
     val yTarget = (src.height * targetScale.y).roundToInt()
     Timber.d(">> Using native bilinear => ${xTarget}x$yTarget")
     try {
-        return Pair(Bitmap.createScaledBitmap(src, xTarget, yTarget, true), 1f)
+        return Pair(src.scale(xTarget, yTarget), 1f)
     } finally {
         src.recycle()
     }
@@ -123,11 +124,11 @@ private fun successiveResizeProportional(src: Bitmap, resizeNum: Int): Bitmap {
     var srcWidth = src.width
     var srcHeight = src.height
     var output = src
-    (0 until resizeNum).forEach {
+    (0 until resizeNum).forEach { _ ->
         srcWidth /= 2
         srcHeight /= 2
         // Using bilinear filtering
-        val temp = Bitmap.createScaledBitmap(output, srcWidth, srcHeight, true)
+        val temp = output.scale(srcWidth, srcHeight)
         output.recycle()
         output = temp
     }
@@ -147,11 +148,11 @@ private fun successiveResizeNonProportional(
     var srcWidth = src.width.toFloat()
     var srcHeight = src.height.toFloat()
     var output = src
-    (0 until resizeNum).forEach {
+    (0 until resizeNum).forEach { _ ->
         srcWidth *= factorx
         srcHeight *= factory
         // Using bilinear filtering
-        val temp = Bitmap.createScaledBitmap(output, srcWidth.toInt(), srcHeight.toInt(), true)
+        val temp = output.scale(srcWidth.toInt(), srcHeight.toInt())
         output.recycle()
         output = temp
     }

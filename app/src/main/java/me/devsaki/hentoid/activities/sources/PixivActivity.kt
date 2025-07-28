@@ -63,7 +63,7 @@ class PixivActivity : BaseWebActivity() {
         binding?.swipeContainer?.isEnabled = true
     }
 
-    override fun onGalleryPageStarted(url : String) {
+    override fun onGalleryPageStarted(url: String) {
         super.onGalleryPageStarted(url)
         runOnUiThread {
             binding?.swipeContainer?.isEnabled = false
@@ -96,7 +96,7 @@ class PixivActivity : BaseWebActivity() {
                     if (response.code >= 300) return null
 
                     // Scram if the response is empty
-                    val body = response.body ?: throw IOException("Empty body")
+                    val body = response.body
                     return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.w(e)

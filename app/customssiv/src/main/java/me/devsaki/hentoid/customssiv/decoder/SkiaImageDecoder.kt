@@ -97,10 +97,7 @@ internal class SkiaImageDecoder(private val bitmapConfig: Bitmap.Config) : Image
                 bitmap = BitmapFactory.decodeStream(it, null, options)
             }
         }
-        bitmap?.let {
-            return it
-        } ?: run {
-            throw RuntimeException("Skia image decoder returned null bitmap - image format may not be supported")
-        }
+        bitmap?.let { return it }
+        throw RuntimeException("Skia image decoder returned null bitmap - image format may not be supported")
     }
 }

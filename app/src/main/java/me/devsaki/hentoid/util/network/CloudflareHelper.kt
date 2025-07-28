@@ -171,7 +171,7 @@ class CloudflareHelper {
 
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
-                    val body = response.body ?: throw IOException("Empty body")
+                    val body = response.body
                     return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.i(e)

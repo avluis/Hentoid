@@ -30,11 +30,10 @@ import me.devsaki.hentoid.util.serializeToJson
 import me.devsaki.hentoid.views.HitomiBackgroundWebView
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
-import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-private val DOMAIN = "ltn.gold-usergeneratedcontent.net"
+private const val DOMAIN = "ltn.gold-usergeneratedcontent.net"
 
 class HitomiParser : BaseImageListParser() {
 
@@ -90,7 +89,7 @@ class HitomiParser : BaseImageListParser() {
             Site.HITOMI.useHentoidAgent,
             Site.HITOMI.useWebviewAgent
         )
-        val body = response.body ?: throw IOException("Empty body")
+        val body = response.body
         val galleryInfo = body.string()
         updateContentInfo(onlineContent, galleryInfo)
 
@@ -105,13 +104,27 @@ class HitomiParser : BaseImageListParser() {
 
                 this.webview?.apply {
                     loadUrl(pageUrl) {
-                        evaluateJs(this, galleryInfo, Settings.isDownloadHitomiAvif, imagesStr, done)
+                        evaluateJs(
+                            this,
+                            galleryInfo,
+                            Settings.isDownloadHitomiAvif,
+                            imagesStr,
+                            done
+                        )
                     }
                 }
                 Timber.i(">> loading wv")
             }
         } else { // We assume the caller is the main thread if the webview is provided
-            handler.post { evaluateJs(webview, galleryInfo, Settings.isDownloadHitomiAvif, imagesStr, done) }
+            handler.post {
+                evaluateJs(
+                    webview,
+                    galleryInfo,
+                    Settings.isDownloadHitomiAvif,
+                    imagesStr,
+                    done
+                )
+            }
         }
         var remainingIterations = 15 // Timeout
         do {
@@ -140,7 +153,7 @@ class HitomiParser : BaseImageListParser() {
     private fun evaluateJs(
         webview: WebView,
         galleryInfo: String,
-        dlAvif : Boolean,
+        dlAvif: Boolean,
         imagesStr: AtomicReference<String>,
         done: AtomicBoolean
     ) {

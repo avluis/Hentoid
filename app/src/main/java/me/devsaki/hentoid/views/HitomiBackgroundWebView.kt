@@ -89,7 +89,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                         site.useHentoidAgent,
                         site.useWebviewAgent
                     )
-                    val body = response.body ?: throw IOException("Empty body")
+                    val body = response.body
                     if (response.code < 300) {
                         var jsFile = body.source().readString(StandardCharsets.UTF_8)
                         jsFile = jsFile.replace(RETURN_PATTERN, "{return o;}")
@@ -123,7 +123,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
 
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
-                    val body = response.body ?: throw IOException("Empty body")
+                    val body = response.body
                     return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.i(e)
