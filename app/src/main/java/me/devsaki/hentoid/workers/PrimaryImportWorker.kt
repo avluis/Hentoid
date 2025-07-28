@@ -106,7 +106,9 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
     private var booksKO = 0 // Number of folders found with no valid book inside
 
-    private var nbFolders = 0 // Number of folders found with no content but subfolders
+    private var nbBookFolders = 0 // Number of folders found with a book inside
+
+    private var nbSubfolders = 0 // Number of folders found with no content but subfolders
 
 
     override fun getStartNotification(): BaseNotification {
@@ -204,7 +206,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     ) = withContext(Dispatchers.IO) {
         booksOK = 0
         booksKO = 0
-        nbFolders = 0
+        nbBookFolders = 0
+        nbSubfolders = 0
         val log: MutableList<LogEntry> = ArrayList()
         val context = applicationContext
 
@@ -323,27 +326,38 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
                 try {
                     dao = ObjectBoxDAO()
-                    bookFolders.forEachIndexed { index, bookFolder ->
-                        if (isStopped) throw InterruptedException()
-                        importFolder(
-                            context,
-                            explorer,
-                            dao,
-                            bookFolders,
-                            rootFolder,
-                            bookFolder,
-                            log,
-                            rename,
-                            renumberPages,
-                            cleanNoJSON,
-                            cleanNoImages
-                        )
-                        // Clear the DAO every 2500K iterations to optimize memory
-                        if (0 == index % 2500) {
-                            dao.cleanup()
-                            dao = ObjectBoxDAO()
+                    nbBookFolders = bookFolders.size
+                    val toScan = ArrayList<DocumentFile>()
+                    // 1st wave = initially detected folders
+                    toScan.addAll(bookFolders)
+                    do {
+                        val allSubfolders = ArrayList<DocumentFile>()
+                        toScan.forEachIndexed { index, bookFolder ->
+                            if (isStopped) throw InterruptedException()
+                            val subfolders = importFolder(
+                                context,
+                                explorer,
+                                dao,
+                                rootFolder,
+                                bookFolder,
+                                log,
+                                rename,
+                                renumberPages,
+                                cleanNoJSON,
+                                cleanNoImages
+                            )
+                            nbBookFolders += subfolders.size
+                            allSubfolders.addAll(subfolders)
+                            // Clear the DAO every 2500K iterations to optimize memory
+                            if (0 == index % 2500) {
+                                dao.cleanup()
+                                dao = ObjectBoxDAO()
+                            }
                         }
-                    }
+                        // Prepare next wave with leftover subfolders
+                        toScan.clear()
+                        toScan.addAll(allSubfolders)
+                    } while (toScan.isNotEmpty())
                 } finally {
                     dao.cleanup()
                 }
@@ -354,7 +368,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     "Import books complete - %s OK; %s KO; %s final count",
                     booksOK.toString() + "",
                     booksKO.toString() + "",
-                    (bookFolders.size - nbFolders).toString() + ""
+                    (bookFolders.size - nbSubfolders).toString() + ""
                 )
                 eventComplete(
                     STEP_3_BOOKS,
@@ -413,13 +427,18 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     dao.cleanup()
                 }
             }
-        } catch (e: IOException) {
-            Timber.w(e)
-            // Restore interrupted state
-            Thread.currentThread().interrupt()
         } catch (e: InterruptedException) {
             Timber.w(e)
             Thread.currentThread().interrupt()
+        } catch (e: Exception) {
+            Timber.w(e)
+            trace(
+                Log.ERROR,
+                STEP_2_BOOK_FOLDERS,
+                log,
+                "Import book FATAL ERROR : %s",
+                e.message
+            )
         } finally {
             // Write log in root folder
             val logFile = context.writeLog(
@@ -441,7 +460,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             }
             eventComplete(
                 STEP_4_QUEUE_FINAL,
-                bookFolders.size,
+                nbBookFolders,
                 booksOK,
                 booksKO,
                 logFile
@@ -473,7 +492,6 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         context: Context,
         explorer: FileExplorer,
         dao: CollectionDAO,
-        bookFolders: MutableList<DocumentFile>, // Passed here to add subfolders to it
         parent: DocumentFile,
         bookFolder: DocumentFile,
         log: MutableList<LogEntry>,
@@ -481,9 +499,11 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         renumberPages: Boolean,
         cleanNoJSON: Boolean,
         cleanNoImages: Boolean
-    ) {
+    ): List<DocumentFile> {
         var content: Content? = null
         var bookFiles: List<DocumentFile>? = null
+        val result = ArrayList<DocumentFile>()
+
         val bookLocation = URLDecoder.decode(
             bookFolder.uri.toString().replace(explorer.root.toString(), ""),
             "UTF-8"
@@ -522,7 +542,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         if (success) "OK" else "KO",
                         bookLocation
                     )
-                    return
+                    return result
                 }
             }
         }
@@ -549,7 +569,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         Log.INFO, STEP_2_BOOK_FOLDERS, log,
                         "Import book KO! (already in $location) : %s", bookLocation
                     )
-                    return
+                    return result
                 }
                 var contentImages = content.imageList
                 if (rename) {
@@ -681,7 +701,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 val subfolders = explorer.listFolders(context, bookFolder)
                     .filterNot { (it.name ?: "").startsWith(".st") } // Ignore syncthing subfolders
                 if (subfolders.isNotEmpty()) { // Folder doesn't contain books but contains subdirectories
-                    bookFolders.addAll(subfolders)
+                    result.addAll(subfolders)
                     trace(
                         Log.INFO,
                         STEP_2_BOOK_FOLDERS,
@@ -689,8 +709,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         "Subfolders found in : %s",
                         bookLocation
                     )
-                    nbFolders++
-                    return
+                    nbSubfolders++
+                    return result
                 } else { // No JSON nor any subdirectory
                     trace(
                         Log.WARN,
@@ -740,7 +760,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book ERROR while regenerating JSON : %s for Folder %s",
-                        jse.message!!,
+                        jse.message,
                         bookLocation
                     )
                     booksKO++
@@ -751,7 +771,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book ERROR while regenerating JSON : %s for Folder %s",
-                        jse.message!!,
+                        jse.message,
                         bookLocation
                     )
                     booksKO++
@@ -805,7 +825,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book ERROR while regenerating Content : %s for Folder %s",
-                        jse.message!!,
+                        jse.message,
                         bookLocation
                     )
                     booksKO++
@@ -816,7 +836,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         STEP_2_BOOK_FOLDERS,
                         log,
                         "Import book ERROR while regenerating Content : %s for Folder %s",
-                        jse.message!!,
+                        jse.message,
                         bookLocation
                     )
                     booksKO++
@@ -830,7 +850,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 STEP_2_BOOK_FOLDERS,
                 log,
                 "Import book ERROR : %s for Folder %s",
-                e.message!!,
+                e.message,
                 bookLocation
             )
         }
@@ -839,15 +859,16 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             ImportProgressNotification(
                 bookName,
                 booksOK + booksKO,
-                bookFolders.size - nbFolders
+                nbBookFolders - nbSubfolders
             )
         )
         eventProgress(
             STEP_3_BOOKS,
-            bookFolders.size - nbFolders,
+            nbBookFolders - nbSubfolders,
             booksOK,
             booksKO
         )
+        return result
     }
 
     private fun hasSameUrl(i1: ImageFile, url: String): Boolean {
