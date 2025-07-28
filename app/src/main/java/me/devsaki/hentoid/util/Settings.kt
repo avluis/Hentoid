@@ -65,16 +65,26 @@ object Settings {
     fun importInformation(settings: Map<String, Any?>) {
         settings.entries.forEach {
             it.value?.let { value ->
-                if (value is Int) {
-                    sharedPreferences.edit { putInt(it.key, value) }
-                } else if (value is String) {
-                    sharedPreferences.edit { putString(it.key, value) }
-                } else if (value is Boolean) {
-                    sharedPreferences.edit { putBoolean(it.key, value) }
-                } else if (value is Float) {
-                    sharedPreferences.edit { putFloat(it.key, value) }
-                } else if (value is Long) {
-                    sharedPreferences.edit { putLong(it.key, value) }
+                when (value) {
+                    is Int -> {
+                        sharedPreferences.edit { putInt(it.key, value) }
+                    }
+
+                    is String -> {
+                        sharedPreferences.edit { putString(it.key, value) }
+                    }
+
+                    is Boolean -> {
+                        sharedPreferences.edit { putBoolean(it.key, value) }
+                    }
+
+                    is Float -> {
+                        sharedPreferences.edit { putFloat(it.key, value) }
+                    }
+
+                    is Long -> {
+                        sharedPreferences.edit { putLong(it.key, value) }
+                    }
                 }
             }
         }
@@ -438,6 +448,7 @@ object Settings {
         Value.TARGET_FOLDER_DOWNLOADS
     )
     var latestReaderTargetFolderUri: String by StringSetting("READER_TARGET_FOLDER_LATEST", "")
+    val isReaderSmartCrop: Boolean by BoolSetting(Key.READER_SMART_CROP, false)
 
     // METADATA & RULES EDITOR
     var ruleSortField: Int by IntSetting("pref_order_rule_field", Value.ORDER_FIELD_SOURCE_NAME)
@@ -700,6 +711,7 @@ object Settings {
         const val VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate_mode"
         const val VIEWER_DELETE_ASK_MODE = "viewer_delete_ask"
         const val VIEWER_DELETE_TARGET = "viewer_delete_target"
+        const val READER_SMART_CROP = "reader_smart_crop"
 
         // Deprecated values kept for housekeeping/migration
         const val VIEWER_AUTO_ROTATE_OLD = "pref_viewer_auto_rotate"

@@ -409,6 +409,7 @@ class ImagePagerAdapter(context: Context) :
                 val scrollLTR = VIEWER_DIRECTION_LTR == displayParams.direction && isScrollLTR
                 ssiv.setOffsetLeftSide(scrollLTR)
                 ssiv.setScaleListener { onAbsoluteScaleChanged(position, it) }
+                ssiv.setSmartCrop(Settings.isReaderSmartCrop)
             }
 
             // Image layout constraints

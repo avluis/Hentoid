@@ -233,6 +233,9 @@
     <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
     <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
     <string name="pref_viewer_maintain_horizontal_zoom">Maintain zoom level between pages</string>
+    <string name="pref_viewer_smart_crop">Smart cropping</string>
+    <string name="pref_viewer_smart_crop_summary_off">Images are displayed as is</string>
+    <string name="pref_viewer_smart_crop_summary_on">Solid borders are automatically removed</string>
     <string name="pref_viewer_separating_bars">Separating bars in vertical mode</string>
     <string name="pref_viewer_display_mode">Display mode for horizontal viewing</string>
     <string name="pref_viewer_rendering">Rendering</string>

@@ -41,6 +41,7 @@ import me.devsaki.hentoid.customssiv.util.getScreenDimensionsPx
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.customssiv.util.resizeBitmap
+import me.devsaki.hentoid.customssiv.util.smartCropBitmap
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import timber.log.Timber
 import java.util.concurrent.locks.ReadWriteLock
@@ -368,6 +369,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     // Flag for auto-rotate mode enabled
     private var autoRotate = AutoRotateMethod.NONE
+
+    // Flag for smart crop mode enabled
+    private var isSmartCrop = false
 
     // Phone screen width and height (stored here for optimization)
     private val screenWidth: Int
@@ -1388,11 +1392,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Creates Paint objects once when first needed.
      */
     private fun createPaints() {
-        if (bitmapPaint == null) {
-            bitmapPaint = Paint()
-            bitmapPaint!!.isAntiAlias = true
-            bitmapPaint!!.isFilterBitmap = true
-            bitmapPaint!!.isDither = true
+        if (bitmapPaint == null) bitmapPaint = Paint()
+        bitmapPaint?.apply {
+            isAntiAlias = true
+            isFilterBitmap = true
+            isDither = true
         }
     }
 
@@ -1811,10 +1815,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                     sHeightTile = height()
                 }
             }
+            Timber.d("Init tiles END %s", sourceUri)
             return@withContext intArrayOf(sWidthTile, sHeightTile, exifOrientation.code)
         }
-        Timber.d("Init tiles END %s", sourceUri)
-        return@withContext intArrayOf(0, 0, 0)
     }
 
     /**
@@ -1880,10 +1883,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         loadedTile.sRect?.apply {
             Timber.v("Processing tile $left $top")
         }
-        val resizeScale = targetScale * loadedTile.sampleSize
-        val resizeResult = resizeBitmap(glEsRenderer, loadedTile.bitmap!!, resizeScale)
-        loadedTile.bitmap = resizeResult.first
-        loadedTile.loading = false
+        loadedTile.bitmap?.let { bmp ->
+            val cropped = if (isSmartCrop) smartCropBitmap(bmp) else bmp
+            val resizeScale = targetScale * loadedTile.sampleSize
+            val resizeResult = resizeBitmap(glEsRenderer, cropped, resizeScale)
+            loadedTile.bitmap = resizeResult.first
+            loadedTile.loading = false
+        }
         return@withContext loadedTile
     }
 
@@ -1938,9 +1944,11 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             // That's more or less cheating but it does work
             singleImage.rawWidth = targetWidth
             singleImage.rawHeight = targetHeight
-            resizeBitmap(glEsRenderer, bitmap, stretchedScale)
+            val cropped = if (isSmartCrop) smartCropBitmap(bitmap) else bitmap
+            resizeBitmap(glEsRenderer, cropped, stretchedScale)
         } else {
-            resizeBitmap(glEsRenderer, bitmap, targetScale)
+            val cropped = if (isSmartCrop) smartCropBitmap(bitmap) else bitmap
+            resizeBitmap(glEsRenderer, cropped, targetScale)
         }
 
         singleImage.loading = false
@@ -1975,9 +1983,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             singleImage.scale = imageScale
             singleImage.location = location
             singleImage.targetScale = targetScale
-            this.bitmap = bitmap
-            this.sWidth = bitmap.width
-            this.sHeight = bitmap.height
+            if (!bitmap.isRecycled) {
+                this.bitmap = bitmap
+                this.sWidth = bitmap.width
+                this.sHeight = bitmap.height
+            } else {
+                this.bitmap = null
+            }
             this.sOrientation = sOrientation
         }
         val ready = checkReady()
@@ -2856,6 +2868,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
     fun setGlEsRenderer(glEsRenderer: GPUImage?) {
         this.glEsRenderer = glEsRenderer
+    }
+
+    fun setSmartCrop(value: Boolean) {
+        this.isSmartCrop = value
     }
 
     /**

@@ -736,6 +736,13 @@
                     android:summary="@string/pref_generic_summary"
                     android:title="@string/pref_viewer_color_depth"
                     app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_smart_crop_default"
+                    android:key="reader_smart_crop"
+                    android:summaryOff="@string/pref_viewer_smart_crop_summary_off"
+                    android:summaryOn="@string/pref_viewer_smart_crop_summary_on"
+                    android:title="@string/pref_viewer_smart_crop"
+                    app:iconSpaceReserved="false" />
             </PreferenceCategory>
             <PreferenceCategory
                 android:title="@string/pref_viewer_horizontal_reader"

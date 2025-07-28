@@ -60,8 +60,11 @@ import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Compan
 import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Key.READER_SMART_CROP
+import me.devsaki.hentoid.util.Settings.Key.READER_TWOPAGES
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_AUTO_ROTATE
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_BROWSE_MODE
+import me.devsaki.hentoid.util.Settings.Key.VIEWER_CONTINUOUS
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_DOUBLE_TAP_TO_ZOOM
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_HOLD_TO_ZOOM
 import me.devsaki.hentoid.util.Settings.Key.VIEWER_IMAGE_DISPLAY
@@ -903,9 +906,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         Timber.v("Prefs change detected : %s", key)
         if (key.startsWith(VIEWER_BROWSE_MODE)) onBrowseModeChange()
         when (key) {
-            VIEWER_HOLD_TO_ZOOM, Settings.Key.VIEWER_CONTINUOUS, Settings.Key.READER_TWOPAGES -> onBrowseModeChange()
+            VIEWER_HOLD_TO_ZOOM, VIEWER_CONTINUOUS, READER_TWOPAGES -> onBrowseModeChange()
             Settings.Key.VIEWER_KEEP_SCREEN_ON -> onUpdatePrefsScreenOn()
-            Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE
+            Settings.Key.VIEWER_ZOOM_TRANSITIONS, VIEWER_SEPARATING_BARS, VIEWER_AUTO_ROTATE, READER_SMART_CROP
                 -> onUpdateImageDisplay(true)
 
             VIEWER_DOUBLE_TAP_TO_ZOOM -> {
