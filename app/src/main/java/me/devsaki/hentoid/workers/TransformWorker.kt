@@ -493,15 +493,16 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
 
                     var linesToBuffer = img.toConsumeHeight
-                    Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight}")
+                    Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims})")
                     while (linesToBuffer > 0) {
                         val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
+                        val bufOffset = img.toConsumeHeight - linesToBuffer
                         bmp.getPixels(
                             pixelBuffer,
                             0,
                             img.dims.x,
                             0,
-                            img.toConsumeOffset + (img.toConsumeHeight - linesToBuffer),
+                            img.toConsumeOffset + bufOffset,
                             img.dims.x,
                             bufTaken
                         )
@@ -511,7 +512,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                             0,
                             img.dims.x,
                             xOffset,
-                            yOffset + (img.toConsumeHeight - linesToBuffer),
+                            yOffset + bufOffset,
                             img.dims.x,
                             bufTaken
                         )
@@ -559,18 +560,19 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         // Is the last image of the queue completely consumed?
         if (last.toConsumeHeight != last.dims.y) {
-            val remainingHeight = last.dims.y - last.toConsumeHeight
+            val remainingHeight = last.dims.y - last.toConsumeOffset - last.toConsumeHeight
             queue.add(
                 ManhwaProcessingItem(
                     last.img,
                     last.doc,
                     last.dims,
-                    last.toConsumeHeight,
-                    remainingHeight
+                    last.toConsumeOffset + last.toConsumeHeight,
+                    min(remainingHeight, targetDims.y)
                 )
             )
             // Reprocess the queue right now if there's a remanining image with enough height
             if (remainingHeight >= targetDims.y) {
+                Timber.d("Reusing last queued image")
                 result.addAll(
                     processManhwaImageQueue(
                         queue,
