@@ -414,11 +414,12 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         // Create target images one by one
         var consumedHeight = 0
         val processingQueue = ArrayList<ManhwaProcessingItem>()
-        var currentIdx = firstIndex
+        var currentImgIdx = firstIndex
         var isKO = false
         try {
             sourceImgs.forEachIndexed { idx, img ->
                 Timber.d("Processing source file ${img.fileUri}")
+                val isLast = idx == sourceImgs.size - 1
                 val dims = allDims[idx]
                 var leftToConsume = targetDims.y - consumedHeight
 
@@ -432,18 +433,19 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 )
 
                 // Create target image
-                if (leftToConsume <= 0) {
+                if (leftToConsume <= 0 || isLast) {
                     if (leftToConsume < 0) Timber.w("!!! LEFTTOCONSUME IS NEGATIVE $leftToConsume")
                     val newImgs = processManhwaImageQueue(
                         processingQueue,
                         targetImg,
                         pixelBuffer,
-                        currentIdx,
+                        currentImgIdx,
+                        isLast,
                         targetDims,
                         contentFolder,
                         params
                     )
-                    currentIdx += newImgs.size
+                    currentImgIdx += newImgs.size
                     result.addAll(newImgs)
                     consumedHeight = processingQueue.sumOf { it.toConsumeHeight }
                 }
@@ -474,6 +476,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         targetImg: Bitmap,
         pixelBuffer: IntArray,
         startIndex: Int,
+        isLast: Boolean,
         targetDims: Point,
         contentFolder: DocumentFile,
         params: TransformParams
@@ -571,14 +574,15 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
             // Reprocess the queue right now if there's a remanining image with enough height
-            if (remainingHeight >= targetDims.y) {
-                Timber.d("Reusing last queued image")
+            if (remainingHeight > 0 && (remainingHeight >= targetDims.y || isLast)) {
+                Timber.d("Reusing last queued image (remaining $remainingHeight)")
                 result.addAll(
                     processManhwaImageQueue(
                         queue,
                         targetImg,
                         pixelBuffer,
                         startIndex + 1,
+                        isLast,
                         targetDims,
                         contentFolder,
                         params
