@@ -256,10 +256,10 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     )
 
             // Check if content contains transformed pages already
-            var retransformWarning = false
-            content?.apply { retransformWarning = imageList.count { it.isTransformed } > 0 }
+            var retransformedPics = 0
+            content?.apply { retransformedPics = imageList.count { it.isTransformed } }
 
-            if (encoderWarning || retransformWarning || isAiUpscale) {
+            if (encoderWarning || retransformedPics > 0 || isAiUpscale) {
                 itemAdapter.clear()
                 if (encoderWarning) itemAdapter.add(
                     DrawerItem(
@@ -270,9 +270,9 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                         true
                     )
                 )
-                if (retransformWarning) itemAdapter.add(
+                if (retransformedPics > 0) itemAdapter.add(
                     DrawerItem(
-                        resources.getString(R.string.retransform_warning),
+                        resources.getString(R.string.retransform_warning, retransformedPics),
                         R.drawable.ic_warning,
                         Content.getWebActivityClass(Site.NONE),
                         2,
