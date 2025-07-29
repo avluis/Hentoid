@@ -83,8 +83,16 @@ internal fun Context.isFinishing(): Boolean {
 fun Context.convertLocaleToEnglish() {
     if (Settings.isForceEnglishLocale) {
         val config = this.resources.configuration
-        if (config.locale != Locale.ENGLISH) {
-            val englishLocale = Locale("en")
+        val localesList = config.locales
+        var hasEnglish = false
+        for(i in 0..<localesList.size()) {
+            if (localesList[i] == Locale.ENGLISH) {
+                hasEnglish = true
+                break
+            }
+        }
+        if (!hasEnglish) {
+            val englishLocale = Locale.ENGLISH
             Locale.setDefault(englishLocale)
             config.setLocale(englishLocale)
             // TODO https://stackoverflow.com/questions/40221711/android-context-getresources-updateconfiguration-deprecated
