@@ -14,6 +14,7 @@ import javax.microedition.khronos.egl.EGLContext
 import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.egl.EGLSurface
 import javax.microedition.khronos.opengles.GL10
+import androidx.core.graphics.createBitmap
 
 private const val TAG = "PixelBuffer"
 private const val LIST_CONFIGS = false
@@ -123,7 +124,7 @@ internal class PixelBuffer(private var width: Int, private var height: Int) {
 */
         mPixelBuf.rewind()
 
-        val bmp = Bitmap.createBitmap(outX, outY, Bitmap.Config.ARGB_8888)
+        val bmp = createBitmap(outX, outY)
         bmp.copyPixelsFromBuffer(mPixelBuf)
         return bmp
     }

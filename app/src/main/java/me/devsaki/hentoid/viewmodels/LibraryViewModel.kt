@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
+import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
@@ -226,7 +227,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun clearContent() {
         currentSource?.let { libraryPaged.removeSource(it) }
         currentSource = dao.selectNoContent()
-        currentSource?.let { libraryPaged.addSource(it) { libraryPaged.value = it } }
+        currentSource?.let { s -> libraryPaged.addSource(s) { libraryPaged.value = it } }
     }
 
     fun searchGroup() {
@@ -303,8 +304,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     )
                 }
                 // Root entries
-                Settings.libraryFoldersRoots.forEach {
-                    getDocumentFromTreeUriString(ctx, it)?.let { entries.add(DisplayFile(it)) }
+                Settings.libraryFoldersRoots.forEach { r ->
+                    getDocumentFromTreeUriString(ctx, r)?.let { entries.add(DisplayFile(it)) }
                 }
                 folders.postValue(entries)
             }
@@ -435,8 +436,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             ?: run {
                 // Identify the current folder's parent and get there
                 Settings.libraryFoldersRoots.firstOrNull { currentFolder.toString().startsWith(it) }
-                    ?.let {
-                        getParent(getApplication(), it.toUri(), currentFolder)
+                    ?.let { r ->
+                        getParent(getApplication(), r.toUri(), currentFolder)
                             ?.let { setFolderRoot(it) }
                     } ?: run { setFolderRoot(Uri.EMPTY) }
             }
@@ -460,9 +461,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val currentGrouping = Settings.groupingDisplay
         if (groupingId != currentGrouping) {
             Settings.groupingDisplay = groupingId
-            if (groupingId == Grouping.FLAT.id) viewModelScope.launch { doSearchContent() }
-            else if (groupingId == Grouping.FOLDERS.id) viewModelScope.launch { doSearchFolders() }
-            else viewModelScope.launch { doSearchGroup() }
+            when (groupingId) {
+                Grouping.FLAT.id -> viewModelScope.launch { doSearchContent() }
+                Grouping.FOLDERS.id -> viewModelScope.launch { doSearchFolders() }
+                else -> viewModelScope.launch { doSearchGroup() }
+            }
         }
     }
 
@@ -821,13 +824,17 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         workManager.getWorkInfoByIdLiveData(request.id).observeForever(workInfoObserver)
     }
 
-    fun deleteOnStorage(docs: List<Uri>, onSuccess: Runnable? = null) {
+    fun deleteOnStorage(uris: Collection<String>, onSuccess: Runnable? = null) {
         val builder = DeleteData.Builder()
         builder.setOperation(BaseDeleteWorker.Operation.DELETE)
-        if (docs.isNotEmpty()) builder.setDocUris(docs)
+        if (uris.isNotEmpty()) builder.setDocUris(uris)
+        doDeleteOnStorage(builder.data, onSuccess)
+    }
+
+    fun doDeleteOnStorage(data: Data, onSuccess: Runnable? = null) {
         val workManager = WorkManager.getInstance(getApplication())
         val request: WorkRequest =
-            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(data).build()
         workManager.enqueue(request)
         val workInfoObserver =
             Observer { workInfo: WorkInfo? ->
@@ -895,13 +902,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         // Remove corresponding books from DB; identify JSONs to be deleted
         viewModelScope.launch {
-            val jsons = ArrayList<Uri>()
+            val jsons = ArrayList<String>()
             withContext(Dispatchers.IO) {
                 uris.forEach {
-                    dao.selectContentByStorageRootUri(it.toString()).forEach {
+                    dao.selectContentByStorageRootUri(it.toString()).forEach { r ->
                         try {
-                            if (it.jsonUri.isNotBlank()) jsons.add(it.jsonUri.toUri())
-                            dao.deleteContent(it)
+                            if (r.jsonUri.isNotBlank()) jsons.add(r.jsonUri.toUri().toString())
+                            dao.deleteContent(r)
                         } catch (t: Throwable) {
                             Timber.w(t)
                         }

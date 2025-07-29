@@ -17,6 +17,7 @@ import java.util.LinkedList
 import java.util.Queue
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import androidx.core.graphics.createBitmap
 
 private const val NO_IMAGE = -1
 
@@ -121,10 +122,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
         // TODO optimize that
         var resizedBitmap: Bitmap? = null
         if (bitmap.width % 2 == 1) {
-            resizedBitmap = Bitmap.createBitmap(
-                bitmap.width + 1, bitmap.height,
-                Bitmap.Config.ARGB_8888
-            )
+            resizedBitmap = createBitmap(bitmap.width + 1, bitmap.height)
             resizedBitmap.density = bitmap.density
 
             val can = Canvas(resizedBitmap)

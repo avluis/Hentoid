@@ -40,6 +40,8 @@ import kotlin.math.pow
 
 private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
+const val PIXEL_BUFFER_HEIGHT = 1024
+
 const val MIME_IMAGE_GENERIC = "image/*"
 const val MIME_IMAGE_WEBP = "image/webp"
 const val MIME_IMAGE_JPEG = "image/jpeg"

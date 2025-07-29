@@ -184,6 +184,7 @@ object Settings {
     var resizeMethod2Height: Int by IntSettingStr("TRANSFORM_RESIZE_2_HEIGHT", 0)
     var resizeMethod2Width: Int by IntSettingStr("TRANSFORM_RESIZE_2_WIDTH", 0)
     var resizeMethod3Ratio: Int by IntSettingStr("TRANSFORM_RESIZE_3_RATIO", 80)
+    var resizeMethod5Images: Int by IntSettingStr("TRANSFORM_RESIZE_5_IMAGES", 15)
     var transcodeMethod: Int by IntSettingStr("TRANSFORM_TRANSCODE_METHOD", 0)
     var transcodeEncoderAll: Int by IntSettingStr(
         "TRANSFORM_TRANSCODE_ENC_ALL",

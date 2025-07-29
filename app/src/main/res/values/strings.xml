@@ -1020,10 +1020,12 @@
     <string name="resize_method_2">Absolute max dimensions</string>
     <string name="resize_method_3">% of original image dimensions</string>
     <string name="resize_method_4">AI upscale 2x</string>
+    <string name="resize_method_5">Manhwa split/merge</string>
     <string name="resize_method_1_prompt">% of screen dimensions</string>
     <string name="resize_method_2_prompt_max_height">Max height (mangas)</string>
     <string name="resize_method_2_prompt_max_width">Max width (manhwas, webtoons)</string>
     <string name="resize_method_3_prompt">% of original size</string>
+    <string name="resize_method_5_prompt">Number of images per chapter</string>
     <string name="transform_transcoding">Transcoding</string>
     <string name="transcode_method_1">Same encoder for all pictures</string>
     <string name="transcode_method_2">Differentiate lossy and lossless pictures</string>

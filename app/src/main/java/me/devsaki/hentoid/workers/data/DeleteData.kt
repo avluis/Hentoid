@@ -18,6 +18,8 @@ private const val KEY_CONTENT_IDS = "contentIds"
 private const val KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers"
 private const val KEY_GROUP_IDS = "groupIds"
 private const val KEY_QUEUE_IDS = "queueIds"
+private const val KEY_DOCS_ROOT = "docRoot"
+private const val KEY_DOCS_NAMES = "docNames"
 private const val KEY_DOC_URIS = "docUris"
 private const val KEY_DELETE_FLAGGED_IMAGES = "deleteFlaggedImages"
 private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
@@ -50,8 +52,13 @@ class DeleteData {
             builder.putBoolean(KEY_DELETE_FLAGGED_IMAGES, value)
         }
 
-        fun setDocUris(value: List<Uri>) {
-            builder.putStringArray(KEY_DOC_URIS, value.map { it.toString() }.toTypedArray())
+        fun setDocsRootAndNames(root: Uri, names: Collection<String>) {
+            builder.putString(KEY_DOCS_ROOT, root.toString())
+            builder.putStringArray(KEY_DOCS_NAMES, names.toTypedArray())
+        }
+
+        fun setDocUris(value: Collection<String>) {
+            builder.putStringArray(KEY_DOC_URIS, value.toTypedArray())
         }
 
         fun setDeleteAllQueueRecords(value: Boolean) {
@@ -91,27 +98,21 @@ class DeleteData {
                 it.ordinal == data.getInt(KEY_OPERATION, -1)
             }
         val contentIds: LongArray
-            get() {
-                return data.getLongArray(KEY_CONTENT_IDS) ?: longArrayOf()
-            }
+            get() = data.getLongArray(KEY_CONTENT_IDS) ?: longArrayOf()
         val contentPurgeKeepCovers: Boolean
             get() = data.getBoolean(KEY_CONTENT_PURGE_KEEPCOVERS, false)
         val groupIds: LongArray
-            get() {
-                return data.getLongArray(KEY_GROUP_IDS) ?: longArrayOf()
-            }
+            get() = data.getLongArray(KEY_GROUP_IDS) ?: longArrayOf()
         val queueIds: LongArray
-            get() {
-                return data.getLongArray(KEY_QUEUE_IDS) ?: longArrayOf()
-            }
+            get() = data.getLongArray(KEY_QUEUE_IDS) ?: longArrayOf()
         val isDeleteFlaggedImages: Boolean
-            get() {
-                return data.getBoolean(KEY_DELETE_FLAGGED_IMAGES, false)
-            }
+            get() = data.getBoolean(KEY_DELETE_FLAGGED_IMAGES, false)
         val docUris: List<Uri>
-            get() {
-                return data.getStringArray(KEY_DOC_URIS)?.map { it.toUri() } ?: emptyList()
-            }
+            get() = data.getStringArray(KEY_DOC_URIS)?.map { it.toUri() } ?: emptyList()
+        val docsRoot: Uri
+            get() = data.getString(KEY_DOCS_ROOT)?.toUri() ?: Uri.EMPTY
+        val docsNames: Set<String>
+            get() = data.getStringArray(KEY_DOCS_NAMES)?.toSet() ?: emptySet()
         val isDeleteAllQueueRecords: Boolean
             get() = data.getBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, false)
         val isDeleteGroupsOnly: Boolean

@@ -166,7 +166,7 @@ class PdfManager {
                             ImageDataFactory.create(
                                 if (!ImageDataFactory.isSupportedType(data)) {
                                     val params = TransformParams(
-                                        false, 0, 0, 0, 0, 0, 1, PictureEncoder.PNG,
+                                        false, 0, 0, 0, 0, 0, 0, 1, PictureEncoder.PNG,
                                         PictureEncoder.JPEG, PictureEncoder.PNG, 90
                                     )
                                     transform(data, params)

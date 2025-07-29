@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.os.Build
+import androidx.core.graphics.scale
 import com.squareup.moshi.JsonClass
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.PictureEncoder
@@ -11,7 +12,6 @@ import me.devsaki.hentoid.util.getScreenDimensionsPx
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
 import kotlin.math.min
-import androidx.core.graphics.scale
 
 @JsonClass(generateAdapter = true)
 data class TransformParams(
@@ -21,6 +21,7 @@ data class TransformParams(
     val resize2Height: Int,
     val resize2Width: Int,
     val resize3Ratio: Int,
+    val resize5Pages: Int,
     val transcodeMethod: Int,
     val transcoderAll: PictureEncoder,
     val transcoderLossy: PictureEncoder,
@@ -148,11 +149,8 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
         )
         else bitmap.compress(Bitmap.CompressFormat.WEBP, quality, output)
 
-        PictureEncoder.WEBP_LOSSLESS -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(
-            Bitmap.CompressFormat.WEBP_LOSSLESS,
-            100,
-            output
-        )
+        PictureEncoder.WEBP_LOSSLESS -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, output)
         else bitmap.compress(Bitmap.CompressFormat.WEBP, 100, output)
 
         PictureEncoder.PNG -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)

@@ -301,7 +301,7 @@ class LibraryFoldersFragment : Fragment(),
                 selectExtension?.apply {
                     while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
                         IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
-                            select(it, false, true)
+                            select(it, false, considerSelectableFlag = true)
                         }
                 }
                 keepToolbar = true
@@ -355,11 +355,12 @@ class LibraryFoldersFragment : Fragment(),
             if (it.isNotEmpty()) viewModel.deleteItems(it, emptyList()) { viewModel.searchFolder() }
         }
         // Delete non-mapped items
-        selectedItems.filter { 0L == it.doc.contentId }.let {
-            if (it.isNotEmpty()) viewModel.deleteOnStorage(
-                it.map { it.doc.uri }
-            ) { viewModel.searchFolder() }
-        }
+        selectedItems.filter { 0L == it.doc.contentId }
+            .let { item ->
+                if (item.isNotEmpty())
+                    viewModel.deleteOnStorage(item.map { it.doc.uri.toString() })
+                    { viewModel.searchFolder() }
+            }
     }
 
     /**
@@ -501,7 +502,13 @@ class LibraryFoldersFragment : Fragment(),
                     calledFromOnStart: Boolean
                 ) {
                     selectExtension?.let { se ->
-                        if (isSelected) IntRange(start, end).forEach { se.select(it, false, true) }
+                        if (isSelected) IntRange(start, end).forEach {
+                            se.select(
+                                it,
+                                fireEvent = false,
+                                considerSelectableFlag = true
+                            )
+                        }
                         else se.deselect(IntRange(start, end).toMutableList())
                     }
                 }
@@ -575,7 +582,7 @@ class LibraryFoldersFragment : Fragment(),
         lifecycleScope.launch {
             val updatedItems = withContext(Dispatchers.Default) {
                 val inItems = result.toList()
-                var updatedItems = itemAdapter.adapterItems.toList()
+                val updatedItems = itemAdapter.adapterItems.toList()
                 // Merge detailed results data into existing items
                 updatedItems.map { up ->
                     inItems.firstOrNull { it.id == up.identifier }?.let {
@@ -693,7 +700,7 @@ class LibraryFoldersFragment : Fragment(),
                 val nbRefreshable = selectedItems.count {
                     it.doc.type == Type.FOLDER || it.doc.type == Type.SUPPORTED_FILE || it.doc.type == Type.BOOK_FOLDER
                 }
-                var insideExtLib =
+                val insideExtLib =
                     (Settings.libraryFoldersRoot.startsWith(Settings.externalLibraryUri) && nbRefreshable > 0)
                             || (selectedItems.count { it.doc.type == Type.ROOT_FOLDER && it.doc.subType == SubType.EXTERNAL_LIB } > 0)
 

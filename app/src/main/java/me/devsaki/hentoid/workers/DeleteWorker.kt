@@ -31,6 +31,8 @@ import me.devsaki.hentoid.notification.delete.DeleteStartNotification
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.util.fetchImageURLs
+import me.devsaki.hentoid.util.file.FileExplorer
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.getStackTraceString
 import me.devsaki.hentoid.util.isDownloadable
@@ -85,6 +87,12 @@ abstract class BaseDeleteWorker(
     // Uris of the DocumentFiles to delete
     private val docUris: List<Uri>
 
+    // Uri of the root of the DocumentFiles to delete
+    private val docsRoot: Uri
+
+    // Names of the DocumentFiles to delete
+    private val docsNames: Set<String>
+
     // True to delete all queue records
     private val isDeleteAllQueueRecords: Boolean
 
@@ -107,6 +115,8 @@ abstract class BaseDeleteWorker(
         groupIds = inputData.groupIds
         queueIds = inputData.queueIds
         docUris = inputData.docUris
+        docsRoot = inputData.docsRoot
+        docsNames = inputData.docsNames
         val isDeleteFlaggedImages = inputData.isDeleteFlaggedImages
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
@@ -189,6 +199,16 @@ abstract class BaseDeleteWorker(
 
                 // Remove documentFiles linked to the given Uris
                 if (docUris.isNotEmpty()) removeDocuments(docUris)
+                else if (docsRoot != Uri.EMPTY && docsNames.isNotEmpty()) {
+                    getDocumentFromTreeUri(applicationContext, docsRoot)?.let { root ->
+                        FileExplorer(applicationContext, root).use { fe ->
+                            val docs = fe.listDocumentFiles(
+                                applicationContext, root
+                            ).filter { docsNames.contains(it.name) }
+                            removeDocuments(docs.map { it.uri })
+                        }
+                    }
+                }
 
                 // If asked, make sure all QueueRecords are removed including dead ones
                 if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore()

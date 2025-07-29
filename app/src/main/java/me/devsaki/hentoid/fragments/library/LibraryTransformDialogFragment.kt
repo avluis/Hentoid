@@ -3,11 +3,11 @@ package me.devsaki.hentoid.fragments.library
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.graphics.Point
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -60,9 +60,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
         fun invoke(parent: Fragment, contentList: List<Content>) {
             val args = Bundle()
-            args.putLongArray(
-                KEY_CONTENTS, contentList.map { c -> c.id }.toLongArray()
-            )
+            args.putLongArray(KEY_CONTENTS, contentList.map { it.id }.toLongArray())
             invoke(parent, LibraryTransformDialogFragment(), args)
         }
     }
@@ -93,7 +91,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         requireNotNull(arguments) { "No arguments found" }
         val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
         require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
-        contentIds = contentIdArg!!
+        contentIds = contentIdArg
     }
 
     override fun onCreateView(
@@ -156,6 +154,12 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             resizeMethod3Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(resizeMethod3Ratio, 10, 100)) {
                     Settings.resizeMethod3Ratio = value.toInt()
+                    refreshThumb()
+                }
+            }
+            resizeMethod5Images.editText?.setOnTextChangedListener(lifecycleScope) { value ->
+                if (checkRange(resizeMethod5Images, 1, 200)) {
+                    Settings.resizeMethod5Images = value.toInt()
                     refreshThumb()
                 }
             }
@@ -224,6 +228,8 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             }
             resizeMethod3Ratio.isVisible = (2 == resizeMethod.index && resizeMethod.isVisible)
             if (applyValues) resizeMethod3Ratio.editText?.setText(Settings.resizeMethod3Ratio.toString())
+            resizeMethod5Images.isVisible = (4 == resizeMethod.index && resizeMethod.isVisible)
+            if (applyValues) resizeMethod5Images.editText?.setText(Settings.resizeMethod5Images.toString())
 
             // Transcode
             transcodeHeader.isVisible = !isAiUpscale
@@ -251,9 +257,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
             // Check if content contains transformed pages already
             var retransformWarning = false
-            content?.apply {
-                retransformWarning = imageList.count { i -> i.isTransformed } > 0
-            }
+            content?.apply { retransformWarning = imageList.count { it.isTransformed } > 0 }
 
             if (encoderWarning || retransformWarning || isAiUpscale) {
                 itemAdapter.clear()
@@ -344,7 +348,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             maxPages = pages.size
             val page = pages[pageIndex]
             try {
-                getInputStream(requireContext(), Uri.parse(page.fileUri)).use {
+                getInputStream(requireContext(), page.fileUri.toUri()).use {
                     return Pair(page.name, it.readBytes())
                 }
             } catch (t: Throwable) {
@@ -363,6 +367,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                 resizeMethod2MaxHeight.editText!!.text.toString().toInt(),
                 resizeMethod2MaxWidth.editText!!.text.toString().toInt(),
                 resizeMethod3Ratio.editText!!.text.toString().toInt(),
+                resizeMethod5Images.editText!!.text.toString().toInt(),
                 transcodeMethod.index,
                 PictureEncoder.fromValue(encoderAll.value.toInt())!!,
                 PictureEncoder.fromValue(encoderLossy.value.toInt())!!,
@@ -376,9 +381,9 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         // Check if no dialog is in error state
         binding?.apply {
             val nbError = container.children
-                .filter { c -> c is TextInputLayout }
-                .map { c -> c as TextInputLayout }
-                .count { til -> til.isErrorEnabled }
+                .filter { it is TextInputLayout }
+                .map { it as TextInputLayout }
+                .count { it.isErrorEnabled }
 
             if (nbError > 0) return
 

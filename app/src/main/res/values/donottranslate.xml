@@ -409,6 +409,7 @@
         <item>@string/resize_method_2</item>
         <item>@string/resize_method_3</item>
         <item>@string/resize_method_4</item>
+        <item>@string/resize_method_5</item>
     </string-array>
     <string-array name="transcode_method_entries" translatable="false">
         <item>@string/transcode_method_1</item>

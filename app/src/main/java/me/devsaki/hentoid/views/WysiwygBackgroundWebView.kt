@@ -176,11 +176,11 @@ class WysiwygBackgroundWebView(
 
     companion object {
         val interfaceName = generateName()
-        const val functionName = "ha"
+        const val FUNCTION_NAME = "ha"
 
         private fun generateName(): String {
             val sb = StringBuilder()
-            for (i in 1..10) {
+            repeat(10) {
                 val randomChar = 65 + getRandomInt(26)
                 sb.append(randomChar.toChar())
             }
