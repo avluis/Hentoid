@@ -49,6 +49,7 @@ import me.devsaki.hentoid.workers.data.DeleteData
 import me.robb.ai_upscale.AiUpscaler
 import timber.log.Timber
 import java.io.File
+import java.net.URLDecoder
 import java.nio.ByteBuffer
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
@@ -146,7 +147,8 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val contentFolder = withContext(Dispatchers.IO) {
             getDocumentFromTreeUriString(applicationContext, content.storageUri)
         }
-        val sourceImages = content.imageList
+        val sourceImages =
+            content.imageList.toList() // Copy to keep it intact after switching to new ones
         val transformedImages = ArrayList<ImageFile>()
         var isKO = false
         if (contentFolder != null) {
@@ -197,7 +199,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     removeDocs(
                         contentFolder.uri,
                         originalUris.map {
-                            val parts = UriParts(it)
+                            val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
                             return@map parts.fileNameFull
                         }
                     )
