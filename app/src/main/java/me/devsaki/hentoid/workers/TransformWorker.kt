@@ -169,10 +169,10 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 sourceImages.filterNot { null == it.linkedChapter }.filter { it.isReadable }
                     .groupBy { it.linkedChapter!!.id }
 
-            chapteredImgs.forEach {
-                if (it.value.isNotEmpty()) {
+            chapteredImgs.forEach { chgImgs ->
+                if (chgImgs.value.isNotEmpty()) {
                     val newImgs = transformChapter(
-                        it.value,
+                        chgImgs.value,
                         transformedImages.size + 1,
                         contentFolder,
                         params
@@ -180,9 +180,26 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     if (newImgs.isEmpty()) isKO = true
                     else transformedImages.addAll(newImgs)
                 }
+
+                // Remove old unused images from chapter if any
+                // NB : We need to make a small pass after each chapter to avoid breaking
+                // the 10kB Data limit if we pass all the images to delete
+                // when the whole book has been processed
+                val originalUris = chgImgs.value.map { it.fileUri }.toMutableSet()
+                val newUris = transformedImages.map { it.fileUri }.toSet()
+                originalUris.removeAll(newUris)
+                if (originalUris.isNotEmpty())
+                    removeDocs(
+                        contentFolder.uri,
+                        originalUris.map {
+                            val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
+                            return@map parts.fileNameFull
+                        }
+                    )
             }
 
             if (!isKO) {
+                // Final Content update
                 transformedImages.forEach { it.content.targetId = content.id }
                 content.setImageFiles(transformedImages)
                 dao.insertImageFiles(transformedImages)
@@ -191,7 +208,8 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 content.lastEditDate = Instant.now().toEpochMilli()
                 content.isBeingProcessed = false
                 dao.insertContentCore(content)
-                // Remove old unused images if any
+
+                // Remove old unused images if any (last pass to make sure nothing is left)
                 val originalUris = sourceImages.map { it.fileUri }.toMutableSet()
                 val newUris = transformedImages.map { it.fileUri }.toSet()
                 originalUris.removeAll(newUris)
@@ -486,7 +504,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         Timber.d("process queue (${queue.size} items)")
         val result = ArrayList<Pair<DocumentFile, ImageFile>>()
         var yOffset = 0
+        var previousWidth = Int.MAX_VALUE
         var containsLossless = false
+
         queue.forEachIndexed { idx, img ->
             withContext(Dispatchers.IO) {
                 // Build raw bitmap
@@ -495,28 +515,37 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     if (!containsLossless && isImageLossless(rawData)) containsLossless = true
                     val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
 
+                    // Clear pixelbuffer to avoid seeing ghosts of larger images
+                    // behind thinner images that may be processed later
+                    if (bmp.width < previousWidth) {
+                        pixelBuffer.fill(0)
+                        previousWidth = bmp.width
+                    }
+
                     var linesToBuffer = img.toConsumeHeight
                     Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims})")
                     while (linesToBuffer > 0) {
                         val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
                         val bufOffset = img.toConsumeHeight - linesToBuffer
+                        val xOffset = (targetDims.x - img.dims.x) / 2 // Center pic
+                        // Copy source pic to buffer (centered)
                         bmp.getPixels(
                             pixelBuffer,
-                            0,
-                            img.dims.x,
+                            xOffset,
+                            targetDims.x,
                             0,
                             img.toConsumeOffset + bufOffset,
                             img.dims.x,
                             bufTaken
                         )
-                        val xOffset = (targetDims.x - img.dims.x) / 2 // Center pic
+                        // Copy buffer to target pic (whole width)
                         targetImg.setPixels(
                             pixelBuffer,
                             0,
-                            img.dims.x,
-                            xOffset,
+                            targetDims.x,
+                            0,
                             yOffset + bufOffset,
-                            img.dims.x,
+                            targetDims.x,
                             bufTaken
                         )
                         linesToBuffer -= bufTaken
@@ -525,19 +554,18 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     bmp.recycle()
                 }
             }
-        }
+        } // queue loop
 
         val encoder = determineEncoder(containsLossless, targetDims, params)
         val targetName = formatIntAsStr(startIndex, 4)
         Timber.d("create image $targetName (${encoder.mimeType})")
 
-        val targetDoc = findOrCreateDocumentFile(
+        findOrCreateDocumentFile(
             applicationContext,
             contentFolder,
             encoder.mimeType,
             targetName + "." + getExtensionFromMimeType(encoder.mimeType)
-        )
-        if (targetDoc != null) {
+        )?.let { targetDoc ->
             Timber.d("Compressing...")
             val targetData = transcodeTo(targetImg, encoder, params.transcodeQuality)
             Timber.d("Saving...")
@@ -553,7 +581,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             result.add(Pair(targetDoc, newImg))
 
             nextOK()
-        } else {
+        } ?: run {
             nextKO()
         }
         launchProgressNotification()
