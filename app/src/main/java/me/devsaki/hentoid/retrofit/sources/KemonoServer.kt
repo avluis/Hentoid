@@ -12,7 +12,7 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 
 object KemonoServer {
-    private const val KEMONO_URL = "https://kemono.su/api/v1/"
+    private const val KEMONO_URL = "https://kemono.cr/api/v1/"
 
     lateinit var api: Api
 

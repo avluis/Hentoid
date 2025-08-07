@@ -136,7 +136,7 @@ class KemonoParser : BaseImageListParser() {
                                 Attribute(
                                     AttributeType.ARTIST,
                                     artist.name,
-                                    "https://kemono.su/${artist.service}/user/${artist.id}",
+                                    "https://kemono.cr/${artist.service}/user/${artist.id}",
                                     Site.KEMONO
                                 )
                             )

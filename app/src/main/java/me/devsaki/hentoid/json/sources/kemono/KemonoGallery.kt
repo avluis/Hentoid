@@ -50,7 +50,7 @@ data class KemonoGallery(
                 Attribute(
                     AttributeType.TAG,
                     it,
-                    "https://kemono.su/posts?tag=$it",
+                    "https://kemono.cr/posts?tag=$it",
                     Site.KEMONO
                 )
             )
@@ -67,7 +67,7 @@ data class KemonoGallery(
             }.distinct()
         if (imageUrls.isNotEmpty()) {
             post.file?.let {
-                content.coverImageUrl = "https://img.kemono.su/thumbnail/data/${it.path}"
+                content.coverImageUrl = "https://img.kemono.cr/thumbnail/data/${it.path}"
             } ?: run {
                 content.coverImageUrl = imageUrls[0]
             }

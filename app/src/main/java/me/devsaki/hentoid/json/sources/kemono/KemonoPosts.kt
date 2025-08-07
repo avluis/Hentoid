@@ -56,7 +56,7 @@ data class KemonoPosts(
             Attribute(
                 AttributeType.ARTIST,
                 props.name,
-                "https://kemono.su/${props.service}/user/${props.id}",
+                "https://kemono.cr/${props.service}/user/${props.id}",
                 Site.KEMONO
             )
         )
@@ -87,7 +87,7 @@ data class KemonoPosts(
                 if (imageUrls.isNotEmpty()) {
                     val chapter = Chapter(
                         chapterOrder++,
-                        "https://kemono.su/${props.service}/user/${props.id}/post/${result.id}",
+                        "https://kemono.cr/${props.service}/user/${props.id}/post/${result.id}",
                         result.title
                     )
                     val imageFiles = urlsToImageFiles(
