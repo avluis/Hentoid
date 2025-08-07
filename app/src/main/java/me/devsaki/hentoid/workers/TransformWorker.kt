@@ -45,6 +45,7 @@ import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.pause
+import me.devsaki.hentoid.util.weightedAverage
 import me.devsaki.hentoid.workers.data.DeleteData
 import me.robb.ai_upscale.AiUpscaler
 import timber.log.Timber
@@ -53,6 +54,7 @@ import java.net.URLDecoder
 import java.nio.ByteBuffer
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -415,6 +417,16 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             if (isStopped) return@forEach
         }
         if (isStopped) return emptyList()
+
+        // Remove outlier images (>10% larger than the others)
+        val excludedIndexes = HashSet<Int>()
+        val avgWidth =
+            weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) }.toList())
+        allDims.forEachIndexed { idx, dim ->
+            if (abs(dim.x - avgWidth) / avgWidth > 0.1) excludedIndexes.add(idx)
+        }
+        excludedIndexes.forEach { allDims.removeAt(it) }
+
         val totalHeight = allDims.sumOf { it.y }
         val targetDims = Point(
             allDims.maxOf { it.x },
@@ -436,6 +448,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         var isKO = false
         try {
             sourceImgs.forEachIndexed { idx, img ->
+                if (excludedIndexes.contains(idx)) return@forEachIndexed
                 Timber.d("Processing source file ${img.fileUri}")
                 val isLast = idx == sourceImgs.size - 1
                 val dims = allDims[idx]
