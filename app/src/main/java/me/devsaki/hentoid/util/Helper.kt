@@ -10,6 +10,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Point
 import android.graphics.drawable.InsetDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Debug
 import android.os.Looper
@@ -25,6 +26,9 @@ import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -48,6 +52,9 @@ import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.workers.BaseDeleteWorker
+import me.devsaki.hentoid.workers.DeleteWorker
+import me.devsaki.hentoid.workers.data.DeleteData
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -656,6 +663,17 @@ fun exportToDownloadsFolder(
             ).show()
         }
     }
+}
+
+fun removeDocs(context: Context, root: Uri, names: Collection<String>) {
+    val builder = DeleteData.Builder()
+    builder.setOperation(BaseDeleteWorker.Operation.DELETE)
+    builder.setDocsRootAndNames(root, names)
+    val workManager = WorkManager.getInstance(context)
+    val request: WorkRequest =
+        OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+            .setInputData(builder.data).build()
+    workManager.enqueue(request)
 }
 
 inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) =

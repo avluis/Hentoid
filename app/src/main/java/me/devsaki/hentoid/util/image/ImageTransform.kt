@@ -1,17 +1,38 @@
 package me.devsaki.hentoid.util.image
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
+import android.net.Uri
 import android.os.Build
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
+import androidx.documentfile.provider.DocumentFile
 import com.squareup.moshi.JsonClass
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.file.createFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.saveBinary
+import me.devsaki.hentoid.util.formatIntAsStr
 import me.devsaki.hentoid.util.getScreenDimensionsPx
+import me.devsaki.hentoid.util.removeDocs
+import me.devsaki.hentoid.util.weightedAverage
+import timber.log.Timber
 import java.io.ByteArrayOutputStream
+import kotlin.math.abs
+import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.roundToInt
 
 @JsonClass(generateAdapter = true)
 data class TransformParams(
@@ -34,6 +55,15 @@ val screenWidth = getScreenDimensionsPx(HentoidApp.getInstance()).x
 val screenHeight = getScreenDimensionsPx(HentoidApp.getInstance()).y
 
 private const val MAX_WEBP_DIMENSION = 16383 // As per WEBP specifications
+
+internal data class ManhwaProcessingItem(
+    val img: ImageFile,
+    val doc: DocumentFile,
+    val dims: Point,
+    val toConsumeOffset: Int,
+    val toConsumeHeight: Int
+)
+
 
 /**
  * Transform the given raw picture data using the given params
@@ -62,7 +92,7 @@ fun transform(
                 resizePlainRatio(source, dims, scale, allowBogusAiRescale)
             }
 
-            // 4 : Manhwa split/merge; handled at Worker level
+            // 4 : Manhwa split/merge; handled at Worker level and requires multiple images
 
             else -> resizePlainRatio(source, dims, 1f)
         }
@@ -159,3 +189,292 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
     return output.toByteArray()
 }
 
+suspend fun transformManhwaChapter(
+    context: Context,
+    sourceImgs: List<ImageFile>,
+    firstIndex: Int,
+    contentFolder: Uri,
+    params: TransformParams,
+    isPreview: Boolean = false,
+    interrupt: (() -> Boolean)? = null,
+    onProgress: ((Pair<Long, Boolean>) -> Unit)? = null
+): List<ImageFile> {
+    val result = ArrayList<Pair<Uri, ImageFile>>()
+    Timber.d("transformManhwaChapter (${sourceImgs.size} items starting with $firstIndex)")
+
+    // Compute the height of all images together + largest common width excluding outliers
+    val allDims = ArrayList<Point>()
+    val metadataOpts = BitmapFactory.Options()
+    val imgDocuments = ArrayList<DocumentFile>()
+    metadataOpts.inJustDecodeBounds = true
+    sourceImgs.forEachIndexed { idx, img ->
+        if (true == interrupt?.invoke() || (isPreview && idx > 10)) return@forEachIndexed
+        val sourceFile = withContext(Dispatchers.IO) {
+            getDocumentFromTreeUriString(context, img.fileUri)
+        } ?: run {
+            Timber.w("Can't open source file ${img.fileUri}")
+            return emptyList()
+        }
+        Timber.d("Reading source file ${img.fileUri}")
+        imgDocuments.add(sourceFile)
+        withContext(Dispatchers.IO) {
+            getInputStream(context, sourceFile).use {
+                val rawData = it.readBytes()
+                BitmapFactory.decodeByteArray(rawData, 0, rawData.size, metadataOpts)
+            }
+        }
+        allDims.add(Point(metadataOpts.outWidth, metadataOpts.outHeight))
+    }
+    if (true == interrupt?.invoke()) return emptyList()
+
+    // Detect outlier images (>10% larger than the others)
+    val excludedIndexes = HashSet<Int>()
+    val avgWidth =
+        weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) }.toList())
+    allDims.forEachIndexed { idx, dim ->
+        if (abs(dim.x - avgWidth) / avgWidth > 0.1) excludedIndexes.add(idx)
+    }
+
+    // Compute target dims without taking outliers into account
+    val totalHeight =
+        allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.sumOf { it.y }
+    val targetDims = Point(
+        allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.maxOf { it.x },
+        ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
+    )
+    Timber.d("targetDims $targetDims")
+
+    val targetImg = createBitmap(
+        targetDims.x,
+        targetDims.y,
+        Bitmap.Config.ARGB_8888
+    )
+    val pixelBuffer = IntArray(targetDims.x * PIXEL_BUFFER_HEIGHT)
+
+    // Create target images one by one
+    var consumedHeight = 0
+    val processingQueue = ArrayList<ManhwaProcessingItem>()
+    val processedIds = HashSet<Long>()
+    var currentImgIdx = firstIndex
+    var isKO = false
+    try {
+        sourceImgs.forEachIndexed { idx, img ->
+            if (true == interrupt?.invoke()) {
+                isKO = true
+                return@forEachIndexed
+            }
+            if (isPreview && currentImgIdx > firstIndex) return@forEachIndexed
+
+            if (excludedIndexes.contains(idx)) {
+                // Reuse outlier file into new image
+                val newImg = ImageFile()
+                val targetDoc = imgDocuments[idx]
+                newImg.name =
+                    formatIntAsStr(currentImgIdx, 4) + "." + getExtension(targetDoc.name ?: "")
+                newImg.order = currentImgIdx
+                newImg.fileUri = targetDoc.uri.toString()
+                newImg.size = targetDoc.length()
+                newImg.status = StatusContent.DOWNLOADED
+                newImg.isTransformed = true
+                result.add(Pair(targetDoc.uri, newImg))
+                currentImgIdx++
+                onProgress?.invoke(Pair(img.id, true))
+                return@forEachIndexed
+            }
+            Timber.d("Processing source file ${img.fileUri}")
+            val isLast = idx == sourceImgs.size - 1
+            val dims = allDims[idx]
+            var leftToConsume = targetDims.y - consumedHeight
+
+            // Compute consumption for current image
+            val toConsume = min(dims.y, leftToConsume)
+            consumedHeight += toConsume
+            leftToConsume = targetDims.y - consumedHeight
+
+            processingQueue.add(
+                ManhwaProcessingItem(img, imgDocuments[idx], dims, 0, toConsume)
+            )
+
+            // Create target image
+            if (leftToConsume <= 0 || isLast) {
+                if (leftToConsume < 0) Timber.w("!!! LEFTTOCONSUME IS NEGATIVE $leftToConsume")
+                val toProcess = processingQueue.map { it.img.id }
+                val newImgs = processManhwaImageQueue(
+                    context,
+                    processingQueue,
+                    targetImg,
+                    pixelBuffer,
+                    currentImgIdx,
+                    isLast,
+                    targetDims,
+                    contentFolder,
+                    params
+                )
+                // Report results in the notification
+                toProcess.forEach {
+                    if (!processedIds.contains(it)) {
+                        onProgress?.invoke(Pair(it, newImgs.isEmpty()))
+                        processedIds.add(it)
+                    }
+                }
+
+                currentImgIdx += newImgs.size
+                result.addAll(newImgs)
+                consumedHeight = processingQueue.sumOf { it.toConsumeHeight }
+            }
+        } // source images loop
+    } catch (e: Exception) {
+        Timber.w(e)
+        isKO = true
+    } finally {
+        targetImg.recycle()
+    }
+
+    return if (!isKO || isPreview) {
+        result.map { it.second }
+    } else {
+        // Remove processed files, if any
+        if (result.isNotEmpty() && false == interrupt?.invoke()) {
+            val docNames = ArrayList<String>()
+            result.forEachIndexed { idx, uri ->
+                if (excludedIndexes.contains(idx)) return@forEachIndexed
+                getDocumentFromTreeUri(context, uri.first)?.let { doc ->
+                    docNames.add(doc.name ?: "")
+                }
+            }
+            removeDocs(context, contentFolder, docNames)
+        }
+        emptyList()
+    }
+}
+
+private suspend fun processManhwaImageQueue(
+    context: Context,
+    queue: MutableList<ManhwaProcessingItem>,
+    targetImg: Bitmap,
+    pixelBuffer: IntArray,
+    startIndex: Int,
+    isLast: Boolean,
+    targetDims: Point,
+    contentFolder: Uri,
+    params: TransformParams
+): List<Pair<Uri, ImageFile>> {
+    if (queue.isEmpty()) return emptyList()
+
+    Timber.d("process queue (${queue.size} items)")
+    val result = ArrayList<Pair<Uri, ImageFile>>()
+    var yOffset = 0
+    var previousWidth = Int.MAX_VALUE
+    var containsLossless = false
+
+    queue.forEach { img ->
+        withContext(Dispatchers.IO) {
+            // Build raw bitmap
+            getInputStream(context, img.doc).use {
+                val rawData = it.readBytes()
+                if (!containsLossless && isImageLossless(rawData)) containsLossless = true
+                val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
+
+                // Clear pixelbuffer to avoid seeing ghosts of larger images
+                // behind thinner images that may be processed later
+                if (bmp.width < previousWidth) {
+                    pixelBuffer.fill(0)
+                    previousWidth = bmp.width
+                }
+
+                var linesToBuffer = img.toConsumeHeight
+                Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
+                while (linesToBuffer > 0) {
+                    val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
+                    val bufOffset = img.toConsumeHeight - linesToBuffer
+                    val xOffset = (targetDims.x - img.dims.x) / 2 // Center pic
+                    // Copy source pic to buffer (centered)
+                    bmp.getPixels(
+                        pixelBuffer,
+                        xOffset,
+                        targetDims.x,
+                        0,
+                        img.toConsumeOffset + bufOffset,
+                        img.dims.x,
+                        bufTaken
+                    )
+                    // Copy buffer to target pic (whole width)
+                    targetImg.setPixels(
+                        pixelBuffer,
+                        0,
+                        targetDims.x,
+                        0,
+                        yOffset + bufOffset,
+                        targetDims.x,
+                        bufTaken
+                    )
+                    linesToBuffer -= bufTaken
+                }
+                yOffset += img.toConsumeHeight
+                bmp.recycle()
+            }
+        }
+    } // queue loop
+
+    val encoder = determineEncoder(containsLossless, targetDims, params)
+    val targetName = formatIntAsStr(startIndex, 4)
+    Timber.d("create image $targetName (${encoder.mimeType})")
+
+    createFile(
+        context,
+        contentFolder,
+        targetName,
+        encoder.mimeType,
+        false
+    ).let { targetUri ->
+        Timber.d("Compressing...")
+        val targetData = transcodeTo(targetImg, encoder, params.transcodeQuality)
+        Timber.d("Saving...")
+        saveBinary(context, targetUri, targetData)
+        // Update image properties
+        val newImg = ImageFile()
+        newImg.name = targetName
+        newImg.order = startIndex
+        newImg.fileUri = targetUri.toString()
+        newImg.size = targetData.size.toLong()
+        newImg.status = StatusContent.DOWNLOADED
+        newImg.isTransformed = true
+        result.add(Pair(targetUri, newImg))
+    }
+
+    val last = queue.last()
+    queue.clear()
+
+    // Is the last image of the queue completely consumed?
+    if (last.toConsumeHeight != last.dims.y) {
+        val remainingHeight = last.dims.y - last.toConsumeOffset - last.toConsumeHeight
+        queue.add(
+            ManhwaProcessingItem(
+                last.img,
+                last.doc,
+                last.dims,
+                last.toConsumeOffset + last.toConsumeHeight,
+                min(remainingHeight, targetDims.y)
+            )
+        )
+        // Reprocess the queue right now if there's a remanining image with enough height
+        if (remainingHeight > 0 && (remainingHeight >= targetDims.y || isLast)) {
+            Timber.d("Reusing last queued image (remaining $remainingHeight)")
+            result.addAll(
+                processManhwaImageQueue(
+                    context,
+                    queue,
+                    targetImg,
+                    pixelBuffer,
+                    startIndex + 1,
+                    isLast,
+                    targetDims,
+                    contentFolder,
+                    params
+                )
+            )
+        }
+    }
+
+    return result
+}

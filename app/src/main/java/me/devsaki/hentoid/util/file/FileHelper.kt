@@ -741,6 +741,11 @@ fun saveBinary(out: OutputStream, binaryData: ByteArray) {
     }
 }
 
+@Throws(IOException::class)
+fun getBinary(context: Context, uri: Uri): ByteArray {
+    return getInputStream(context, uri).use { it.readBytes() }
+}
+
 /**
  * Get the relevant file extension (without the ".") from the given mime-type
  *
@@ -1466,23 +1471,6 @@ fun cleanFileName(fileName: String): String {
 }
 
 /**
- * Empty the given subfolder inside the cache folder
- *
- * @param context    Context to use
- * @param folderName Name of the subfolder to empty
- */
-fun emptyCacheFolder(context: Context, folderName: String) {
-    val cacheFolder = getOrCreateCacheFolder(context, folderName)
-    if (cacheFolder != null) {
-        val files = cacheFolder.listFiles()
-        if (files != null) for (f in files) if (!f.delete()) Timber.w(
-            "Unable to delete file %s",
-            f.absolutePath
-        )
-    }
-}
-
-/**
  * Retrieve or create the subfolder with the given name inside the cache folder
  *
  * @param context    Context to use
@@ -1499,12 +1487,6 @@ fun getOrCreateCacheFolder(context: Context, folderName: String): File? {
         else return null
     }
     return root
-}
-
-fun getAssetAsString(mgr: AssetManager, assetName: String): String {
-    val sb = StringBuilder()
-    getAssetAsString(mgr, assetName, sb)
-    return sb.toString()
 }
 
 fun getAssetAsString(mgr: AssetManager, assetName: String, sb: StringBuilder) {

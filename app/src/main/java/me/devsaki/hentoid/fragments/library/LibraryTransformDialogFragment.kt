@@ -37,8 +37,10 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getBinary
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
@@ -46,6 +48,7 @@ import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.screenHeight
 import me.devsaki.hentoid.util.image.screenWidth
 import me.devsaki.hentoid.util.image.transform
+import me.devsaki.hentoid.util.image.transformManhwaChapter
 import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.workers.TransformWorker
 import okio.use
@@ -54,10 +57,11 @@ import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.max
 
+private const val KEY_CONTENTS = "contents"
+private const val CACHE_TRANSFORM_MANHWA = "transform-manhwa"
+
 class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialogFragment.Parent>() {
     companion object {
-        const val KEY_CONTENTS = "contents"
-
         fun invoke(parent: Fragment, contentList: List<Content>) {
             val args = Bundle()
             args.putLongArray(KEY_CONTENTS, contentList.map { it.id }.toLongArray())
@@ -313,7 +317,10 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             val sourceName = picName + "." + getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {
-                return@withContext transform(rawData, params, true)
+                return@withContext if (4 == params.resizeMethod) {
+                    val res = transformManhwa(params, pageIndex)
+                    if (res.isEmpty()) rawData else res
+                } else transform(rawData, params, true)
             }
             val unchanged = targetData == rawData
 
@@ -344,7 +351,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     private fun getCurrentBitmap(): Pair<String, ByteArray>? {
         content?.apply {
             // Get bitmap for display
-            val pages = imageList.filter { i -> i.isReadable }
+            val pages = imageList.filter { it.isReadable }
             maxPages = pages.size
             val page = pages[pageIndex]
             try {
@@ -356,6 +363,32 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             }
         }
         return null
+    }
+
+    private suspend fun transformManhwa(params: TransformParams, firstPageIndex: Int): ByteArray {
+        content?.let {
+            // Prepare cache folder
+            var cacheFolder =
+                getOrCreateCacheFolder(requireContext(), CACHE_TRANSFORM_MANHWA)
+                    ?: return ByteArray(0)
+            if (!cacheFolder.deleteRecursively()) return ByteArray(0)
+            cacheFolder =
+                getOrCreateCacheFolder(requireContext(), CACHE_TRANSFORM_MANHWA)
+                    ?: return ByteArray(0)
+
+            transformManhwaChapter(
+                requireContext(),
+                it.imageList.filter { i -> i.isReadable }.drop(firstPageIndex),
+                1,
+                cacheFolder.toUri(),
+                params,
+                true
+            )
+
+            val file = cacheFolder.listFiles()?.firstOrNull() ?: return ByteArray(0)
+            return getBinary(requireContext(), file.toUri())
+        }
+        return ByteArray(0)
     }
 
     private fun buildParams(): TransformParams {
