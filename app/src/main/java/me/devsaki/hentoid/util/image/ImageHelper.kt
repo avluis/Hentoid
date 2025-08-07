@@ -181,34 +181,34 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
  */
 fun isImageAnimated(data: ByteArray): Boolean {
     // TODO JXL (specs aren't public :/)
-    return if (data.size < 400) false
-    else {
-        val limit = min(data.size, 1000)
-        when (getMimeTypeFromPictureBinary(data, limit)) {
-            MIME_IMAGE_APNG -> true
-            MIME_IMAGE_GIF -> findSequencePosition(
+    val limit = min(data.size, 1000)
+    return when (getMimeTypeFromPictureBinary(data, limit)) {
+        MIME_IMAGE_APNG -> true
+        MIME_IMAGE_GIF ->
+            return if (data.size < 400) false
+            else findSequencePosition(
                 data,
                 0,
                 GIF_NETSCAPE,
                 limit
             ) > -1
 
-            MIME_IMAGE_WEBP -> findSequencePosition(
-                data,
-                0,
-                WEBP_ANIM,
-                limit
-            ) > -1
+        MIME_IMAGE_WEBP -> return if (data.size < 400) false
+        else findSequencePosition(
+            data,
+            0,
+            WEBP_ANIM,
+            limit
+        ) > -1
 
-            MIME_IMAGE_AVIF -> findSequencePosition(
-                data,
-                4,
-                AVIF_ANIMATED_SIGNATURE,
-                12
-            ) > -1
+        MIME_IMAGE_AVIF -> findSequencePosition(
+            data,
+            4,
+            AVIF_ANIMATED_SIGNATURE,
+            12
+        ) > -1
 
-            else -> false
-        }
+        else -> false
     }
 }
 

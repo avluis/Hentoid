@@ -91,7 +91,8 @@ class ImagePagerAdapter(context: Context) :
         IMG_TYPE_APNG(2), // Animated PNGs -> use Coil
         IMG_TYPE_AWEBP(3), // Animated WEBPs -> use Coil
         IMG_TYPE_JXL(4), // JXL -> use Coil
-        IMG_TYPE_AVIF(5) // AVIF -> use Coil
+        IMG_TYPE_AVIF(5), // AVIF -> use Coil
+        IMG_TYPE_AAVIF(6) // Animated AVIF -> use APNG4Android
     }
 
     // Cached image types
@@ -179,13 +180,18 @@ class ImagePagerAdapter(context: Context) :
                     val mime = getMimeTypeFromPictureBinary(header)
                     val isAnimated = isImageAnimated(header)
                     if (isAnimated) {
-                        if (mime == MIME_IMAGE_PNG) return ImageType.IMG_TYPE_APNG
-                        else if (mime == MIME_IMAGE_WEBP) return ImageType.IMG_TYPE_AWEBP
-                        else if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
+                        when (mime) {
+                            MIME_IMAGE_PNG -> return ImageType.IMG_TYPE_APNG
+                            MIME_IMAGE_WEBP -> return ImageType.IMG_TYPE_AWEBP
+                            MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
+                            MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AAVIF
+                        }
                     } else {
-                        if (mime == MIME_IMAGE_GIF) return ImageType.IMG_TYPE_GIF
-                        else if (mime == MIME_IMAGE_JXL) return ImageType.IMG_TYPE_JXL
-                        else if (mime == MIME_IMAGE_AVIF) return ImageType.IMG_TYPE_AVIF
+                        when (mime) {
+                            MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
+                            MIME_IMAGE_JXL -> return ImageType.IMG_TYPE_JXL
+                            MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AVIF
+                        }
                     }
                 }
             }
@@ -391,7 +397,7 @@ class ImagePagerAdapter(context: Context) :
                     else getImageType(rootView.context, it)
             }
 
-            if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType || ImageType.IMG_TYPE_AVIF == imgType) {
+            if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType || ImageType.IMG_TYPE_AVIF == imgType || ImageType.IMG_TYPE_AAVIF == imgType) {
                 // Formats that aren't supported by SSIV
                 useImageView(isImageView = true, isClickThrough = true)
             } else useImageView(false, isVertical || isHalfWidth) // Use SSIV by default
@@ -708,8 +714,8 @@ class ImagePagerAdapter(context: Context) :
                 0,
                 (scaleView.getAbsoluteScale() * scaleView.getSHeight()).toInt(),
                 VIEWER_ORIENTATION_VERTICAL == viewerOrientation,
-                false,
-                false
+                resizeSmallPics = false,
+                doAutoRotate = false
             )
         }
 

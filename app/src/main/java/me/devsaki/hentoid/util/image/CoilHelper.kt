@@ -23,6 +23,7 @@ import coil3.serviceLoaderEnabled
 import com.awxkee.jxlcoder.coil.JxlDecoder
 import com.github.awxkee.avifcoil.decoder.HeifDecoder
 import com.github.penfeizhou.animation.apng.APNGDrawable
+import com.github.penfeizhou.animation.avif.AVIFDrawable
 import com.github.penfeizhou.animation.io.ByteBufferReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -177,6 +178,53 @@ class AnimatedPngDecoder(private val source: ImageSource) : Decoder {
             val stream = result.source.source().peek().inputStream()
             return if (isApng(stream)) {
                 AnimatedPngDecoder(result.source)
+            } else {
+                null
+            }
+        }
+    }
+}
+
+
+class AnimatedAvifDecoder(private val source: ImageSource) : Decoder {
+
+    override suspend fun decode(): DecodeResult {
+        // We must buffer the source into memory as AVIFDrawable decodes
+        // the image lazily at draw time which is prohibited by Coil.
+        val buffer = source.source().squashToDirectByteBuffer()
+        return DecodeResult(
+            image = AVIFDrawable { ByteBufferReader(buffer) }.asImage(),
+            isSampled = false,
+        )
+    }
+
+    private fun BufferedSource.squashToDirectByteBuffer(): ByteBuffer {
+        // Squash bytes to BufferedSource inner buffer then we know total byteCount.
+        request(Long.MAX_VALUE)
+
+        val byteBuffer = ByteBuffer.allocateDirect(buffer.size.toInt())
+        while (!buffer.exhausted()) buffer.read(byteBuffer)
+        byteBuffer.flip()
+        return byteBuffer
+    }
+
+    class Factory : Decoder.Factory {
+
+        private fun isAAvif(input: InputStream): Boolean {
+            val data = ByteArray(16)
+            input.read(data, 0, 16)
+            return getMimeTypeFromPictureBinary(data, 16) == MIME_IMAGE_AVIF
+                    && isImageAnimated(data)
+        }
+
+        override fun create(
+            result: SourceFetchResult,
+            options: Options,
+            imageLoader: ImageLoader,
+        ): Decoder? {
+            val stream = result.source.source().peek().inputStream()
+            return if (isAAvif(stream)) {
+                AnimatedAvifDecoder(result.source)
             } else {
                 null
             }

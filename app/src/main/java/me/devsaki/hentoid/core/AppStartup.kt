@@ -44,6 +44,7 @@ import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.readStreamAsString
+import me.devsaki.hentoid.util.image.AnimatedAvifDecoder
 import me.devsaki.hentoid.util.image.AnimatedPngDecoder
 import me.devsaki.hentoid.util.initResources
 import me.devsaki.hentoid.util.jsonToObject
@@ -343,6 +344,7 @@ object AppStartup {
                         add(GifDecoder.Factory(false))
                     }
                     add(AnimatedPngDecoder.Factory())
+                    add(AnimatedAvifDecoder.Factory())
                     add(AnimatedJxlDecoder.Factory())
                     add(HeifDecoder.Factory())
                 }
