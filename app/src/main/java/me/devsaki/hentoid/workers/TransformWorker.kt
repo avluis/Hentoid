@@ -28,7 +28,8 @@ import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
+import me.devsaki.hentoid.util.file.createFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
@@ -188,20 +189,22 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 // NB : We need to make a small pass after each chapter to avoid breaking
                 // the 10kB Data limit if we pass all the images to delete
                 // when the whole book has been processed
-                val originalUris = chgImgs.value.map { it.fileUri }.toMutableSet()
-                val newUris = transformedImages.map { it.fileUri }.toSet()
-                originalUris.removeAll(newUris)
-                if (originalUris.isNotEmpty())
-                    removeDocs(
-                        contentFolder.uri,
-                        originalUris.map {
-                            val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
-                            return@map parts.fileNameFull
-                        }
-                    )
+                if (!isStopped) {
+                    val originalUris = chgImgs.value.map { it.fileUri }.toMutableSet()
+                    val newUris = transformedImages.map { it.fileUri }.toSet()
+                    originalUris.removeAll(newUris)
+                    if (originalUris.isNotEmpty())
+                        removeDocs(
+                            contentFolder.uri,
+                            originalUris.map {
+                                val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
+                                return@map parts.fileNameFull
+                            }
+                        )
+                }
             }
 
-            if (!isKO) {
+            if (!isKO && !isStopped) {
                 // Final Content update
                 transformedImages.forEach { it.content.targetId = content.id }
                 content.setImageFiles(transformedImages)
@@ -390,7 +393,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         contentFolder: DocumentFile,
         params: TransformParams
     ): List<ImageFile> {
-        val result = ArrayList<Pair<DocumentFile, ImageFile>>()
+        val result = ArrayList<Pair<Uri, ImageFile>>()
         Timber.d("transformManhwaChapter (${sourceImgs.size} items starting with $firstIndex)")
 
         // Compute the height of all images together + largest common width
@@ -451,6 +454,11 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         var isKO = false
         try {
             sourceImgs.forEachIndexed { idx, img ->
+                if (isStopped) {
+                    isKO = true
+                    return@forEachIndexed
+                }
+
                 if (excludedIndexes.contains(idx)) {
                     // Reuse outlier file into new image
                     val newImg = ImageFile()
@@ -462,7 +470,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     newImg.size = targetDoc.length()
                     newImg.status = StatusContent.DOWNLOADED
                     newImg.isTransformed = true
-                    result.add(Pair(targetDoc, newImg))
+                    result.add(Pair(targetDoc.uri, newImg))
                     currentImgIdx++
                     nextOK()
                     return@forEachIndexed
@@ -509,10 +517,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     result.addAll(newImgs)
                     consumedHeight = processingQueue.sumOf { it.toConsumeHeight }
                 }
-                if (isStopped) {
-                    isKO = true
-                    return@forEachIndexed
-                }
             } // source images loop
         } catch (e: Exception) {
             Timber.w(e)
@@ -525,8 +529,16 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             result.map { it.second }
         } else {
             // Remove processed files, if any
-            if (result.isNotEmpty())
-                removeDocs(contentFolder.uri, result.map { it.first.name ?: "" })
+            if (result.isNotEmpty() && !isStopped) {
+                val docNames = ArrayList<String>()
+                result.forEachIndexed { idx, uri ->
+                    if (excludedIndexes.contains(idx)) return@forEachIndexed
+                    getDocumentFromTreeUri(applicationContext, uri.first)?.let { doc ->
+                        docNames.add(doc.name ?: "")
+                    }
+                }
+                removeDocs(contentFolder.uri, docNames)
+            }
             emptyList()
         }
     }
@@ -540,11 +552,11 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         targetDims: Point,
         contentFolder: DocumentFile,
         params: TransformParams
-    ): List<Pair<DocumentFile, ImageFile>> {
+    ): List<Pair<Uri, ImageFile>> {
         if (queue.isEmpty()) return emptyList()
 
         Timber.d("process queue (${queue.size} items)")
-        val result = ArrayList<Pair<DocumentFile, ImageFile>>()
+        val result = ArrayList<Pair<Uri, ImageFile>>()
         var yOffset = 0
         var previousWidth = Int.MAX_VALUE
         var containsLossless = false
@@ -602,27 +614,26 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val targetName = formatIntAsStr(startIndex, 4)
         Timber.d("create image $targetName (${encoder.mimeType})")
 
-        findOrCreateDocumentFile(
+        createFile(
             applicationContext,
-            contentFolder,
+            contentFolder.uri,
+            targetName,
             encoder.mimeType,
-            targetName + "." + getExtensionFromMimeType(encoder.mimeType)
-        )?.let { targetDoc ->
+            false
+        ).let { targetUri ->
             Timber.d("Compressing...")
             val targetData = transcodeTo(targetImg, encoder, params.transcodeQuality)
             Timber.d("Saving...")
-            saveBinary(applicationContext, targetDoc.uri, targetData)
+            saveBinary(applicationContext, targetUri, targetData)
             // Update image properties
             val newImg = ImageFile()
             newImg.name = targetName
             newImg.order = startIndex
-            newImg.fileUri = targetDoc.uri.toString()
+            newImg.fileUri = targetUri.toString()
             newImg.size = targetData.size.toLong()
             newImg.status = StatusContent.DOWNLOADED
             newImg.isTransformed = true
-            result.add(Pair(targetDoc, newImg))
-        } ?: run {
-            nextKO()
+            result.add(Pair(targetUri, newImg))
         }
 
         val last = queue.last()
