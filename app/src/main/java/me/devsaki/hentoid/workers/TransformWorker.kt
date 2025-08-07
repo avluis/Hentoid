@@ -93,6 +93,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
+        inputData.getLongArray("IDS")?.let { contentIds ->
+            dao.updateContentsProcessedFlagById(contentIds.filter { it > 0 }, false)
+        }
         dao.cleanup()
         upscaler?.cleanup()
 
@@ -212,6 +215,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 dao.insertImageFiles(transformedImages)
                 content.qtyPages = transformedImages.count { it.isReadable }
                 content.computeSize()
+                content.lastEditDate = Instant.now().toEpochMilli()
+                content.isBeingProcessed = false
+                dao.insertContentCore(content)
 
                 // Remove old unused images if any (last pass to make sure nothing is left)
                 val originalUris = sourceImages.map { it.fileUri }.toMutableSet()
@@ -228,10 +234,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             } else {
                 nbKO += sourceImages.size
             }
-
-            content.lastEditDate = Instant.now().toEpochMilli()
-            content.isBeingProcessed = false
-            dao.insertContentCore(content)
 
             // Achievements
             if (!isStopped && !isKO) {
