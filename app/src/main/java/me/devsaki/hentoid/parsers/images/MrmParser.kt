@@ -12,7 +12,7 @@ import me.devsaki.hentoid.util.network.getOnlineDocument
 
 class MrmParser : BaseChapteredImageListParser() {
     override fun isChapterUrl(url: String): Boolean {
-        return url.split("/").filterNot { s -> s.isEmpty() }.count() > 3
+        return url.split("/").filterNot { it.isEmpty() }.count() > 3
     }
 
     override fun getChapterSelector(): ChapterSelector {
@@ -94,7 +94,7 @@ class MrmParser : BaseChapteredImageListParser() {
             headers ?: fetchHeaders(chapterUrl),
             Site.MRM.useHentoidAgent, Site.MRM.useWebviewAgent
         )?.let { doc ->
-            val images = doc.select(".entry-content img").filterNotNull()
+            val images = doc.select(".entry-content img[decoding=async]").filterNotNull()
             return images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
         }
         return emptyList()
