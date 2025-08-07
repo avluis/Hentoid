@@ -139,21 +139,11 @@ enum class AttributeType(
 
     companion object {
         fun searchByCode(code: Int): AttributeType? {
-            for (s in entries) {
-                if (s.code == code) {
-                    return s
-                }
-            }
-            return null
+            return entries.firstOrNull { it.code == code }
         }
 
         fun searchByName(name: String?): AttributeType? {
-            for (s in entries) {
-                if (s.name.equals(name, ignoreCase = true)) {
-                    return s
-                }
-            }
-            return null
+            return entries.firstOrNull { it.name.equals(name, ignoreCase = true) }
         }
     }
 }

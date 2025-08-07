@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -59,14 +60,14 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
         isCreateMode = requireArguments().getBoolean(KEY_MODE_CREATE)
         ruleId = requireArguments().getLong(KEY_RULE_ID)
         val attrTypeCode = requireArguments().getInt(KEY_ATTR_TYPE_CODE, 99)
-        attrType = AttributeType.searchByCode(attrTypeCode)!!
+        attrType = AttributeType.searchByCode(attrTypeCode) ?: AttributeType.UNDEFINED
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
-    ): View {
+    ): View? {
         binding = DialogMetaRuleEditBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -78,30 +79,26 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
         super.onViewCreated(rootView, savedInstanceState)
 
         binding?.apply {
-            if (isCreateMode) {
-                attributeTypes.addAll(
-                    listOf(
-                        AttributeType.ARTIST,
-                        AttributeType.CIRCLE,
-                        AttributeType.SERIE,
-                        AttributeType.TAG,
-                        AttributeType.CHARACTER,
-                        AttributeType.LANGUAGE
-                    )
+            attributeTypes.addAll(
+                listOf(
+                    AttributeType.ARTIST,
+                    AttributeType.CIRCLE,
+                    AttributeType.SERIE,
+                    AttributeType.TAG,
+                    AttributeType.CHARACTER,
+                    AttributeType.LANGUAGE
                 )
-                attributeType.let {
-                    it.entries = attributeTypes.map { a -> resources.getString(a.displayName) }
-                    if (attrType != AttributeType.UNDEFINED) it.index =
-                        attributeTypes.indexOf(attrType)
-                }
-            } else {
-                val rule = loadRule()
-                if (null == rule) {
-                    dismissAllowingStateLoss()
-                    return
-                }
-                sourceName.editText?.setText(rule.sourceName)
-                targetName.editText?.setText(rule.targetName)
+            )
+
+            val rule = if (!isCreateMode) loadRule() else null
+            rule?.let {
+                sourceName.editText?.setText(it.sourceName)
+                targetName.editText?.setText(it.targetName)
+            }
+
+            attributeType.let {
+                it.entries = attributeTypes.map { a -> resources.getString(a.displayName) }
+                it.index = attributeTypes.indexOf(rule?.attributeType ?: attrType)
             }
         }
 
@@ -110,10 +107,9 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
             sourceName.editText?.setOnTextChangedListener(lifecycleScope) { updateNewBtnStates() }
             targetName.editText?.setOnTextChangedListener(lifecycleScope) { updateNewBtnStates() }
 
-            attributeType.visibility = if (isCreateMode) View.VISIBLE else View.GONE
-            actionNew.visibility = if (isCreateMode) View.VISIBLE else View.GONE
-            actionEdit.visibility = if (!isCreateMode) View.VISIBLE else View.GONE
-            actionRemove.visibility = if (!isCreateMode) View.VISIBLE else View.GONE
+            actionNew.isVisible = isCreateMode
+            actionEdit.isVisible = !isCreateMode
+            actionRemove.isVisible = !isCreateMode
 
             updateNewBtnStates()
 
@@ -137,6 +133,7 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
     }
 
     private fun loadRule(): RenamingRule? {
+        if (ruleId <= 0) return null
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
             return dao.selectRenamingRule(ruleId)
@@ -164,9 +161,7 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
             val targetName = targetName.editText?.text.toString()
             if (!checkConsistency(sourceName, targetName)) return
 
-            parent?.onEditRule(
-                ruleId, sourceName, targetName
-            )
+            parent?.onEditRule(ruleId, attributeTypes[attributeType.index], sourceName, targetName)
         }
         dismissAllowingStateLoss()
     }
@@ -191,7 +186,7 @@ class MetaEditRuleDialogFragment : BaseDialogFragment<MetaEditRuleDialogFragment
 
     interface Parent {
         fun onCreateRule(type: AttributeType, source: String, target: String)
-        fun onEditRule(id: Long, source: String, target: String)
+        fun onEditRule(id: Long, type: AttributeType, source: String, target: String)
         fun onRemoveRule(id: Long)
     }
 }

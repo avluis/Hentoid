@@ -16,7 +16,7 @@ data class RenamingRule(
     var id: Long = 0,
     @Index
     @Convert(converter = AttributeTypeConverter::class, dbType = Int::class)
-    val attributeType: AttributeType = UNDEFINED,
+    var attributeType: AttributeType = UNDEFINED,
     @Index
     var sourceName: String = "",
     var targetName: String = ""

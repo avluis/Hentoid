@@ -73,11 +73,12 @@ class RulesEditViewModel(
         }
     }
 
-    fun editRule(id: Long, source: String, target: String) {
+    fun editRule(id: Long, type: AttributeType, source: String, target: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 val existingRule = dao.selectRenamingRule(id)
                 existingRule?.let {
+                    existingRule.attributeType = type
                     existingRule.sourceName = source
                     existingRule.targetName = target
                     dao.insertRenamingRule(existingRule)

@@ -282,8 +282,8 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
         viewModel.createRule(type, source, target)
     }
 
-    override fun onEditRule(id: Long, source: String, target: String) {
-        viewModel.editRule(id, source, target)
+    override fun onEditRule(id: Long, type: AttributeType, source: String, target: String) {
+        viewModel.editRule(id, type, source, target)
     }
 
     override fun onRemoveRule(id: Long) {
