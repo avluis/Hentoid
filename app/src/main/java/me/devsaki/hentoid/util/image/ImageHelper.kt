@@ -9,7 +9,6 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.net.Uri
-import android.os.Build
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -20,7 +19,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.waynejo.androidndkgif.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.fileExists
@@ -29,7 +28,6 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import timber.log.Timber
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -239,28 +237,6 @@ fun isImageLossless(data: ByteArray): Boolean {
 }
 
 /**
- * Try to detect the mime-type of the picture file at the given URI
- * NB : Opens the resource -> file I/O inside
- *
- * @param context Context to use
- * @param uri     URI of the picture file to detect the mime-type for
- * @return Mime-type of the picture file at the given URI; MIME_IMAGE_GENERIC if no Mime-type detected
- */
-fun getMimeTypeFromUri(context: Context, uri: Uri): String {
-    assertNonUiThread()
-    var result = MIME_IMAGE_GENERIC
-    val buffer = ByteArray(12)
-    try {
-        getInputStream(context, uri).use { input ->
-            if (buffer.size == input.read(buffer)) result = getMimeTypeFromPictureBinary(buffer)
-        }
-    } catch (e: IOException) {
-        Timber.w(e)
-    }
-    return result
-}
-
-/**
  * Convert the given Drawable ID into a Bitmap
  *
  * @param context    Context to be used
@@ -283,12 +259,7 @@ fun getBitmapFromVectorDrawable(context: Context, @DrawableRes drawableId: Int):
 
 @Suppress("DEPRECATION")
 fun bitmapToWebp(bitmap: Bitmap): ByteArray {
-    val output = ByteArrayOutputStream()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-        bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, output)
-    else
-        bitmap.compress(Bitmap.CompressFormat.WEBP, 100, output)
-    return output.toByteArray()
+    return transcodeTo(bitmap, PictureEncoder.WEBP_LOSSLESS, 100)
 }
 
 /**
@@ -356,7 +327,7 @@ fun decodeSampledBitmapFromStream(
 ): Bitmap? {
     val streams = duplicateInputStream(stream, 2)
     val workStream1 = streams[0]
-    var workStream2 = streams[1]
+    val workStream2 = streams[1]
 
     // First decode with inJustDecodeBounds=true to check dimensions
     val options = BitmapFactory.Options()

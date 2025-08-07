@@ -62,6 +62,8 @@ fun transform(
                 resizePlainRatio(source, dims, scale, allowBogusAiRescale)
             }
 
+            // 4 : Manhwa split/merge; handled at Worker level
+
             else -> resizePlainRatio(source, dims, 1f)
         }
     } else {
@@ -142,11 +144,8 @@ fun determineEncoder(isLossless: Boolean, dims: Point, params: TransformParams):
 fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArray {
     val output = ByteArrayOutputStream()
     when (encoder) {
-        PictureEncoder.WEBP_LOSSY -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) bitmap.compress(
-            Bitmap.CompressFormat.WEBP_LOSSY,
-            quality,
-            output
-        )
+        PictureEncoder.WEBP_LOSSY -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+            bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, quality, output)
         else bitmap.compress(Bitmap.CompressFormat.WEBP, quality, output)
 
         PictureEncoder.WEBP_LOSSLESS -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
@@ -159,3 +158,4 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
     }
     return output.toByteArray()
 }
+

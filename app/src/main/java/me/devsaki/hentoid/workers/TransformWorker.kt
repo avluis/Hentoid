@@ -400,7 +400,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val result = ArrayList<Pair<Uri, ImageFile>>()
         Timber.d("transformManhwaChapter (${sourceImgs.size} items starting with $firstIndex)")
 
-        // Compute the height of all images together + largest common width
+        // Compute the height of all images together + largest common width excluding outliers
         val allDims = ArrayList<Point>()
         val metadataOpts = BitmapFactory.Options()
         val imgDocuments = ArrayList<DocumentFile>()
