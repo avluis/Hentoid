@@ -30,6 +30,7 @@ import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
@@ -418,18 +419,19 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
         if (isStopped) return emptyList()
 
-        // Remove outlier images (>10% larger than the others)
+        // Detect outlier images (>10% larger than the others)
         val excludedIndexes = HashSet<Int>()
         val avgWidth =
             weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) }.toList())
         allDims.forEachIndexed { idx, dim ->
             if (abs(dim.x - avgWidth) / avgWidth > 0.1) excludedIndexes.add(idx)
         }
-        excludedIndexes.forEach { allDims.removeAt(it) }
 
-        val totalHeight = allDims.sumOf { it.y }
+        // Compute target dims without taking outliers into account
+        val totalHeight =
+            allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.sumOf { it.y }
         val targetDims = Point(
-            allDims.maxOf { it.x },
+            allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.maxOf { it.x },
             ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
         )
         Timber.d("targetDims $targetDims")
@@ -448,7 +450,21 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         var isKO = false
         try {
             sourceImgs.forEachIndexed { idx, img ->
-                if (excludedIndexes.contains(idx)) return@forEachIndexed
+                if (excludedIndexes.contains(idx)) {
+                    // Reuse outlier file into new image
+                    val newImg = ImageFile()
+                    val targetDoc = imgDocuments[idx]
+                    newImg.name =
+                        formatIntAsStr(currentImgIdx, 4) + "." + getExtension(targetDoc.name ?: "")
+                    newImg.order = currentImgIdx
+                    newImg.fileUri = targetDoc.uri.toString()
+                    newImg.size = targetDoc.length()
+                    newImg.status = StatusContent.DOWNLOADED
+                    newImg.isTransformed = true
+                    result.add(Pair(targetDoc, newImg))
+                    currentImgIdx++
+                    return@forEachIndexed
+                }
                 Timber.d("Processing source file ${img.fileUri}")
                 val isLast = idx == sourceImgs.size - 1
                 val dims = allDims[idx]
@@ -520,7 +536,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         var previousWidth = Int.MAX_VALUE
         var containsLossless = false
 
-        queue.forEachIndexed { idx, img ->
+        queue.forEach { img ->
             withContext(Dispatchers.IO) {
                 // Build raw bitmap
                 getInputStream(applicationContext, img.doc).use {
@@ -536,7 +552,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     }
 
                     var linesToBuffer = img.toConsumeHeight
-                    Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims})")
+                    Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
                     while (linesToBuffer > 0) {
                         val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
                         val bufOffset = img.toConsumeHeight - linesToBuffer
