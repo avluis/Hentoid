@@ -582,6 +582,7 @@ fun getAppTotalRamBytes(): Long {
     return javaMem + natiMem
 }
 
+@Suppress("DEPRECATION")
 fun getScreenDimensionsPx(context: Context): Point {
     val wMgr = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     if (Build.VERSION.SDK_INT >= 30) {
