@@ -17,9 +17,11 @@ class DeleteStartNotification(
             .setProgress(max, 0, 0 == max)
             .setContentTitle(
                 context.getString(
-                    if (operation == BaseDeleteWorker.Operation.PURGE) R.string.purge_progress
-                    else if (operation == BaseDeleteWorker.Operation.STREAM) R.string.stream_progress
-                    else R.string.delete_books_progress
+                    when (operation) {
+                        BaseDeleteWorker.Operation.PURGE -> R.string.purge_progress
+                        BaseDeleteWorker.Operation.STREAM -> R.string.stream_progress
+                        else -> R.string.delete_progress
+                    }
                 )
             )
             .setContentText("")

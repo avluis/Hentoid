@@ -66,6 +66,10 @@ abstract class BaseDeleteWorker(
         DELETE, PURGE, STREAM
     }
 
+    enum class Target {
+        BOOK, IMAGE, CHAPTER, OTHER
+    }
+
     // Operation to perform
     private val operation: Operation
 
@@ -260,7 +264,7 @@ abstract class BaseDeleteWorker(
      * @param content Content to be deleted
      */
     private suspend fun deleteContent(content: Content) {
-        progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
+        progressItem(content, Operation.DELETE, Target.BOOK)
         try {
             removeContent(applicationContext, dao, content)
             trace(Log.INFO, "Removed item: %s from database and file system.", content.title)
@@ -347,7 +351,7 @@ abstract class BaseDeleteWorker(
      * @param content Content to be purged
      */
     private fun purgeContentFiles(content: Content, removeCover: Boolean) {
-        progressItem(content, DeleteProgressNotification.ProgressType.PURGE_BOOKS)
+        progressItem(content, Operation.PURGE, Target.OTHER)
         try {
             purgeFiles(applicationContext, content, false, removeCover)
 
@@ -391,7 +395,7 @@ abstract class BaseDeleteWorker(
      */
     private suspend fun deleteGroup(group: Group, deleteGroupsOnly: Boolean) {
         var theGroup: Group? = group
-        progressItem(theGroup, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
+        progressItem(theGroup, Operation.DELETE, Target.BOOK)
         try {
             // Reassign group for contained items
             if (deleteGroupsOnly) {
@@ -441,7 +445,7 @@ abstract class BaseDeleteWorker(
 
     private suspend fun removeQueuedContent(content: Content) {
         try {
-            progressItem(content, DeleteProgressNotification.ProgressType.DELETE_BOOKS)
+            progressItem(content, Operation.DELETE, Target.BOOK)
             removeQueuedContent(applicationContext, dao, content, true)
         } catch (e: ContentNotProcessedException) {
             // Don't throw the exception if we can't remove something that isn't there
@@ -466,7 +470,7 @@ abstract class BaseDeleteWorker(
         uris.forEachIndexed { index, uri ->
             if (isStopped) return
             removeFile(applicationContext, uri.toUri())
-            progressItem("", DeleteProgressNotification.ProgressType.DELETE_IMAGES)
+            progressItem("", Operation.DELETE, Target.IMAGE)
         }
 
         // Update content JSON if it exists (i.e. if book is not queued)
@@ -486,10 +490,7 @@ abstract class BaseDeleteWorker(
         uris.forEachIndexed { index, uri ->
             if (isStopped) return
             removeFile(applicationContext, uri)
-            progressItem(
-                "Document " + (index + 1).toString(),
-                DeleteProgressNotification.ProgressType.DELETE_DOCS
-            )
+            progressItem("Document " + (index + 1).toString(), Operation.DELETE, Target.OTHER)
         }
 
         progressDone()
@@ -497,7 +498,7 @@ abstract class BaseDeleteWorker(
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    private fun progressItem(item: Any?, type: DeleteProgressNotification.ProgressType) {
+    private fun progressItem(item: Any?, operation: Operation, target: Target) {
         var title: String? = null
         when (item) {
             is Content -> title = item.title
@@ -513,7 +514,8 @@ abstract class BaseDeleteWorker(
                         title,
                         deleteProgress + nbError,
                         deleteMax,
-                        type
+                        operation,
+                        target
                     )
                 )
                 EventBus.getDefault().post(
