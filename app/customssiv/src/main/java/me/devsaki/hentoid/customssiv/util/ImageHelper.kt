@@ -50,7 +50,7 @@ private val JXL_ISO = byteArrayOf(
 )
 
 private val AVIF_SIGNATURE = "ftypavif".toByteArray(CHARSET_LATIN_1)
-
+private val AVIF_ANIMATED_SIGNATURE = "ftypavis".toByteArray(CHARSET_LATIN_1)
 
 internal fun ByteArray.startsWith(data: ByteArray): Boolean {
     if (this.size < data.size) return false
@@ -89,6 +89,7 @@ internal fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): Str
         }
         MIME_IMAGE_PNG
     } else if (findSequencePosition(data, 4, AVIF_SIGNATURE, 12) > -1) MIME_IMAGE_AVIF
+    else if (findSequencePosition(data, 4, AVIF_ANIMATED_SIGNATURE, 12) > -1) MIME_IMAGE_AVIF
     else if (data.startsWith(BMP_SIGNATURE)) MIME_IMAGE_BMP
     else MIME_IMAGE_GENERIC
 }
@@ -118,6 +119,13 @@ internal fun isImageAnimated(data: ByteArray): Boolean {
                 0,
                 WEBP_ANIM,
                 limit
+            ) > -1
+
+            MIME_IMAGE_AVIF -> findSequencePosition(
+                data,
+                4,
+                AVIF_ANIMATED_SIGNATURE,
+                12
             ) > -1
 
             else -> false
