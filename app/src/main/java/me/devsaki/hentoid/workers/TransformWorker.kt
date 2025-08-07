@@ -72,6 +72,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private var nbOK = 0
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
+    private lateinit var progressNotification: TransformProgressNotification
 
 
     private data class ManhwaProcessingItem(
@@ -211,9 +212,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 dao.insertImageFiles(transformedImages)
                 content.qtyPages = transformedImages.count { it.isReadable }
                 content.computeSize()
-                content.lastEditDate = Instant.now().toEpochMilli()
-                content.isBeingProcessed = false
-                dao.insertContentCore(content)
 
                 // Remove old unused images if any (last pass to make sure nothing is left)
                 val originalUris = sourceImages.map { it.fileUri }.toMutableSet()
@@ -230,6 +228,10 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             } else {
                 nbKO += sourceImages.size
             }
+
+            content.lastEditDate = Instant.now().toEpochMilli()
+            content.isBeingProcessed = false
+            dao.insertContentCore(content)
 
             // Achievements
             if (!isStopped && !isKO) {
@@ -692,11 +694,17 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override fun runProgressNotification() {
-        notificationManager.notify(
-            TransformProgressNotification(
+        if (!this::progressNotification.isInitialized) {
+            progressNotification = TransformProgressNotification(
                 nbOK + nbKO, totalItems, globalProgress.getGlobalProgress()
             )
-        )
+        } else {
+            progressNotification.maxItems = totalItems
+            progressNotification.processedItems = nbOK + nbKO
+            progressNotification.progress = globalProgress.getGlobalProgress()
+        }
+        if (isStopped) return
+        notificationManager.notify(progressNotification)
     }
 
     private fun notifyProcessEnd() {
