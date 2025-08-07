@@ -26,7 +26,7 @@ import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getMimeTypeFromStream
+import me.devsaki.hentoid.util.file.getMimeTypeFromPicData
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.file.removeFile
@@ -371,7 +371,7 @@ private fun downloadToFile(
                     // Read mime-type on the fly if not forced
                     if (mimeType.isEmpty()) {
                         val contentType = response.header(HEADER_CONTENT_TYPE) ?: ""
-                        mimeType = getMimeTypeFromStream(buffer, len, contentType, url, sizeStr)
+                        mimeType = getMimeTypeFromPicData(buffer, len, contentType, url, sizeStr)
                     }
                     // Create target file and output stream
                     targetFileUri = fileCreator(context, mimeType)

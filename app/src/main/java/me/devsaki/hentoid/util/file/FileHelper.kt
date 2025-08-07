@@ -793,8 +793,19 @@ fun getMimeTypeFromFileUri(uri: String): String {
     return getMimeTypeFromExtension(getExtensionFromUri(uri))
 }
 
+/**
+ * Detect mime type from picture data if supported
+ * Returns an exception if not
+ *
+ * @param buffer        Data to read from
+ * @param bufLength     Number of bytes to read from `buffer`
+ * @param contentType   Content type declared in HTTP response header
+ * @param url           Image URL (for display)
+ * @param size          Image size (for display)
+ * @return  Mime-type
+ */
 @Throws(UnsupportedContentException::class)
-fun getMimeTypeFromStream(
+fun getMimeTypeFromPicData(
     buffer: ByteArray,
     bufLength: Int,
     contentType: String,
