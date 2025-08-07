@@ -246,11 +246,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 false,
                 this::isStopped
             ) { p ->
-                {
-                    if (p.second) nextOK() else nextKO()
-                    globalProgress.setProgress(p.first.toString(), 1f)
-                    launchProgressNotification()
-                }
+                if (p.second) nextOK() else nextKO()
+                globalProgress.setProgress(p.first.toString(), 1f)
+                launchProgressNotification()
             }
         } else {
             val result = ArrayList<ImageFile>()

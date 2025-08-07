@@ -313,7 +313,7 @@ suspend fun transformManhwaChapter(
                 // Report results in the notification
                 toProcess.forEach {
                     if (!processedIds.contains(it)) {
-                        onProgress?.invoke(Pair(it, newImgs.isEmpty()))
+                        onProgress?.invoke(Pair(it, !newImgs.isEmpty()))
                         processedIds.add(it)
                     }
                 }
