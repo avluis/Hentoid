@@ -446,6 +446,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         // Create target images one by one
         var consumedHeight = 0
         val processingQueue = ArrayList<ManhwaProcessingItem>()
+        val processedIds = HashSet<Long>()
         var currentImgIdx = firstIndex
         var isKO = false
         try {
@@ -463,6 +464,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     newImg.isTransformed = true
                     result.add(Pair(targetDoc, newImg))
                     currentImgIdx++
+                    nextOK()
                     return@forEachIndexed
                 }
                 Timber.d("Processing source file ${img.fileUri}")
@@ -482,6 +484,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 // Create target image
                 if (leftToConsume <= 0 || isLast) {
                     if (leftToConsume < 0) Timber.w("!!! LEFTTOCONSUME IS NEGATIVE $leftToConsume")
+                    val toProcess = processingQueue.map { it.img.id }
                     val newImgs = processManhwaImageQueue(
                         processingQueue,
                         targetImg,
@@ -492,6 +495,16 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                         contentFolder,
                         params
                     )
+                    // Report results in the notification
+                    toProcess.forEach {
+                        if (!processedIds.contains(it)) {
+                            if (newImgs.isEmpty()) nextKO() else nextOK()
+                            processedIds.add(it)
+                            globalProgress.setProgress(it.toString(), 1f)
+                        }
+                    }
+                    launchProgressNotification()
+
                     currentImgIdx += newImgs.size
                     result.addAll(newImgs)
                     consumedHeight = processingQueue.sumOf { it.toConsumeHeight }
@@ -500,7 +513,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     isKO = true
                     return@forEachIndexed
                 }
-            }
+            } // source images loop
         } catch (e: Exception) {
             Timber.w(e)
             isKO = true
@@ -608,12 +621,9 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             newImg.status = StatusContent.DOWNLOADED
             newImg.isTransformed = true
             result.add(Pair(targetDoc, newImg))
-
-            nextOK()
         } ?: run {
             nextKO()
         }
-        launchProgressNotification()
 
         val last = queue.last()
         queue.clear()
