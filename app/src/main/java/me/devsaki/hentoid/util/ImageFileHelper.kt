@@ -421,20 +421,17 @@ fun testDownloadPicture(
     requestHeaders: MutableList<Pair<String, String>>
 ): Boolean {
     val url = fixUrl(img.url, site.url)
+    if (url.isEmpty()) return false
 
     val response = fetchBodyFast(url, site, requestHeaders, null)
     val body = response.first
-        ?: throw IOException("Could not read response : empty body for " + img.url)
+        ?: throw IOException("Could not read response : empty body for ${img.url}")
 
     val buffer = ByteArray(50)
     body.byteStream().use { `in` ->
         if (`in`.read(buffer) > -1) {
             val mimeType = getMimeTypeFromPictureBinary(buffer)
-            Timber.d(
-                "Testing online picture accessibility : found %s at %s",
-                mimeType,
-                img.url
-            )
+            Timber.d("Testing online picture accessibility : found $mimeType at ${img.url}")
             return (mimeType.isNotEmpty() && mimeType != MIME_IMAGE_GENERIC)
         }
     }
