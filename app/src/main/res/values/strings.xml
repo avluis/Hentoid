@@ -1042,6 +1042,7 @@
     <string name="encoder_warning">WEBP format is limited to 16383 pixels in width and height. Larger pictures will automatically be encoded to PNG or JPG.</string>
     <string name="retransform_warning">%d pages have already been transformed. Transforming them multiple times may result in noticeable quality loss.\nWe advise redownloading original images and transforming them one single time.</string>
     <string name="ai_rescale_warning">Upscaling pictures with AI will use your GPU intensively. The whole operation may take a few minutes.</string>
+    <string name="dimensions_warning">The settings you\'ve chosen will create images with very large dimensions. Are you certain that\'s what you want?</string>
     <string name="preview">Preview</string>
     <string name="transform">Transform</string>
     <string name="transform_unsupported">Transformation unsupported</string>

@@ -59,6 +59,7 @@ import kotlin.math.max
 
 private const val KEY_CONTENTS = "contents"
 private const val CACHE_TRANSFORM_MANHWA = "transform-manhwa"
+private const val DIMS_LIMIT = 20000
 
 class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialogFragment.Parent>() {
     companion object {
@@ -87,6 +88,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     private var maxPages = -1
     private val itemAdapter = ItemAdapter<DrawerItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
+    private var targetDimsWarning = false
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -263,7 +265,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             var retransformedPics = 0
             content?.apply { retransformedPics = imageList.count { it.isTransformed } }
 
-            if (encoderWarning || retransformedPics > 0 || isAiUpscale) {
+            if (encoderWarning || retransformedPics > 0 || isAiUpscale || targetDimsWarning) {
                 itemAdapter.clear()
                 if (encoderWarning) itemAdapter.add(
                     DrawerItem(
@@ -288,7 +290,16 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                         resources.getString(R.string.ai_rescale_warning),
                         R.drawable.ic_warning,
                         Content.getWebActivityClass(Site.NONE),
-                        2,
+                        3,
+                        true
+                    )
+                )
+                if (targetDimsWarning) itemAdapter.add(
+                    DrawerItem(
+                        resources.getString(R.string.dimensions_warning),
+                        R.drawable.ic_warning,
+                        Content.getWebActivityClass(Site.NONE),
+                        4,
                         true
                     )
                 )
@@ -329,6 +340,9 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             val targetDims = Point(options.outWidth, options.outHeight)
             val targetMime = determineEncoder(isLossless, targetDims, params).mimeType
             val targetName = picName + "." + getExtensionFromMimeType(targetMime)
+
+            targetDimsWarning = (targetDims.x > DIMS_LIMIT || targetDims.y > DIMS_LIMIT)
+            refreshControls()
 
             binding?.apply {
                 if (unchanged) {
@@ -376,6 +390,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                 getOrCreateCacheFolder(requireContext(), CACHE_TRANSFORM_MANHWA)
                     ?: return ByteArray(0)
 
+            // Run transformation in preview mode
             transformManhwaChapter(
                 requireContext(),
                 it.imageList.filter { i -> i.isReadable }.drop(firstPageIndex),
@@ -385,6 +400,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                 true
             )
 
+            // Read result from cache folder
             val file = cacheFolder.listFiles()?.firstOrNull() ?: return ByteArray(0)
             return getBinary(requireContext(), file.toUri())
         }
