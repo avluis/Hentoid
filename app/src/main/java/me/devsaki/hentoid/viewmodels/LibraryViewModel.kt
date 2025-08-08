@@ -698,7 +698,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             return
         }
 
-        // Flag contents as "being processed" (triggers blink animation)
+        // Flag contents as "being processed" (trigger blink animation)
         dao.updateContentsProcessedFlag(contentList, true)
 
         val sourceImageStatus = if (reparseImages) null else StatusContent.ERROR
@@ -715,7 +715,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
                         // Merged books
                         val chaps = c.chaptersList.toMutableList() // Safe copy
-                        if (c.manuallyMerged && chaps.isNotEmpty()) {
+                        if (c.manuallyMerged && chaps.isNotEmpty()) { // Merged with chapters
                             // TODO do something smart when some images have been deleted
 
                             // Reparse main book from scratch if images are KO
@@ -788,6 +788,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 if (Settings.isQueueAutostart) resumeQueue(getApplication())
                 onSuccess.invoke(contentList.size - nbErrors.get())
             } catch (t: Throwable) {
+                // Unflag contents as "being processed" (cancel blink animation)
+                dao.updateContentsProcessedFlag(contentList, false)
                 onError.invoke(t)
             }
         }
