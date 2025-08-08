@@ -333,7 +333,7 @@ suspend fun transformManhwaChapter(
     return if (!isKO || isPreview) {
         result.map { it.second }
     } else {
-        // Remove processed files, if any
+        // Remove newly created files, if any
         if (result.isNotEmpty() && false == interrupt?.invoke()) {
             val docNames = ArrayList<String>()
             result.forEachIndexed { idx, uri ->

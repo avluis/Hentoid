@@ -145,46 +145,33 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 )
                 if (newImgs.isEmpty()) isKO = true
                 else transformedImages.addAll(newImgs)
+
+                if (!isStopped)
+                    updateAndClean(content, imagesWithoutChapters, newImgs)
             }
 
             val chapteredImgs =
                 sourceImages.filterNot { null == it.linkedChapter }.filter { it.isReadable }
                     .groupBy { it.linkedChapter!!.id }
 
-            chapteredImgs.forEach { chgImgs ->
-                if (chgImgs.value.isNotEmpty()) {
+            chapteredImgs.forEach { chImgs ->
+                if (chImgs.value.isNotEmpty()) {
                     val newImgs = transformChapter(
-                        chgImgs.value,
+                        chImgs.value,
                         transformedImages.size + 1,
                         contentFolder,
                         params
                     )
                     if (newImgs.isEmpty()) isKO = true
                     else transformedImages.addAll(newImgs)
-                }
 
-                // Remove old unused images from chapter if any
-                // NB : We need to make a small pass after each chapter to avoid breaking
-                // the 10kB Data limit if we pass all the images to delete
-                // when the whole book has been processed
-                if (!isStopped) {
-                    val originalUris = chgImgs.value.map { it.fileUri }.toMutableSet()
-                    val newUris = transformedImages.map { it.fileUri }.toSet()
-                    originalUris.removeAll(newUris)
-                    if (originalUris.isNotEmpty())
-                        removeDocs(
-                            applicationContext,
-                            contentFolder.uri,
-                            originalUris.map {
-                                val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
-                                return@map parts.fileNameFull
-                            }
-                        )
+                    if (!isStopped)
+                        updateAndClean(content, chImgs.value, newImgs)
                 }
             }
 
             if (!isKO && !isStopped) {
-                // Final Content update
+                // Final Content update (similar to updateAndClean with more changes to Content)
                 transformedImages.forEach { it.content.targetId = content.id }
                 content.setImageFiles(transformedImages)
                 dao.insertImageFiles(transformedImages)
@@ -224,6 +211,44 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         } else {
             nbKO += sourceImages.size
         }
+    }
+
+    /** Link new images and remove old unused images from chapter if any
+     *
+     * NB : We need to make a small pass after each chapter to avoid breaking
+     * the 10kB Data limit if we pass all the images to delete
+     * when the whole book has been processed
+     */
+    private fun updateAndClean(
+        content: Content,
+        chapterImages: List<ImageFile>,
+        transformedImages: List<ImageFile>
+    ) {
+        // Link new images to Content
+        transformedImages.forEach { it.content.targetId = content.id }
+        val contentImgs = content.imageList.toMutableList()
+        val firstIndex = contentImgs.indexOf(chapterImages.first())
+        contentImgs.removeAll(chapterImages)
+        contentImgs.addAll(firstIndex, transformedImages)
+        content.setImageFiles(contentImgs)
+        dao.insertImageFiles(contentImgs)
+        content.qtyPages = contentImgs.count { it.isReadable }
+        content.computeSize()
+        dao.insertContentCore(content)
+
+        // Remove old unused images
+        val originalUris = chapterImages.map { it.fileUri }.toMutableSet()
+        val newUris = transformedImages.map { it.fileUri }.toSet()
+        originalUris.removeAll(newUris)
+        if (originalUris.isNotEmpty())
+            removeDocs(
+                applicationContext,
+                content.storageUri.toUri(),
+                originalUris.map {
+                    val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
+                    return@map parts.fileNameFull
+                }
+            )
     }
 
     private suspend fun transformChapter(
