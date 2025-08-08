@@ -26,9 +26,9 @@ import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.work.OneTimeWorkRequest
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import androidx.work.WorkRequest
 import com.google.android.material.slider.LabelFormatter
 import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -670,10 +670,13 @@ fun removeDocs(context: Context, root: Uri, names: Collection<String>) {
     builder.setOperation(BaseDeleteWorker.Operation.DELETE)
     builder.setDocsRootAndNames(root, names)
     val workManager = WorkManager.getInstance(context)
-    val request: WorkRequest =
-        OneTimeWorkRequest.Builder(DeleteWorker::class.java)
-            .setInputData(builder.data).build()
-    workManager.enqueue(request)
+    workManager.enqueueUniqueWork(
+        R.id.delete_service_delete.toString(),
+        ExistingWorkPolicy.APPEND_OR_REPLACE,
+        OneTimeWorkRequestBuilder<DeleteWorker>()
+            .setInputData(builder.data)
+            .build()
+    )
 }
 
 inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) =
