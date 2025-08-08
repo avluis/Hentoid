@@ -13,7 +13,8 @@ class DeleteProgressNotification(
     private val progress: Int,
     private val max: Int,
     private val operation: BaseDeleteWorker.Operation,
-    private val target: BaseDeleteWorker.Target
+    private val target: BaseDeleteWorker.Target,
+    private val isCleaning : Boolean = false
 ) : BaseNotification() {
 
     private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
@@ -30,7 +31,7 @@ class DeleteProgressNotification(
                             BaseDeleteWorker.Target.BOOK -> R.string.delete_books_progress
                             BaseDeleteWorker.Target.CHAPTER -> R.string.delete_chapters_progress
                             BaseDeleteWorker.Target.IMAGE -> R.string.delete_images_progress
-                            else -> R.string.delete_items_progress
+                            else -> if (isCleaning) R.string.clean_items_progress else R.string.delete_items_progress
                         }
                     }
                 )

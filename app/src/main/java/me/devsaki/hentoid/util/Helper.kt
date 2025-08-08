@@ -669,6 +669,7 @@ fun removeDocs(context: Context, root: Uri, names: Collection<String>) {
     val builder = DeleteData.Builder()
     builder.setOperation(BaseDeleteWorker.Operation.DELETE)
     builder.setDocsRootAndNames(root, names)
+    builder.setIsCleaning(true)
     val workManager = WorkManager.getInstance(context)
     workManager.enqueueUniqueWork(
         R.id.delete_service_delete.toString(),

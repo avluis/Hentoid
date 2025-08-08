@@ -516,6 +516,7 @@
     <string name="delete_chapters_progress">Deleting chapters</string>
     <string name="delete_images_progress">Deleting images</string>
     <string name="delete_items_progress">Deleting items</string>
+    <string name="clean_items_progress">Cleaning items</string>
     <string name="purge_progress">Purging…</string>
     <string name="stream_progress">Streaming…</string>
     <string name="delete_progress">Deleting…</string>

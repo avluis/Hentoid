@@ -103,6 +103,9 @@ abstract class BaseDeleteWorker(
     // True to delete groups only, without their books
     private val isDeleteGroupsOnly: Boolean
 
+    // Indicate if the operation is a cleaning operation (for display purposes only)
+    private val isCleaning : Boolean
+
     // == VARIABLES
 
     private var deleteMax = 0
@@ -125,6 +128,7 @@ abstract class BaseDeleteWorker(
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         operation = inputData.operation ?: throw IllegalArgumentException("Must set an Operation")
+        isCleaning = inputData.isCleaning
 
         // Use a query to avoid serialization hard-limit of androidx.work.Data.Builder
         // when passing a large long[] through DeleteData

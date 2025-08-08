@@ -24,6 +24,7 @@ private const val KEY_DOC_URIS = "docUris"
 private const val KEY_DELETE_FLAGGED_IMAGES = "deleteFlaggedImages"
 private const val KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords"
 private const val KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly"
+private const val KEY_IS_CLEANING = "isCleaning"
 private const val KEY_OPERATION = "operation"
 private const val KEY_CONTENT_FILTER = "contentFilter"
 private const val KEY_INVERT_FILTER_SCOPE = "invertFilterScope"
@@ -78,12 +79,16 @@ class DeleteData {
             builder.putByteArray(KEY_CONTENT_FILTER, data)
         }
 
-        fun setInvertFilterScope(value: Boolean?) {
-            builder.putBoolean(KEY_INVERT_FILTER_SCOPE, value!!)
+        fun setInvertFilterScope(value: Boolean) {
+            builder.putBoolean(KEY_INVERT_FILTER_SCOPE, value)
         }
 
-        fun setKeepFavGroups(value: Boolean?) {
-            builder.putBoolean(KEY_KEEP_FAV_GROUPS, value!!)
+        fun setKeepFavGroups(value: Boolean) {
+            builder.putBoolean(KEY_KEEP_FAV_GROUPS, value)
+        }
+
+        fun setIsCleaning(value: Boolean) {
+            builder.putBoolean(KEY_IS_CLEANING, value)
         }
 
         val data: Data
@@ -117,6 +122,8 @@ class DeleteData {
             get() = data.getBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, false)
         val isDeleteGroupsOnly: Boolean
             get() = data.getBoolean(KEY_DELETE_GROUPS_ONLY, false)
+        val isCleaning: Boolean
+            get() = data.getBoolean(KEY_IS_CLEANING, false)
         val contentFilter: Bundle
             get() = data.getByteArray(KEY_CONTENT_FILTER)
                 ?.let { Bundle().fromByteArray(it) }
