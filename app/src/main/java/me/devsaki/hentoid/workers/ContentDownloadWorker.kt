@@ -100,7 +100,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import timber.log.Timber
 import java.io.File
-import java.io.FileFilter
 import java.io.IOException
 import java.security.InvalidParameterException
 import java.time.Instant
@@ -143,6 +142,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private val userActionNotificationManager: NotificationManager
     private val requestQueueManager: RequestQueueManager
+    private lateinit var progressNotification: DownloadProgressNotification
 
     init {
         EventBus.getDefault().register(this)
@@ -154,8 +154,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override fun getStartNotification(): BaseNotification {
-        val message = applicationContext.resources.getString(R.string.starting_download)
-        return DownloadProgressNotification(message, 0, 0, 0, 0, 0)
+        val notif = DownloadProgressNotification()
+        notif.title = applicationContext.resources.getString(R.string.starting_download)
+        return notif
     }
 
     override fun onInterrupt() {
@@ -747,16 +748,20 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     estimateBookSizeMB
                 )
             }
-            notificationManager.notify(
-                DownloadProgressNotification(
-                    content.title,
-                    progress,
-                    totalPages,
-                    downloadedMB.toInt(),
-                    estimateBookSizeMB.toInt(),
-                    avgSpeedKbps
-                )
-            )
+
+            if (!this::progressNotification.isInitialized) {
+                progressNotification = DownloadProgressNotification()
+            }
+            progressNotification.title = content.title
+            progressNotification.progress = progress
+            progressNotification.max = totalPages
+            progressNotification.sizeDownloadedMB = downloadedMB.toInt()
+            progressNotification.estimateBookSizeMB = estimateBookSizeMB.toInt()
+            progressNotification.avgSpeedKbps = avgSpeedKbps
+
+            if (isStopped) return
+            notificationManager.notify(progressNotification)
+
             EventBus.getDefault().post(
                 DownloadEvent(
                     content,
@@ -1357,9 +1362,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Map frame name to the downloaded file
             for (frame in ugoiraFrames) {
-                val files = ugoiraCacheFolder.listFiles(FileFilter { pathname: File ->
+                val files = ugoiraCacheFolder.listFiles { pathname ->
                     pathname.name.endsWith(frame.first)
-                })
+                }
                 if (files != null && files.isNotEmpty()) {
                     frames.add(Pair(Uri.fromFile(files[0]), frame.second))
                 }
