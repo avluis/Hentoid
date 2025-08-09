@@ -2,8 +2,10 @@ package me.devsaki.hentoid.workers.data
 
 import android.net.Uri
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.core.net.toUri
 import androidx.work.Data
+import me.devsaki.hentoid.util.LATIN_1
 import me.devsaki.hentoid.util.fromByteArray
 import me.devsaki.hentoid.util.toByteArray
 import me.devsaki.hentoid.workers.BaseDeleteWorker
@@ -55,7 +57,9 @@ class DeleteData {
 
         fun setDocsRootAndNames(root: Uri, names: Collection<String>) {
             builder.putString(KEY_DOCS_ROOT, root.toString())
-            builder.putStringArray(KEY_DOCS_NAMES, names.toTypedArray())
+            // Convert strings to Latin-1 charset to reduce memory footprint (10k limit for Data)
+            val allNames = TextUtils.join("?", names)
+            builder.putByteArray(KEY_DOCS_NAMES, allNames.toByteArray(LATIN_1))
         }
 
         fun setDocUris(value: Collection<String>) {
@@ -117,7 +121,11 @@ class DeleteData {
         val docsRoot: Uri
             get() = data.getString(KEY_DOCS_ROOT)?.toUri() ?: Uri.EMPTY
         val docsNames: Set<String>
-            get() = data.getStringArray(KEY_DOCS_NAMES)?.toSet() ?: emptySet()
+            get() {
+                val bytes = data.getByteArray(KEY_DOCS_NAMES)
+                if (null == bytes) return emptySet()
+                return String(bytes, LATIN_1).split("?").toSet()
+            }
         val isDeleteAllQueueRecords: Boolean
             get() = data.getBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, false)
         val isDeleteGroupsOnly: Boolean
