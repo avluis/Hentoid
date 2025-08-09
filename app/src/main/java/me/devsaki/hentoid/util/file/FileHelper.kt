@@ -925,7 +925,7 @@ fun copyFiles(
             onProgress(index * 1f / nbElts, op.first, newUri)
             if (isCanceled?.invoke() == true) return@forEachIndexed
         }
-    } else {
+    } else { // DocumentFile
         val targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri)
         if (null == targetFolder || !targetFolder.exists()) return emptyList()
 
@@ -934,19 +934,24 @@ fun copyFiles(
             .mapValues { it.value.first() }
 
         operations.forEachIndexed { index, op ->
-            val mime =
-                if (forceMime.isNullOrEmpty()) getMimeTypeFromFileUri(op.first.toString()) else forceMime
-            var newUri: Uri? = null
-            existingFiles[op.second] ?: targetFolder.createFile(mime, op.second)?.let { out ->
-                getOutputStream(context, out)?.use { output ->
-                    getInputStream(context, op.first)
-                        .use { input -> copy(input, output) }
-                }
-                newUri = out.uri
-            }
-            newUri?.let { result.add(it) }
-            onProgress(index * 1f / nbElts, op.first, newUri)
             if (isCanceled?.invoke() == true) return@forEachIndexed
+            try {
+                val mime =
+                    if (forceMime.isNullOrEmpty()) getMimeTypeFromFileUri(op.first.toString()) else forceMime
+                var newUri: Uri? = null
+                existingFiles[op.second] ?: targetFolder.createFile(mime, op.second)?.let { out ->
+                    getOutputStream(context, out)?.use { output ->
+                        getInputStream(context, op.first)
+                            .use { input -> copy(input, output) }
+                    }
+                    newUri = out.uri
+                }
+                newUri?.let { result.add(it) }
+                onProgress(index * 1f / nbElts, op.first, newUri)
+            } catch (e: Exception) {
+                Timber.w(e)
+                onProgress(index * 1f / nbElts, op.first, null)
+            }
         }
     }
     return result
