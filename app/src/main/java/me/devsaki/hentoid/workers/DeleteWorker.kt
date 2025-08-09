@@ -104,7 +104,7 @@ abstract class BaseDeleteWorker(
     private val isDeleteGroupsOnly: Boolean
 
     // Indicate if the operation is a cleaning operation (for display purposes only)
-    private val isCleaning : Boolean
+    private val isCleaning: Boolean
 
     // == VARIABLES
 
@@ -519,7 +519,8 @@ abstract class BaseDeleteWorker(
                         deleteProgress + nbError,
                         deleteMax,
                         operation,
-                        target
+                        target,
+                        isCleaning
                     )
                 )
                 EventBus.getDefault().post(
