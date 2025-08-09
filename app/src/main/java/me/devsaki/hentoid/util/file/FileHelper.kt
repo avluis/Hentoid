@@ -350,6 +350,25 @@ fun getInputStream(context: Context, fileUri: Uri): InputStream {
 }
 
 /**
+ * Delete the file represented by the given Uri
+ *
+ * @param context Context to be used
+ * @param fileUri Uri to the file to delete
+ */
+fun removeFile(context: Context, fileUri: Uri) {
+    try {
+        if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
+            val path = fileUri.path
+            if (null != path) removeFile(File(path))
+        } else {
+            removeDocument(context, fileUri)
+        }
+    } catch (e: Exception) {
+        Timber.w(e, "Couldn't remove file $fileUri")
+    }
+}
+
+/**
  * Delete the given file
  *
  * @param file The file to be deleted.
@@ -360,18 +379,14 @@ fun removeFile(file: File): Boolean {
 }
 
 /**
- * Delete the file represented by the given Uri
+ * Delete the document at the given Uri
+ * NB : Inspired by TreeDocumentFile.delete & SingleDocumentFile.delete
  *
- * @param context Context to be used
- * @param fileUri Uri to the file to delete
+ * @param docUri Uri of the document to delete
+ * @return True if succeeds; false if not
  */
-fun removeFile(context: Context, fileUri: Uri) {
-    if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
-        val path = fileUri.path
-        if (null != path) removeFile(File(path))
-    } else {
-        getFileFromSingleUri(context, fileUri)?.delete()
-    }
+fun removeDocument(context: Context, docUri: Uri): Boolean {
+    return DocumentsContract.deleteDocument(context.contentResolver, docUri)
 }
 
 /**

@@ -21,6 +21,7 @@ import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
+import java.net.URLDecoder
 import java.util.Locale
 import kotlin.math.min
 
@@ -919,10 +920,12 @@ class UriParts(uri: String, lowercase: Boolean = false) {
     private var fragment: String // Fragment alone (e.g. anchor)
 
     val fileNameFull: String
-        get() = "$fileNameNoExt.$extension"
+        get() = if (extension.isNotEmpty()) "$fileNameNoExt.$extension" else fileNameNoExt
 
     init {
-        var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri
+        var uriNoParams =
+            if (uri.contains("%3A") || uri.contains("%2F")) URLDecoder.decode(uri, "UTF-8") else uri
+        uriNoParams = if (lowercase) uriNoParams.lowercase(Locale.getDefault()) else uriNoParams
         val fragmentIndex = uriNoParams.lastIndexOf('#')
         if (fragmentIndex > -1) {
             fragment = uriNoParams.substring(fragmentIndex + 1)
@@ -952,8 +955,7 @@ class UriParts(uri: String, lowercase: Boolean = false) {
 
     fun toUri(): String {
         val result = StringBuilder(path)
-        result.append("/").append(fileNameNoExt)
-        if (extension.isNotEmpty()) result.append(".").append(extension)
+        result.append("/").append(fileNameFull)
         if (query.isNotEmpty()) result.append("?").append(query)
         if (fragment.isNotEmpty()) result.append("#").append(fragment)
         return result.toString()
