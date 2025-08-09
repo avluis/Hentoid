@@ -7,11 +7,10 @@
     android:fitsSystemWindows="true"
     tools:context=".activities.MetadataEditActivity">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
@@ -77,9 +76,8 @@
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/primary_library" />
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/add_primary_1"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
@@ -114,20 +112,16 @@
         <include layout="@layout/include_prefs_storage_volume" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/add_primary_2"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:backgroundTint="?colorSecondary"
         android:padding="16dp"
         android:text="@string/add_primary_2"
-        android:textColor="@color/white_opacity_87"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_add"
-        app:iconTint="@color/white_opacity_87"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/primary_volume_1"
@@ -279,20 +273,16 @@
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/external_library" />
 
-    <com.google.android.material.button.MaterialButton
+    <Button
         android:id="@+id/add_external"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:backgroundTint="?colorSecondary"
         android:padding="16dp"
         android:text="@string/add_external"
-        android:textColor="@color/white_opacity_87"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_add"
-        app:iconTint="@color/white_opacity_87"
         app:layout_constraintStart_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/external_library_subtitle"

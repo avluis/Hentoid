@@ -10,9 +10,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    android:theme="@style/Theme.MaterialComponents.Dialog.Alert"
-    >
+    app:layout_constraintTop_toTopOf="parent">
 
     <TextView
         android:id="@+id/chooseDirectionTitle"
