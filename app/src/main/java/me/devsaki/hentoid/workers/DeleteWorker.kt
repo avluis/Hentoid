@@ -213,6 +213,7 @@ abstract class BaseDeleteWorker(
                             val docs = fe.listDocumentFiles(
                                 applicationContext, root
                             ).filter { docsNames.contains(it.name) }
+                            deleteMax += docs.size
                             removeDocuments(docs.map { it.uri })
                         }
                     }
