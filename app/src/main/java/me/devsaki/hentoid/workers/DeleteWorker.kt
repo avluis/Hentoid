@@ -494,7 +494,7 @@ abstract class BaseDeleteWorker(
         uris.forEachIndexed { index, uri ->
             if (isStopped) return
             removeFile(applicationContext, uri)
-            progressItem("Document " + (index + 1).toString(), Operation.DELETE, Target.OTHER)
+            progressItem("File " + (index + 1).toString(), Operation.DELETE, Target.OTHER)
         }
 
         progressDone()
