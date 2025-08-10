@@ -148,8 +148,8 @@
     </style>
 
     <style name="Theme.Light.Toolbar" parent="Widget.Material3.Toolbar">
-        <item name="titleTextColor">?attr/colorOnPrimary</item>
-        <item name="android:background">?attr/colorPrimary</item>
+        <item name="titleTextColor">@color/white_opacity_87</item>
+        <item name="android:background">@color/black_opacity_25</item>
     </style>
 
     <style name="Theme.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">
