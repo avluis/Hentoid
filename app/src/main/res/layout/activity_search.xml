@@ -22,7 +22,6 @@
         android:id="@+id/startCaption"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:background="?attr/colorPrimary"
         android:gravity="center"
         android:text="@string/search_select_a_filter"
         app:layout_constraintEnd_toEndOf="parent"
