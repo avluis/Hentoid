@@ -54,7 +54,6 @@ import me.devsaki.hentoid.workers.UpdateCheckWorker
 import org.conscrypt.Conscrypt
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
-import java.io.IOException
 import java.security.Security
 
 @Suppress("UNUSED_PARAMETER")
@@ -68,7 +67,7 @@ object AppStartup {
         onSecondaryProgress: (Float) -> Unit,
         onComplete: () -> Unit
     ) {
-        val prelaunchTasks: MutableList<BiConsumer<Context, (Float) -> Unit>> = ArrayList()
+        val prelaunchTasks: MutableList<SuspendBiConsumer<Context, (Float) -> Unit>> = ArrayList()
         prelaunchTasks.addAll(getPreLaunchTasks())
         prelaunchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks())
 
@@ -95,7 +94,7 @@ object AppStartup {
     @OptIn(DelicateCoroutinesApi::class)
     private fun runPrelaunchTasks(
         context: Context,
-        tasks: List<BiConsumer<Context, (Float) -> Unit>>,
+        tasks: List<SuspendBiConsumer<Context, (Float) -> Unit>>,
         onMainProgress: (Float) -> Unit,
         onSecondaryProgress: (Float) -> Unit,
         onComplete: () -> Unit
@@ -105,8 +104,8 @@ object AppStartup {
             tasks.forEachIndexed { index, task ->
                 Timber.i("Pre-launch task %s/%s", index + 1, tasks.size)
                 try {
-                    withContext(Dispatchers.IO) {
-                        task.invoke(context, onSecondaryProgress)
+                    task.invoke(context, onSecondaryProgress)
+                    withContext(Dispatchers.Main) {
                         onMainProgress(index * 1f / tasks.size)
                     }
                 } catch (e: Exception) {
@@ -123,7 +122,7 @@ object AppStartup {
      * Application initialization tasks
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
-    private fun getPreLaunchTasks(): List<BiConsumer<Context, (Float) -> Unit>> {
+    private fun getPreLaunchTasks(): List<SuspendBiConsumer<Context, (Float) -> Unit>> {
         return listOf(
             this::stopWorkers,
             this::processAppUpdate,
@@ -134,7 +133,7 @@ object AppStartup {
         )
     }
 
-    fun getPostLaunchTasks(): List<BiConsumer<Context, (Float) -> Unit>> {
+    fun getPostLaunchTasks(): List<SuspendBiConsumer<Context, (Float) -> Unit>> {
         return listOf(
             this::initStorageCaches,
             this::initHelperResources,
@@ -147,225 +146,241 @@ object AppStartup {
         )
     }
 
-    private fun stopWorkers(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Stop workers : start")
-        WorkManager.getInstance(context).cancelAllWorkByTag(WORK_CLOSEABLE)
-        Timber.i("Stop workers : done")
-    }
+    private suspend fun stopWorkers(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Stop workers : start")
+            WorkManager.getInstance(context).cancelAllWorkByTag(WORK_CLOSEABLE)
+            Timber.i("Stop workers : done")
+        }
 
-    private fun loadSiteProperties(context: Context, emitter: (Float) -> Unit) {
-        try {
+    private suspend fun loadSiteProperties(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
             context.resources.openRawResource(R.raw.sites).use { stream ->
                 val siteSettingsStr = readStreamAsString(stream)
-                jsonToObject(siteSettingsStr, JsonSiteSettings::class.java)?.let { siteSettings ->
-                    for ((key, value) in siteSettings.sites) {
-                        for (site in Site.entries) {
-                            if (site.name.equals(key, ignoreCase = true)) {
-                                site.updateFrom(value)
-                                break
-                            }
+                val siteSettings = jsonToObject(
+                    siteSettingsStr,
+                    JsonSiteSettings::class.java
+                )
+                if (null == siteSettings) return@withContext
+
+
+                for ((key, value) in siteSettings.sites) {
+                    for (site in Site.entries) {
+                        if (site.name.equals(key, ignoreCase = true)) {
+                            site.updateFrom(value)
+                            break
                         }
                     }
                 }
             }
-        } catch (e: IOException) {
-            Timber.e(e)
         }
-    }
 
-    private fun initNotifications(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init notifications : start")
-        // Init notification channels
-        me.devsaki.hentoid.notification.startup.init(context)
-        me.devsaki.hentoid.notification.appUpdate.init(context)
-        me.devsaki.hentoid.notification.download.init(context)
-        me.devsaki.hentoid.notification.userAction.init(context)
-        me.devsaki.hentoid.notification.delete.init(context)
-        me.devsaki.hentoid.notification.jsonUpdate.init(context)
-        me.devsaki.hentoid.notification.transform.init(context)
-        me.devsaki.hentoid.notification.archive.init(context)
-        me.devsaki.hentoid.notification.splitMerge.init(context)
-        // Clears all previous notifications
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.cancelAll()
-        Timber.i("Init notifications : done")
-    }
-
-    private fun processAppUpdate(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Process app update : start")
-        if (Settings.lastKnownAppVersionCode < BuildConfig.VERSION_CODE) {
-            Timber.d(
-                "Process app update : update detected from %s to %s",
-                Settings.lastKnownAppVersionCode,
-                BuildConfig.VERSION_CODE
-            )
-            Timber.d("Process app update : Clearing webview cache")
-            context.clearWebviewCache(null)
-            Timber.d("Process app update : Clearing app cache")
-            context.clearAppCache()
-            StorageCache.clearAll(context)
-            Timber.d("Process app update : Complete")
-            EventBus.getDefault().postSticky(AppUpdatedEvent())
-            Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
+    private suspend fun initNotifications(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Init notifications : start")
+            // Init notification channels
+            me.devsaki.hentoid.notification.startup.init(context)
+            me.devsaki.hentoid.notification.appUpdate.init(context)
+            me.devsaki.hentoid.notification.download.init(context)
+            me.devsaki.hentoid.notification.userAction.init(context)
+            me.devsaki.hentoid.notification.delete.init(context)
+            me.devsaki.hentoid.notification.jsonUpdate.init(context)
+            me.devsaki.hentoid.notification.transform.init(context)
+            me.devsaki.hentoid.notification.archive.init(context)
+            me.devsaki.hentoid.notification.splitMerge.init(context)
+            // Clears all previous notifications
+            val manager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.cancelAll()
+            Timber.i("Init notifications : done")
         }
-        Timber.i("Process app update : done")
-    }
 
-    private fun searchForUpdates(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Run app update : start")
-        if (Settings.isAutomaticUpdateEnabled) {
-            Timber.i("Run app update : auto-check is enabled")
-            val workManager = WorkManager.getInstance(context)
-            workManager.enqueueUniqueWork(
-                R.id.update_check_service.toString(),
-                ExistingWorkPolicy.KEEP,
-                OneTimeWorkRequestBuilder<UpdateCheckWorker>().build()
-            )
+    private suspend fun processAppUpdate(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            Timber.i("Process app update : start")
+            if (Settings.lastKnownAppVersionCode < BuildConfig.VERSION_CODE) {
+                Timber.d(
+                    "Process app update : update detected from %s to %s",
+                    Settings.lastKnownAppVersionCode,
+                    BuildConfig.VERSION_CODE
+                )
+                Timber.d("Process app update : Clearing webview cache")
+                context.clearWebviewCache(null)
+                Timber.d("Process app update : Clearing app cache")
+                context.clearAppCache()
+                StorageCache.clearAll(context)
+                Timber.d("Process app update : Complete")
+                EventBus.getDefault().postSticky(AppUpdatedEvent())
+                Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
+            }
+            Timber.i("Process app update : done")
         }
-        Timber.i("Run app update : done")
-    }
 
-    private fun sendFirebaseStats(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Send Firebase stats : start")
-        try {
-            FirebaseAnalytics.getInstance(context).setUserProperty(
-                "color_theme", Settings.colorTheme.toString()
-            )
-            FirebaseAnalytics.getInstance(context).setUserProperty(
-                "endless", Settings.endlessScroll.toString()
-            )
-            FirebaseCrashlytics.getInstance().setCustomKey(
-                "Library display mode", if (Settings.endlessScroll) "endless" else "paged"
-            )
-        } catch (e: IllegalStateException) { // Happens during unit tests
-            Timber.e(e, "fail@init Crashlytics")
+    private suspend fun searchForUpdates(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Run app update : start")
+            if (Settings.isAutomaticUpdateEnabled) {
+                Timber.i("Run app update : auto-check is enabled")
+                val workManager = WorkManager.getInstance(context)
+                workManager.enqueueUniqueWork(
+                    R.id.update_check_service.toString(),
+                    ExistingWorkPolicy.KEEP,
+                    OneTimeWorkRequestBuilder<UpdateCheckWorker>().build()
+                )
+            }
+            Timber.i("Run app update : done")
         }
-        Timber.i("Send Firebase stats : done")
-    }
+
+    private suspend fun sendFirebaseStats(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            Timber.i("Send Firebase stats : start")
+            try {
+                FirebaseAnalytics.getInstance(context).setUserProperty(
+                    "color_theme", Settings.colorTheme.toString()
+                )
+                FirebaseAnalytics.getInstance(context).setUserProperty(
+                    "endless", Settings.endlessScroll.toString()
+                )
+                FirebaseCrashlytics.getInstance().setCustomKey(
+                    "Library display mode", if (Settings.endlessScroll) "endless" else "paged"
+                )
+            } catch (e: IllegalStateException) { // Happens during unit tests
+                Timber.e(e, "fail@init Crashlytics")
+            }
+            Timber.i("Send Firebase stats : done")
+        }
 
     // Creates the JSON file for bookmarks if it doesn't exist
-    private fun createBookmarksJson(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Create bookmarks JSON : start")
-        val appRoot = getDocumentFromTreeUriString(
-            context, Settings.getStorageUri(StorageLocation.PRIMARY_1)
-        )
-        if (appRoot != null) {
-            val bookmarksJson = findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)
-            if (null == bookmarksJson) {
-                Timber.i("Create bookmarks JSON : creating JSON")
-                val dao: CollectionDAO = ObjectBoxDAO()
-                try {
-                    updateBookmarksJson(context, dao)
-                } finally {
-                    dao.cleanup()
-                }
-            } else {
-                Timber.i("Create bookmarks JSON : already exists")
-            }
-        }
-        Timber.i("Create bookmarks JSON : done")
-    }
-
-    private fun createHardwareReceivers(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Create plug receiver : start")
-        val rcv = PlugEventsReceiver()
-        val filter = IntentFilter()
-        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
-        filter.addAction(Intent.ACTION_POWER_CONNECTED)
-        filter.addAction(Intent.ACTION_HEADSET_PLUG)
-        context.registerReceiver(rcv, filter)
-        Timber.i("Create plug receiver : done")
-
-        Timber.i("Create power receiver : start")
-        val rcv2 = PowerEventReceiver()
-        val filter2 = IntentFilter()
-        filter2.addAction(Intent.ACTION_SCREEN_OFF)
-        context.registerReceiver(rcv2, filter2)
-        Timber.i("Create power receiver : done")
-    }
-
-    private fun initStorageCaches(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init storage cache : start")
-        val sizeLimitDebug = 50 * 1024 * 1024
-        val sizeLimitProd = 50 * 1024 * 1024 // 50MB
-        val sizeLimit = if (BuildConfig.DEBUG) sizeLimitDebug else sizeLimitProd
-
-        StorageCache.init(context, READER_CACHE, sizeLimit)
-        Timber.i(
-            "Reacer cache : initialized with ${
-                formatHumanReadableSize(
-                    sizeLimit.toLong(),
-                    context.resources
-                )
-            }"
-        )
-
-        StorageCache.init(context, THUMBS_CACHE, sizeLimit, true)
-        Timber.i(
-            "Thumbs cache : initialized with ${
-                formatHumanReadableSize(
-                    sizeLimit.toLong(),
-                    context.resources
-                )
-            }"
-        )
-
-        Timber.i("Init storage cache : done")
-    }
-
-    private fun initHelperResources(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init helper resources : start")
-        initResources(context.resources)
-        Timber.i("Init helper resources : done")
-    }
-
-    private fun initTLS(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init Conscrypt : start")
-        Security.insertProviderAt(Conscrypt.newProvider(), 1)
-        Timber.i("Init Conscrypt : done")
-    }
-
-    private fun checkAchievements(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Check achievements : start")
-        AchievementsManager.checkPrefs()
-        AchievementsManager.checkStorage(context)
-        AchievementsManager.checkCollection()
-        Timber.i("Check achievements : done")
-    }
-
-    private fun initCoil(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Init coil : start")
-        SingletonImageLoader.setSafe {
-            ImageLoader.Builder(context)
-                .components {
-                    if (SDK_INT >= 28) {
-                        add(AnimatedImageDecoder.Factory(false))
-                    } else {
-                        add(GifDecoder.Factory(false))
+    private suspend fun createBookmarksJson(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            Timber.i("Create bookmarks JSON : start")
+            val appRoot = getDocumentFromTreeUriString(
+                context, Settings.getStorageUri(StorageLocation.PRIMARY_1)
+            )
+            if (appRoot != null) {
+                val bookmarksJson = findFile(context, appRoot, BOOKMARKS_JSON_FILE_NAME)
+                if (null == bookmarksJson) {
+                    Timber.i("Create bookmarks JSON : creating JSON")
+                    val dao: CollectionDAO = ObjectBoxDAO()
+                    try {
+                        updateBookmarksJson(context, dao)
+                    } finally {
+                        dao.cleanup()
                     }
-                    add(AnimatedPngDecoder.Factory())
-                    add(AnimatedAvifDecoder.Factory())
-                    add(AnimatedJxlDecoder.Factory())
-                    add(HeifDecoder.Factory())
+                } else {
+                    Timber.i("Create bookmarks JSON : already exists")
                 }
-                .build()
+            }
+            Timber.i("Create bookmarks JSON : done")
         }
-        Timber.i("Init coil : done")
-    }
 
-    private fun activateTextIntent(context: Context, emitter: (Float) -> Unit) {
-        Timber.i("Activate text intent : start")
+    private suspend fun createHardwareReceivers(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Create plug receiver : start")
+            val rcv = PlugEventsReceiver()
+            val filter = IntentFilter()
+            filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+            filter.addAction(Intent.ACTION_POWER_CONNECTED)
+            filter.addAction(Intent.ACTION_HEADSET_PLUG)
+            context.registerReceiver(rcv, filter)
+            Timber.i("Create plug receiver : done")
 
-        val flags = if (SDK_INT < Build.VERSION_CODES.R) 0
-        else PackageManager.SYNCHRONOUS
+            Timber.i("Create power receiver : start")
+            val rcv2 = PowerEventReceiver()
+            val filter2 = IntentFilter()
+            filter2.addAction(Intent.ACTION_SCREEN_OFF)
+            context.registerReceiver(rcv2, filter2)
+            Timber.i("Create power receiver : done")
+        }
 
-        val state = if (Settings.isTextMenuOn) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
-        else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+    private suspend fun initStorageCaches(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            Timber.i("Init storage cache : start")
+            val sizeLimitDebug = 50 * 1024 * 1024
+            val sizeLimitProd = 50 * 1024 * 1024 // 50MB
+            val sizeLimit = if (BuildConfig.DEBUG) sizeLimitDebug else sizeLimitProd
 
-        context.packageManager.setComponentEnabledSetting(
-            ComponentName(context, TextIntentActivity::class.java), state, flags
-        )
+            StorageCache.init(context, READER_CACHE, sizeLimit)
+            Timber.i(
+                "Reacer cache : initialized with ${
+                    formatHumanReadableSize(
+                        sizeLimit.toLong(),
+                        context.resources
+                    )
+                }"
+            )
 
-        Timber.i("Activate text intent : done")
-    }
+            StorageCache.init(context, THUMBS_CACHE, sizeLimit, true)
+            Timber.i(
+                "Thumbs cache : initialized with ${
+                    formatHumanReadableSize(
+                        sizeLimit.toLong(),
+                        context.resources
+                    )
+                }"
+            )
+
+            Timber.i("Init storage cache : done")
+        }
+
+    private suspend fun initHelperResources(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Init helper resources : start")
+            initResources(context.resources)
+            Timber.i("Init helper resources : done")
+        }
+
+    private suspend fun initTLS(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Init Conscrypt : start")
+            Security.insertProviderAt(Conscrypt.newProvider(), 1)
+            Timber.i("Init Conscrypt : done")
+        }
+
+    private suspend fun checkAchievements(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            Timber.i("Check achievements : start")
+            AchievementsManager.checkPrefs()
+            AchievementsManager.checkStorage(context)
+            AchievementsManager.checkCollection()
+            Timber.i("Check achievements : done")
+        }
+
+    private suspend fun initCoil(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Init coil : start")
+            SingletonImageLoader.setSafe {
+                ImageLoader.Builder(context)
+                    .components {
+                        if (SDK_INT >= 28) {
+                            add(AnimatedImageDecoder.Factory(false))
+                        } else {
+                            add(GifDecoder.Factory(false))
+                        }
+                        add(AnimatedPngDecoder.Factory())
+                        add(AnimatedAvifDecoder.Factory())
+                        add(AnimatedJxlDecoder.Factory())
+                        add(HeifDecoder.Factory())
+                    }
+                    .build()
+            }
+            Timber.i("Init coil : done")
+        }
+
+    private suspend fun activateTextIntent(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Activate text intent : start")
+
+            val flags = if (SDK_INT < Build.VERSION_CODES.R) 0
+            else PackageManager.SYNCHRONOUS
+
+            val state = if (Settings.isTextMenuOn) PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+            else PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+
+            context.packageManager.setComponentEnabledSetting(
+                ComponentName(context, TextIntentActivity::class.java), state, flags
+            )
+
+            Timber.i("Activate text intent : done")
+        }
 }

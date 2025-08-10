@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.AppStartup
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.SuspendBiConsumer
 import me.devsaki.hentoid.database.DatabaseMaintenance
 import me.devsaki.hentoid.notification.startup.StartupCompleteNotification
 import me.devsaki.hentoid.notification.startup.StartupProgressNotification
@@ -40,7 +41,7 @@ class StartupWorker(context: Context, parameters: WorkerParameters) :
 
     @SuppressLint("TimberArgCount")
     override suspend fun getToWork(input: Data) {
-        val launchTasks: MutableList<BiConsumer<Context, (Float) -> Unit>> = ArrayList()
+        val launchTasks: MutableList<SuspendBiConsumer<Context, (Float) -> Unit>> = ArrayList()
         launchTasks.addAll(AppStartup.getPostLaunchTasks())
         launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks())
         launchTasks.forEachIndexed { index, task ->
