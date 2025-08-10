@@ -19,8 +19,7 @@
         android:paddingStart="32dp"
         android:paddingEnd="32dp"
         android:text="@string/slide_02_header"
-        android:textSize="28sp"
-        app:fontFamily="sans-serif-thin" />
+        android:textSize="28sp" />
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/mode_select"
@@ -62,8 +61,7 @@
         android:gravity="center|top"
         android:lineSpacingMultiplier="1.5"
         android:text="@string/slide_02_browser_mode_description"
-        android:textSize="@dimen/text_subtitle_1"
-        app:fontFamily="sans-serif-thin" />
+        android:textSize="@dimen/text_subtitle_1" />
 
     <!-- Placeholder for the bottom progress bar -->
     <View
