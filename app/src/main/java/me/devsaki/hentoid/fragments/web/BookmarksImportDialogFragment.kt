@@ -62,7 +62,7 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
         checkNotNull(arguments) { "No arguments found" }
 
         arguments?.apply {
-            site = Site.searchByCode(getInt(KEY_SITE).toLong())
+            site = Site.searchByCode(getInt(KEY_SITE))
         }
     }
 
@@ -147,7 +147,7 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
                         Timber.Forest.w(e)
                         errorFileName = file.name ?: ""
                     }
-                    return@withContext emptyList<SiteBookmark>()
+                    return@withContext emptyList()
                 }
                 coroutineScope {
                     if (errorFileName.isEmpty()) onFileRead(result, file)

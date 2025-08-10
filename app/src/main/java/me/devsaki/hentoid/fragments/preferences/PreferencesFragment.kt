@@ -90,7 +90,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 if (root != null) preferenceScreen = findPreference(root)
             }
             if (arguments.containsKey(KEY_SITE))
-                site = Site.searchByCode(arguments.getInt(KEY_SITE).toLong())
+                site = Site.searchByCode(arguments.getInt(KEY_SITE))
         }
     }
 

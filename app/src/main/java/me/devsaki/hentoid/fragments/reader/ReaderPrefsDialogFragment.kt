@@ -72,7 +72,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         bookBrowseMode = requireArguments().getInt(BROWSE_MODE, -1)
         bookDisplayMode = requireArguments().getInt(DISPLAY_MODE, -1)
         bookTwoPagesMode = requireArguments().getBoolean(TWOPAGES_MODE, false)
-        site = Site.searchByCode(requireArguments().getInt(SITE, Site.ANY.code).toLong())
+        site = Site.searchByCode(requireArguments().getInt(SITE, Site.ANY.code))
         siteBrowseMode = Settings.getReaderBrowseMode(site)
         hasSiteBrowseMode = siteBrowseMode != Settings.appReaderBrowseMode
     }

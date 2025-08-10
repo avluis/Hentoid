@@ -1,21 +1,39 @@
 package me.devsaki.hentoid.fragments.library
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.os.Build
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
+import android.view.SubMenu
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.text.toSpannable
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.LibraryActivity
+import me.devsaki.hentoid.activities.AboutActivity
+import me.devsaki.hentoid.activities.QueueActivity
+import me.devsaki.hentoid.activities.ToolsActivity
+import me.devsaki.hentoid.activities.bundles.ToolsBundle
+import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawer2Binding
 import me.devsaki.hentoid.enums.Grouping
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.GroupSearchManager
@@ -23,27 +41,30 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.lang.ref.WeakReference
+import kotlin.math.floor
 
+private const val MENU_FACTOR = 1000
 
 class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2) {
 
+    enum class NavItem {
+        LIBRARY, BROWSER, QUEUE, SETTINGS, TOOLS, ABOUT
+    }
+
     // === COMMUNICATION
-    private lateinit var viewModel: LibraryViewModel
-    private lateinit var activity: WeakReference<LibraryActivity>
+    private lateinit var libraryViewModel: LibraryViewModel
+    private lateinit var activity: WeakReference<Activity>
 
     // === UI
     private var binding: FragmentNavigationDrawer2Binding? = null
 
-    lateinit var libraryMenu: MenuItem
-    lateinit var browserMenu: MenuItem
-    lateinit var queueMenu: MenuItem
-    lateinit var settingsMenu: MenuItem
-    lateinit var toolsMenu: MenuItem
-    lateinit var aboutMenu: MenuItem
-
     // === VARS
     // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
+    private var updateInfo: UpdateEvent? = null
+    private lateinit var origin: NavItem
+
+    private lateinit var menu: Menu
 
     // Settings listener
     private val prefsListener =
@@ -52,8 +73,8 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        check(requireActivity() is LibraryActivity) { "Parent activity has to be a LibraryActivity" }
-        activity = WeakReference(requireActivity() as LibraryActivity)
+        activity = WeakReference(requireActivity())
+        tag?.let { origin = NavItem.valueOf(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +97,39 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         binding = FragmentNavigationDrawer2Binding.inflate(inflater, container, false)
 
         // More listeners
+        binding?.navigator?.apply {
+            setNavigationItemSelectedListener { item ->
+                when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
+                    NavItem.LIBRARY.ordinal -> {
+                        val grouping = Grouping.searchById(item.itemId % MENU_FACTOR)
+                        if (Grouping.NONE == grouping) return@setNavigationItemSelectedListener true
+                        libraryViewModel.setGrouping(grouping.id)
+                    }
+
+                    NavItem.BROWSER.ordinal -> {
+                        val code = item.itemId % MENU_FACTOR
+                        val site = Site.searchByCode(code)
+                        if (!site.isVisible) {
+                            // TODO launch bogus browser on site choice screen
+                        } else {
+                            launchActivity(Content.getWebActivityClass(site))
+                        }
+                    }
+
+                    NavItem.QUEUE.ordinal -> launchActivity(QueueActivity::class.java)
+                    NavItem.SETTINGS.ordinal -> launchActivity(PreferencesActivity::class.java)
+                    NavItem.TOOLS.ordinal -> {
+                        val toolsBuilder = ToolsBundle()
+                        toolsBuilder.contentSearchBundle = contentSearchBundle
+                        launchActivity(ToolsActivity::class.java, toolsBuilder.bundle)
+                    }
+
+                    NavItem.ABOUT.ordinal -> launchActivity(AboutActivity::class.java)
+                }
+
+                true
+            }
+        }
 
         Settings.registerPrefsChangedListener(prefsListener)
 
@@ -85,11 +139,14 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
-        viewModel.totalQueue.observe(viewLifecycleOwner) { onTotalQueueChanged(it) }
-        viewModel.favPages.observe(viewLifecycleOwner) { onFavPagesChanged(it) }
-        viewModel.contentSearchBundle.observe(viewLifecycleOwner) { contentSearchBundle = it }
-        viewModel.groupSearchBundle.observe(viewLifecycleOwner) {
+        libraryViewModel =
+            ViewModelProvider(requireActivity(), vmFactory)[LibraryViewModel::class.java]
+        libraryViewModel.totalQueue.observe(viewLifecycleOwner) { onTotalQueueChanged(it) }
+        libraryViewModel.favPages.observe(viewLifecycleOwner) { onFavPagesChanged(it) }
+        libraryViewModel.contentSearchBundle.observe(viewLifecycleOwner) {
+            contentSearchBundle = it
+        }
+        libraryViewModel.groupSearchBundle.observe(viewLifecycleOwner) {
             val searchBundle = GroupSearchManager.GroupSearchBundle(it)
             onGroupingChanged(searchBundle.groupingId)
         }
@@ -97,13 +154,15 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     }
 
     private fun onTotalQueueChanged(totalQueue: Int) {
-        if (totalQueue > 0) {
-            var text = if (totalQueue > 99) "99+" else totalQueue.toString()
-            if (1 == text.length) text = " $text "
-            // TODO
-        } else {
-            // TODO
-        }
+        val txt = SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_queue))
+        if (totalQueue > 0) txt.append("  ").append(formatCountBadge(requireContext(), totalQueue))
+        getMenu(menu, NavItem.QUEUE).title = txt.toSpannable()
+    }
+
+    private fun showFlagAboutItem() {
+        val txt = SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_about))
+        txt.append("  ").append(formatCountBadge(requireContext(), 1))
+        getMenu(menu, NavItem.ABOUT).title = txt.toSpannable()
     }
 
     private fun onFavPagesChanged(favPages: Int) {
@@ -117,7 +176,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onUpdateEvent(event: UpdateEvent) {
-        //updateInfo = event TODO
+        updateInfo = event
         applyFlagsAndAlerts()
     }
 
@@ -129,61 +188,100 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     private fun updateItems() {
         binding?.apply {
+            menu = navigator.menu
             val submenu1 = navigator.menu.addSubMenu(0, 0, 0, R.string.title_submenu_library)
-            val libAllBooksMenu = submenu1.add(R.string.groups_flat)
-            libAllBooksMenu.setIcon(R.drawable.ic_menu_home)
-            val libArtistsMenu = submenu1.add(R.string.groups_by_artist)
-            libArtistsMenu.setIcon(R.drawable.ic_attribute_artist)
-            val libDateMenu = submenu1.add(R.string.groups_by_dl_date)
-            libDateMenu.setIcon(R.drawable.ic_calendar)
-            val libCustomMenu = submenu1.add(R.string.groups_custom)
-            libCustomMenu.setIcon(R.drawable.ic_custom_group)
-            val libFoldersMenu = submenu1.add(R.string.groups_folders)
-            libFoldersMenu.setIcon(R.drawable.ic_folder)
+            addMenu(
+                submenu1,
+                R.string.groups_flat,
+                R.drawable.ic_menu_home,
+                NavItem.LIBRARY,
+                Grouping.FLAT.id
+            )
+            addMenu(
+                submenu1,
+                R.string.groups_by_artist,
+                R.drawable.ic_attribute_artist,
+                NavItem.LIBRARY,
+                Grouping.ARTIST.id
+            )
+            addMenu(
+                submenu1,
+                R.string.groups_by_dl_date,
+                R.drawable.ic_calendar,
+                NavItem.LIBRARY,
+                Grouping.DL_DATE.id
+            )
+            addMenu(
+                submenu1,
+                R.string.groups_custom,
+                R.drawable.ic_custom_group,
+                NavItem.LIBRARY,
+                Grouping.CUSTOM.id
+            )
+            addMenu(
+                submenu1,
+                R.string.groups_folders,
+                R.drawable.ic_folder,
+                NavItem.LIBRARY,
+                Grouping.FOLDERS.id
+            )
+            // TODO Dynamic
 
-            val submenu2 = navigator.menu.addSubMenu(1, 1, 1, R.string.title_submenu_content)
-            val browserMenu = submenu2.add(R.string.title_activity_browser)
-            browserMenu.setIcon(R.drawable.ic_browser)
-            val queueMenu = submenu2.add(R.string.title_activity_queue)
-            queueMenu.setIcon(R.drawable.ic_action_download)
+            val submenu2 =
+                navigator.menu.addSubMenu(1, getRandomInt(), 1, R.string.title_submenu_content)
+            addMenu(
+                submenu2,
+                R.string.title_activity_browser,
+                R.drawable.ic_browser,
+                NavItem.BROWSER
+            )
+            // TODO temp
+            addMenu(
+                submenu2,
+                Site.PIXIV.name,
+                Site.PIXIV.ico,
+                NavItem.BROWSER,
+                Site.PIXIV.code
+            )
+
+            addMenu(
+                submenu2,
+                R.string.title_activity_queue,
+                R.drawable.ic_action_download,
+                NavItem.QUEUE
+            )
 
             val submenu3 = navigator.menu.addSubMenu(2, 2, 2, R.string.title_submenu_settings)
-            val settingsMenu = submenu3.add(R.string.title_activity_settings)
-            settingsMenu.setIcon(R.drawable.ic_settings)
-            val toolsMenu = submenu3.add(R.string.tools_title)
-            toolsMenu.setIcon(R.drawable.ic_tools)
-            val aboutMenu = submenu3.add(R.string.title_activity_about)
-            aboutMenu.setIcon(R.drawable.ic_info)
-            /*
-                        libraryMenu = navigator.menu.add(R.string.title_activity_downloads)
-                        libraryMenu.setIcon(R.drawable.ic_menu_home)
-
-                        browserMenu = navigator.menu.add(R.string.title_activity_browser)
-                        browserMenu.setIcon(R.drawable.ic_browser)
-                        queueMenu = navigator.menu.add(R.string.title_activity_queue)
-                        queueMenu.setIcon(R.drawable.ic_action_download)
-
-                        // Divider
-                        navigator.menu.add("")
-
-                        settingsMenu = navigator.menu.add(R.string.title_activity_settings)
-                        settingsMenu.setIcon(R.drawable.ic_settings)
-                        toolsMenu = navigator.menu.add(R.string.tools_title)
-                        toolsMenu.setIcon(R.drawable.ic_tools)
-                        aboutMenu = navigator.menu.add(R.string.title_activity_about)
-                        aboutMenu.setIcon(R.drawable.ic_info)
-             */
+            addMenu(
+                submenu3,
+                R.string.title_activity_settings,
+                R.drawable.ic_settings,
+                NavItem.SETTINGS
+            )
+            addMenu(
+                submenu3,
+                R.string.tools_title,
+                R.drawable.ic_tools,
+                NavItem.TOOLS
+            )
+            addMenu(
+                submenu3,
+                R.string.title_activity_about,
+                R.drawable.ic_info,
+                NavItem.ABOUT
+            )
         }
         applyFlagsAndAlerts()
     }
 
     private fun applyFlagsAndAlerts() {
-        /*
         updateInfo?.apply {
             // Display the "new update available" flag
             if (hasNewVersion) showFlagAboutItem()
+
+            // Display the site alert flags, if any
+            //if (sourceAlerts.isNotEmpty()) showFlagAlerts(sourceAlerts) TODO
         }
-         */
     }
 
     /**
@@ -192,5 +290,69 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
         if (Settings.Key.ACTIVE_SITES == key) updateItems()
+    }
+
+    fun formatCountBadge(context: Context, count: Int): SpannableString {
+        val badgePaddingV = context.resources.getDimension(R.dimen.nav_badge_padding_vertical)
+        val badgePaddingH = context.resources.getDimension(R.dimen.nav_badge_padding_horizontal)
+        val badgeDrawable = cn.nekocode.badge.BadgeDrawable.Builder()
+            .number(count)
+            .type(cn.nekocode.badge.BadgeDrawable.TYPE_NUMBER)
+            .badgeColor(context.getThemedColor(R.color.secondary_light))
+            .textColor(context.getThemedColor(R.color.on_secondary_light))
+            .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
+            .build()
+        return badgeDrawable.toSpannable()
+    }
+
+    @Suppress("DEPRECATION")
+    private fun launchActivity(activityClass: Class<*>, bundle: Bundle? = null) {
+        val intent = Intent(activity.get(), activityClass)
+        if (bundle != null) intent.putExtras(bundle)
+        ContextCompat.startActivity(requireContext(), intent, null)
+        activity.get()?.apply {
+            if (Build.VERSION.SDK_INT >= 34) {
+                overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+            } else {
+                overridePendingTransition(0, 0)
+            }
+            EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
+        }
+    }
+
+    private fun menuId(navItem: NavItem, subItem: Int = 0): Int {
+        return (navItem.ordinal * MENU_FACTOR) + subItem
+    }
+
+    private fun addMenu(
+        submenu: SubMenu,
+        text: Int,
+        icon: Int,
+        navItem: NavItem,
+        subItem: Int = 0
+    ): MenuItem {
+        return addMenu(submenu, getString(text), icon, navItem, subItem)
+    }
+
+    private fun addMenu(
+        submenu: SubMenu,
+        text: String,
+        icon: Int,
+        navItem: NavItem,
+        subItem: Int = 0
+    ): MenuItem {
+        val order = submenu.item.order + submenu.children.count() + 1
+        val result = submenu.add(
+            submenu.item.groupId,
+            menuId(navItem, subItem),
+            order,
+            text
+        )
+        result.setIcon(icon)
+        return result
+    }
+
+    private fun getMenu(m: Menu, navItem: NavItem, subItem: Int = 0): MenuItem {
+        return m.findItem(menuId(navItem, subItem))
     }
 }

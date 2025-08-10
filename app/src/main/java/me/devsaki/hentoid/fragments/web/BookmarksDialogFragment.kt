@@ -106,7 +106,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
         checkNotNull(arguments) { "No arguments found" }
 
         arguments?.apply {
-            site = Site.searchByCode(getInt(KEY_SITE).toLong())
+            site = Site.searchByCode(getInt(KEY_SITE))
             initialSite = site
             title = getString(KEY_TITLE, "")
             url = getString(KEY_URL, "")

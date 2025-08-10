@@ -99,7 +99,7 @@ class UnlockActivity : AppCompatActivity(), UnlockPinDialogFragment.Parent {
                 finish()
                 return
             }
-            val c: Class<*> = Content.getWebActivityClass(Site.searchByCode(siteCode.toLong()))
+            val c: Class<*> = Content.getWebActivityClass(Site.searchByCode(siteCode))
             targetIntent = Intent(getInstance(), c)
             targetIntent.action = Intent.ACTION_VIEW
         }

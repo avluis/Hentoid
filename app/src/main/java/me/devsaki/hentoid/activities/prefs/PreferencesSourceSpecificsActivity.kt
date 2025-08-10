@@ -40,7 +40,7 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
 
         val parser = PrefsSourceSpecificsBundle(intent.extras!!)
         val validSites = Site.entries.filter { it.isVisible }.sortedBy { it.name }
-        site = Site.searchByCode(parser.site.toLong())
+        site = Site.searchByCode(parser.site)
         if (!site.isVisible) site = validSites.first()
 
         binding = ActivityPrefsSourceSpecificsBinding.inflate(layoutInflater)

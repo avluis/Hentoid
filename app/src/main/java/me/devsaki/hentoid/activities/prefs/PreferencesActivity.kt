@@ -77,7 +77,7 @@ class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
     private fun getSiteFromIntent(): Site {
         return if (intent.extras != null) {
             val parser = PrefsBundle(intent.extras!!)
-            Site.searchByCode(parser.site.toLong())
+            Site.searchByCode(parser.site)
         } else Site.NONE
     }
 

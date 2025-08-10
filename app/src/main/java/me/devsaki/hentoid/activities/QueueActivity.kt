@@ -263,7 +263,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
             if (parser.isErrorsTab) binding?.queuePager?.currentItem = 1
             viewModel.setContentToShowFirst(contentHash)
         }
-        val revivedSite = Site.searchByCode(parser.reviveDownloadForSiteCode.toLong())
+        val revivedSite = Site.searchByCode(parser.reviveDownloadForSiteCode)
         val oldCookie = parser.reviveOldCookie
         if (revivedSite != Site.NONE && oldCookie.isNotEmpty()) reviveDownload(
             revivedSite,

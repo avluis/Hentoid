@@ -182,8 +182,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     }
 
     companion object {
-        fun searchByCode(code: Long): Site {
-            for (s in Site.entries) if (s.code.toLong() == code) return s
+        fun searchByCode(code: Int): Site {
+            for (s in Site.entries) if (s.code == code) return s
             return NONE
         }
 

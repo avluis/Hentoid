@@ -83,4 +83,8 @@
     <dimen name="badge_padding_vertical">5dp</dimen>
     <dimen name="badge_padding_horizontal">10dp</dimen>
     <dimen name="badge_stroke_width">3dp</dimen>
+
+    <!-- navigator badges -->
+    <dimen name="nav_badge_padding_vertical">5dp</dimen>
+    <dimen name="nav_badge_padding_horizontal">5dp</dimen>
 </resources>

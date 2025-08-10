@@ -20,12 +20,16 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
 import androidx.annotation.DimenRes
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.customview.widget.ViewDragHelper
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -42,6 +46,7 @@ import me.devsaki.hentoid.core.RENAMING_RULES_JSON_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.StorageLocation
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.file.FILE_IO_BUFFER_SIZE
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
@@ -55,6 +60,7 @@ import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
+import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -340,7 +346,7 @@ fun pause(millis: Int) {
  * @param maxExclude Upper bound (excluded)
  * @return Random positive integer (zero included) bound to the given argument (excluded)
  */
-fun getRandomInt(maxExclude: Int): Int {
+fun getRandomInt(maxExclude: Int = Int.MAX_VALUE): Int {
     return rand.nextInt(maxExclude)
 }
 

@@ -10,7 +10,6 @@ import android.os.Looper
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -18,8 +17,6 @@ import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.isVisible
-import androidx.customview.widget.ViewDragHelper
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModelProvider
@@ -41,6 +38,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.LibraryActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.core.convertLocaleToEnglish
+import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -247,49 +245,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
         searchClearDebouncer = Debouncer(this.lifecycleScope, 1500) { clearSearch() }
 
-        activityBinding?.drawerLayout?.let {
-            it.addDrawerListener(object : ActionBarDrawerToggle(
-                this,
-                activityBinding?.drawerLayout,
-                binding?.toolbar,
-                R.string.open_drawer,
-                R.string.close_drawer
-            ) {
-                /** Called when a drawer has settled in a completely closed state.  */
-                override fun onDrawerClosed(view: View) {
-                    super.onDrawerClosed(view)
-                    EventBus.getDefault().post(
-                        CommunicationEvent(
-                            CommunicationEvent.Type.CLOSED,
-                            CommunicationEvent.Recipient.DRAWER
-                        )
-                    )
-                }
-            })
-
-            // Hack DrawerLayout to make the drag zone larger
-            // Source : https://stackoverflow.com/a/36157701/8374722
-            try {
-                // get dragger responsible for the dragging of the left drawer
-                val draggerField = DrawerLayout::class.java.getDeclaredField("mLeftDragger")
-                draggerField.isAccessible = true
-                val vdh = draggerField[it] as ViewDragHelper
-
-                // get access to the private field which defines
-                // how far from the edge dragging can start
-                val edgeSizeField = ViewDragHelper::class.java.getDeclaredField("mEdgeSize")
-                edgeSizeField.isAccessible = true
-
-                // increase the edge size - while x2 should be good enough,
-                // try bigger values to easily see the difference
-                val origEdgeSizeInt = edgeSizeField.getInt(vdh)
-                val newEdgeSize = origEdgeSizeInt * 2
-                edgeSizeField.setInt(vdh, newEdgeSize)
-                Timber.d("Left drawer : new drag size of %d pixels", newEdgeSize)
-            } catch (e: Exception) {
-                Timber.e(e)
-            }
-        }
+        initDrawerLayout(activityBinding!!.drawerLayout, binding!!.toolbar)
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -1238,22 +1194,24 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
-        // Filter on delete complete event
-        if (R.id.delete_service_delete != event.processId) return
-        if (ProcessEvent.Type.COMPLETE != event.eventType) return
-        processEvent(event)
+        if (R.id.delete_service_delete == event.processId
+            && ProcessEvent.Type.COMPLETE == event.eventType
+        ) processDeleteEvent(event)
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onProcessStickyEvent(event: ProcessEvent) {
-        // Filter on delete complete event
-        if (R.id.delete_service_delete != event.processId) return
-        if (ProcessEvent.Type.COMPLETE != event.eventType) return
-        EventBus.getDefault().removeStickyEvent(event)
-        processEvent(event)
+    fun onProcesStickyEvent(event: ProcessEvent) {
+        var canRemove = false
+        if (R.id.delete_service_delete == event.processId
+            && ProcessEvent.Type.COMPLETE == event.eventType
+        ) {
+            processDeleteEvent(event)
+            canRemove = true
+        }
+        if (canRemove) EventBus.getDefault().removeStickyEvent(event)
     }
 
-    private fun processEvent(event: ProcessEvent) {
+    private fun processDeleteEvent(event: ProcessEvent) {
         var msg = ""
         val nbGroups = event.elementsOKOther
         val nbContent = event.elementsOK
@@ -1270,6 +1228,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         snack(msg)
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    override fun onCommunicationEvent(event: CommunicationEvent) {
+        super.onCommunicationEvent(event)
+        if (CommunicationEvent.Type.CLOSE_DRAWER == event.type) closeNavigationDrawer()
+    }
 
     /**
      * Display the yes/no dialog to make sure the user really wants to archive selected items

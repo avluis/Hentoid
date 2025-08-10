@@ -24,9 +24,9 @@ import android.webkit.WebView.HitTestResult
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.appcompat.widget.Toolbar
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -46,6 +46,7 @@ import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
@@ -54,11 +55,12 @@ import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.urlsAreSame
-import me.devsaki.hentoid.databinding.ActivityBaseWebBinding
+import me.devsaki.hentoid.databinding.ActivityBrowserBinding
 import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
@@ -163,7 +165,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         }
 
     // === UI
-    protected var binding: ActivityBaseWebBinding? = null
+    protected var binding: ActivityBrowserBinding? = null
 
     // Dynamically generated webview
     protected lateinit var webView: NestedScrollWebView
@@ -231,7 +233,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityBaseWebBinding.inflate(layoutInflater)
+        binding = ActivityBrowserBinding.inflate(layoutInflater)
         useLegacyInsets()
         setContentView(binding!!.root)
         if (!WebkitPackageHelper.getWebViewAvailable()) {
@@ -248,7 +250,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
         // Toolbar
         // Top toolbar
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        val toolbar = binding!!.toolbar
+        initDrawerLayout(binding!!.drawerLayout, toolbar)
+
         tryShowMenuIcons(this, toolbar.menu)
         toolbar.setOnMenuItemClickListener { this.onMenuItemSelected(it) }
         toolbar.title = getStartSite().description
@@ -965,10 +969,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         @DrawableRes var resId: Int = R.drawable.selector_back_gallery
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek
         seekButtonMode = mode
-        val b: ActivityBaseWebBinding? = binding
-        if (b != null) {
-            b.menuSeek.setImageDrawable(ContextCompat.getDrawable(this, resId))
-            b.menuSeek.isEnabled = enabled
+        binding?.apply {
+            menuSeek.setImageDrawable(ContextCompat.getDrawable(this@BaseWebActivity, resId))
+            menuSeek.isEnabled = enabled
         }
     }
 
@@ -1590,6 +1593,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
     private fun clearPrefBlockedTags() {
         m_prefBlockedTags.clear()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    override fun onCommunicationEvent(event: CommunicationEvent) {
+        super.onCommunicationEvent(event)
+        if (CommunicationEvent.Type.CLOSE_DRAWER == event.type) closeNavigationDrawer()
+    }
+
+    fun closeNavigationDrawer() {
+        binding?.drawerLayout?.closeDrawer(GravityCompat.START)
     }
 
     /**

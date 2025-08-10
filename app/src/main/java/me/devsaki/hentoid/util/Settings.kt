@@ -516,6 +516,7 @@ object Settings {
 
     // APP-WIDE
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
+    // Used to detect when LibraryActivity opens for the first time to force-open navigation drawer
     var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
     var lastKnownAppVersionCode: Int by IntSettingStr(Key.LAST_KNOWN_APP_VERSION_CODE, 0)
     var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
@@ -624,7 +625,7 @@ object Settings {
                 ?.distinct()
                 ?.map { it.trim() }
                 ?.filterNot { it.isEmpty() }
-                ?.map { Site.searchByCode(it.toLong()) }
+                ?.map { Site.searchByCode(it.toInt()) }
                 ?: emptyList()
         }
 
