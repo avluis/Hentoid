@@ -91,11 +91,14 @@
     <style name="Theme.Light.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <item name="colorPrimary">@color/primary_light</item>
         <item name="colorSecondary">@color/secondary_light</item>
-        <!-- colorSurface is the actual dialog background -->
-        <item name="colorSurface">@color/window_background_light</item>
+
+        <!-- Depending on APIs, any of them might be applicable :/ -->
+        <item name="colorSurface">@color/dialog_background_light</item>
+        <item name="android:background">@color/dialog_background_light</item>
+        <item name="android:windowBackground">@color/dialog_background_light</item>
+        <item name="android:colorBackground">@color/dialog_background_light</item>
+
         <item name="colorOnSurface">@color/on_primary_light</item>
-        <item name="android:windowBackground">@color/window_background_light</item>
-        <item name="android:colorBackground">@color/window_background_light</item>
         <item name="android:textColor">@color/on_primary_light</item>
         <item name="android:textColorPrimary">@color/on_primary_light</item>
         <item name="android:textColorSecondary">@color/on_secondary_light</item>
