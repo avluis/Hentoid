@@ -118,7 +118,7 @@ object DatabaseMaintenance {
                 var pos = 1f
                 for (c in contents) {
                     ObjectBoxDB.insertQueue(c.id, ++queueMaxPos)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
             }
             Timber.i("Moving back isolated items to queue : done")
@@ -139,7 +139,7 @@ object DatabaseMaintenance {
                 var pos = 1f
                 for (c in contents) {
                     ObjectBoxDB.deleteContentById(c.id)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Clearing temporary books : done")
             } finally {
@@ -163,7 +163,7 @@ object DatabaseMaintenance {
                             .replace(".jpg", ".webp")
                     c.coverImageUrl = url
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Upgrading Hitomi covers : done")
 
@@ -182,7 +182,7 @@ object DatabaseMaintenance {
                     images.add(0, newCover)
                     images[1].isCover = false
                     db.insertImageFiles(images)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Fixing M18 covers : done")
             } finally {
@@ -190,7 +190,7 @@ object DatabaseMaintenance {
             }
         }
 
-    private suspend fun isM18WrongCover(c: Content): Boolean {
+    private fun isM18WrongCover(c: Content): Boolean {
         val images: List<ImageFile> = c.imageList
         if (images.isEmpty()) return false
         val cover = images.firstOrNull { i -> i.isCover }
@@ -209,7 +209,7 @@ object DatabaseMaintenance {
                 var pos = 1f
                 for (c in chapters) {
                     c.name = "Chapter " + (c.order + 1) // 0-indexed
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 db.insertChapters(chapters)
                 Timber.i("Empying empty chapters : done")
@@ -252,7 +252,7 @@ object DatabaseMaintenance {
                 for (c in contents) {
                     c.completed = false
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 contents = db.selectContentWithNullDlModeField()
                 Timber.i(
@@ -264,7 +264,7 @@ object DatabaseMaintenance {
                 for (c in contents) {
                     c.downloadMode = DownloadMode.DOWNLOAD
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 contents = db.selectContentWithNullMergeField()
                 Timber.i(
@@ -276,7 +276,7 @@ object DatabaseMaintenance {
                 for (c in contents) {
                     c.manuallyMerged = false
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 contents = db.selectContentWithNullDlCompletionDateField()
                 Timber.i(
@@ -290,7 +290,7 @@ object DatabaseMaintenance {
                         c.downloadDate else c.downloadCompletionDate =
                         0
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 contents = db.selectContentWithInvalidUploadDate()
                 Timber.i("Fixing invalid upload dates : %s items detected", contents.size)
@@ -299,7 +299,7 @@ object DatabaseMaintenance {
                 for (c in contents) {
                     c.uploadDate *= 1000
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 val chapters = db.selectChapterWithNullUploadDate()
                 Timber.i(
@@ -310,7 +310,7 @@ object DatabaseMaintenance {
                 pos = 1f
                 for (c in chapters) {
                     c.uploadDate = 0
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 db.insertChapters(chapters)
                 Timber.i("Set default ObjectBox properties : done")
@@ -332,7 +332,7 @@ object DatabaseMaintenance {
                 for (c in contents) {
                     c.computeSize()
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Computing downloaded content size : done")
             } finally {
@@ -468,7 +468,7 @@ object DatabaseMaintenance {
                     for ((order, contentId) in data.third.withIndex()) {
                         val item = GroupItem(contentId, data.first, order)
                         ObjectBoxDB.insertGroupItem(item)
-                        emitter(pos++ / bookInsertCount)
+                        withContext(Dispatchers.Main) { emitter(pos++ / bookInsertCount) }
                     }
                 }
                 Timber.i("Create non-existing groupings : done")
@@ -493,7 +493,7 @@ object DatabaseMaintenance {
                 for (c in contents) {
                     c.computeReadProgress()
                     db.insertContentCore(c)
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Computing downloaded content read progress : done")
             } finally {
@@ -517,7 +517,7 @@ object DatabaseMaintenance {
                         g.coverContent.targetId = contentIds[0]
                         db.insertGroup(g)
                     }
-                    emitter(pos++ / max)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Reattaching group covers : done")
             } finally {
@@ -552,7 +552,7 @@ object DatabaseMaintenance {
     private suspend fun refreshJsonForSecondDownloadDate(
         context: Context,
         emitter: (Float) -> Unit
-    ) {
+    ) = withContext(Dispatchers.IO) {
         try {
             // Refresh JSONs to persist missing downloadCompletionDates
             if (!Settings.isRefreshJson1Complete) {
