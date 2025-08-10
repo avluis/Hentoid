@@ -7,7 +7,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 
 class DeleteCompleteNotification(
-    private val books: Int,
+    private val items: Int,
     private val nbError: Int,
     private val operation: BaseDeleteWorker.Operation
 ) :
@@ -33,8 +33,8 @@ class DeleteCompleteNotification(
         )
         else context.resources.getQuantityString(
             R.plurals.notif_process_complete_details_generic,
-            books,
-            books
+            items,
+            items
         )
 
         return NotificationCompat.Builder(context, ID)

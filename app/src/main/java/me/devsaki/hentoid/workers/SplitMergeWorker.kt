@@ -242,7 +242,7 @@ abstract class BaseSplitMergeWorker(
                 } finally {
                     dao.cleanup()
                 }
-            }
+            } // Dispatchers.IO
             if (isStopped) break
 
             // Set custom group, if any

@@ -37,6 +37,7 @@ import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.getStackTraceString
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.purgeFiles
 import me.devsaki.hentoid.util.removeContent
@@ -104,7 +105,7 @@ abstract class BaseDeleteWorker(
     private val isDeleteGroupsOnly: Boolean
 
     // Indicate if the operation is a cleaning operation (for display purposes only)
-    private val isCleaning : Boolean
+    private val isCleaning: Boolean
 
     // == VARIABLES
 
@@ -213,6 +214,7 @@ abstract class BaseDeleteWorker(
                             val docs = fe.listDocumentFiles(
                                 applicationContext, root
                             ).filter { docsNames.contains(it.name) }
+                            deleteMax += docs.size
                             removeDocuments(docs.map { it.uri })
                         }
                     }
@@ -494,7 +496,11 @@ abstract class BaseDeleteWorker(
         uris.forEachIndexed { index, uri ->
             if (isStopped) return
             removeFile(applicationContext, uri)
-            progressItem("Document " + (index + 1).toString(), Operation.DELETE, Target.OTHER)
+            progressItem(
+                UriParts(uri.toString()).fileNameFull,
+                Operation.DELETE,
+                Target.OTHER
+            )
         }
 
         progressDone()
@@ -509,30 +515,31 @@ abstract class BaseDeleteWorker(
             is Group -> title = item.name
             is String -> title = item
         }
-        if (title != null) {
-            deleteProgress++
-            // Handle notifications on another coroutine not to steal focus for unnecessary stuff
-            GlobalScope.launch(Dispatchers.Default) {
-                notificationManager.notify(
-                    DeleteProgressNotification(
-                        title,
-                        deleteProgress + nbError,
-                        deleteMax,
-                        operation,
-                        target
-                    )
+        deleteProgress++
+        title ?: return
+
+        // Handle notifications on another coroutine not to steal focus for unnecessary stuff
+        GlobalScope.launch(Dispatchers.Default) {
+            notificationManager.notify(
+                DeleteProgressNotification(
+                    title,
+                    deleteProgress + nbError,
+                    deleteMax,
+                    operation,
+                    target,
+                    isCleaning
                 )
-                EventBus.getDefault().post(
-                    ProcessEvent(
-                        ProcessEvent.Type.PROGRESS,
-                        R.id.generic_progress,
-                        0,
-                        deleteProgress,
-                        nbError,
-                        deleteMax
-                    )
+            )
+            EventBus.getDefault().post(
+                ProcessEvent(
+                    ProcessEvent.Type.PROGRESS,
+                    R.id.generic_progress,
+                    0,
+                    deleteProgress,
+                    nbError,
+                    deleteMax
                 )
-            }
+            )
         }
     }
 

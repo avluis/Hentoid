@@ -666,18 +666,21 @@ fun exportToDownloadsFolder(
 }
 
 fun removeDocs(context: Context, root: Uri, names: Collection<String>) {
-    val builder = DeleteData.Builder()
-    builder.setOperation(BaseDeleteWorker.Operation.DELETE)
-    builder.setDocsRootAndNames(root, names)
-    builder.setIsCleaning(true)
-    val workManager = WorkManager.getInstance(context)
-    workManager.enqueueUniqueWork(
-        R.id.delete_service_delete.toString(),
-        ExistingWorkPolicy.APPEND_OR_REPLACE,
-        OneTimeWorkRequestBuilder<DeleteWorker>()
-            .setInputData(builder.data)
-            .build()
-    )
+    // Queue a work request for every 1000 names (10k Data limitation)
+    names.chunked(1000).forEach {
+        val builder = DeleteData.Builder()
+        builder.setOperation(BaseDeleteWorker.Operation.DELETE)
+        builder.setDocsRootAndNames(root, it)
+        builder.setIsCleaning(true)
+        val workManager = WorkManager.getInstance(context)
+        workManager.enqueueUniqueWork(
+            R.id.delete_service_delete.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequestBuilder<DeleteWorker>()
+                .setInputData(builder.data)
+                .build()
+        )
+    }
 }
 
 inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) =
