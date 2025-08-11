@@ -57,6 +57,9 @@
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro" />
         <activity
+            android:name=".activities.sources.WelcomeActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize" />
         <activity

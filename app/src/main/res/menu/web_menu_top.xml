@@ -40,11 +40,5 @@
             android:title="@string/web_url"
             android:tooltipText="@string/web_url"
             app:showAsAction="never" />
-        <item
-            android:id="@+id/web_menu_about"
-            android:icon="@drawable/ic_info"
-            android:title="@string/title_activity_about"
-            android:tooltipText="@string/title_activity_about"
-            app:showAsAction="never" />
     </group>
 </menu>

@@ -21,10 +21,14 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.AboutActivity
+import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.QueueActivity
+import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ToolsActivity
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.activities.sources.WelcomeActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawer2Binding
 import me.devsaki.hentoid.enums.Grouping
@@ -102,7 +106,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                 when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
                     NavItem.LIBRARY.ordinal -> {
                         val grouping = Grouping.searchById(item.itemId % MENU_FACTOR)
-                        if (Grouping.NONE == grouping) return@setNavigationItemSelectedListener true
+                        if (Grouping.NONE == grouping) launchActivity(LibraryActivity::class.java)
                         libraryViewModel.setGrouping(grouping.id)
                     }
 
@@ -110,7 +114,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                         val code = item.itemId % MENU_FACTOR
                         val site = Site.searchByCode(code)
                         if (!site.isVisible) {
-                            // TODO launch bogus browser on site choice screen
+                            launchActivity(WelcomeActivity::class.java)
                         } else {
                             launchActivity(Content.getWebActivityClass(site))
                         }
@@ -183,73 +187,91 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDrawerClosed(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.DRAWER) return
-        // if (CommunicationEvent.Type.CLOSED == event.type) binding?.drawerList?.scrollToPosition(0) TODO
+        if (CommunicationEvent.Type.CLOSED == event.type) binding?.navigator?.scrollTo(0, 0)
     }
 
     private fun updateItems() {
         binding?.apply {
             menu = navigator.menu
             val submenu1 = navigator.menu.addSubMenu(0, 0, 0, R.string.title_submenu_library)
-            addMenu(
-                submenu1,
-                R.string.groups_flat,
-                R.drawable.ic_menu_home,
-                NavItem.LIBRARY,
-                Grouping.FLAT.id
-            )
-            addMenu(
-                submenu1,
-                R.string.groups_by_artist,
-                R.drawable.ic_attribute_artist,
-                NavItem.LIBRARY,
-                Grouping.ARTIST.id
-            )
-            addMenu(
-                submenu1,
-                R.string.groups_by_dl_date,
-                R.drawable.ic_calendar,
-                NavItem.LIBRARY,
-                Grouping.DL_DATE.id
-            )
-            addMenu(
-                submenu1,
-                R.string.groups_custom,
-                R.drawable.ic_custom_group,
-                NavItem.LIBRARY,
-                Grouping.CUSTOM.id
-            )
-            addMenu(
-                submenu1,
-                R.string.groups_folders,
-                R.drawable.ic_folder,
-                NavItem.LIBRARY,
-                Grouping.FOLDERS.id
-            )
-            // TODO Dynamic
+            if (origin == NavItem.LIBRARY) {
+                addMenu(
+                    submenu1,
+                    R.string.groups_flat,
+                    R.drawable.ic_menu_home,
+                    NavItem.LIBRARY,
+                    Grouping.FLAT.id
+                ).isChecked = true
+                addMenu(
+                    submenu1,
+                    R.string.groups_by_artist,
+                    R.drawable.ic_attribute_artist,
+                    NavItem.LIBRARY,
+                    Grouping.ARTIST.id
+                )
+                addMenu(
+                    submenu1,
+                    R.string.groups_by_dl_date,
+                    R.drawable.ic_calendar,
+                    NavItem.LIBRARY,
+                    Grouping.DL_DATE.id
+                )
+                addMenu(
+                    submenu1,
+                    R.string.groups_custom,
+                    R.drawable.ic_custom_group,
+                    NavItem.LIBRARY,
+                    Grouping.CUSTOM.id
+                )
+                addMenu(
+                    submenu1,
+                    R.string.groups_folders,
+                    R.drawable.ic_folder,
+                    NavItem.LIBRARY,
+                    Grouping.FOLDERS.id
+                )
+                // TODO Dynamic book
+            } else {
+                addMenu(
+                    submenu1,
+                    R.string.title_activity_downloads,
+                    R.drawable.ic_menu_home,
+                    NavItem.LIBRARY,
+                    Grouping.NONE.id
+                )
+            }
+
 
             val submenu2 =
                 navigator.menu.addSubMenu(1, getRandomInt(), 1, R.string.title_submenu_content)
-            addMenu(
-                submenu2,
-                R.string.title_activity_browser,
-                R.drawable.ic_browser,
-                NavItem.BROWSER
-            )
-            // TODO temp
-            addMenu(
-                submenu2,
-                Site.PIXIV.name,
-                Site.PIXIV.ico,
-                NavItem.BROWSER,
-                Site.PIXIV.code
-            )
+            if (origin == NavItem.BROWSER) {
+                addMenu(
+                    submenu2,
+                    R.string.title_activity_queue,
+                    R.drawable.ic_action_download,
+                    NavItem.QUEUE
+                )
+                // All sites
+                Settings.activeSites.forEach { site ->
+                    addMenu(submenu2, site.name, site.ico, NavItem.BROWSER, site.code)
+                }
+                // TODO edit sites
+            } else {
+                // Generic browser
+                addMenu(
+                    submenu2,
+                    R.string.title_activity_browser,
+                    R.drawable.ic_browser,
+                    NavItem.BROWSER
+                )
+                addMenu(
+                    submenu2,
+                    R.string.title_activity_queue,
+                    R.drawable.ic_action_download,
+                    NavItem.QUEUE
+                )
+            }
 
-            addMenu(
-                submenu2,
-                R.string.title_activity_queue,
-                R.drawable.ic_action_download,
-                NavItem.QUEUE
-            )
 
             val submenu3 = navigator.menu.addSubMenu(2, 2, 2, R.string.title_submenu_settings)
             addMenu(
@@ -308,6 +330,9 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     @Suppress("DEPRECATION")
     private fun launchActivity(activityClass: Class<*>, bundle: Bundle? = null) {
         val intent = Intent(activity.get(), activityClass)
+        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
+        // it can interfere with actions mapped to the "back" command
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         if (bundle != null) intent.putExtras(bundle)
         ContextCompat.startActivity(requireContext(), intent, null)
         activity.get()?.apply {
@@ -318,6 +343,16 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
             }
             EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
         }
+    }
+
+    private fun launchFavBook() {
+        val builder = ReaderActivityBundle()
+        builder.isOpenFavPages = true
+
+        val viewer = Intent(context, ReaderActivity::class.java)
+        viewer.putExtras(builder.bundle)
+
+        requireContext().startActivity(viewer)
     }
 
     private fun menuId(navItem: NavItem, subItem: Int = 0): Int {
@@ -348,6 +383,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
             order,
             text
         )
+        result.isCheckable = true
         result.setIcon(icon)
         return result
     }

@@ -27,6 +27,7 @@ import androidx.annotation.StringRes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -36,7 +37,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
@@ -257,10 +257,12 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         toolbar.setOnMenuItemClickListener { this.onMenuItemSelected(it) }
         toolbar.title = getStartSite().description
         toolbar.setOnClickListener { loadUrl(getStartUrl(true)) }
+        addCustomBackControl()
 
         refreshStopMenu = toolbar.menu.findItem(R.id.web_menu_refresh_stop)
         bookmarkMenu = toolbar.menu.findItem(R.id.web_menu_bookmark)
         adblockMenu = toolbar.menu.findItem(R.id.web_menu_adblocker)
+        val linkMenu = toolbar.menu.findItem(R.id.web_menu_url)
         binding?.apply {
             this@BaseWebActivity.languageFilterButton = languageFilterButton
             bottomNavigation.setOnMenuItemClickListener { item ->
@@ -271,6 +273,16 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             menuBack.setOnClickListener { onBackClick() }
             menuForward.setOnClickListener { onForwardClick() }
             actionButton.setOnClickListener { onActionClick() }
+
+            if (getStartSite() == Site.NONE) {
+                welcome.isVisible = true
+                bottomNavigation.isVisible = false
+                bookmarkMenu?.isVisible = false
+                adblockMenu?.isVisible = false
+                refreshStopMenu?.isVisible = false
+                linkMenu?.isVisible = false
+                toolbar.setTitle(R.string.title_activity_browser)
+            }
         }
 
         // Webview
@@ -299,8 +311,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             Settings.isAdBlockerOn(getStartSite()) &&
                     Settings.isBrowserAugmented(getStartSite())
         )
-
-        addCustomBackControl()
     }
 
     private fun addCustomBackControl() {
@@ -360,7 +370,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             R.id.web_menu_settings -> onSettingsClick()
             R.id.web_menu_adblocker -> onAdblockClick()
             R.id.web_menu_url -> onManageLinkClick()
-            R.id.web_menu_about -> onAboutClick()
             else -> {
                 return false
             }
@@ -1698,13 +1707,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         prefsBundle.site = getStartSite().code
         intent.putExtras(prefsBundle.bundle)
         startActivity(intent)
-    }
-
-    /**
-     * Show the About page
-     */
-    private fun onAboutClick() {
-        startActivity(Intent(this, AboutActivity::class.java))
     }
 
     override val allSiteUrls: List<String>

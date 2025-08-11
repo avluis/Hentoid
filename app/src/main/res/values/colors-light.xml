@@ -15,6 +15,7 @@
 
     <!-- Drawer header -->
     <color name="drawer_header_diagonal_light">@color/very_dark_pink</color>
+    <color name="drawer_background">@color/taupe</color>
 
     <!-- Content cards -->
     <color name="card_title_light">@color/secondary_light</color>

@@ -48,6 +48,7 @@
         <item name="card_surface">@color/card_surface_light</item>
         <item name="card_pressed">@color/card_pressed_light</item>
         <item name="card_selected">@color/card_selected_light</item>
+        <item name="drawer_background">@color/drawer_background</item>
         <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
