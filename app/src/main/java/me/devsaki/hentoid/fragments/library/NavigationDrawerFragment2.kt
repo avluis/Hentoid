@@ -157,6 +157,11 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         updateItems()
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateItems()
+    }
+
     private fun onTotalQueueChanged(totalQueue: Int) {
         val txt = SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_queue))
         if (totalQueue > 0) txt.append("  ").append(formatCountBadge(requireContext(), totalQueue))
@@ -193,6 +198,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     private fun updateItems() {
         binding?.apply {
             menu = navigator.menu
+            menu.clear()
             val submenu1 = navigator.menu.addSubMenu(0, 0, 0, R.string.title_submenu_library)
             if (origin == NavItem.LIBRARY) {
                 addMenu(
@@ -201,7 +207,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     R.drawable.ic_menu_home,
                     NavItem.LIBRARY,
                     Grouping.FLAT.id,
-                    Settings.groupingDisplay == Grouping.FLAT.id
+                    Settings.groupingDisplay == Grouping.FLAT.id || Settings.groupingDisplay == Grouping.NONE.id
                 )
                 addMenu(
                     submenu1,
@@ -257,6 +263,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     NavItem.QUEUE
                 )
                 // All sites
+                // TODO mark current site as selected
                 Settings.activeSites.forEach { site ->
                     addMenu(submenu2, site.name, site.ico, NavItem.BROWSER, site.code)
                 }
@@ -273,7 +280,8 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     submenu2,
                     R.string.title_activity_queue,
                     R.drawable.ic_action_download,
-                    NavItem.QUEUE
+                    NavItem.QUEUE,
+                    isSelected = origin == NavItem.QUEUE
                 )
             }
 
