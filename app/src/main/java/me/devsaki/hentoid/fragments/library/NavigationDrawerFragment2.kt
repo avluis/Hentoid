@@ -200,35 +200,40 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     R.string.groups_flat,
                     R.drawable.ic_menu_home,
                     NavItem.LIBRARY,
-                    Grouping.FLAT.id
-                ).isChecked = true
+                    Grouping.FLAT.id,
+                    Settings.groupingDisplay == Grouping.FLAT.id
+                )
                 addMenu(
                     submenu1,
                     R.string.groups_by_artist,
                     R.drawable.ic_attribute_artist,
                     NavItem.LIBRARY,
-                    Grouping.ARTIST.id
+                    Grouping.ARTIST.id,
+                    Settings.groupingDisplay == Grouping.ARTIST.id
                 )
                 addMenu(
                     submenu1,
                     R.string.groups_by_dl_date,
                     R.drawable.ic_calendar,
                     NavItem.LIBRARY,
-                    Grouping.DL_DATE.id
+                    Grouping.DL_DATE.id,
+                    Settings.groupingDisplay == Grouping.DL_DATE.id
                 )
                 addMenu(
                     submenu1,
                     R.string.groups_custom,
                     R.drawable.ic_custom_group,
                     NavItem.LIBRARY,
-                    Grouping.CUSTOM.id
+                    Grouping.CUSTOM.id,
+                    Settings.groupingDisplay == Grouping.CUSTOM.id
                 )
                 addMenu(
                     submenu1,
                     R.string.groups_folders,
                     R.drawable.ic_folder,
                     NavItem.LIBRARY,
-                    Grouping.FOLDERS.id
+                    Grouping.FOLDERS.id,
+                    Settings.groupingDisplay == Grouping.FOLDERS.id
                 )
                 // TODO Dynamic book
             } else {
@@ -364,9 +369,10 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         text: Int,
         icon: Int,
         navItem: NavItem,
-        subItem: Int = 0
+        subItem: Int = 0,
+        isSelected: Boolean = false
     ): MenuItem {
-        return addMenu(submenu, getString(text), icon, navItem, subItem)
+        return addMenu(submenu, getString(text), icon, navItem, subItem, isSelected)
     }
 
     private fun addMenu(
@@ -374,7 +380,8 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         text: String,
         icon: Int,
         navItem: NavItem,
-        subItem: Int = 0
+        subItem: Int = 0,
+        isSelected: Boolean = false
     ): MenuItem {
         val order = submenu.item.order + submenu.children.count() + 1
         val result = submenu.add(
@@ -384,6 +391,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
             text
         )
         result.isCheckable = true
+        result.isChecked = isSelected
         result.setIcon(icon)
         return result
     }
