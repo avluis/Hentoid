@@ -28,6 +28,7 @@ import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
 import me.devsaki.hentoid.activities.sources.WelcomeActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawer2Binding
@@ -52,7 +53,7 @@ private const val MENU_FACTOR = 1000
 class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2) {
 
     enum class NavItem {
-        LIBRARY, BROWSER, QUEUE, SETTINGS, TOOLS, ABOUT
+        LIBRARY, BROWSER, EDIT_SOURCES, QUEUE, SETTINGS, TOOLS, ABOUT
     }
 
     // === COMMUNICATION
@@ -120,6 +121,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                         }
                     }
 
+                    NavItem.EDIT_SOURCES.ordinal -> launchActivity(PreferencesSourceSelectActivity::class.java)
                     NavItem.QUEUE.ordinal -> launchActivity(QueueActivity::class.java)
                     NavItem.SETTINGS.ordinal -> launchActivity(PreferencesActivity::class.java)
                     NavItem.TOOLS.ordinal -> {
@@ -267,7 +269,12 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                 Settings.activeSites.forEach { site ->
                     addMenu(submenu2, site.name, site.ico, NavItem.BROWSER, site.code)
                 }
-                // TODO edit sites
+                addMenu(
+                    submenu2,
+                    R.string.pref_drawer_sources_title,
+                    R.drawable.ic_edit_square,
+                    NavItem.EDIT_SOURCES
+                )
             } else {
                 // Generic browser
                 addMenu(
