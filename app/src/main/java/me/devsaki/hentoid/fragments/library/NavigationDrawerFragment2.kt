@@ -45,7 +45,6 @@ import me.devsaki.hentoid.widget.GroupSearchManager
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.lang.ref.WeakReference
 import kotlin.math.floor
 
 private const val MENU_FACTOR = 1000
@@ -58,7 +57,6 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     // === COMMUNICATION
     private lateinit var libraryViewModel: LibraryViewModel
-    private lateinit var activity: WeakReference<Activity>
 
     // === UI
     private var binding: FragmentNavigationDrawer2Binding? = null
@@ -67,6 +65,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
     private var updateInfo: UpdateEvent? = null
+    private var site: Site = Site.NONE
     private lateinit var origin: NavItem
 
     private lateinit var menu: Menu
@@ -78,7 +77,6 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        activity = WeakReference(requireActivity())
         tag?.let { origin = NavItem.valueOf(it) }
     }
 
@@ -117,7 +115,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                         if (!site.isVisible) {
                             launchActivity(WelcomeActivity::class.java)
                         } else {
-                            launchActivity(Content.getWebActivityClass(site))
+                            launchActivity(Content.getWebActivityClass(site), singleTop = true)
                         }
                     }
 
@@ -195,6 +193,10 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     fun onDrawerClosed(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.DRAWER) return
         if (CommunicationEvent.Type.CLOSED == event.type) binding?.navigator?.scrollTo(0, 0)
+        if (CommunicationEvent.Type.SIGNAL_SITE == event.type) {
+            site = Site.valueOf(event.message)
+            updateItems()
+        }
     }
 
     private fun updateItems() {
@@ -265,9 +267,11 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     NavItem.QUEUE
                 )
                 // All sites
-                // TODO mark current site as selected
+                // TODO add site badges when an issue had been signaled on update.json
                 Settings.activeSites.forEach { site ->
-                    addMenu(submenu2, site.name, site.ico, NavItem.BROWSER, site.code)
+                    val siteMenu =
+                        addMenu(submenu2, site.name, site.ico, NavItem.BROWSER, site.code)
+                    if (this@NavigationDrawerFragment2.site == site) siteMenu.isChecked = true
                 }
                 addMenu(
                     submenu2,
@@ -348,14 +352,19 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     }
 
     @Suppress("DEPRECATION")
-    private fun launchActivity(activityClass: Class<*>, bundle: Bundle? = null) {
-        val intent = Intent(activity.get(), activityClass)
+    private fun launchActivity(
+        activityClass: Class<*>,
+        bundle: Bundle? = null,
+        singleTop: Boolean = false
+    ) {
+        val intent = Intent(requireActivity(), activityClass)
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with actions mapped to the "back" command
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        if (singleTop) intent.flags = intent.flags or Intent.FLAG_ACTIVITY_SINGLE_TOP
         if (bundle != null) intent.putExtras(bundle)
         ContextCompat.startActivity(requireContext(), intent, null)
-        activity.get()?.apply {
+        activity?.apply {
             if (Build.VERSION.SDK_INT >= 34) {
                 overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
             } else {

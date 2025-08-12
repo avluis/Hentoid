@@ -13,7 +13,8 @@ class CommunicationEvent(val type: Type, val recipient: Recipient = Recipient.AL
         UNSELECT,
         BROADCAST,
         UPDATE_EDIT_MODE,
-        SCROLL_TOP
+        SCROLL_TOP,
+        SIGNAL_SITE
     }
 
     enum class Recipient {

@@ -252,6 +252,14 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Top toolbar
         val toolbar = binding!!.toolbar
         initDrawerLayout(binding!!.drawerLayout, toolbar)
+        // Signal current site to navigation drawer for it to check it
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.Type.SIGNAL_SITE,
+                CommunicationEvent.Recipient.DRAWER,
+                getStartSite().name
+            )
+        )
 
         tryShowMenuIcons(this, toolbar.menu)
         toolbar.setOnMenuItemClickListener { this.onMenuItemSelected(it) }
