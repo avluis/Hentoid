@@ -55,6 +55,8 @@ val screenWidth = getScreenDimensionsPx(HentoidApp.getInstance()).x
 val screenHeight = getScreenDimensionsPx(HentoidApp.getInstance()).y
 
 private const val MAX_WEBP_DIMENSION = 16383 // As per WEBP specifications
+private const val MANHWA_MIN_HEIGHT = 4 // Multiple of screen height
+private const val MANHWA_MAX_HEIGHT = 10 // Multiple of screen height
 
 internal data class ManhwaProcessingItem(
     val img: ImageFile,
@@ -242,6 +244,16 @@ suspend fun transformManhwaChapter(
         allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.maxOf { it.x },
         ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
     )
+    // Clamp target height to hardcoded min and max
+    val targetHeightInScreenDims =
+        targetDims.y.toFloat() * screenWidth.toFloat() / targetDims.x.toFloat()
+    val maxHeight = screenHeight * MANHWA_MAX_HEIGHT
+    val minHeight = screenHeight * MANHWA_MIN_HEIGHT
+    if (targetHeightInScreenDims > maxHeight) targetDims.y =
+        (maxHeight.toFloat() * targetDims.x.toFloat() / screenWidth.toFloat()).toInt()
+    else if (targetHeightInScreenDims < minHeight) targetDims.y =
+        (minHeight.toFloat() * targetDims.x.toFloat() / screenWidth.toFloat()).toInt()
+
     Timber.d("targetDims $targetDims")
 
     val targetImg = createBitmap(
