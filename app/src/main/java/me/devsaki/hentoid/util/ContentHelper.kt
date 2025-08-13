@@ -39,7 +39,7 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SiteBookmark
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
@@ -1774,7 +1774,7 @@ fun isDownloadable(chapter: Chapter): Boolean {
     val images = chapter.imageList
     if (images.isEmpty()) return false
 
-    val content = chapter.content.reach(chapter) ?: return false
+    val content = chapter.content.safeReach(chapter) ?: return false
 
     // Pick a random picture
     val img = images[getRandomInt(images.size)]

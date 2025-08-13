@@ -69,7 +69,15 @@ fun <T> ToMany<T>.isReachable(entity: Any): Boolean {
     }
 }
 
-fun <T> ToMany<T>.reach(entity: Any): List<T> {
+fun <T> ToMany<T>.safeReach(entity: Any): List<T> {
+    try {
+        return reach(entity)
+    } finally {
+        ObjectBoxDB.cleanup()
+    }
+}
+
+private fun <T> ToMany<T>.reach(entity: Any): List<T> {
     try {
         if (!this.isEmpty()) return this
     } catch (e: DbDetachedException) {
@@ -79,7 +87,15 @@ fun <T> ToMany<T>.reach(entity: Any): List<T> {
     else emptyList()
 }
 
-fun <T> ToOne<T>.reach(entity: Any): T? {
+fun <T> ToOne<T>.safeReach(entity: Any): T? {
+    try {
+        return reach(entity)
+    } finally {
+        ObjectBoxDB.cleanup()
+    }
+}
+
+private fun <T> ToOne<T>.reach(entity: Any): T? {
     if (!this.isResolved) {
         val boxStoreField = ReflectionCache.getInstance().getField(entity.javaClass, "__boxStore")
         try {

@@ -45,7 +45,7 @@ import me.devsaki.hentoid.activities.sources.TmoActivity
 import me.devsaki.hentoid.activities.sources.ToonilyActivity
 import me.devsaki.hentoid.activities.sources.TsuminoActivity
 import me.devsaki.hentoid.database.domains.ImageFile.Companion.fromImageUrl
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.Site.SiteConverter
@@ -340,7 +340,7 @@ data class Content(
     val attributeMap: AttributeMap
         get() {
             val result = AttributeMap()
-            val list = attributes.reach(this)
+            val list = attributes.safeReach(this)
             for (a in list) result.add(a)
             return result
         }
@@ -517,7 +517,7 @@ data class Content(
         }
 
     val imageList: List<ImageFile>
-        get() = imageFiles.reach(this)
+        get() = imageFiles.safeReach(this)
 
     fun setImageFiles(imageFiles: List<ImageFile>?): Content {
         // We do want to compare array references, not content
@@ -543,7 +543,7 @@ data class Content(
 
     val errorList: List<ErrorRecord>
         get() {
-            return errorLog.reach(this)
+            return errorLog.safeReach(this)
         }
 
     fun setErrorLog(errorLog: List<ErrorRecord>?) {
@@ -618,7 +618,7 @@ data class Content(
         get() = getExtension(storageUri).equals("pdf", true)
 
     val groupItemList: List<GroupItem>
-        get() = groupItems.reach(this)
+        get() = groupItems.safeReach(this)
 
     fun getGroupItems(grouping: Grouping): List<GroupItem> {
         return groupItemList
@@ -649,7 +649,7 @@ data class Content(
     }
 
     val chaptersList: List<Chapter>
-        get() = chapters.reach(this)
+        get() = chapters.safeReach(this)
 
     fun setChapters(chapters: List<Chapter?>?) {
         // We do want to compare array references, not content

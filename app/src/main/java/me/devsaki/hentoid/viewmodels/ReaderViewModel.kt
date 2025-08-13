@@ -1200,6 +1200,7 @@ class ReaderViewModel(
                     }
                 }
             }
+            dao.cleanup()
             indexesToLoad.removeAll(cachedIndexes)
 
             // Unarchive
@@ -1371,6 +1372,7 @@ class ReaderViewModel(
                 indexExtractInProgress.add(index)
             }
         }
+        dao.cleanup()
         if (hasExistingUris) viewerImages.postValue(ArrayList(viewerImagesInternal))
         if (extractInstructions.isEmpty()) return@withContext
 
@@ -1469,6 +1471,7 @@ class ReaderViewModel(
                 img, idx, uri, 0 == nbProcessed.get() % 4 || nbProcessed.get() == maxElements
             )
         }
+        dao.cleanup()
     }
 
     private fun updateImgWithExtractedUri(

@@ -10,7 +10,7 @@ import io.objectbox.annotation.Uid
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
 import me.devsaki.hentoid.database.isReachable
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.AttributeType.AttributeTypeConverter
 import me.devsaki.hentoid.enums.Site
@@ -109,7 +109,7 @@ data class Attribute(
         }
 
     fun getLinkedGroup(): Group? {
-        return group.reach(this)
+        return group.safeReach(this)
     }
 
     fun putGroup(group: Group) {
