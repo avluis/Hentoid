@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.Dispatchers
@@ -16,23 +17,24 @@ import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.createFile
+import me.devsaki.hentoid.util.file.fileSizeFromUri
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
 import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.formatIntAsStr
 import me.devsaki.hentoid.util.getScreenDimensionsPx
-import me.devsaki.hentoid.util.weightedAverage
+import me.devsaki.hentoid.util.network.UriParts
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 @JsonClass(generateAdapter = true)
 data class TransformParams(
@@ -51,12 +53,19 @@ data class TransformParams(
     @Transient var forceManhwa: Boolean = false
 )
 
-val screenWidth = getScreenDimensionsPx(HentoidApp.getInstance()).x
-val screenHeight = getScreenDimensionsPx(HentoidApp.getInstance()).y
-
 private const val MAX_WEBP_DIMENSION = 16383 // As per WEBP specifications
 private const val MANHWA_MIN_HEIGHT = 4 // Multiple of screen height
 private const val MANHWA_MAX_HEIGHT = 10 // Multiple of screen height
+
+// % of average width to seperate outliers from the rest
+private const val OUTLIER_WIDTH_THRESHOLD = 0.1
+
+val screenWidth = getScreenDimensionsPx(HentoidApp.getInstance()).x
+val screenHeight = getScreenDimensionsPx(HentoidApp.getInstance()).y
+
+val minPicHeight = screenHeight * MANHWA_MIN_HEIGHT
+val maxPicHeight = screenHeight * MANHWA_MAX_HEIGHT
+
 
 internal data class ManhwaProcessingItem(
     val img: ImageFile,
@@ -230,45 +239,12 @@ suspend fun transformManhwaChapter(
     }
     if (true == interrupt?.invoke()) return emptyList()
 
-    // Detect outlier images (>10% larger than the others)
-    val excludedIndexes = HashSet<Int>()
-    val avgWidth =
-        weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) })
+    // Compute target dims
+    val totalHeight = allDims.sumOf { it.y }
 
-    val variance = allDims.map { (it.x.toFloat() - avgWidth).pow(2) }.average()
-    val stdev = sqrt(variance)
-
-    Timber.d("avgWidth $avgWidth stdev $stdev")
-    allDims.forEachIndexed { idx, dim ->
-        if (abs(dim.x - avgWidth) / avgWidth > 0.1) excludedIndexes.add(idx)
-    }
-    Timber.d("excludedIndexes : ${excludedIndexes.size} / ${allDims.size}")
-
-    // Compute target dims without taking outliers into account
-    val totalHeight =
-        allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.sumOf { it.y }
-    val targetDims = Point(
-        allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.maxOf { it.x },
-        ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
-    )
-    // Clamp target height to hardcoded min and max
-    val targetHeightInScreenDims =
-        targetDims.y.toFloat() * screenWidth.toFloat() / targetDims.x.toFloat()
-    val maxHeight = screenHeight * MANHWA_MAX_HEIGHT
-    val minHeight = screenHeight * MANHWA_MIN_HEIGHT
-    if (targetHeightInScreenDims > maxHeight) targetDims.y =
-        (maxHeight.toFloat() * targetDims.x.toFloat() / screenWidth.toFloat()).toInt()
-    else if (targetHeightInScreenDims < minHeight) targetDims.y =
-        (minHeight.toFloat() * targetDims.x.toFloat() / screenWidth.toFloat()).toInt()
-
-    Timber.d("targetDims $targetDims")
-
-    val bitmapBuffer = createBitmap(
-        targetDims.x,
-        targetDims.y,
-        Bitmap.Config.ARGB_8888
-    )
-    val pixelBuffer = IntArray(targetDims.x * PIXEL_BUFFER_HEIGHT)
+    var bitmapBuffer = createBitmap(1, 1, Bitmap.Config.ARGB_8888)
+    var pixelBuffer = IntArray(PIXEL_BUFFER_HEIGHT)
+    var targetDims = Point(1, 1)
 
     // Create target images one by one
     var consumedHeight = 0
@@ -284,25 +260,90 @@ suspend fun transformManhwaChapter(
             }
             if (isPreview && currentImgIdx > firstIndex) return@forEachIndexed
 
-            if (excludedIndexes.contains(idx)) {
-                // Reuse outlier file into new image
+            val isLast = idx == sourceImgs.size - 1
+            val dims = allDims[idx]
+            val isSingleOutlier = isSingleOutlier(allDims, idx)
+            Timber.v("Processing source file ${img.fileUri} [$dims]")
+
+            // Image width deviates from current bitmap buffer dims
+            if (!isSingleOutlier && abs(dims.x.toFloat() - bitmapBuffer.width.toFloat()) / bitmapBuffer.width.toFloat() > OUTLIER_WIDTH_THRESHOLD) {
+                // New dims for a batch of at least 2 images
+                Timber.d("New width detected! ${dims.x}")
+                if (!processingQueue.isEmpty()) {
+                    Timber.d("Clearing queue")
+                    // => complete what's being built
+                    val toProcess = processingQueue.map { it.img.id }
+                    val newImgs = processManhwaImageQueue(
+                        context,
+                        processingQueue,
+                        bitmapBuffer,
+                        pixelBuffer,
+                        currentImgIdx,
+                        true,
+                        targetDims,
+                        targetFolder,
+                        params
+                    )
+                    // Report results in the notification
+                    toProcess.forEach {
+                        if (!processedIds.contains(it)) {
+                            onProgress?.invoke(Pair(it, !newImgs.isEmpty()))
+                            processedIds.add(it)
+                        }
+                    }
+
+                    currentImgIdx += newImgs.size
+                    result.addAll(newImgs)
+                    consumedHeight = 0
+                }
+
+                // => redim buffers
+                targetDims = Point(
+                    dims.x,
+                    ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
+                )
+                clampDims(targetDims)
+                Timber.d("Redimensioning buffers to $targetDims")
+
+                bitmapBuffer.recycle()
+                bitmapBuffer = createBitmap(
+                    dims.x,
+                    targetDims.y,
+                    Bitmap.Config.ARGB_8888
+                )
+                pixelBuffer = IntArray(dims.x * PIXEL_BUFFER_HEIGHT)
+            }
+
+            if (isSingleOutlier) {
+                // Reuse outlier file into new image without any processing
+                Timber.d("File is a single outlier $dims")
                 val newImg = ImageFile()
-                val targetDoc = imgDocuments[idx]
-                newImg.name =
-                    formatIntAsStr(currentImgIdx, 4) + "." + getExtension(targetDoc.name ?: "")
-                newImg.order = currentImgIdx
-                newImg.fileUri = targetDoc.uri.toString()
-                newImg.size = targetDoc.length()
-                newImg.status = StatusContent.DOWNLOADED
-                newImg.isTransformed = true
-                result.add(Pair(targetDoc.uri, newImg))
+                val uriParts = UriParts(img.fileUri)
+                getDocumentFromTreeUri(context, targetFolder)?.let { targetFolderDoc ->
+                    copyFile(
+                        context,
+                        img.fileUri.toUri(),
+                        targetFolderDoc,
+                        getMimeTypeFromFileName(uriParts.fileNameFull),
+                        uriParts.fileNameFull
+                    )?.let { newUri ->
+                        newImg.fileUri = newUri.toString()
+                        newImg.name =
+                            formatIntAsStr(currentImgIdx, 4) + "." + uriParts.extension
+                        newImg.order = currentImgIdx
+                        newImg.fileUri = newUri.toString()
+                        newImg.size = fileSizeFromUri(context, newUri)
+                        newImg.status = StatusContent.DOWNLOADED
+                        newImg.isTransformed = true
+                        newImg.isCover = img.isCover
+                        result.add(Pair(newUri, newImg))
+                    }
+                }
                 currentImgIdx++
                 onProgress?.invoke(Pair(img.id, true))
                 return@forEachIndexed
             }
-            Timber.d("Processing source file ${img.fileUri}")
-            val isLast = idx == sourceImgs.size - 1
-            val dims = allDims[idx]
+
             var leftToConsume = targetDims.y - consumedHeight
 
             // Compute consumption for current image
@@ -391,16 +432,17 @@ private suspend fun processManhwaImageQueue(
                 }
 
                 var linesToBuffer = img.toConsumeHeight
-                Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
+                Timber.v("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
                 while (linesToBuffer > 0) {
                     val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
                     val bufOffset = img.toConsumeHeight - linesToBuffer
-                    val xOffset = (targetDims.x - img.dims.x) / 2 // Center pic
+                    val targetX = bitmapBuffer.width
+                    val xOffset = (targetX - img.dims.x) / 2 // Center pic
                     // Copy source pic to buffer (centered)
                     bmp.getPixels(
                         pixelBuffer,
                         xOffset,
-                        targetDims.x,
+                        targetX,
                         0,
                         img.toConsumeOffset + bufOffset,
                         img.dims.x,
@@ -410,10 +452,10 @@ private suspend fun processManhwaImageQueue(
                     bitmapBuffer.setPixels(
                         pixelBuffer,
                         0,
-                        targetDims.x,
+                        targetX,
                         0,
                         yOffset + bufOffset,
-                        targetDims.x,
+                        targetX,
                         bufTaken
                     )
                     linesToBuffer -= bufTaken
@@ -424,7 +466,8 @@ private suspend fun processManhwaImageQueue(
         }
     } // queue loop
 
-    val encoder = determineEncoder(containsLossless, targetDims, params)
+    val encoder =
+        determineEncoder(containsLossless, Point(bitmapBuffer.width, bitmapBuffer.height), params)
     val targetName = formatIntAsStr(startIndex, 4)
     Timber.d("create image $targetName (${encoder.mimeType})")
 
@@ -485,4 +528,30 @@ private suspend fun processManhwaImageQueue(
     }
 
     return result
+}
+
+/**
+ * Clamp diven dims' height to hardcoded min and max dims
+ */
+fun clampDims(dims: Point) {
+    val targetHeightInScreenDims =
+        dims.y.toFloat() * screenWidth.toFloat() / dims.x.toFloat()
+    if (targetHeightInScreenDims > maxPicHeight)
+        dims.y = (maxPicHeight.toFloat() * dims.x.toFloat() / screenWidth.toFloat()).toInt()
+    else if (targetHeightInScreenDims < minPicHeight)
+        dims.y = (minPicHeight.toFloat() * dims.x.toFloat() / screenWidth.toFloat()).toInt()
+}
+
+fun isSingleOutlier(dims: List<Point>, idx: Int): Boolean {
+    val currentX = dims[idx].x.toFloat()
+    val isFirst = 0 == idx
+    val isLast = dims.size - 1 == idx
+
+    val previousX = if (!isFirst) dims[idx - 1].x.toFloat() else currentX
+    val nextX = if (!isLast) dims[idx + 1].x.toFloat() else currentX
+
+    val previousKO = abs(currentX - previousX) / previousX > OUTLIER_WIDTH_THRESHOLD
+    val nextKO = abs(currentX - nextX) / currentX > OUTLIER_WIDTH_THRESHOLD
+
+    return if (isFirst) nextKO else if (isLast) previousKO else nextKO && previousKO
 }

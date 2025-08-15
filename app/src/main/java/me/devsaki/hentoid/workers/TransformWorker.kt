@@ -176,15 +176,14 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
             sourceImages.filter { !it.isReadable }.forEach { img ->
                 val name = UriParts(img.fileUri).fileNameFull
-                val newUri = copyFile(
+                copyFile(
                     ctx,
                     img.fileUri.toUri(),
                     targetFolder,
                     getMimeTypeFromFileName(name),
                     name
-                )
-                newUri?.let {
-                    img.fileUri = it.toString()
+                )?.let { newUri ->
+                    img.fileUri = newUri.toString()
                     transformedImages.add(img)
                 }
             }
