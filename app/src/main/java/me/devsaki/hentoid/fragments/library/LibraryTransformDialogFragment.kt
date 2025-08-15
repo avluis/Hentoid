@@ -402,7 +402,9 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
             // Read result from cache folder
             val file = cacheFolder.listFiles()?.firstOrNull() ?: return ByteArray(0)
-            return getBinary(requireContext(), file.toUri())
+            context?.let { ctx ->
+                return getBinary(ctx, file.toUri())
+            }
         }
         return ByteArray(0)
     }
