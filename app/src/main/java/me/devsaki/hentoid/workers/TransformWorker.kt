@@ -137,6 +137,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         val ctx = applicationContext
         // Copy to keep it intact after switching to new ones
         val sourceImages = content.imageList.toList()
+        Timber.d("Transforming Content BEGIN ${content.title}")
 
         // Create target folder
         val sourceAndTarget = try {
@@ -251,6 +252,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             // Remove processed images
             targetFolder?.delete()
         }
+        Timber.d("Transforming Content END ${content.title}")
 
         // Achievements
         if (!isStopped && !isKO) {
