@@ -226,6 +226,7 @@ suspend fun transformManhwaChapter(
             }
         }
         allDims.add(Point(metadataOpts.outWidth, metadataOpts.outHeight))
+        Timber.v("> ${metadataOpts.outWidth}x${metadataOpts.outHeight}")
     }
     if (true == interrupt?.invoke()) return emptyList()
 
@@ -262,7 +263,7 @@ suspend fun transformManhwaChapter(
 
     Timber.d("targetDims $targetDims")
 
-    val targetImg = createBitmap(
+    val bitmapBuffer = createBitmap(
         targetDims.x,
         targetDims.y,
         Bitmap.Config.ARGB_8888
@@ -320,7 +321,7 @@ suspend fun transformManhwaChapter(
                 val newImgs = processManhwaImageQueue(
                     context,
                     processingQueue,
-                    targetImg,
+                    bitmapBuffer,
                     pixelBuffer,
                     currentImgIdx,
                     isLast,
@@ -345,7 +346,7 @@ suspend fun transformManhwaChapter(
         Timber.w(e)
         isKO = true
     } finally {
-        targetImg.recycle()
+        bitmapBuffer.recycle()
     }
 
     return if (!isKO || isPreview) {
@@ -358,7 +359,7 @@ suspend fun transformManhwaChapter(
 private suspend fun processManhwaImageQueue(
     context: Context,
     queue: MutableList<ManhwaProcessingItem>,
-    targetImg: Bitmap,
+    bitmapBuffer: Bitmap,
     pixelBuffer: IntArray,
     startIndex: Int,
     isLast: Boolean,
@@ -406,7 +407,7 @@ private suspend fun processManhwaImageQueue(
                         bufTaken
                     )
                     // Copy buffer to target pic (whole width)
-                    targetImg.setPixels(
+                    bitmapBuffer.setPixels(
                         pixelBuffer,
                         0,
                         targetDims.x,
@@ -435,7 +436,7 @@ private suspend fun processManhwaImageQueue(
         false
     ).let { targetUri ->
         Timber.d("Compressing...")
-        val targetData = transcodeTo(targetImg, encoder, params.transcodeQuality)
+        val targetData = transcodeTo(bitmapBuffer, encoder, params.transcodeQuality)
         Timber.d("Saving...")
         saveBinary(context, targetUri, targetData)
         // Update image properties
@@ -471,7 +472,7 @@ private suspend fun processManhwaImageQueue(
                 processManhwaImageQueue(
                     context,
                     queue,
-                    targetImg,
+                    bitmapBuffer,
                     pixelBuffer,
                     startIndex + 1,
                     isLast,
