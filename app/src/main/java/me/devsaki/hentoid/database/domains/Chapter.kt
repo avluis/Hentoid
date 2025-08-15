@@ -5,7 +5,7 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.util.hash64
 import java.util.Objects
 
@@ -60,13 +60,13 @@ data class Chapter(
         get() = content.targetId
 
     val imageList: List<ImageFile>
-        get() = imageFiles.reach(this)
+        get() = imageFiles.safeReach(this)
 
     val readableImageFiles: List<ImageFile>
         get() = imageList.filter(ImageFile::isReadable)
 
     val linkedContent: Content?
-        get() = content.reach(this)
+        get() = content.safeReach(this)
 
     fun setImageFiles(imageFiles: List<ImageFile>?) {
         // We do want to compare array references, not content

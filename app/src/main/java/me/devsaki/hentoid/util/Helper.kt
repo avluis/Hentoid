@@ -246,7 +246,7 @@ fun hash64(data: String): Long {
  * @param operands List of (value, coefficient) pairs
  * @return Weigthed average of the given operands; 0 if uncomputable
  */
-fun weightedAverage(operands: List<Pair<Float, Float>>): Float {
+fun weightedAverage(operands: Collection<Pair<Float, Float>>): Float {
     if (operands.isEmpty()) return 0f
 
     var numerator = 0f
@@ -255,7 +255,7 @@ fun weightedAverage(operands: List<Pair<Float, Float>>): Float {
         numerator += (first * second)
         denominator += second
     }
-    return if ((denominator > 0)) numerator / denominator else 0f
+    return if (denominator > 0) numerator / denominator else 0f
 }
 
 /**

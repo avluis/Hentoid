@@ -3,7 +3,7 @@ package me.devsaki.hentoid.database.domains
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToOne
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 
 @Entity
 data class GroupItem(
@@ -31,8 +31,8 @@ data class GroupItem(
         get() = group.targetId
 
     val linkedContent: Content?
-        get() = content.reach(this)
+        get() = content.safeReach(this)
 
     val linkedGroup: Group?
-        get() = group.reach(this)
+        get() = group.safeReach(this)
 }

@@ -10,7 +10,7 @@ import io.objectbox.relation.ToOne
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.database.isReachable
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.file.getSupportedExtensions
 import me.devsaki.hentoid.util.hash64
@@ -224,10 +224,10 @@ data class ImageFile(
         }
 
     val linkedChapter: Chapter?
-        get() = chapter.reach(this)
+        get() = chapter.safeReach(this)
 
     val linkedContent: Content?
-        get() = content.reach(this)
+        get() = content.safeReach(this)
 
     var chapterId: Long
         get() = chapter.targetId

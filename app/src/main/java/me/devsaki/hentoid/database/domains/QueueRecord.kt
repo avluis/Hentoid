@@ -3,7 +3,7 @@ package me.devsaki.hentoid.database.domains
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToOne
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 
 @Entity
 data class QueueRecord(
@@ -19,5 +19,5 @@ data class QueueRecord(
     }
 
     val linkedContent: Content?
-        get() = content.reach(this)
+        get() = content.safeReach(this)
 }

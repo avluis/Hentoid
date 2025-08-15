@@ -39,7 +39,7 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SiteBookmark
-import me.devsaki.hentoid.database.reach
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
@@ -344,7 +344,8 @@ fun updateJson(context: Context, content: Content): Boolean {
                     JsonContent::class.java, output
                 )
                 return true
-            } ?: run { Timber.w("JSON file creation failed for %s", file.uri) }
+            }
+            Timber.w("JSON file creation failed for %s", file.uri)
         } catch (e: IOException) {
             Timber.e(e, "Error while writing to %s", content.jsonUri)
         }
@@ -364,7 +365,6 @@ fun updateJson(context: Context, content: Content): Boolean {
 fun createJson(context: Context, content: Content): DocumentFile? {
     assertNonUiThread()
     if (content.isArchive || content.isPdf) return null // Keep that as is, we can't find the parent folder anyway
-
 
     val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
     try {
@@ -671,6 +671,12 @@ fun getPathRoot(location: StorageLocation): String {
     return getPathRoot(Settings.getStorageUri(location))
 }
 
+/**
+ * Get path root
+ *
+ * @param locationUriStr HTTP-encoded path
+ * @return Root part of the given path
+ */
 fun getPathRoot(locationUriStr: String): String {
     val pathDivider: Int = locationUriStr.lastIndexOf(URI_ELEMENTS_SEPARATOR)
     if (pathDivider > -1) return locationUriStr.substring(
@@ -825,7 +831,7 @@ fun getPictureThumbCached(
             }
             if (results.isEmpty()) return null
 
-            var uri = results[0]
+            val uri = results[0]
             val tempFile = File(uri.path ?: "") // These are File URI's
             if (tempFile.length() < 1) return null
 
@@ -833,8 +839,8 @@ fun getPictureThumbCached(
             try {
                 getInputStream(context, uri).use { `is` ->
                     BitmapFactory.decodeStream(`is`)?.let { b ->
-                        val target = existing ?: cacheCreator.invoke(targetFileName)
-                        ?: throw IOException("Can't create file $targetFileName")
+                        val target = cacheCreator.invoke(targetFileName)
+                            ?: throw IOException("Can't create file $targetFileName")
                         getOutputStream(context, target)?.use { os ->
                             val resizedBitmap =
                                 getScaledDownBitmap(b, dpToPx(context, maxDimDp), false)
@@ -1198,7 +1204,7 @@ fun shareContent(
 
     val subject = if (1 == items.size) items[0].title else ""
     val text = TextUtils.join(System.lineSeparator(), items.map {
-        if (it.galleryUrl.isEmpty()) it.title else it.galleryUrl
+        it.galleryUrl.ifEmpty { it.title }
     })
 
     shareText(context, subject, text)
@@ -1774,7 +1780,7 @@ fun isDownloadable(chapter: Chapter): Boolean {
     val images = chapter.imageList
     if (images.isEmpty()) return false
 
-    val content = chapter.content.reach(chapter) ?: return false
+    val content = chapter.content.safeReach(chapter) ?: return false
 
     // Pick a random picture
     val img = images[getRandomInt(images.size)]
@@ -2156,6 +2162,15 @@ fun renumberChapters(chaps: Sequence<Chapter>) {
         // Update order
         c.order = index + 1
     }
+}
+
+fun Content.getStorageRoot(): Uri? {
+    for (entry in StorageLocation.entries) {
+        val rootUri = Settings.getStorageUri(entry)
+        if (rootUri.isNotEmpty() && storageUri.startsWith(rootUri, true))
+            return rootUri.toUri()
+    }
+    return null
 }
 
 /**
