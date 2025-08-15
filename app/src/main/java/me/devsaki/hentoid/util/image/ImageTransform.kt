@@ -17,14 +17,12 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.file.createFile
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.formatIntAsStr
 import me.devsaki.hentoid.util.getScreenDimensionsPx
-import me.devsaki.hentoid.util.removeDocs
 import me.devsaki.hentoid.util.weightedAverage
 import timber.log.Timber
 import java.io.ByteArrayOutputStream
@@ -195,7 +193,7 @@ suspend fun transformManhwaChapter(
     context: Context,
     sourceImgs: List<ImageFile>,
     firstIndex: Int,
-    contentFolder: Uri,
+    targetFolder: Uri,
     params: TransformParams,
     isPreview: Boolean = false,
     interrupt: (() -> Boolean)? = null,
@@ -319,7 +317,7 @@ suspend fun transformManhwaChapter(
                     currentImgIdx,
                     isLast,
                     targetDims,
-                    contentFolder,
+                    targetFolder,
                     params
                 )
                 // Report results in the notification
@@ -345,17 +343,6 @@ suspend fun transformManhwaChapter(
     return if (!isKO || isPreview) {
         result.map { it.second }
     } else {
-        // Remove newly created files, if any
-        if (result.isNotEmpty() && false == interrupt?.invoke()) {
-            val docNames = ArrayList<String>()
-            result.forEachIndexed { idx, uri ->
-                if (excludedIndexes.contains(idx)) return@forEachIndexed
-                getDocumentFromTreeUri(context, uri.first)?.let { doc ->
-                    docNames.add(doc.name ?: "")
-                }
-            }
-            removeDocs(context, contentFolder, docNames)
-        }
         emptyList()
     }
 }
@@ -368,7 +355,7 @@ private suspend fun processManhwaImageQueue(
     startIndex: Int,
     isLast: Boolean,
     targetDims: Point,
-    contentFolder: Uri,
+    targetFolder: Uri,
     params: TransformParams
 ): List<Pair<Uri, ImageFile>> {
     if (queue.isEmpty()) return emptyList()
@@ -434,7 +421,7 @@ private suspend fun processManhwaImageQueue(
 
     createFile(
         context,
-        contentFolder,
+        targetFolder,
         targetName,
         encoder.mimeType,
         false
@@ -481,7 +468,7 @@ private suspend fun processManhwaImageQueue(
                     startIndex + 1,
                     isLast,
                     targetDims,
-                    contentFolder,
+                    targetFolder,
                     params
                 )
             )

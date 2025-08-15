@@ -21,25 +21,28 @@ import me.devsaki.hentoid.notification.transform.TransformProgressNotification
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.createJson
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
+import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.saveBinary
+import me.devsaki.hentoid.util.getStorageRoot
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.image.transformManhwaChapter
-import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.pause
-import me.devsaki.hentoid.util.removeDocs
+import me.devsaki.hentoid.util.updateJson
 import me.robb.ai_upscale.AiUpscaler
+import okio.IOException
 import timber.log.Timber
 import java.io.File
-import java.net.URLDecoder
 import java.nio.ByteBuffer
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
@@ -126,100 +129,111 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private suspend fun transformContent(content: Content, params: TransformParams) {
-        val contentFolder = withContext(Dispatchers.IO) {
-            getDocumentFromTreeUriString(applicationContext, content.storageUri)
+        val ctx = applicationContext
+        // Copy to keep it intact after switching to new ones
+        val sourceImages = content.imageList.toList()
+
+        // Create target folder
+        val sourceAndTarget = try {
+            withContext(Dispatchers.IO) {
+                val sourceFolder = getDocumentFromTreeUriString(ctx, content.storageUri)
+                    ?: throw java.io.IOException("Source folder not found")
+                val root = content.getStorageRoot()
+                    ?: throw java.io.IOException("Storage root not found")
+                val parentUri = getParent(ctx, root, sourceFolder.uri)
+                    ?: throw java.io.IOException("Parent Uri not found")
+                val parent = getDocumentFromTreeUri(ctx, parentUri)
+                    ?: throw java.io.IOException("Parent folder not found")
+                val targetFolder = parent.createDirectory((sourceFolder.name ?: "") + "_T")
+                    ?: throw java.io.IOException("Target folder couldn't be created")
+                Pair(sourceFolder, targetFolder)
+            }
+        } catch (e: IOException) {
+            Timber.w(e)
+            nbKO += sourceImages.size
+            return
         }
-        val sourceImages =
-            content.imageList.toList() // Copy to keep it intact after switching to new ones
+        val sourceFolder = sourceAndTarget.first
+        val targetFolder = sourceAndTarget.second
+
         val transformedImages = ArrayList<ImageFile>()
         var isKO = false
-        if (contentFolder != null) {
-            val imagesWithoutChapters =
-                sourceImages.filter { null == it.linkedChapter }.filter { it.isReadable }
-            if (imagesWithoutChapters.isNotEmpty()) {
+        val imagesWithoutChapters =
+            sourceImages.filter { null == it.linkedChapter }.filter { it.isReadable }
+        if (imagesWithoutChapters.isNotEmpty()) {
+            val newImgs = transformChapter(
+                imagesWithoutChapters,
+                1,
+                sourceFolder,
+                targetFolder,
+                params
+            )
+            if (newImgs.isEmpty()) isKO = true
+            else transformedImages.addAll(newImgs)
+        }
+
+        val chapteredImgs =
+            sourceImages.filterNot { null == it.linkedChapter }.filter { it.isReadable }
+                .groupBy { it.linkedChapter!!.id }
+
+        chapteredImgs.forEach { chImgs ->
+            if (chImgs.value.isNotEmpty()) {
                 val newImgs = transformChapter(
-                    imagesWithoutChapters,
-                    1,
-                    contentFolder,
+                    chImgs.value,
+                    transformedImages.size + 1,
+                    sourceFolder,
+                    targetFolder,
                     params
                 )
                 if (newImgs.isEmpty()) isKO = true
-                else transformedImages.addAll(newImgs)
-
-                if (!isStopped)
-                    updateAndClean(content, imagesWithoutChapters, newImgs)
-            }
-
-            val chapteredImgs =
-                sourceImages.filterNot { null == it.linkedChapter }.filter { it.isReadable }
-                    .groupBy { it.linkedChapter!!.id }
-
-            chapteredImgs.forEach { chImgs ->
-                if (chImgs.value.isNotEmpty()) {
-                    val newImgs = transformChapter(
-                        chImgs.value,
-                        transformedImages.size + 1,
-                        contentFolder,
-                        params
-                    )
-                    if (newImgs.isEmpty()) isKO = true
-                    else transformedImages.addAll(newImgs)
-
-                    if (!isStopped)
-                        updateAndClean(content, chImgs.value, newImgs)
+                else {
+                    newImgs.forEach { it.chapterId = chImgs.key }
+                    transformedImages.addAll(newImgs)
                 }
             }
+        }
 
-            if (!isKO && !isStopped) {
-                // Final Content update (similar to updateAndClean with more changes to Content)
-                transformedImages.forEach { it.content.targetId = content.id }
-                content.setImageFiles(transformedImages)
+        if (!isKO && !isStopped) {
+            // Update Content
+            transformedImages.forEach { it.content.targetId = content.id }
+            content.setImageFiles(transformedImages)
+            withContext(Dispatchers.IO) {
                 dao.insertImageFiles(transformedImages)
                 content.qtyPages = transformedImages.count { it.isReadable }
                 content.computeSize()
                 content.lastEditDate = Instant.now().toEpochMilli()
                 content.isBeingProcessed = false
+                content.storageUri = targetFolder.uri.toString()
                 dao.insertContentCore(content)
-
-                // Remove old unused images if any (last pass to make sure nothing is left)
-                val originalUris = sourceImages.map { it.fileUri }.toMutableSet()
-                val newUris = transformedImages.map { it.fileUri }.toSet()
-                originalUris.removeAll(newUris)
-                if (originalUris.isNotEmpty())
-                    removeDocs(
-                        applicationContext,
-                        contentFolder.uri,
-                        originalUris.map {
-                            val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
-                            return@map parts.fileNameFull
-                        }
-                    )
-            } else {
-                nbKO += sourceImages.size
+                createJson(ctx, content)
+                dao.cleanup()
             }
 
-            // Achievements
-            if (!isStopped && !isKO) {
-                if (upscaler != null) { // AI upscale
-                    Settings.nbAIRescale += 1
-                    if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
-                }
-                val pagesTotal = sourceImages.count { it.isReadable }
-                if (pagesTotal >= 50) AchievementsManager.trigger(27)
-                if (pagesTotal >= 100) AchievementsManager.trigger(28)
-            }
+            // Remove old folder with old images
+            sourceFolder.delete()
         } else {
             nbKO += sourceImages.size
+
+            // Remove processed images
+            targetFolder.delete()
+        }
+
+        // Achievements
+        if (!isStopped && !isKO) {
+            if (upscaler != null) { // AI upscale
+                Settings.nbAIRescale += 1
+                if (Settings.nbAIRescale >= 2) AchievementsManager.trigger(20)
+            }
+            val pagesTotal = sourceImages.count { it.isReadable }
+            if (pagesTotal >= 50) AchievementsManager.trigger(27)
+            if (pagesTotal >= 100) AchievementsManager.trigger(28)
         }
     }
 
-    /** Link new images and remove old unused images from chapter if any
-     *
-     * NB : We need to make a small pass after each chapter to avoid breaking
-     * the 10kB Data limit if we pass all the images to delete
-     * when the whole book has been processed
+    /**
+     * Link new images to Content
      */
-    private fun updateAndClean(
+    private suspend fun updateContent(
         content: Content,
         chapterImages: List<ImageFile>,
         transformedImages: List<ImageFile>
@@ -231,30 +245,21 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         contentImgs.removeAll(chapterImages)
         contentImgs.addAll(firstIndex, transformedImages)
         content.setImageFiles(contentImgs)
-        dao.insertImageFiles(contentImgs)
-        content.qtyPages = contentImgs.count { it.isReadable }
-        content.computeSize()
-        dao.insertContentCore(content)
-
-        // Remove old unused images
-        val originalUris = chapterImages.map { it.fileUri }.toMutableSet()
-        val newUris = transformedImages.map { it.fileUri }.toSet()
-        originalUris.removeAll(newUris)
-        if (originalUris.isNotEmpty())
-            removeDocs(
-                applicationContext,
-                content.storageUri.toUri(),
-                originalUris.map {
-                    val parts = UriParts(URLDecoder.decode(it, "UTF-8"))
-                    return@map parts.fileNameFull
-                }
-            )
+        withContext(Dispatchers.IO) {
+            dao.insertImageFiles(contentImgs)
+            content.qtyPages = contentImgs.count { it.isReadable }
+            content.computeSize()
+            dao.insertContentCore(content)
+            updateJson(applicationContext, content)
+            dao.cleanup()
+        }
     }
 
     private suspend fun transformChapter(
         imgs: List<ImageFile>,
         firstIndex: Int,
-        contentFolder: DocumentFile,
+        sourceFolder: DocumentFile,
+        targetFolder: DocumentFile,
         params: TransformParams
     ): List<ImageFile> {
         val nbManhwa = AtomicInteger(0)
@@ -266,7 +271,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                 applicationContext,
                 imgs,
                 firstIndex,
-                contentFolder.uri,
+                targetFolder.uri,
                 params,
                 false,
                 this::isStopped
@@ -279,7 +284,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             val result = ArrayList<ImageFile>()
             // Per image individual transform
             imgs.forEach {
-                result.add(transformImage(it, contentFolder, params, nbManhwa, imgs.size))
+                result.add(transformImage(it, sourceFolder, params, nbManhwa, imgs.size))
                 if (isStopped) return@forEach
             }
             return result
