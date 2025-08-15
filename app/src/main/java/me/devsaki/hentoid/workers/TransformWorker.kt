@@ -169,11 +169,11 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         val transformedImages = ArrayList<ImageFile>()
 
-        // Transfer 'unreadable pics' (i.e. separate cover) if target folder
         if (targetFolder != null) {
             // Don't scan new folder when it's being populated
             Beholder.ignoreFolder(targetFolder)
 
+            // Transfer 'unreadable pics' (i.e. separate cover)
             sourceImages.filter { !it.isReadable }.forEach { img ->
                 val name = UriParts(img.fileUri).fileNameFull
                 copyFile(
