@@ -235,7 +235,6 @@ suspend fun transformManhwaChapter(
             }
         }
         allDims.add(Point(metadataOpts.outWidth, metadataOpts.outHeight))
-        Timber.v("> ${metadataOpts.outWidth}x${metadataOpts.outHeight}")
     }
     if (true == interrupt?.invoke()) return emptyList()
 
