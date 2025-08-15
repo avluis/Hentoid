@@ -22,10 +22,13 @@ import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.createJson
+import me.devsaki.hentoid.util.file.Beholder
+import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtensionFromMimeType
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.saveBinary
@@ -36,6 +39,7 @@ import me.devsaki.hentoid.util.image.determineEncoder
 import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.transform
 import me.devsaki.hentoid.util.image.transformManhwaChapter
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.updateJson
@@ -59,6 +63,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     private var nbKO = 0
     private lateinit var globalProgress: ProgressManager
     private lateinit var progressNotification: TransformProgressNotification
+    private var targetDirectory: DocumentFile? = null
 
 
     override fun getStartNotification(): BaseNotification {
@@ -66,7 +71,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override fun onInterrupt() {
-        // Nothing
+        targetDirectory?.delete()
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
@@ -138,15 +143,20 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             withContext(Dispatchers.IO) {
                 val sourceFolder = getDocumentFromTreeUriString(ctx, content.storageUri)
                     ?: throw java.io.IOException("Source folder not found")
-                val root = content.getStorageRoot()
-                    ?: throw java.io.IOException("Storage root not found")
-                val parentUri = getParent(ctx, root, sourceFolder.uri)
-                    ?: throw java.io.IOException("Parent Uri not found")
-                val parent = getDocumentFromTreeUri(ctx, parentUri)
-                    ?: throw java.io.IOException("Parent folder not found")
-                val targetFolder = parent.createDirectory((sourceFolder.name ?: "") + "_T")
-                    ?: throw java.io.IOException("Target folder couldn't be created")
-                Pair(sourceFolder, targetFolder)
+                // Split / merge manhwa => Need target folder
+                val target = if (4 == params.resizeMethod) {
+                    val sourceFolder = getDocumentFromTreeUriString(ctx, content.storageUri)
+                        ?: throw java.io.IOException("Source folder not found")
+                    val root = content.getStorageRoot()
+                        ?: throw java.io.IOException("Storage root not found")
+                    val parentUri = getParent(ctx, root, sourceFolder.uri)
+                        ?: throw java.io.IOException("Parent Uri not found")
+                    val parent = getDocumentFromTreeUri(ctx, parentUri)
+                        ?: throw java.io.IOException("Parent folder not found")
+                    parent.createDirectory((sourceFolder.name ?: "") + "_T")
+                        ?: throw java.io.IOException("Target folder couldn't be created")
+                } else null
+                Pair(sourceFolder, target)
             }
         } catch (e: IOException) {
             Timber.w(e)
@@ -155,8 +165,31 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
         val sourceFolder = sourceAndTarget.first
         val targetFolder = sourceAndTarget.second
+        targetDirectory = targetFolder
 
         val transformedImages = ArrayList<ImageFile>()
+
+        // Transfer 'unreadable pics' (i.e. separate cover) if target folder
+        if (targetFolder != null) {
+            // Don't scan new folder when it's being populated
+            Beholder.ignoreFolder(targetFolder)
+
+            sourceImages.filter { !it.isReadable }.forEach { img ->
+                val name = UriParts(img.fileUri).fileNameFull
+                val newUri = copyFile(
+                    ctx,
+                    img.fileUri.toUri(),
+                    targetFolder,
+                    getMimeTypeFromFileName(name),
+                    name
+                )
+                newUri?.let {
+                    img.fileUri = it.toString()
+                    transformedImages.add(img)
+                }
+            }
+        }
+
         var isKO = false
         val imagesWithoutChapters =
             sourceImages.filter { null == it.linkedChapter }.filter { it.isReadable }
@@ -176,46 +209,48 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             sourceImages.filterNot { null == it.linkedChapter }.filter { it.isReadable }
                 .groupBy { it.linkedChapter!!.id }
 
-        chapteredImgs.forEach { chImgs ->
-            if (chImgs.value.isNotEmpty()) {
-                val newImgs = transformChapter(
-                    chImgs.value,
-                    transformedImages.size + 1,
-                    sourceFolder,
-                    targetFolder,
-                    params
-                )
-                if (newImgs.isEmpty()) isKO = true
-                else {
-                    newImgs.forEach { it.chapterId = chImgs.key }
-                    transformedImages.addAll(newImgs)
+        chapteredImgs.filter { it.value.isNotEmpty() }.forEach { chImgs ->
+            val newImgs = transformChapter(
+                chImgs.value,
+                transformedImages.size + 1,
+                sourceFolder,
+                targetFolder,
+                params
+            )
+            if (newImgs.isEmpty()) isKO = true
+            else {
+                // Map new images to existing Content and Chapter
+                newImgs.forEach {
+                    it.content.targetId = content.id
+                    it.chapterId = chImgs.key
                 }
+                transformedImages.addAll(newImgs)
             }
         }
 
         if (!isKO && !isStopped) {
             // Update Content
-            transformedImages.forEach { it.content.targetId = content.id }
-            content.setImageFiles(transformedImages)
             withContext(Dispatchers.IO) {
+                content.setImageFiles(transformedImages)
                 dao.insertImageFiles(transformedImages)
                 content.qtyPages = transformedImages.count { it.isReadable }
                 content.computeSize()
                 content.lastEditDate = Instant.now().toEpochMilli()
                 content.isBeingProcessed = false
-                content.storageUri = targetFolder.uri.toString()
+                targetFolder?.let { content.storageUri = it.uri.toString() }
                 dao.insertContentCore(content)
-                createJson(ctx, content)
+                if (targetFolder != null) createJson(ctx, content)
+                else updateJson(ctx, content)
                 dao.cleanup()
             }
 
             // Remove old folder with old images
-            sourceFolder.delete()
+            if (targetFolder != null) sourceFolder.delete()
         } else {
             nbKO += sourceImages.size
 
             // Remove processed images
-            targetFolder.delete()
+            targetFolder?.delete()
         }
 
         // Achievements
@@ -230,36 +265,11 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    /**
-     * Link new images to Content
-     */
-    private suspend fun updateContent(
-        content: Content,
-        chapterImages: List<ImageFile>,
-        transformedImages: List<ImageFile>
-    ) {
-        // Link new images to Content
-        transformedImages.forEach { it.content.targetId = content.id }
-        val contentImgs = content.imageList.toMutableList()
-        val firstIndex = contentImgs.indexOf(chapterImages.first())
-        contentImgs.removeAll(chapterImages)
-        contentImgs.addAll(firstIndex, transformedImages)
-        content.setImageFiles(contentImgs)
-        withContext(Dispatchers.IO) {
-            dao.insertImageFiles(contentImgs)
-            content.qtyPages = contentImgs.count { it.isReadable }
-            content.computeSize()
-            dao.insertContentCore(content)
-            updateJson(applicationContext, content)
-            dao.cleanup()
-        }
-    }
-
     private suspend fun transformChapter(
         imgs: List<ImageFile>,
         firstIndex: Int,
         sourceFolder: DocumentFile,
-        targetFolder: DocumentFile,
+        targetFolder: DocumentFile?,
         params: TransformParams
     ): List<ImageFile> {
         val nbManhwa = AtomicInteger(0)
@@ -267,6 +277,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
 
         if (4 == params.resizeMethod) {
             // Split / merge manhwa
+            targetFolder ?: return emptyList()
             return transformManhwaChapter(
                 applicationContext,
                 imgs,
@@ -408,292 +419,6 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             return input.readBytes()
         }
     }
-    /*
-        private suspend fun transformManhwaChapter(
-            sourceImgs: List<ImageFile>,
-            firstIndex: Int,
-            contentFolder: DocumentFile,
-            params: TransformParams
-        ): List<ImageFile> {
-            val result = ArrayList<Pair<Uri, ImageFile>>()
-            Timber.d("transformManhwaChapter (${sourceImgs.size} items starting with $firstIndex)")
-
-            // Compute the height of all images together + largest common width excluding outliers
-            val allDims = ArrayList<Point>()
-            val metadataOpts = BitmapFactory.Options()
-            val imgDocuments = ArrayList<DocumentFile>()
-            metadataOpts.inJustDecodeBounds = true
-            sourceImgs.forEach { img ->
-                val sourceFile = withContext(Dispatchers.IO) {
-                    getDocumentFromTreeUriString(applicationContext, img.fileUri)
-                } ?: run {
-                    Timber.w("Can't open source file ${img.fileUri}")
-                    nextKO()
-                    return emptyList()
-                }
-                Timber.d("Reading source file ${img.fileUri}")
-                imgDocuments.add(sourceFile)
-                withContext(Dispatchers.IO) {
-                    getInputStream(applicationContext, sourceFile).use {
-                        val rawData = it.readBytes()
-                        BitmapFactory.decodeByteArray(rawData, 0, rawData.size, metadataOpts)
-                    }
-                }
-                allDims.add(Point(metadataOpts.outWidth, metadataOpts.outHeight))
-                if (isStopped) return@forEach
-            }
-            if (isStopped) return emptyList()
-
-            // Detect outlier images (>10% larger than the others)
-            val excludedIndexes = HashSet<Int>()
-            val avgWidth =
-                weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) }.toList())
-            allDims.forEachIndexed { idx, dim ->
-                if (abs(dim.x - avgWidth) / avgWidth > 0.1) excludedIndexes.add(idx)
-            }
-
-            // Compute target dims without taking outliers into account
-            val totalHeight =
-                allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.sumOf { it.y }
-            val targetDims = Point(
-                allDims.filterIndexed { idx, _ -> !excludedIndexes.contains(idx) }.maxOf { it.x },
-                ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
-            )
-            Timber.d("targetDims $targetDims")
-
-            val targetImg = createBitmap(
-                targetDims.x,
-                targetDims.y,
-                Bitmap.Config.ARGB_8888
-            )
-            val pixelBuffer = IntArray(targetDims.x * PIXEL_BUFFER_HEIGHT)
-
-            // Create target images one by one
-            var consumedHeight = 0
-            val processingQueue = ArrayList<ManhwaProcessingItem>()
-            val processedIds = HashSet<Long>()
-            var currentImgIdx = firstIndex
-            var isKO = false
-            try {
-                sourceImgs.forEachIndexed { idx, img ->
-                    if (isStopped) {
-                        isKO = true
-                        return@forEachIndexed
-                    }
-
-                    if (excludedIndexes.contains(idx)) {
-                        // Reuse outlier file into new image
-                        val newImg = ImageFile()
-                        val targetDoc = imgDocuments[idx]
-                        newImg.name =
-                            formatIntAsStr(currentImgIdx, 4) + "." + getExtension(targetDoc.name ?: "")
-                        newImg.order = currentImgIdx
-                        newImg.fileUri = targetDoc.uri.toString()
-                        newImg.size = targetDoc.length()
-                        newImg.status = StatusContent.DOWNLOADED
-                        newImg.isTransformed = true
-                        result.add(Pair(targetDoc.uri, newImg))
-                        currentImgIdx++
-                        nextOK()
-                        return@forEachIndexed
-                    }
-                    Timber.d("Processing source file ${img.fileUri}")
-                    val isLast = idx == sourceImgs.size - 1
-                    val dims = allDims[idx]
-                    var leftToConsume = targetDims.y - consumedHeight
-
-                    // Compute consumption for current image
-                    val toConsume = min(dims.y, leftToConsume)
-                    consumedHeight += toConsume
-                    leftToConsume = targetDims.y - consumedHeight
-
-                    processingQueue.add(
-                        ManhwaProcessingItem(img, imgDocuments[idx], dims, 0, toConsume)
-                    )
-
-                    // Create target image
-                    if (leftToConsume <= 0 || isLast) {
-                        if (leftToConsume < 0) Timber.w("!!! LEFTTOCONSUME IS NEGATIVE $leftToConsume")
-                        val toProcess = processingQueue.map { it.img.id }
-                        val newImgs = processManhwaImageQueue(
-                            processingQueue,
-                            targetImg,
-                            pixelBuffer,
-                            currentImgIdx,
-                            isLast,
-                            targetDims,
-                            contentFolder,
-                            params
-                        )
-                        // Report results in the notification
-                        toProcess.forEach {
-                            if (!processedIds.contains(it)) {
-                                if (newImgs.isEmpty()) nextKO() else nextOK()
-                                processedIds.add(it)
-                                globalProgress.setProgress(it.toString(), 1f)
-                            }
-                        }
-                        launchProgressNotification()
-
-                        currentImgIdx += newImgs.size
-                        result.addAll(newImgs)
-                        consumedHeight = processingQueue.sumOf { it.toConsumeHeight }
-                    }
-                } // source images loop
-            } catch (e: Exception) {
-                Timber.w(e)
-                isKO = true
-            } finally {
-                targetImg.recycle()
-            }
-
-            return if (!isKO) {
-                result.map { it.second }
-            } else {
-                // Remove processed files, if any
-                if (result.isNotEmpty() && !isStopped) {
-                    val docNames = ArrayList<String>()
-                    result.forEachIndexed { idx, uri ->
-                        if (excludedIndexes.contains(idx)) return@forEachIndexed
-                        getDocumentFromTreeUri(applicationContext, uri.first)?.let { doc ->
-                            docNames.add(doc.name ?: "")
-                        }
-                    }
-                    removeDocs(contentFolder.uri, docNames)
-                }
-                emptyList()
-            }
-        }
-
-        private suspend fun processManhwaImageQueue(
-            queue: MutableList<ManhwaProcessingItem>,
-            targetImg: Bitmap,
-            pixelBuffer: IntArray,
-            startIndex: Int,
-            isLast: Boolean,
-            targetDims: Point,
-            contentFolder: DocumentFile,
-            params: TransformParams
-        ): List<Pair<Uri, ImageFile>> {
-            if (queue.isEmpty()) return emptyList()
-
-            Timber.d("process queue (${queue.size} items)")
-            val result = ArrayList<Pair<Uri, ImageFile>>()
-            var yOffset = 0
-            var previousWidth = Int.MAX_VALUE
-            var containsLossless = false
-
-            queue.forEach { img ->
-                withContext(Dispatchers.IO) {
-                    // Build raw bitmap
-                    getInputStream(applicationContext, img.doc).use {
-                        val rawData = it.readBytes()
-                        if (!containsLossless && isImageLossless(rawData)) containsLossless = true
-                        val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
-
-                        // Clear pixelbuffer to avoid seeing ghosts of larger images
-                        // behind thinner images that may be processed later
-                        if (bmp.width < previousWidth) {
-                            pixelBuffer.fill(0)
-                            previousWidth = bmp.width
-                        }
-
-                        var linesToBuffer = img.toConsumeHeight
-                        Timber.d("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
-                        while (linesToBuffer > 0) {
-                            val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
-                            val bufOffset = img.toConsumeHeight - linesToBuffer
-                            val xOffset = (targetDims.x - img.dims.x) / 2 // Center pic
-                            // Copy source pic to buffer (centered)
-                            bmp.getPixels(
-                                pixelBuffer,
-                                xOffset,
-                                targetDims.x,
-                                0,
-                                img.toConsumeOffset + bufOffset,
-                                img.dims.x,
-                                bufTaken
-                            )
-                            // Copy buffer to target pic (whole width)
-                            targetImg.setPixels(
-                                pixelBuffer,
-                                0,
-                                targetDims.x,
-                                0,
-                                yOffset + bufOffset,
-                                targetDims.x,
-                                bufTaken
-                            )
-                            linesToBuffer -= bufTaken
-                        }
-                        yOffset += img.toConsumeHeight
-                        bmp.recycle()
-                    }
-                }
-            } // queue loop
-
-            val encoder = determineEncoder(containsLossless, targetDims, params)
-            val targetName = formatIntAsStr(startIndex, 4)
-            Timber.d("create image $targetName (${encoder.mimeType})")
-
-            createFile(
-                applicationContext,
-                contentFolder.uri,
-                targetName,
-                encoder.mimeType,
-                false
-            ).let { targetUri ->
-                Timber.d("Compressing...")
-                val targetData = transcodeTo(targetImg, encoder, params.transcodeQuality)
-                Timber.d("Saving...")
-                saveBinary(applicationContext, targetUri, targetData)
-                // Update image properties
-                val newImg = ImageFile()
-                newImg.name = targetName
-                newImg.order = startIndex
-                newImg.fileUri = targetUri.toString()
-                newImg.size = targetData.size.toLong()
-                newImg.status = StatusContent.DOWNLOADED
-                newImg.isTransformed = true
-                result.add(Pair(targetUri, newImg))
-            }
-
-            val last = queue.last()
-            queue.clear()
-
-            // Is the last image of the queue completely consumed?
-            if (last.toConsumeHeight != last.dims.y) {
-                val remainingHeight = last.dims.y - last.toConsumeOffset - last.toConsumeHeight
-                queue.add(
-                    ManhwaProcessingItem(
-                        last.img,
-                        last.doc,
-                        last.dims,
-                        last.toConsumeOffset + last.toConsumeHeight,
-                        min(remainingHeight, targetDims.y)
-                    )
-                )
-                // Reprocess the queue right now if there's a remanining image with enough height
-                if (remainingHeight > 0 && (remainingHeight >= targetDims.y || isLast)) {
-                    Timber.d("Reusing last queued image (remaining $remainingHeight)")
-                    result.addAll(
-                        processManhwaImageQueue(
-                            queue,
-                            targetImg,
-                            pixelBuffer,
-                            startIndex + 1,
-                            isLast,
-                            targetDims,
-                            contentFolder,
-                            params
-                        )
-                    )
-                }
-            }
-
-            return result
-        }
-     */
 
     private fun nextOK() {
         nbOK++

@@ -30,7 +30,9 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 @JsonClass(generateAdapter = true)
 data class TransformParams(
@@ -215,7 +217,7 @@ suspend fun transformManhwaChapter(
             Timber.w("Can't open source file ${img.fileUri}")
             return emptyList()
         }
-        Timber.d("Reading source file ${img.fileUri}")
+        Timber.v("Reading source file ${img.fileUri}")
         imgDocuments.add(sourceFile)
         withContext(Dispatchers.IO) {
             getInputStream(context, sourceFile).use {
@@ -230,10 +232,16 @@ suspend fun transformManhwaChapter(
     // Detect outlier images (>10% larger than the others)
     val excludedIndexes = HashSet<Int>()
     val avgWidth =
-        weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) }.toList())
+        weightedAverage(allDims.map { Pair(it.x.toFloat(), it.y.toFloat()) })
+
+    val variance = allDims.map { (it.x.toFloat() - avgWidth).pow(2) }.average()
+    val stdev = sqrt(variance)
+
+    Timber.d("avgWidth $avgWidth stdev $stdev")
     allDims.forEachIndexed { idx, dim ->
         if (abs(dim.x - avgWidth) / avgWidth > 0.1) excludedIndexes.add(idx)
     }
+    Timber.d("excludedIndexes : ${excludedIndexes.size} / ${allDims.size}")
 
     // Compute target dims without taking outliers into account
     val totalHeight =
