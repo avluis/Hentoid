@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.library
+package me.devsaki.hentoid.fragments
 
 import android.app.Activity
 import android.content.Context
@@ -19,6 +19,7 @@ import androidx.core.text.toSpannable
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import cn.nekocode.badge.BadgeDrawable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.LibraryActivity
@@ -80,14 +81,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         tag?.let { origin = NavItem.valueOf(it) }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-    }
-
     override fun onDestroy() {
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        Settings.unregisterPrefsChangedListener(prefsListener)
         binding = null
         super.onDestroy()
     }
@@ -101,6 +95,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
         // More listeners
         binding?.navigator?.apply {
+            this@NavigationDrawerFragment2.menu = menu
             setNavigationItemSelectedListener { item ->
                 when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
                     NavItem.LIBRARY.ordinal -> {
@@ -134,7 +129,6 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                 true
             }
         }
-
         Settings.registerPrefsChangedListener(prefsListener)
 
         return binding?.root
@@ -155,6 +149,12 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
             onGroupingChanged(searchBundle.groupingId)
         }
         updateItems()
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
+    }
+
+    override fun onDestroyView() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        super.onDestroyView()
     }
 
     override fun onResume() {
@@ -171,7 +171,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     private fun showFlagAboutItem() {
         val txt = SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_about))
         txt.append("  ").append(formatCountBadge(requireContext(), 1))
-        getMenu(menu, NavItem.ABOUT).title = txt.toSpannable()
+        getMenu(menu, NavItem.ABOUT)?.title = txt.toSpannable()
     }
 
     private fun onFavPagesChanged(favPages: Int) {
@@ -190,7 +190,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onDrawerClosed(event: CommunicationEvent) {
+    fun onCommunicationEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.DRAWER) return
         if (CommunicationEvent.Type.CLOSED == event.type) binding?.navigator?.scrollTo(0, 0)
         if (CommunicationEvent.Type.SIGNAL_SITE == event.type) {
@@ -201,7 +201,6 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     private fun updateItems() {
         binding?.apply {
-            menu = navigator.menu
             menu.clear()
             val submenu1 = navigator.menu.addSubMenu(0, 0, 0, R.string.title_submenu_library)
             if (origin == NavItem.LIBRARY) {
@@ -341,9 +340,9 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     fun formatCountBadge(context: Context, count: Int): SpannableString {
         val badgePaddingV = context.resources.getDimension(R.dimen.nav_badge_padding_vertical)
         val badgePaddingH = context.resources.getDimension(R.dimen.nav_badge_padding_horizontal)
-        val badgeDrawable = cn.nekocode.badge.BadgeDrawable.Builder()
+        val badgeDrawable = BadgeDrawable.Builder()
             .number(count)
-            .type(cn.nekocode.badge.BadgeDrawable.TYPE_NUMBER)
+            .type(BadgeDrawable.TYPE_NUMBER)
             .badgeColor(context.getThemedColor(R.color.secondary_light))
             .textColor(context.getThemedColor(R.color.on_secondary_light))
             .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)

@@ -65,9 +65,9 @@ import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.events.UpdateEvent
-import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment
-import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment
-import me.devsaki.hentoid.fragments.web.UrlDialogFragment
+import me.devsaki.hentoid.fragments.browser.BookmarksDrawerFragment
+import me.devsaki.hentoid.fragments.browser.DuplicateDialogFragment
+import me.devsaki.hentoid.fragments.browser.UrlDialogFragment
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.ui.invokeNumberInputDialog
@@ -125,7 +125,7 @@ import kotlin.math.round
 private val GALLERY_REGEX by lazy { "\\b|/galleries|/gallery|/g|/entry\\b".toRegex() }
 
 abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebActivity,
-    BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
+    DuplicateDialogFragment.Parent, BookmarksDrawerFragment.Parent {
 
     protected enum class ActionMode {
         // Download book
@@ -285,7 +285,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (getStartSite() == Site.NONE) {
                 welcome.isVisible = true
                 bottomNavigation.isVisible = false
-                bookmarkMenu?.isVisible = false
+                //bookmarkMenu?.isVisible = false
                 adblockMenu?.isVisible = false
                 refreshStopMenu?.isVisible = false
                 linkMenu?.isVisible = false
@@ -808,12 +808,15 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
      * Handler for the "bookmark" top menu button of the browser
      */
     private fun onBookmarkClick() {
+        binding?.drawerLayout?.openDrawer(GravityCompat.END)
+        /*
         BookmarksDialogFragment.invoke(
             this,
             getStartSite(),
             webView.title ?: "",
             webView.url ?: ""
         )
+         */
     }
 
     /**
@@ -1615,11 +1618,18 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
     @Subscribe(threadMode = ThreadMode.MAIN)
     override fun onCommunicationEvent(event: CommunicationEvent) {
         super.onCommunicationEvent(event)
-        if (CommunicationEvent.Type.CLOSE_DRAWER == event.type) closeNavigationDrawer()
+        if (CommunicationEvent.Type.CLOSE_DRAWER == event.type) {
+            closeNavigationDrawer()
+            closeBookmarksDrawer()
+        }
     }
 
     fun closeNavigationDrawer() {
         binding?.drawerLayout?.closeDrawer(GravityCompat.START)
+    }
+
+    fun closeBookmarksDrawer() {
+        binding?.drawerLayout?.closeDrawer(GravityCompat.END)
     }
 
     /**

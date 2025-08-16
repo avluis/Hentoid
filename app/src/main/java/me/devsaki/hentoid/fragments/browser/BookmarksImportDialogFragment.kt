@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.web
+package me.devsaki.hentoid.fragments.browser
 
 import android.content.Context
 import android.net.Uri
@@ -22,7 +22,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.databinding.DialogWebBookmarksImportBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
-import me.devsaki.hentoid.fragments.web.BookmarksImportDialogFragment.Parent
+import me.devsaki.hentoid.fragments.browser.BookmarksImportDialogFragment.Parent
 import me.devsaki.hentoid.util.PickFileContract
 import me.devsaki.hentoid.util.PickerResult
 import me.devsaki.hentoid.util.file.getInputStream

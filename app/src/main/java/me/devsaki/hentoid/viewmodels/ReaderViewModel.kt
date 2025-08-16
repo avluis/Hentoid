@@ -278,8 +278,8 @@ class ReaderViewModel(
     private suspend fun loadContentFromFile(uri: Uri, rootUri: Uri) = withContext(Dispatchers.IO) {
         // Content has already been loaded from storage once
         folderContentsCache.get(uri)?.let {
-            dao.selectContent(it)?.let {
-                loadContent(it)
+            dao.selectContent(it)?.let { c ->
+                loadContent(c)
                 return@withContext
             }
         }

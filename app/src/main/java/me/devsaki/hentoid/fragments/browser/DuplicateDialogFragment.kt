@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.web
+package me.devsaki.hentoid.fragments.browser
 
 import android.os.Bundle
 import android.view.LayoutInflater

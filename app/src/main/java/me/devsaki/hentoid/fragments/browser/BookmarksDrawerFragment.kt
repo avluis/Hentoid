@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.web
+package me.devsaki.hentoid.fragments.browser
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -11,7 +11,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -38,7 +38,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.database.domains.urlsAreSame
 import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.fragments.BaseDialogFragment
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.InnerNameNumberBookmarkComparator
@@ -50,32 +50,16 @@ import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 
 private const val HOME_UNICODE = "\uD83C\uDFE0"
 
-private const val KEY_SITE = "site"
-private const val KEY_TITLE = "title"
-private const val KEY_URL = "url"
-
-class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Parent>(),
+class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
     ItemTouchCallback,
     SelectSiteDialogFragment.Parent,
     BookmarksImportDialogFragment.Parent {
-
-    companion object {
-        fun invoke(
-            parent: FragmentActivity,
-            site: Site,
-            title: String,
-            url: String
-        ) {
-            val args = Bundle()
-            args.putInt(KEY_SITE, site.code)
-            args.putString(KEY_TITLE, title)
-            args.putString(KEY_URL, url)
-            invoke(parent, BookmarksDialogFragment(), args)
-        }
-    }
 
     // === UI
     private var binding: DialogWebBookmarksBinding? = null
@@ -89,6 +73,8 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
     private lateinit var touchHelper: ItemTouchHelper
 
     // === VARIABLES
+    private var parent: Parent? = null
+
     private lateinit var initialSite: Site
     private lateinit var site: Site
     private lateinit var title: String
@@ -103,17 +89,11 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        checkNotNull(arguments) { "No arguments found" }
-
-        arguments?.apply {
-            site = Site.searchByCode(getInt(KEY_SITE))
-            initialSite = site
-            title = getString(KEY_TITLE, "")
-            url = getString(KEY_URL, "")
-        }
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
 
     override fun onDestroy() {
+        // TODO do that on close instead
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 val dao: CollectionDAO = ObjectBoxDAO()
@@ -124,20 +104,29 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 }
             }
         }
+        parent = null
         super.onDestroy()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedState: Bundle?
+        savedInstanceState: Bundle?
     ): View? {
         binding = DialogWebBookmarksBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
-    override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(rootView, savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        parent = activity as Parent?
+
+        // TODO temp
+        initialSite = Site.PIXIV
+        site = Site.PIXIV
+        title ="hey hey people"
+        url = "https://github.com/"
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension.isSelectable = true
@@ -201,11 +190,6 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
             copyMenu = selectionToolbar.menu.findItem(R.id.action_copy)
             homeMenu = selectionToolbar.menu.findItem(R.id.action_home)
         }
-    }
-
-    override fun onDestroyView() {
-        binding = null
-        super.onDestroyView()
     }
 
     private fun reloadBookmarks(sortAsc: Boolean? = null): List<SiteBookmark> {
@@ -300,7 +284,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 )
                 setText(R.string.unbookmark_current)
                 setOnClickListener { onBookmarkBtnClickedRemove() }
-                this@BookmarksDialogFragment.parent?.updateBookmarkButton(true)
+                this@BookmarksDrawerFragment.parent?.updateBookmarkButton(true)
             } else {
                 icon = ContextCompat.getDrawable(
                     context,
@@ -308,7 +292,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 )
                 setText(R.string.bookmark_current)
                 setOnClickListener { onBookmarkBtnClickedAdd() }
-                this@BookmarksDialogFragment.parent?.updateBookmarkButton(false)
+                this@BookmarksDrawerFragment.parent?.updateBookmarkButton(false)
             }
         }
     }
@@ -561,7 +545,7 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
                 val url = item.getObject()!!.url
                 if (site == initialSite) parent?.loadUrl(url)
                 else launchBrowserFor(requireActivity(), url)
-                dismiss()
+                EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
             } else invalidateNextBookClick = false
             return true
         } else {
@@ -631,6 +615,12 @@ class BookmarksDialogFragment : BaseDialogFragment<BookmarksDialogFragment.Paren
 
     override fun onLoaded() {
         reloadBookmarks()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onCommunicationEvent(event: CommunicationEvent) {
+        if (event.recipient != CommunicationEvent.Recipient.DRAWER) return
+        // TODO
     }
 
     interface Parent {

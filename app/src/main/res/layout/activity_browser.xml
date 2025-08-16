@@ -315,10 +315,17 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_navigation_drawer"
-        android:name="me.devsaki.hentoid.fragments.library.NavigationDrawerFragment2"
-        android:layout_width="@dimen/drawer_layout_width"
+        android:name="me.devsaki.hentoid.fragments.NavigationDrawerFragment2"
+        android:layout_width="@dimen/drawer_layout_width_left"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:tag="BROWSER" />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragment_bookmarks_drawer"
+        android:name="me.devsaki.hentoid.fragments.browser.BookmarksDrawerFragment"
+        android:layout_width="@dimen/drawer_layout_width_right"
+        android:layout_height="match_parent"
+        android:layout_gravity="end" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

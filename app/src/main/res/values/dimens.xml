@@ -23,7 +23,8 @@
     <dimen name="popup_menu_width">300dp</dimen>
 
     <!-- navigation drawer -->
-    <dimen name="drawer_layout_width">320dp</dimen>
+    <dimen name="drawer_layout_width_left">320dp</dimen>
+    <dimen name="drawer_layout_width_right">350dp</dimen>
     <dimen name="drawer_item_padding_start">24dp</dimen>
     <dimen name="drawer_item_drawable_padding_start">24dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
