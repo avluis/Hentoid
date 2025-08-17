@@ -10,7 +10,7 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.KemonoContent
 import timber.log.Timber
 
-class KemonoActivity : BaseWebActivity() {
+class KemonoActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "kemono.cr"
         private val GALLERY_FILTER = arrayOf(
@@ -39,7 +39,7 @@ class KemonoActivity : BaseWebActivity() {
     private inner class KemonoViewClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         // We call the API without using BaseWebActivity.parseResponse
         override fun parseResponse(

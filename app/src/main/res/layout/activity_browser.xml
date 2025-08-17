@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context=".activities.sources.BaseWebActivity">
+        tools:context=".activities.sources.BaseBrowserActivity">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/top_bar"

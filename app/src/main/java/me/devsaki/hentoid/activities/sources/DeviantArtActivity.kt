@@ -12,7 +12,7 @@ import me.devsaki.hentoid.parsers.content.DeviantArtContent
 import timber.log.Timber
 import java.io.IOException
 
-class DeviantArtActivity : BaseWebActivity() {
+class DeviantArtActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = ".deviantart.com"
         private val GALLERY_FILTER = arrayOf(
@@ -40,7 +40,7 @@ class DeviantArtActivity : BaseWebActivity() {
     }
 
     private inner class DeviantArtWebClient(
-        site: Site, filter: Array<String>, activity: CustomWebActivity
+        site: Site, filter: Array<String>, activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         // Flag to only process the first XHR call of a given page
         var loadedNavUrl = ""

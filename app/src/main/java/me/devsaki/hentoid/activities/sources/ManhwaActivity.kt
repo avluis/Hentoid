@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class ManhwaActivity : BaseWebActivity() {
+class ManhwaActivity : BaseBrowserActivity() {
     companion object {
         const val GALLERY_PATTERN = "//manhwahentai.me/[%\\w\\-]+/[%\\w\\-]{3,}/$"
 

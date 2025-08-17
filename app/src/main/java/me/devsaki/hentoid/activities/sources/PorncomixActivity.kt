@@ -34,7 +34,7 @@ private val JS_CONTENT_BLACKLIST =
     arrayOf("ai_process_ip_addresses", "adblocksucks", "adblock-proxy-super-secret")
 private val REMOVABLE_ELEMENTS = arrayOf("iframe[name^='spot']")
 
-class PorncomixActivity : BaseWebActivity() {
+class PorncomixActivity : BaseBrowserActivity() {
 
     override fun getStartSite(): Site {
         return Site.PORNCOMIX

@@ -18,7 +18,7 @@ import me.devsaki.hentoid.parsers.images.EHentaiParser.EhAuthState
 import me.devsaki.hentoid.util.Settings
 import timber.log.Timber
 
-class EHentaiActivity : BaseWebActivity() {
+class EHentaiActivity : BaseBrowserActivity() {
 
     companion object {
         private val DOMAIN_FILTER = arrayOf("e-hentai.org", "ehtracker.org")
@@ -48,7 +48,7 @@ class EHentaiActivity : BaseWebActivity() {
     private inner class EHentaiWebClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)

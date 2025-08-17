@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class ASMHentaiActivity : BaseWebActivity() {
+class ASMHentaiActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "asmhentai.com"

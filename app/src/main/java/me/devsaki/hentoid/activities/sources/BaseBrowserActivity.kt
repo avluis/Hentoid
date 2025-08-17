@@ -126,7 +126,7 @@ import kotlin.math.round
  */
 private val GALLERY_REGEX by lazy { "\\b|/galleries|/gallery|/g|/entry\\b".toRegex() }
 
-abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebActivity,
+abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.BrowserActivity,
     DuplicateDialogFragment.Parent, BookmarksDrawerFragment.Parent {
 
     protected enum class ActionMode {
@@ -277,9 +277,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         adblockMenu = toolbar.menu.findItem(R.id.web_menu_adblocker)
         val linkMenu = toolbar.menu.findItem(R.id.web_menu_url)
         binding?.apply {
-            this@BaseWebActivity.languageFilterButton = languageFilterButton
+            this@BaseBrowserActivity.languageFilterButton = languageFilterButton
             bottomNavigation.setOnMenuItemClickListener { item ->
-                this@BaseWebActivity.onMenuItemSelected(item)
+                this@BaseBrowserActivity.onMenuItemSelected(item)
             }
             menuSeek.setOnClickListener { onSeekClick() }
             menuBack.setOnClickListener { onBackClick() }
@@ -325,7 +325,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
         viewModel =
             ViewModelProvider(
-                this@BaseWebActivity,
+                this@BaseBrowserActivity,
                 ViewModelFactory(application)
             )[BrowserViewModel::class.java]
 
@@ -956,7 +956,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (Settings.isBrowserMode || null == mode) {
                 actionButton.setImageDrawable(
                     ContextCompat.getDrawable(
-                        this@BaseWebActivity,
+                        this@BaseBrowserActivity,
                         R.drawable.ic_forbidden_disabled
                     )
                 )
@@ -970,7 +970,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
                 ActionMode.READ -> R.drawable.ic_action_play
             }
             actionButtonMode = mode
-            actionButton.setImageDrawable(ContextCompat.getDrawable(this@BaseWebActivity, resId))
+            actionButton.setImageDrawable(ContextCompat.getDrawable(this@BaseBrowserActivity, resId))
             actionButton.visibility = View.VISIBLE
             // It will become visible whenever the count of extra pages is known
             if (ActionMode.DOWNLOAD_PLUS != mode) actionBtnBadge.visibility = View.INVISIBLE
@@ -987,7 +987,7 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek
         seekButtonMode = mode
         binding?.apply {
-            menuSeek.setImageDrawable(ContextCompat.getDrawable(this@BaseWebActivity, resId))
+            menuSeek.setImageDrawable(ContextCompat.getDrawable(this@BaseBrowserActivity, resId))
             menuSeek.isEnabled = enabled
         }
     }
@@ -1648,11 +1648,11 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
 
     fun tooltip(@StringRes resource: Int, always: Boolean) {
         binding?.apply {
-            this@BaseWebActivity.showTooltip(
+            this@BaseBrowserActivity.showTooltip(
                 resource,
                 ArrowOrientation.BOTTOM,
                 bottomNavigation,
-                this@BaseWebActivity,
+                this@BaseBrowserActivity,
                 always
             )
         }

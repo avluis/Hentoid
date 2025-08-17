@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class MrmActivity : BaseWebActivity() {
+class MrmActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "myreadingmanga.info"
@@ -25,7 +25,7 @@ class MrmActivity : BaseWebActivity() {
     private class MrmWebClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         override fun isGalleryPage(url: String): Boolean {
             if (url.endsWith("/upload/")) return false

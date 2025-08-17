@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class HiperdexActivity : BaseWebActivity() {
+class HiperdexActivity : BaseBrowserActivity() {
     companion object {
         const val GALLERY_PATTERN = "//hiperdex.tv/[manga|comic]+/[%\\w\\-]+[/]{0,1}$"
 

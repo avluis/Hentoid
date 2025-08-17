@@ -20,7 +20,7 @@ import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
 import timber.log.Timber
 import java.io.IOException
 
-class PixivActivity : BaseWebActivity() {
+class PixivActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = ".pixiv.net"
         private val GALLERY_FILTER = arrayOf(
@@ -73,7 +73,7 @@ class PixivActivity : BaseWebActivity() {
     private inner class PixivWebClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         override fun shouldInterceptRequest(
             view: WebView,

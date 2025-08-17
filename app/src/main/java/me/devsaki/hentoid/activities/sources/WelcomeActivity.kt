@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class WelcomeActivity : BaseWebActivity() {
+class WelcomeActivity : BaseBrowserActivity() {
 
     override fun getStartSite(): Site {
         return Site.NONE

@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class HdPornComicsActivity : BaseWebActivity() {
+class HdPornComicsActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "hdporncomics.com"
