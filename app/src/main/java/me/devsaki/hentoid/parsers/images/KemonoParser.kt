@@ -120,7 +120,7 @@ class KemonoParser : BaseImageListParser() {
                     userId = userId,
                     id = postId,
                     cookies = cookieStr,
-                    accept = ACCEPT_ALL,
+                    accept = "text/css",
                     userAgent = userAgent
                 ).execute().body()?.update(content, url, updateImages)
                 if (result != null) {
@@ -128,7 +128,7 @@ class KemonoParser : BaseImageListParser() {
                         service = service,
                         userId = userId,
                         cookies = cookieStr,
-                        accept = ACCEPT_ALL,
+                        accept = "text/css",
                         userAgent = userAgent
                     ).execute().body()?.let { artist ->
                         content.addAttributes(
@@ -163,7 +163,7 @@ class KemonoParser : BaseImageListParser() {
                     service = service,
                     userId = userId,
                     cookies = cookieStr,
-                    accept = ACCEPT_ALL,
+                    accept = "text/css",
                     userAgent = userAgent
                 ).execute().body()?.update(content, url)?.let {
                     return it

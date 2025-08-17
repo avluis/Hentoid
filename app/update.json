@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.19/hentoid12019-824.apk",
-  "versionCode": "824",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.20/hentoid12019-832.apk",
+  "versionCode": "832",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -33,6 +33,9 @@
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"777"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"786"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"791"},
+	  {"sourceName":"KEMONO", "status":"RED", "fixedByBuild":"832"},
+	  {"sourceName":"MRM", "status":"ORANGE", "fixedByBuild":"832"},
+	  {"sourceName":"HIPERDEX", "status":"RED", "fixedByBuild":"832"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},

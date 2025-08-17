@@ -265,9 +265,59 @@ suspend fun transformManhwaChapter(
             Timber.v("Processing source file ${img.fileUri} [$dims]")
 
             // Image width deviates from current bitmap buffer dims
-            if (!isSingleOutlier && abs(dims.x.toFloat() - bitmapBuffer.width.toFloat()) / bitmapBuffer.width.toFloat() > OUTLIER_WIDTH_THRESHOLD) {
+            if (!isSingleOutlier &&
+                (dims.x > bitmapBuffer.width || abs(dims.x.toFloat() - bitmapBuffer.width.toFloat()) / bitmapBuffer.width.toFloat() > OUTLIER_WIDTH_THRESHOLD)
+            ) {
                 // New dims for a batch of at least 2 images
                 Timber.d("New width detected! ${dims.x}")
+                if (!processingQueue.isEmpty()) {
+                    Timber.d("Clearing queue")
+                    // => Complete what's being built
+                    val toProcess = processingQueue.map { it.img.id }
+                    val newImgs = processManhwaImageQueue(
+                        context,
+                        processingQueue,
+                        bitmapBuffer,
+                        pixelBuffer,
+                        currentImgIdx,
+                        true,
+                        targetDims,
+                        targetFolder,
+                        params
+                    )
+                    // Report results in the notification
+                    toProcess.forEach {
+                        if (!processedIds.contains(it)) {
+                            onProgress?.invoke(Pair(it, !newImgs.isEmpty()))
+                            processedIds.add(it)
+                        }
+                    }
+
+                    currentImgIdx += newImgs.size
+                    result.addAll(newImgs)
+                    consumedHeight = 0
+                } // Clear queue
+
+                // => Redim buffers
+                targetDims = Point(
+                    dims.x,
+                    ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
+                )
+                clampDims(targetDims)
+                Timber.d("Redimensioning buffers to $targetDims")
+
+                bitmapBuffer.recycle()
+                bitmapBuffer = createBitmap(
+                    dims.x,
+                    targetDims.y,
+                    Bitmap.Config.ARGB_8888
+                )
+                pixelBuffer = IntArray(dims.x * PIXEL_BUFFER_HEIGHT)
+            }
+
+            if (isSingleOutlier) {
+                // Reuse outlier file into new image without any processing
+                Timber.d("File is a single outlier $dims")
                 if (!processingQueue.isEmpty()) {
                     Timber.d("Clearing queue")
                     // => complete what's being built
@@ -294,28 +344,8 @@ suspend fun transformManhwaChapter(
                     currentImgIdx += newImgs.size
                     result.addAll(newImgs)
                     consumedHeight = 0
-                }
+                } // Clear queue
 
-                // => redim buffers
-                targetDims = Point(
-                    dims.x,
-                    ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
-                )
-                clampDims(targetDims)
-                Timber.d("Redimensioning buffers to $targetDims")
-
-                bitmapBuffer.recycle()
-                bitmapBuffer = createBitmap(
-                    dims.x,
-                    targetDims.y,
-                    Bitmap.Config.ARGB_8888
-                )
-                pixelBuffer = IntArray(dims.x * PIXEL_BUFFER_HEIGHT)
-            }
-
-            if (isSingleOutlier) {
-                // Reuse outlier file into new image without any processing
-                Timber.d("File is a single outlier $dims")
                 val newImg = ImageFile()
                 val uriParts = UriParts(img.fileUri)
                 getDocumentFromTreeUri(context, targetFolder)?.let { targetFolderDoc ->
@@ -415,81 +445,96 @@ private suspend fun processManhwaImageQueue(
     var previousWidth = Int.MAX_VALUE
     var containsLossless = false
 
-    queue.forEach { img ->
-        withContext(Dispatchers.IO) {
-            // Build raw bitmap
-            getInputStream(context, img.doc).use {
-                val rawData = it.readBytes()
-                if (!containsLossless && isImageLossless(rawData)) containsLossless = true
-                val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
+    // Queue contents are shorter than the bitmap buffer => use an ad-hoc bitmap buffer
+    val totalHeight = queue.sumOf { it.toConsumeHeight }
+    val bmpBuffer = if (totalHeight < bitmapBuffer.height) {
+        createBitmap(
+            bitmapBuffer.width,
+            totalHeight,
+            Bitmap.Config.ARGB_8888
+        )
+    } else bitmapBuffer
 
-                // Clear pixelbuffer to avoid seeing ghosts of larger images
-                // behind thinner images that may be processed later
-                if (bmp.width < previousWidth) {
-                    pixelBuffer.fill(0)
-                    previousWidth = bmp.width
-                }
+    try {
+        queue.forEach { img ->
+            withContext(Dispatchers.IO) {
+                // Build raw bitmap
+                getInputStream(context, img.doc).use {
+                    val rawData = it.readBytes()
+                    if (!containsLossless && isImageLossless(rawData)) containsLossless = true
+                    val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
 
-                var linesToBuffer = img.toConsumeHeight
-                Timber.v("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
-                while (linesToBuffer > 0) {
-                    val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
-                    val bufOffset = img.toConsumeHeight - linesToBuffer
-                    val targetX = bitmapBuffer.width
-                    val xOffset = (targetX - img.dims.x) / 2 // Center pic
-                    // Copy source pic to buffer (centered)
-                    bmp.getPixels(
-                        pixelBuffer,
-                        xOffset,
-                        targetX,
-                        0,
-                        img.toConsumeOffset + bufOffset,
-                        img.dims.x,
-                        bufTaken
-                    )
-                    // Copy buffer to target pic (whole width)
-                    bitmapBuffer.setPixels(
-                        pixelBuffer,
-                        0,
-                        targetX,
-                        0,
-                        yOffset + bufOffset,
-                        targetX,
-                        bufTaken
-                    )
-                    linesToBuffer -= bufTaken
+                    // Clear pixelbuffer to avoid seeing ghosts of larger images
+                    // behind thinner images that may be processed later
+                    if (bmp.width < previousWidth) {
+                        pixelBuffer.fill(0)
+                        previousWidth = bmp.width
+                    }
+
+                    var linesToBuffer = img.toConsumeHeight
+                    Timber.v("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
+                    while (linesToBuffer > 0) {
+                        val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
+                        val bufOffset = img.toConsumeHeight - linesToBuffer
+                        val targetX = bmpBuffer.width
+                        val xOffset = (targetX - img.dims.x) / 2 // Center pic
+                        // Copy source pic to buffer (centered)
+                        bmp.getPixels(
+                            pixelBuffer,
+                            xOffset,
+                            targetX,
+                            0,
+                            img.toConsumeOffset + bufOffset,
+                            img.dims.x,
+                            bufTaken
+                        )
+                        // Copy buffer to target pic (whole width)
+                        bmpBuffer.setPixels(
+                            pixelBuffer,
+                            0,
+                            targetX,
+                            0,
+                            yOffset + bufOffset,
+                            targetX,
+                            bufTaken
+                        )
+                        linesToBuffer -= bufTaken
+                    }
+                    yOffset += img.toConsumeHeight
+                    bmp.recycle()
                 }
-                yOffset += img.toConsumeHeight
-                bmp.recycle()
             }
+        } // queue loop
+
+        val encoder =
+            determineEncoder(containsLossless, Point(bmpBuffer.width, bmpBuffer.height), params)
+        val targetName = formatIntAsStr(startIndex, 4)
+        Timber.d("create image $targetName (${encoder.mimeType})")
+
+        createFile(
+            context,
+            targetFolder,
+            targetName,
+            encoder.mimeType,
+            false
+        ).let { targetUri ->
+            Timber.d("Compressing...")
+            val targetData = transcodeTo(bmpBuffer, encoder, params.transcodeQuality)
+            Timber.d("Saving...")
+            saveBinary(context, targetUri, targetData)
+            // Update image properties
+            val newImg = ImageFile()
+            newImg.name = targetName
+            newImg.order = startIndex
+            newImg.fileUri = targetUri.toString()
+            newImg.size = targetData.size.toLong()
+            newImg.status = StatusContent.DOWNLOADED
+            newImg.isTransformed = true
+            result.add(Pair(targetUri, newImg))
         }
-    } // queue loop
-
-    val encoder =
-        determineEncoder(containsLossless, Point(bitmapBuffer.width, bitmapBuffer.height), params)
-    val targetName = formatIntAsStr(startIndex, 4)
-    Timber.d("create image $targetName (${encoder.mimeType})")
-
-    createFile(
-        context,
-        targetFolder,
-        targetName,
-        encoder.mimeType,
-        false
-    ).let { targetUri ->
-        Timber.d("Compressing...")
-        val targetData = transcodeTo(bitmapBuffer, encoder, params.transcodeQuality)
-        Timber.d("Saving...")
-        saveBinary(context, targetUri, targetData)
-        // Update image properties
-        val newImg = ImageFile()
-        newImg.name = targetName
-        newImg.order = startIndex
-        newImg.fileUri = targetUri.toString()
-        newImg.size = targetData.size.toLong()
-        newImg.status = StatusContent.DOWNLOADED
-        newImg.isTransformed = true
-        result.add(Pair(targetUri, newImg))
+    } finally {
+        // Recycle local bitmap buffer if any (all has been consumed)
+        if (bmpBuffer != bitmapBuffer) bmpBuffer.recycle()
     }
 
     val last = queue.last()
@@ -549,8 +594,9 @@ fun isSingleOutlier(dims: List<Point>, idx: Int): Boolean {
     val previousX = if (!isFirst) dims[idx - 1].x.toFloat() else currentX
     val nextX = if (!isLast) dims[idx + 1].x.toFloat() else currentX
 
-    val previousKO = abs(currentX - previousX) / previousX > OUTLIER_WIDTH_THRESHOLD
-    val nextKO = abs(currentX - nextX) / currentX > OUTLIER_WIDTH_THRESHOLD
+    val previousKO =
+        currentX > previousX || abs(currentX - previousX) / previousX > OUTLIER_WIDTH_THRESHOLD
+    val nextKO = currentX > nextX || abs(currentX - nextX) / currentX > OUTLIER_WIDTH_THRESHOLD
 
     return if (isFirst) nextKO else if (isLast) previousKO else nextKO && previousKO
 }
