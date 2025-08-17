@@ -39,7 +39,6 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
-import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
@@ -282,7 +281,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             bottomNavigation.setOnMenuItemClickListener { item ->
                 this@BaseWebActivity.onMenuItemSelected(item)
             }
-            menuHome.setOnClickListener { goHome() }
             menuSeek.setOnClickListener { onSeekClick() }
             menuBack.setOnClickListener { onBackClick() }
             menuForward.setOnClickListener { onForwardClick() }
@@ -859,24 +857,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         val url = webView.url ?: ""
         if (copyPlainTextToClipboard(this, url)) toast(R.string.web_url_clipboard)
         UrlDialogFragment.invoke(this, url)
-    }
-
-    /**
-     * Handler for the "Home" navigation button
-     */
-    @Suppress("DEPRECATION")
-    private fun goHome() {
-        val intent = Intent(this, LibraryActivity::class.java)
-        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
-        // it can interfere with Double-Back (press back twice) to exit
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(intent)
-        if (Build.VERSION.SDK_INT >= 34) {
-            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0)
-        } else {
-            overridePendingTransition(0, 0)
-        }
-        finish()
     }
 
     override fun loadUrl(url: String) {

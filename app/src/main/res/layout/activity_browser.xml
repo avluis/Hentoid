@@ -210,20 +210,6 @@
                 android:layout_height="match_parent">
 
                 <ImageButton
-                    android:id="@+id/menu_home"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@color/transparent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:padding="8dp"
-                    android:src="@drawable/ic_menu_home"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="ContentDescription" />
-
-                <ImageButton
                     android:id="@+id/menu_seek"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
@@ -233,8 +219,7 @@
                     android:padding="8dp"
                     android:src="@drawable/selector_back_gallery"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/menu_back"
-                    app:layout_constraintStart_toEndOf="@id/menu_home"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
 
