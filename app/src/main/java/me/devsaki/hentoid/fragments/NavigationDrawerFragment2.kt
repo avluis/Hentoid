@@ -39,6 +39,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
+import me.devsaki.hentoid.util.getTextColorForBackground
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -66,6 +67,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
     private var updateInfo: UpdateEvent? = null
+
     private var site: Site = Site.NONE
     private lateinit var origin: NavItem
 
@@ -170,12 +172,6 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         getMenu(menu, NavItem.QUEUE)?.title = txt.toSpannable()
     }
 
-    private fun showFlagAboutItem() {
-        val txt = SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_about))
-        txt.append("  ").append(formatCountBadge(requireContext(), 1))
-        getMenu(menu, NavItem.ABOUT)?.title = txt.toSpannable()
-    }
-
     private fun onFavPagesChanged(favPages: Int) {
         getMenu(menu, NavItem.FAV_BOOK)?.isVisible = favPages > 0
     }
@@ -188,7 +184,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onUpdateEvent(event: UpdateEvent) {
         updateInfo = event
-        applyFlagsAndAlerts()
+        updateItems()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -274,10 +270,20 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     NavItem.QUEUE
                 )
                 // All sites
-                // TODO add site badges when an issue had been signaled on update.json
                 Settings.activeSites.forEach { site ->
+                    val sb = SpannableStringBuilder.valueOf(site.name)
+                    updateInfo?.sourceAlerts[site]?.let { siteAlert ->
+                        sb.append("  ")
+                            .append(
+                                formatAlertBadge(
+                                    requireContext(),
+                                    siteAlert.getStatus().symbol,
+                                    siteAlert.getStatus().color
+                                )
+                            )
+                    }
                     val siteMenu =
-                        addMenu(submenu2, site.name, site.ico, NavItem.BROWSER, site.code)
+                        addMenu(submenu2, sb.toSpannable(), site.ico, NavItem.BROWSER, site.code)
                     if (this@NavigationDrawerFragment2.site == site) siteMenu.isChecked = true
                 }
                 addMenu(
@@ -317,23 +323,19 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                 R.drawable.ic_tools,
                 NavItem.TOOLS
             )
+
+            val title = if (updateInfo?.hasNewVersion ?: false) {
+                val txt =
+                    SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_about))
+                txt.append("  ").append(formatCountBadge(requireContext(), 1))
+                txt.toSpannable()
+            } else resources.getText(R.string.title_activity_about)
             addMenu(
                 submenu3,
-                R.string.title_activity_about,
+                title,
                 R.drawable.ic_info,
                 NavItem.ABOUT
             )
-        }
-        applyFlagsAndAlerts()
-    }
-
-    private fun applyFlagsAndAlerts() {
-        updateInfo?.apply {
-            // Display the "new update available" flag
-            if (hasNewVersion) showFlagAboutItem()
-
-            // Display the site alert flags, if any
-            //if (sourceAlerts.isNotEmpty()) showFlagAlerts(sourceAlerts) TODO
         }
     }
 
@@ -343,6 +345,21 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
         if (Settings.Key.ACTIVE_SITES == key) updateItems()
+    }
+
+    fun formatAlertBadge(context: Context, text: String, color: Int): SpannableString {
+        val badgePaddingV = context.resources.getDimension(R.dimen.nav_badge_padding_vertical)
+        val badgePaddingH = context.resources.getDimension(R.dimen.nav_badge_padding_horizontal)
+        val badgeColor = context.getThemedColor(color)
+        val textColor = getTextColorForBackground(badgeColor)
+        val badgeDrawable = BadgeDrawable.Builder()
+            .type(BadgeDrawable.TYPE_ONLY_ONE_TEXT)
+            .text1(text)
+            .badgeColor(badgeColor)
+            .textColor(textColor)
+            .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
+            .build()
+        return badgeDrawable.toSpannable()
     }
 
     fun formatCountBadge(context: Context, count: Int): SpannableString {
@@ -408,7 +425,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     private fun addMenu(
         submenu: SubMenu,
-        text: String,
+        text: CharSequence,
         icon: Int,
         navItem: NavItem,
         subItem: Int = 0,
