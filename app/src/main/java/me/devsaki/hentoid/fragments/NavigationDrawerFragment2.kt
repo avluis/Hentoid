@@ -53,7 +53,7 @@ private const val MENU_FACTOR = 1000
 class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2) {
 
     enum class NavItem {
-        LIBRARY, BROWSER, EDIT_SOURCES, QUEUE, SETTINGS, TOOLS, ABOUT
+        LIBRARY, FAV_BOOK, BROWSER, EDIT_SOURCES, QUEUE, SETTINGS, TOOLS, ABOUT
     }
 
     // === COMMUNICATION
@@ -103,6 +103,8 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                         if (Grouping.NONE == grouping) launchActivity(LibraryActivity::class.java)
                         libraryViewModel.setGrouping(grouping.id)
                     }
+
+                    NavItem.FAV_BOOK.ordinal -> launchFavBook()
 
                     NavItem.BROWSER.ordinal -> {
                         val code = item.itemId % MENU_FACTOR
@@ -165,7 +167,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     private fun onTotalQueueChanged(totalQueue: Int) {
         val txt = SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_queue))
         if (totalQueue > 0) txt.append("  ").append(formatCountBadge(requireContext(), totalQueue))
-        getMenu(menu, NavItem.QUEUE).title = txt.toSpannable()
+        getMenu(menu, NavItem.QUEUE)?.title = txt.toSpannable()
     }
 
     private fun showFlagAboutItem() {
@@ -175,7 +177,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     }
 
     private fun onFavPagesChanged(favPages: Int) {
-        // TODO
+        getMenu(menu, NavItem.FAV_BOOK)?.isVisible = favPages > 0
     }
 
     private fun onGroupingChanged(targetGroupingId: Int) {
@@ -244,7 +246,13 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     Grouping.FOLDERS.id,
                     Settings.groupingDisplay == Grouping.FOLDERS.id
                 )
-                // TODO Dynamic book
+                val favMenu = addMenu(
+                    submenu1,
+                    R.string.fav_pages,
+                    R.drawable.ic_page_fav,
+                    NavItem.FAV_BOOK
+                )
+                favMenu.isVisible = false
             } else {
                 addMenu(
                     submenu1,
@@ -419,7 +427,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         return result
     }
 
-    private fun getMenu(m: Menu, navItem: NavItem, subItem: Int = 0): MenuItem {
+    private fun getMenu(m: Menu, navItem: NavItem, subItem: Int = 0): MenuItem? {
         return m.findItem(menuId(navItem, subItem))
     }
 }
