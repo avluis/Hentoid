@@ -265,7 +265,9 @@ suspend fun transformManhwaChapter(
             Timber.v("Processing source file ${img.fileUri} [$dims]")
 
             // Image width deviates from current bitmap buffer dims
-            if (!isSingleOutlier && abs(dims.x.toFloat() - bitmapBuffer.width.toFloat()) / bitmapBuffer.width.toFloat() > OUTLIER_WIDTH_THRESHOLD) {
+            if (!isSingleOutlier &&
+                (dims.x > bitmapBuffer.width || abs(dims.x.toFloat() - bitmapBuffer.width.toFloat()) / bitmapBuffer.width.toFloat() > OUTLIER_WIDTH_THRESHOLD)
+            ) {
                 // New dims for a batch of at least 2 images
                 Timber.d("New width detected! ${dims.x}")
                 if (!processingQueue.isEmpty()) {
@@ -549,8 +551,9 @@ fun isSingleOutlier(dims: List<Point>, idx: Int): Boolean {
     val previousX = if (!isFirst) dims[idx - 1].x.toFloat() else currentX
     val nextX = if (!isLast) dims[idx + 1].x.toFloat() else currentX
 
-    val previousKO = abs(currentX - previousX) / previousX > OUTLIER_WIDTH_THRESHOLD
-    val nextKO = abs(currentX - nextX) / currentX > OUTLIER_WIDTH_THRESHOLD
+    val previousKO =
+        currentX > previousX || abs(currentX - previousX) / previousX > OUTLIER_WIDTH_THRESHOLD
+    val nextKO = currentX > nextX || abs(currentX - nextX) / currentX > OUTLIER_WIDTH_THRESHOLD
 
     return if (isFirst) nextKO else if (isLast) previousKO else nextKO && previousKO
 }

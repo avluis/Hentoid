@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.reader
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +17,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding
@@ -161,7 +159,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun setRating(rating: Int) {
         val targetRating = if (currentRating == rating) 0 else rating
-        viewModel.setContentRating(targetRating) { r: Int -> this.updateRatingDisplay(r) }
+        viewModel.setContentRating(targetRating) { this.updateRatingDisplay(it) }
     }
 
     private fun onFavouriteClick() {

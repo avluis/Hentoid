@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -268,24 +270,28 @@ private fun removeLeadingZeroesAndExtension(s: String?): String {
  * @param dao     DAO to be used
  * @param context Context to be used
  */
-fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) {
-    assertNonUiThread()
-    // Remove from DB
-    // NB : start with DB to have a LiveData feedback, because file removal can take much time
-    dao.deleteImageFiles(images)
+suspend fun removePages(images: List<ImageFile>, dao: CollectionDAO, context: Context) =
+    withContext(Dispatchers.IO) {
+        try {
+            // Remove from DB
+            // NB : start with DB to have a LiveData feedback, because file removal can take much time
+            dao.deleteImageFiles(images)
 
-    // Remove the pages from storage
-    for (image in images) removeFile(context, image.fileUri.toUri())
+            // Remove the pages from storage
+            for (image in images) removeFile(context, image.fileUri.toUri())
 
-    // Lists all relevant content
-    val contents = images.map { it.content.targetId }.distinct()
+            // Lists all relevant content
+            val contents = images.map { it.content.targetId }.distinct()
 
-    // Update content JSON if it exists (i.e. if book is not queued)
-    for (contentId in contents) {
-        val content = dao.selectContent(contentId)
-        if (content != null && content.jsonUri.isNotEmpty()) updateJson(context, content)
+            // Update content JSON if it exists (i.e. if book is not queued)
+            for (contentId in contents) {
+                val content = dao.selectContent(contentId)
+                if (content != null && content.jsonUri.isNotEmpty()) updateJson(context, content)
+            }
+        } finally {
+            dao.cleanup()
+        }
     }
-}
 
 /**
  * Query source to fetch all image file names and URLs of a given book

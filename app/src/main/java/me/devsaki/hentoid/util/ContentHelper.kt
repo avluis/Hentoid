@@ -892,21 +892,25 @@ fun addAttribute(
  */
 suspend fun setAndSaveContentCover(context: Context, newCover: ImageFile, dao: CollectionDAO) =
     withContext(Dispatchers.IO) {
-        // Get all images from the DB
-        val content = dao.selectContent(newCover.content.targetId) ?: return@withContext
-        val images = content.imageList.toMutableList()
+        try {
+            // Get all images from the DB
+            val content = dao.selectContent(newCover.content.targetId) ?: return@withContext
+            val images = content.imageList.toMutableList()
 
-        // Remove current cover from the set
-        if (!setContentCover(context, content, images, newCover)) return@withContext
+            // Remove current cover from the set
+            if (!setContentCover(context, content, images, newCover)) return@withContext
 
-        // Update images directly
-        dao.insertImageFiles(images)
+            // Update images directly
+            dao.insertImageFiles(images)
 
-        // Update the whole list
-        dao.insertContentCore(content)
+            // Update the whole list
+            dao.insertContentCore(content)
 
-        // Update content JSON if it exists (i.e. if book is not queued)
-        if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+            // Update content JSON if it exists (i.e. if book is not queued)
+            if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+        } finally {
+            dao.cleanup()
+        }
     }
 
 /**
