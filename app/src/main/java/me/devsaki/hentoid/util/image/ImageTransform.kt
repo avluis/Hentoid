@@ -272,6 +272,54 @@ suspend fun transformManhwaChapter(
                 Timber.d("New width detected! ${dims.x}")
                 if (!processingQueue.isEmpty()) {
                     Timber.d("Clearing queue")
+                    // => Complete what's being built
+                    val toProcess = processingQueue.map { it.img.id }
+                    val newImgs = processManhwaImageQueue(
+                        context,
+                        processingQueue,
+                        bitmapBuffer,
+                        pixelBuffer,
+                        currentImgIdx,
+                        true,
+                        targetDims,
+                        targetFolder,
+                        params
+                    )
+                    // Report results in the notification
+                    toProcess.forEach {
+                        if (!processedIds.contains(it)) {
+                            onProgress?.invoke(Pair(it, !newImgs.isEmpty()))
+                            processedIds.add(it)
+                        }
+                    }
+
+                    currentImgIdx += newImgs.size
+                    result.addAll(newImgs)
+                    consumedHeight = 0
+                } // Clear queue
+
+                // => Redim buffers
+                targetDims = Point(
+                    dims.x,
+                    ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
+                )
+                clampDims(targetDims)
+                Timber.d("Redimensioning buffers to $targetDims")
+
+                bitmapBuffer.recycle()
+                bitmapBuffer = createBitmap(
+                    dims.x,
+                    targetDims.y,
+                    Bitmap.Config.ARGB_8888
+                )
+                pixelBuffer = IntArray(dims.x * PIXEL_BUFFER_HEIGHT)
+            }
+
+            if (isSingleOutlier) {
+                // Reuse outlier file into new image without any processing
+                Timber.d("File is a single outlier $dims")
+                if (!processingQueue.isEmpty()) {
+                    Timber.d("Clearing queue")
                     // => complete what's being built
                     val toProcess = processingQueue.map { it.img.id }
                     val newImgs = processManhwaImageQueue(
@@ -296,28 +344,8 @@ suspend fun transformManhwaChapter(
                     currentImgIdx += newImgs.size
                     result.addAll(newImgs)
                     consumedHeight = 0
-                }
+                } // Clear queue
 
-                // => redim buffers
-                targetDims = Point(
-                    dims.x,
-                    ceil(totalHeight * 1.0 / params.resize5Pages).roundToInt()
-                )
-                clampDims(targetDims)
-                Timber.d("Redimensioning buffers to $targetDims")
-
-                bitmapBuffer.recycle()
-                bitmapBuffer = createBitmap(
-                    dims.x,
-                    targetDims.y,
-                    Bitmap.Config.ARGB_8888
-                )
-                pixelBuffer = IntArray(dims.x * PIXEL_BUFFER_HEIGHT)
-            }
-
-            if (isSingleOutlier) {
-                // Reuse outlier file into new image without any processing
-                Timber.d("File is a single outlier $dims")
                 val newImg = ImageFile()
                 val uriParts = UriParts(img.fileUri)
                 getDocumentFromTreeUri(context, targetFolder)?.let { targetFolderDoc ->
@@ -417,6 +445,16 @@ private suspend fun processManhwaImageQueue(
     var previousWidth = Int.MAX_VALUE
     var containsLossless = false
 
+    // Queue contents are shorter than the bitmap buffer => use an ad-hoc bitmap buffer
+    val totalHeight = queue.sumOf { it.toConsumeHeight }
+    val bmpBuffer = if (totalHeight < bitmapBuffer.height) {
+        createBitmap(
+            bitmapBuffer.width,
+            totalHeight,
+            Bitmap.Config.ARGB_8888
+        )
+    } else bitmapBuffer
+
     queue.forEach { img ->
         withContext(Dispatchers.IO) {
             // Build raw bitmap
@@ -437,7 +475,7 @@ private suspend fun processManhwaImageQueue(
                 while (linesToBuffer > 0) {
                     val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
                     val bufOffset = img.toConsumeHeight - linesToBuffer
-                    val targetX = bitmapBuffer.width
+                    val targetX = bmpBuffer.width
                     val xOffset = (targetX - img.dims.x) / 2 // Center pic
                     // Copy source pic to buffer (centered)
                     bmp.getPixels(
@@ -450,7 +488,7 @@ private suspend fun processManhwaImageQueue(
                         bufTaken
                     )
                     // Copy buffer to target pic (whole width)
-                    bitmapBuffer.setPixels(
+                    bmpBuffer.setPixels(
                         pixelBuffer,
                         0,
                         targetX,
@@ -468,7 +506,7 @@ private suspend fun processManhwaImageQueue(
     } // queue loop
 
     val encoder =
-        determineEncoder(containsLossless, Point(bitmapBuffer.width, bitmapBuffer.height), params)
+        determineEncoder(containsLossless, Point(bmpBuffer.width, bmpBuffer.height), params)
     val targetName = formatIntAsStr(startIndex, 4)
     Timber.d("create image $targetName (${encoder.mimeType})")
 
@@ -480,7 +518,7 @@ private suspend fun processManhwaImageQueue(
         false
     ).let { targetUri ->
         Timber.d("Compressing...")
-        val targetData = transcodeTo(bitmapBuffer, encoder, params.transcodeQuality)
+        val targetData = transcodeTo(bmpBuffer, encoder, params.transcodeQuality)
         Timber.d("Saving...")
         saveBinary(context, targetUri, targetData)
         // Update image properties
@@ -493,6 +531,9 @@ private suspend fun processManhwaImageQueue(
         newImg.isTransformed = true
         result.add(Pair(targetUri, newImg))
     }
+
+    // Recycle local bitmap buffer if any (all has been consumed)
+    if (bmpBuffer != bitmapBuffer) bmpBuffer.recycle()
 
     val last = queue.last()
     queue.clear()
