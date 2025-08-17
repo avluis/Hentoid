@@ -1785,6 +1785,10 @@ object ObjectBoxDB {
         store.boxFor(SiteBookmark::class.java).remove(bookmarkId)
     }
 
+    fun deleteBookmarks(ids: List<Long>) {
+        store.boxFor(SiteBookmark::class.java).removeByIds(ids)
+    }
+
     fun getMaxBookmarkOrderFor(site: Site): Int {
         store.boxFor(SiteBookmark::class.java).query()
             .equal(SiteBookmark_.site, site.code.toLong()).build().use { sbq ->

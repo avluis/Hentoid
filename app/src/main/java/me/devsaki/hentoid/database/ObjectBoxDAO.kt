@@ -1160,6 +1160,10 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.deleteBookmark(bookmarkId)
     }
 
+    override fun deleteBookmarks(ids: List<Long>) {
+        ObjectBoxDB.deleteBookmarks(ids)
+    }
+
 
     // SEARCH HISTORY
     override fun selectSearchRecordsLive(): LiveData<List<SearchRecord>> {

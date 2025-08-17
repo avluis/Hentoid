@@ -334,6 +334,8 @@ interface CollectionDAO {
 
     fun deleteBookmark(bookmarkId: Long)
 
+    fun deleteBookmarks(bookmarkIds: List<Long>)
+
     fun deleteAllBookmarks()
 
 

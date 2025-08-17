@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.skydoves.balloon.ArrowOrientation
@@ -105,6 +106,8 @@ import me.devsaki.hentoid.util.showTooltip
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.util.useLegacyInsets
+import me.devsaki.hentoid.viewmodels.BrowserViewModel
+import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.NestedScrollWebView
 import me.devsaki.hentoid.widget.showAddQueueMenu
 import me.devsaki.hentoid.widget.showDownloadModeMenu
@@ -163,6 +166,9 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         OnSharedPreferenceChangeListener { _, key: String? ->
             onSharedPreferenceChanged(key ?: "")
         }
+
+    private lateinit var viewModel: BrowserViewModel
+
 
     // === UI
     protected var binding: ActivityBrowserBinding? = null
@@ -285,7 +291,6 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             if (getStartSite() == Site.NONE) {
                 welcome.isVisible = true
                 bottomNavigation.isVisible = false
-                //bookmarkMenu?.isVisible = false
                 adblockMenu?.isVisible = false
                 refreshStopMenu?.isVisible = false
                 linkMenu?.isVisible = false
@@ -319,6 +324,14 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             Settings.isAdBlockerOn(getStartSite()) &&
                     Settings.isBrowserAugmented(getStartSite())
         )
+
+        viewModel =
+            ViewModelProvider(
+                this@BaseWebActivity,
+                ViewModelFactory(application)
+            )[BrowserViewModel::class.java]
+
+        viewModel.setBrowserSite(getStartSite())
     }
 
     private fun addCustomBackControl() {
@@ -665,6 +678,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
             webView.loadUrl(jsInterceptorScript!!)
         }
 
+        viewModel.setPageUrl(url)
+
         // Display download button tooltip if a book page has been reached
         if (isGalleryPage && !Settings.isBrowserMode) tooltip(
             R.string.help_web_download,
@@ -709,6 +724,8 @@ abstract class BaseWebActivity : BaseActivity(), CustomWebViewClient.CustomWebAc
         // Manage bottom alert banner visibility
         if (isGalleryPage) displayBottomAlertBanner(blockedTags) // Called here to be sure it is displayed on the gallery page
         else onBottomAlertCloseClick()
+
+        viewModel.setPageTitle(webView.title ?: "")
     }
 
     /**

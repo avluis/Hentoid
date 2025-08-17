@@ -11,8 +11,9 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -27,13 +28,7 @@ import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.OnMenuItemClickListener
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp
-import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.database.domains.urlsAreSame
 import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
@@ -41,18 +36,19 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
-import me.devsaki.hentoid.util.InnerNameNumberBookmarkComparator
 import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
-import me.devsaki.hentoid.util.updateBookmarksJson
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
 import me.devsaki.hentoid.viewholders.TextItem
+import me.devsaki.hentoid.viewmodels.BrowserViewModel
+import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import timber.log.Timber
 
 private const val HOME_UNICODE = "\uD83C\uDFE0"
 
@@ -60,6 +56,10 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
     ItemTouchCallback,
     SelectSiteDialogFragment.Parent,
     BookmarksImportDialogFragment.Parent {
+
+    // == COMMUNICATION
+    // Viewmodel
+    private lateinit var viewModel: BrowserViewModel
 
     // === UI
     private var binding: DialogWebBookmarksBinding? = null
@@ -75,10 +75,11 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
     // === VARIABLES
     private var parent: Parent? = null
 
-    private lateinit var initialSite: Site
+    private lateinit var browserSite: Site
     private lateinit var site: Site
     private lateinit var title: String
     private lateinit var url: String
+    private lateinit var bookmarkedSites: List<Site>
 
     // Bookmark ID of the current webpage
     private var bookmarkId: Long = -1
@@ -93,17 +94,6 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
     }
 
     override fun onDestroy() {
-        // TODO do that on close instead
-        lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                val dao: CollectionDAO = ObjectBoxDAO()
-                try {
-                    updateBookmarksJson(HentoidApp.getInstance(), dao)
-                } finally {
-                    dao.cleanup()
-                }
-            }
-        }
         parent = null
         super.onDestroy()
     }
@@ -114,6 +104,22 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         savedInstanceState: Bundle?
     ): View? {
         binding = DialogWebBookmarksBinding.inflate(inflater, container, false)
+
+        viewModel = ViewModelProvider(
+            requireActivity(),
+            ViewModelFactory(requireActivity().application)
+        )[BrowserViewModel::class.java]
+
+        viewModel.getBrowserSite().observe(viewLifecycleOwner) { onSiteChanged(browserSite = it) }
+        viewModel.getBookmarksSite().observe(viewLifecycleOwner) { onSiteChanged(site = it) }
+        viewModel.pageUrl().observe(viewLifecycleOwner) { url = it }
+        viewModel.pageTitle().observe(viewLifecycleOwner) { title = it }
+        viewModel.bookmarks().observe(viewLifecycleOwner) {
+            onBookmarksChanged(it)
+            updateBookmarkButton(it)
+        }
+        viewModel.bookmarkedSites().observe(viewLifecycleOwner) { bookmarkedSites = it }
+
         return binding?.root
     }
 
@@ -121,12 +127,6 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         super.onViewCreated(view, savedInstanceState)
 
         parent = activity as Parent?
-
-        // TODO temp
-        initialSite = Site.PIXIV
-        site = Site.PIXIV
-        title ="hey hey people"
-        url = "https://github.com/"
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension.isSelectable = true
@@ -156,10 +156,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         dragCallback.notifyAllDrops = true
         touchHelper = ItemTouchHelper(dragCallback)
 
-        val bookmarks = reloadBookmarks()
-        val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
-        if (currentBookmark != null && currentBookmark.id > 0) bookmarkId = currentBookmark.id
-        updateBookmarkButton()
+        viewModel.reloadBookmarks()
 
         binding?.apply {
             touchHelper.attachToRecyclerView(recyclerview)
@@ -176,11 +173,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
             )
 
             // Top toolbar
-            toolbar.setOnMenuItemClickListener { menuItem ->
-                toolbarOnItemClicked(menuItem)
-            }
-            toolbar.menu.findItem(R.id.action_home).icon =
-                ContextCompat.getDrawable(requireContext(), site.ico)
+            toolbar.setOnMenuItemClickListener { toolbarOnItemClicked(it) }
 
             // Selection toolbar
             selectionToolbar.setOnMenuItemClickListener { menuItem ->
@@ -192,31 +185,19 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         }
     }
 
-    private fun reloadBookmarks(sortAsc: Boolean? = null): List<SiteBookmark> {
-        val bookmarks: List<SiteBookmark>
-        val dao: CollectionDAO = ObjectBoxDAO()
-        bookmarks = try {
-            reloadBookmarks(dao, sortAsc)
-        } finally {
-            dao.cleanup()
+    private fun onSiteChanged(site: Site? = null, browserSite: Site? = null) {
+        if (site != null) this.site = site
+        if (browserSite != null) {
+            this.site = browserSite
+            this.browserSite = browserSite
         }
-        return bookmarks
+        binding?.apply {
+            toolbar.menu.findItem(R.id.action_home).icon =
+                ContextCompat.getDrawable(requireContext(), this@BookmarksDrawerFragment.site.ico)
+        }
     }
 
-    private fun reloadBookmarks(dao: CollectionDAO, sortAsc: Boolean? = null): List<SiteBookmark> {
-        // Fetch custom bookmarks
-        var bookmarks = dao.selectBookmarks(site)
-
-        // Apply sort if needed
-        if (sortAsc != null) {
-            bookmarks = bookmarks.sortedWith(InnerNameNumberBookmarkComparator())
-            if (!sortAsc) bookmarks = bookmarks.reversed()
-
-            // Renumber and save new order
-            bookmarks.forEachIndexed { i, b -> b.order = i }
-            dao.insertBookmarks(bookmarks)
-        }
-
+    private fun onBookmarksChanged(bookmarks: List<SiteBookmark>) {
         // Add site home as 1st bookmark
         val siteHome =
             SiteBookmark(site = site, title = getString(R.string.bookmark_homepage), url = site.url)
@@ -240,17 +221,6 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
             )
         }
         itemAdapter.set(items)
-        return bookmarks
-    }
-
-    private fun getBookmarkedSites(): List<Site> {
-        val dao: CollectionDAO = ObjectBoxDAO()
-        try {
-            val bookmarkedSites = dao.selectAllBookmarks().groupBy { it.site }.keys
-            return Site.entries.filter { bookmarkedSites.contains(it) }
-        } finally {
-            dao.cleanup()
-        }
     }
 
     /**
@@ -260,7 +230,8 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         val selectedCount = selectExtension.selectedItems.size
         binding?.apply {
             if (0 == selectedCount) {
-                selectionToolbar.visibility = View.GONE
+                selectionToolbar.isVisible = false
+                bookmarkCurrentBtn.isVisible = true
                 selectExtension.selectOnLongClick = true
                 invalidateNextBookClick = true
                 Handler(Looper.getMainLooper()).postDelayed({
@@ -270,12 +241,17 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
                 editMenu?.isVisible = 1 == selectedCount
                 copyMenu?.isVisible = 1 == selectedCount
                 homeMenu?.isVisible = 1 == selectedCount
-                selectionToolbar.visibility = View.VISIBLE
+                bookmarkCurrentBtn.isVisible = false
+                selectionToolbar.isVisible = true
             }
         }
     }
 
-    private fun updateBookmarkButton() {
+    private fun updateBookmarkButton(bookmarks: List<SiteBookmark>) {
+        val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
+        bookmarkId =
+            if (currentBookmark != null && currentBookmark.id > 0) currentBookmark.id else -1
+
         binding?.bookmarkCurrentBtn?.apply {
             if (bookmarkId > -1) {
                 icon = ContextCompat.getDrawable(
@@ -299,44 +275,18 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
 
     private fun onBookmarkBtnClickedAdd() {
         invokeInputDialog(requireContext(), R.string.bookmark_edit_title, {
-            val dao: CollectionDAO = ObjectBoxDAO()
-            try {
-                bookmarkId = dao.insertBookmark(SiteBookmark(site = site, title = it, url = url))
-                reloadBookmarks(dao)
-                fastAdapter.notifyAdapterDataSetChanged()
-            } finally {
-                dao.cleanup()
-            }
-            updateBookmarkButton()
+            viewModel.addBookmark(it)
         }, title)
     }
 
     private fun onBookmarkBtnClickedRemove() {
-        val dao: CollectionDAO = ObjectBoxDAO()
-        try {
-            dao.deleteBookmark(bookmarkId)
-            bookmarkId = -1
-            reloadBookmarks(dao)
-            fastAdapter.notifyAdapterDataSetChanged()
-        } finally {
-            dao.cleanup()
-        }
-        updateBookmarkButton()
+        viewModel.deleteBookmark(bookmarkId)
+        bookmarkId = -1
     }
 
     override fun onSiteSelected(site: Site, altCode: Int) {
-        this.site = site
-
-        val bookmarks = reloadBookmarks()
-        val currentBookmark =
-            bookmarks.firstOrNull { urlsAreSame(it.url, url) }
-        if (currentBookmark != null && currentBookmark.id > 0) bookmarkId = currentBookmark.id
-        updateBookmarkButton()
-
-        binding?.apply {
-            toolbar.menu.findItem(R.id.action_home).icon =
-                ContextCompat.getDrawable(requireContext(), site.ico)
-        }
+        viewModel.setBookmarksSite(site)
+        viewModel.reloadBookmarks()
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -394,7 +344,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
                 SelectSiteDialogFragment.invoke(
                     this,
                     getString(R.string.bookmark_change_site),
-                    getBookmarkedSites().map { it.code },
+                    bookmarkedSites.map { it.code },
                     showAltSites = false
                 )
             }
@@ -421,7 +371,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         val title = resources.getString(R.string.bookmark_sort_ask)
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setMessage(title).setPositiveButton(R.string.yes) { _, _ ->
-            reloadBookmarks(sortAsc)
+            viewModel.reloadBookmarks(sortAsc)
         }.setNegativeButton(R.string.no) { _, _ ->
             // Do nothing
         }.create().show()
@@ -462,18 +412,10 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         val selectedItems: Set<TextItem<SiteBookmark>> = selectExtension.selectedItems
         val context: Context? = activity
         if (1 == selectedItems.size && context != null) {
-            val b = selectedItems.first().getObject()
-            if (b != null) {
+            selectedItems.first().getObject()?.let { b ->
                 b.title = newTitle
-                val dao: CollectionDAO = ObjectBoxDAO()
-                try {
-                    dao.insertBookmark(b)
-                    reloadBookmarks(dao)
-                    fastAdapter.notifyAdapterDataSetChanged()
-                    binding?.selectionToolbar?.visibility = View.INVISIBLE
-                } finally {
-                    dao.cleanup()
-                }
+                viewModel.updateBookmark(b)
+                binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
         }
     }
@@ -485,24 +427,10 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         val selectedItems: Set<TextItem<SiteBookmark>> = selectExtension.selectedItems
         val context: Context? = activity
         if (selectedItems.isNotEmpty() && context != null) {
-            val selectedContent =
-                selectedItems.mapNotNull { obj -> obj.getObject() }
+            val selectedContent = selectedItems.mapNotNull { it.getObject() }
             if (selectedContent.isNotEmpty()) {
-                val dao: CollectionDAO = ObjectBoxDAO()
-                try {
-                    for (b in selectedContent) {
-                        if (b.id == bookmarkId) {
-                            bookmarkId = -1
-                            updateBookmarkButton()
-                        }
-                        dao.deleteBookmark(b.id)
-                    }
-                    reloadBookmarks(dao)
-                    fastAdapter.notifyAdapterDataSetChanged()
-                    binding?.selectionToolbar?.visibility = View.INVISIBLE
-                } finally {
-                    dao.cleanup()
-                }
+                viewModel.deleteBookmarks(selectedContent.map { it.id })
+                binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
         }
     }
@@ -514,27 +442,12 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         val selectedItems: Set<TextItem<SiteBookmark>> = selectExtension.selectedItems
         val context: Context? = activity
         if (1 == selectedItems.size && context != null) {
-            val selectedContent =
-                selectedItems.mapNotNull { obj -> obj.getObject() }
+            val selectedContent = selectedItems.mapNotNull { it.getObject() }
             if (selectedContent.isNotEmpty()) {
-                val selectedBookmark = selectedContent[0]
-                val dao: CollectionDAO = ObjectBoxDAO()
-                try {
-                    val bookmarks = dao.selectBookmarks(site)
-                    for (b in bookmarks) {
-                        if (b.id == selectedBookmark.id) b.isHomepage =
-                            !b.isHomepage else b.isHomepage =
-                            false
-                    }
-                    dao.insertBookmarks(bookmarks)
-                    reloadBookmarks(dao)
-                    fastAdapter.notifyAdapterDataSetChanged()
-                    selectExtension.selectOnLongClick = true
-                    selectExtension.deselect(selectExtension.selections.toMutableSet())
-                    binding?.selectionToolbar?.visibility = View.INVISIBLE
-                } finally {
-                    dao.cleanup()
-                }
+                viewModel.setBookmarkAsHome(selectedContent[0].id)
+                selectExtension.selectOnLongClick = true
+                selectExtension.deselect(selectExtension.selections.toMutableSet())
+                binding?.selectionToolbar?.visibility = View.INVISIBLE
             }
         }
     }
@@ -543,7 +456,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         if (selectExtension.selectedItems.isEmpty()) {
             if (!invalidateNextBookClick && item.getObject() != null) {
                 val url = item.getObject()!!.url
-                if (site == initialSite) parent?.loadUrl(url)
+                if (site == browserSite) parent?.loadUrl(url)
                 else launchBrowserFor(requireActivity(), url)
                 EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
             } else invalidateNextBookClick = false
@@ -565,35 +478,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
 
         // Update DB
         if (oldPosition == newPosition) return
-        val dao: CollectionDAO = ObjectBoxDAO()
-        try {
-            val bookmarks = dao.selectBookmarks(site).toMutableList()
-            if (oldPosition < 0 || oldPosition >= bookmarks.size) return
-
-            // Add a bogus item on Position 0 to simulate the "Homepage" UI item
-            bookmarks.add(0, SiteBookmark(site = Site.NONE))
-
-            // Move the item
-            val fromValue = bookmarks[oldPosition]
-            val delta = if (oldPosition < newPosition) 1 else -1
-            var i = oldPosition
-            while (i != newPosition) {
-                bookmarks[i] = bookmarks[i + delta]
-                i += delta
-            }
-            bookmarks[newPosition] = fromValue
-
-            // Remove the bogus element before saving
-            bookmarks.removeIf { b -> b.site == Site.NONE }
-
-            // Renumber everything
-            bookmarks.forEachIndexed { idx, b -> b.order = idx + 1 }
-
-            // Update DB
-            dao.insertBookmarks(bookmarks)
-        } finally {
-            dao.cleanup()
-        }
+        viewModel.moveBookmark(oldPosition, newPosition)
     }
 
     override fun itemTouchOnMove(oldPosition: Int, newPosition: Int): Boolean {
@@ -614,13 +499,13 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
     }
 
     override fun onLoaded() {
-        reloadBookmarks()
+        viewModel.reloadBookmarks()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onCommunicationEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.DRAWER) return
-        // TODO
+        if (CommunicationEvent.Type.CLOSED == event.type) viewModel.updateBookmarksJson()
     }
 
     interface Parent {
