@@ -75,10 +75,10 @@ object AppStartup {
         // Wait until pre-launch tasks are completed
         runPrelaunchTasks(
             context, prelaunchTasks, onMainProgress, onSecondaryProgress
-        ) { postPrelaunch(context, onComplete) }
+        ) { onPrelaunchDone(context, onComplete) }
     }
 
-    private fun postPrelaunch(
+    private fun onPrelaunchDone(
         context: Context, onComplete: () -> Unit
     ) {
         onComplete()
@@ -142,7 +142,8 @@ object AppStartup {
             this::createBookmarksJson,
             this::createHardwareReceivers,
             this::activateTextIntent,
-            this::checkAchievements
+            this::checkAchievements,
+            this::activateFirebase
         )
     }
 
@@ -155,6 +156,7 @@ object AppStartup {
 
     private suspend fun loadSiteProperties(context: Context, emitter: (Float) -> Unit) =
         withContext(Dispatchers.IO) {
+            Timber.i("Load site properties : start")
             context.resources.openRawResource(R.raw.sites).use { stream ->
                 val siteSettingsStr = readStreamAsString(stream)
                 val siteSettings = jsonToObject(
@@ -162,7 +164,6 @@ object AppStartup {
                     JsonSiteSettings::class.java
                 )
                 if (null == siteSettings) return@withContext
-
 
                 for ((key, value) in siteSettings.sites) {
                     for (site in Site.entries) {
@@ -173,6 +174,7 @@ object AppStartup {
                     }
                 }
             }
+            Timber.i("Load site properties : done")
         }
 
     private suspend fun initNotifications(context: Context, emitter: (Float) -> Unit) =
@@ -383,4 +385,17 @@ object AppStartup {
 
             Timber.i("Activate text intent : done")
         }
+
+    private suspend fun activateFirebase(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.Default) {
+            Timber.i("Activate Firebase : start")
+
+            if (Settings.isAnalyticsEnabled) {
+                FirebaseAnalytics.getInstance(context).setAnalyticsCollectionEnabled(true)
+                Timber.i("Firebase enabled")
+            } else Timber.i("Firebase disabled")
+
+            Timber.i("Activate Firebase : done")
+        }
+
 }

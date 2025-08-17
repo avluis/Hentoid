@@ -365,10 +365,7 @@ object DatabaseMaintenance {
                     ).safeFind()
 
                 if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM)
-                Timber.i(
-                    "Create non-existing groupings : %s non-existing groupings detected",
-                    groupingsToProcess.size
-                )
+                Timber.i("Create non-existing groupings : ${groupingsToProcess.size} groupings to process")
                 var bookInsertCount = 0
                 val toInsert: MutableList<Triple<Group, Attribute?, List<Long>>> = ArrayList()
                 val res = context.resources
@@ -415,6 +412,7 @@ object DatabaseMaintenance {
                                 toInsert.add(
                                     Triple(group, a, a.contents.map { c -> c.id })
                                 )
+                                Timber.d("Create non-existing groupings : ARTIST added")
                             }
                         }
 
@@ -443,6 +441,7 @@ object DatabaseMaintenance {
                             group = Group(Grouping.DL_DATE, res.getString(R.string.group_long), 6)
                             group.propertyMin = 366
                             group.propertyMax = 9999999
+                            Timber.d("Create non-existing groupings : DATE added")
                             toInsert.add(Triple(group, null, emptyList()))
                         }
 
@@ -451,6 +450,7 @@ object DatabaseMaintenance {
                                 Group(Grouping.CUSTOM, res.getString(R.string.group_no_group), 1)
                             group.subtype = 1
                             toInsert.add(Triple(group, null, emptyList()))
+                            Timber.d("Create non-existing groupings : CUSTOM added")
                         }
 
                         else -> {
@@ -460,7 +460,7 @@ object DatabaseMaintenance {
                 }
 
                 // Actual insert is inside its dedicated loop to allow displaying a proper progress bar
-                Timber.i("Create non-existing groupings : %s relations to create", bookInsertCount)
+                Timber.i("Create non-existing groupings : $bookInsertCount / ${toInsert.size} relations to create")
                 var pos = 1f
                 for (data in toInsert) {
                     ObjectBoxDB.insertGroup(data.first)

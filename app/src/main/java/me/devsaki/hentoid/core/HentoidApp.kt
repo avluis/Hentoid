@@ -49,10 +49,6 @@ class HentoidApp : Application() {
         if (0 == Settings.lastKnownAppVersionCode)
             Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE
 
-        // Firebase
-        val isAnalyticsEnabled = Settings.isAnalyticsEnabled
-        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled)
-
         // Make sure the app restarts with the splash screen in case of any unhandled issue
         Thread.setDefaultUncaughtExceptionHandler(
             EmergencyRestartHandler(this, SplashActivity::class.java)
