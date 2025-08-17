@@ -10,7 +10,6 @@ import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogSelectSiteBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Settings
@@ -100,7 +99,6 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
                 val item = DrawerItem(
                     it.description.uppercase() + " ($userTxt)",
                     it.ico,
-                    Content.getWebActivityClass(it),
                     it.code.toLong()
                 )
                 item.site = it

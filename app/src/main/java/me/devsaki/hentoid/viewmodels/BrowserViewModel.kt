@@ -11,9 +11,11 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.SiteBookmark
+import me.devsaki.hentoid.database.domains.SiteHistory
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.InnerNameNumberBookmarkComparator
 import me.devsaki.hentoid.util.updateBookmarksJson
+import java.time.Instant
 
 class BrowserViewModel(
     application: Application,
@@ -26,6 +28,7 @@ class BrowserViewModel(
     private val pageUrl = MutableLiveData<String>()
     private val bookmarks = MutableLiveData<List<SiteBookmark>>()
     private val bookmarkedSites = MutableLiveData<List<Site>>()
+    private val siteHistory = MutableLiveData<List<SiteHistory>>()
 
     override fun onCleared() {
         super.onCleared()
@@ -61,7 +64,7 @@ class BrowserViewModel(
     }
 
     fun setPageUrl(data: String) {
-        pageUrl.postValue(data)
+        pageUrl.value = data
     }
 
     fun bookmarks(): LiveData<List<SiteBookmark>> {
@@ -72,9 +75,8 @@ class BrowserViewModel(
         return bookmarkedSites
     }
 
-
-    init {
-        reloadBookmarks()
+    fun siteHistory(): LiveData<List<SiteHistory>> {
+        return siteHistory
     }
 
 
@@ -82,7 +84,7 @@ class BrowserViewModel(
         return bookmarksSite.value ?: browserSite.value ?: Site.NONE
     }
 
-    fun reloadBookmarks(sortAsc: Boolean? = null) {
+    fun loadBookmarks(sortAsc: Boolean? = null) {
         val theSite = getProperSite()
         try {
             // Fetch custom bookmarks
@@ -119,7 +121,7 @@ class BrowserViewModel(
             } finally {
                 dao.cleanup()
             }
-            reloadBookmarks()
+            loadBookmarks()
         }
     }
 
@@ -129,7 +131,7 @@ class BrowserViewModel(
         } finally {
             dao.cleanup()
         }
-        reloadBookmarks()
+        loadBookmarks()
     }
 
     fun moveBookmark(oldPosition: Int, newPosition: Int) {
@@ -175,7 +177,7 @@ class BrowserViewModel(
         } finally {
             dao.cleanup()
         }
-        reloadBookmarks()
+        loadBookmarks()
     }
 
     fun deleteBookmark(id: Long) {
@@ -188,7 +190,7 @@ class BrowserViewModel(
         } finally {
             dao.cleanup()
         }
-        reloadBookmarks()
+        loadBookmarks()
     }
 
     fun updateBookmarksJson() {
@@ -200,6 +202,22 @@ class BrowserViewModel(
                     dao.cleanup()
                 }
             }
+        }
+    }
+
+    fun saveCurrentUrl(site: Site, url: String) {
+        try {
+            dao.insertSiteHistory(site, url, Instant.now().toEpochMilli())
+        } finally {
+            dao.cleanup()
+        }
+    }
+
+    fun loadHistory() {
+        try {
+            siteHistory.postValue(dao.selectHistory())
+        } finally {
+            dao.cleanup()
         }
     }
 }

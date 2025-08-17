@@ -76,8 +76,8 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
 
     private lateinit var browserSite: Site
     private lateinit var site: Site
-    private lateinit var title: String
-    private lateinit var url: String
+    private var title = ""
+    private var url = ""
     private lateinit var bookmarkedSites: List<Site>
 
     // Bookmark ID of the current webpage
@@ -149,13 +149,10 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
         fastAdapter.onPreLongClickListener =
             { _, _, _, position: Int -> helper.onPreLongClickListener(position) }
 
-
         // Activate drag & drop
         val dragCallback = SimpleDragCallback(this)
         dragCallback.notifyAllDrops = true
         touchHelper = ItemTouchHelper(dragCallback)
-
-        viewModel.reloadBookmarks()
 
         binding?.apply {
             touchHelper.attachToRecyclerView(recyclerview)
@@ -182,6 +179,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
             copyMenu = selectionToolbar.menu.findItem(R.id.action_copy)
             homeMenu = selectionToolbar.menu.findItem(R.id.action_home)
         }
+        viewModel.loadBookmarks()
     }
 
     private fun onSiteChanged(site: Site? = null, browserSite: Site? = null) {
@@ -285,7 +283,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
 
     override fun onSiteSelected(site: Site, altCode: Int) {
         viewModel.setBookmarksSite(site)
-        viewModel.reloadBookmarks()
+        viewModel.loadBookmarks()
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -370,7 +368,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
         val title = resources.getString(R.string.bookmark_sort_ask)
         val builder = MaterialAlertDialogBuilder(requireContext())
         builder.setMessage(title).setPositiveButton(R.string.yes) { _, _ ->
-            viewModel.reloadBookmarks(sortAsc)
+            viewModel.loadBookmarks(sortAsc)
         }.setNegativeButton(R.string.no) { _, _ ->
             // Do nothing
         }.create().show()
@@ -455,7 +453,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
         if (selectExtension.selectedItems.isEmpty()) {
             if (!invalidateNextBookClick && item.getObject() != null) {
                 val url = item.getObject()!!.url
-                if (site == browserSite) parent?.loadUrl(url)
+                if (site == browserSite && site.isVisible) parent?.loadUrl(url)
                 else launchBrowserFor(requireActivity(), url)
                 EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
             } else invalidateNextBookClick = false
@@ -498,7 +496,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
     }
 
     override fun onLoaded() {
-        viewModel.reloadBookmarks()
+        viewModel.loadBookmarks()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

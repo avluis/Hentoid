@@ -33,7 +33,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
 import me.devsaki.hentoid.enums.PictureEncoder
-import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
@@ -271,7 +270,6 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     DrawerItem(
                         resources.getString(R.string.encoder_warning),
                         R.drawable.ic_warning,
-                        Content.getWebActivityClass(Site.NONE),
                         1,
                         true
                     )
@@ -280,7 +278,6 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     DrawerItem(
                         resources.getString(R.string.retransform_warning, retransformedPics),
                         R.drawable.ic_warning,
-                        Content.getWebActivityClass(Site.NONE),
                         2,
                         true
                     )
@@ -289,7 +286,6 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     DrawerItem(
                         resources.getString(R.string.ai_rescale_warning),
                         R.drawable.ic_warning,
-                        Content.getWebActivityClass(Site.NONE),
                         3,
                         true
                     )
@@ -298,7 +294,6 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     DrawerItem(
                         resources.getString(R.string.dimensions_warning),
                         R.drawable.ic_warning,
-                        Content.getWebActivityClass(Site.NONE),
                         4,
                         true
                     )

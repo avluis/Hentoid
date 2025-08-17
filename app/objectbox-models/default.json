@@ -435,7 +435,7 @@
     },
     {
       "id": "9:2854716855695893043",
-      "lastPropertyId": "3:4569323833343490328",
+      "lastPropertyId": "4:7042067322269588463",
       "name": "SiteHistory",
       "properties": [
         {
@@ -453,6 +453,11 @@
           "id": "3:4569323833343490328",
           "name": "url",
           "type": 9
+        },
+        {
+          "id": "4:7042067322269588463",
+          "name": "timestamp",
+          "type": 6
         }
       ],
       "relations": []

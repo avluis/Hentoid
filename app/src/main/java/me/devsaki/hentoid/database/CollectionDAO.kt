@@ -316,7 +316,9 @@ interface CollectionDAO {
     // SITE HISTORY
     fun selectHistory(s: Site): SiteHistory
 
-    fun insertSiteHistory(site: Site, url: String)
+    fun selectHistory(): List<SiteHistory>
+
+    fun insertSiteHistory(site: Site, url: String, timestamp : Long)
 
 
     // BOOKMARKS

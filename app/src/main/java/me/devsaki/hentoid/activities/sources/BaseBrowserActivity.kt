@@ -275,7 +275,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         refreshStopMenu = toolbar.menu.findItem(R.id.web_menu_refresh_stop)
         bookmarkMenu = toolbar.menu.findItem(R.id.web_menu_bookmark)
         adblockMenu = toolbar.menu.findItem(R.id.web_menu_adblocker)
-        val linkMenu = toolbar.menu.findItem(R.id.web_menu_url)
         binding?.apply {
             this@BaseBrowserActivity.languageFilterButton = languageFilterButton
             bottomNavigation.setOnMenuItemClickListener { item ->
@@ -286,14 +285,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             menuForward.setOnClickListener { onForwardClick() }
             actionButton.setOnClickListener { onActionClick() }
 
-            if (getStartSite() == Site.NONE) {
-                welcome.isVisible = true
-                bottomNavigation.isVisible = false
-                adblockMenu?.isVisible = false
-                refreshStopMenu?.isVisible = false
-                linkMenu?.isVisible = false
-                toolbar.setTitle(R.string.title_activity_browser)
-            }
+            if (getStartSite() == Site.NONE) initWelcome()
         }
 
         // Webview
@@ -336,10 +328,17 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         callback?.remove()
         callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (!webView.canGoBack()) {
-                    callback?.remove()
-                    onBackPressedDispatcher.onBackPressed()
+                binding?.apply {
+                    if (fragmentBookmarksDrawer.isVisible || fragmentNavigationDrawer.isVisible)
+                        EventBus.getDefault()
+                            .post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
+                    return
                 }
+                if (webView.canGoBack()) return
+
+                // Other cases
+                callback?.remove()
+                onBackPressedDispatcher.onBackPressed()
             }
         }
         onBackPressedDispatcher.addCallback(this, callback!!)
@@ -476,13 +475,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     }
 
     override fun onStop() {
-        if (WebkitPackageHelper.getWebViewAvailable() && webView.url != null) {
-            val dao: CollectionDAO = ObjectBoxDAO()
-            try {
-                dao.insertSiteHistory(getStartSite(), webView.url!!)
-            } finally {
-                dao.cleanup()
-            }
+        if (WebkitPackageHelper.getWebViewAvailable()) {
+            webView.url?.let { viewModel.saveCurrentUrl(getStartSite(), it) }
         }
         super.onStop()
     }
@@ -590,6 +584,19 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light
             )
+        }
+    }
+
+    private fun initWelcome() {
+        binding?.apply {
+            val linkMenu = toolbar.menu.findItem(R.id.web_menu_url)
+            swipeContainer.isVisible = false
+            welcome.isVisible = true
+            bottomNavigation.isVisible = false
+            adblockMenu?.isVisible = false
+            refreshStopMenu?.isVisible = false
+            linkMenu?.isVisible = false
+            toolbar.setTitle(R.string.title_activity_browser)
         }
     }
 
@@ -970,7 +977,12 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 ActionMode.READ -> R.drawable.ic_action_play
             }
             actionButtonMode = mode
-            actionButton.setImageDrawable(ContextCompat.getDrawable(this@BaseBrowserActivity, resId))
+            actionButton.setImageDrawable(
+                ContextCompat.getDrawable(
+                    this@BaseBrowserActivity,
+                    resId
+                )
+            )
             actionButton.visibility = View.VISIBLE
             // It will become visible whenever the count of extra pages is known
             if (ActionMode.DOWNLOAD_PLUS != mode) actionBtnBadge.visibility = View.INVISIBLE

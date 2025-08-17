@@ -15,5 +15,6 @@ data class SiteHistory(
     var id: Long = 0,
     @Convert(converter = SiteConverter::class, dbType = Long::class)
     val site: Site = Site.NONE,
-    var url: String = ""
+    var url: String = "",
+    var timestamp: Long = 0
 )

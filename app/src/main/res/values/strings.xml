@@ -766,7 +766,9 @@
     <string name="about_chrome_unavailable">WebView is unavailable</string>
     <string name="about_chrome_updating">WebView is updating right now</string>
 
-    <!-- Web browser -->
+    <!-- Browser -->
+    <string name="active_sites">Active sites</string>
+    <string name="recent_history">Recent history</string>
     <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>

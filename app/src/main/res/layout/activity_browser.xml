@@ -38,29 +38,28 @@
             app:layout_behavior="me.devsaki.hentoid.widget.KeepWithinParentBoundsScrollingBehavior">
             <!-- webview inserted here programmatically -->
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/welcome"
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/welcome"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:windowBackground"
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="gone"
+            app:layout_anchor="@id/top_bar"
+            app:layout_behavior="me.devsaki.hentoid.widget.KeepWithinParentBoundsScrollingBehavior"
+            tools:visibility="visible">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/box"
+                android:name="me.devsaki.hentoid.fragments.browser.WelcomeFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="top"
-                android:background="?android:windowBackground"
-                android:visibility="gone"
-                app:layout_anchor="@id/top_bar"
-                app:layout_anchorGravity="bottom"
-                tools:visibility="visible">
+                tools:layout="@layout/fragment_web_welcome" />
 
-                <TextView
-                    android:id="@+id/welcome_txt"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="WELCOME"
-                    android:textStyle="bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <ImageView
             android:id="@+id/animated_check"
@@ -304,13 +303,15 @@
         android:layout_width="@dimen/drawer_layout_width_left"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:tag="BROWSER" />
+        android:tag="BROWSER"
+        tools:layout="@layout/fragment_navigation_drawer" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_bookmarks_drawer"
         android:name="me.devsaki.hentoid.fragments.browser.BookmarksDrawerFragment"
         android:layout_width="@dimen/drawer_layout_width_right"
         android:layout_height="match_parent"
-        android:layout_gravity="end" />
+        android:layout_gravity="end"
+        tools:layout="@layout/fragment_web_bookmarks" />
 
 </androidx.drawerlayout.widget.DrawerLayout>

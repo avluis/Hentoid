@@ -5,19 +5,16 @@ import android.graphics.Typeface
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.Site
 
 class DrawerItem(
     val label: String,
     val icon: Int,
-    val activityClass: Class<out AppCompatActivity>,
     uniqueId: Long,
     val italicFont: Boolean = false
 ) :
@@ -69,7 +66,6 @@ class DrawerItem(
             val result = DrawerItem(
                 site.description.uppercase(),
                 site.ico,
-                Content.getWebActivityClass(site),
                 site.code.toLong()
             )
             result.site = site

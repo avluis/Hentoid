@@ -1248,7 +1248,7 @@ fun launchBrowserFor(
         return
     }
     val targetSite = Site.searchByUrl(targetUrl)
-    if (null == targetSite || targetSite == Site.NONE) return
+    if (null == targetSite || !targetSite.isVisible) return
 
     val intent = Intent(context, Content.getWebActivityClass(targetSite))
 
