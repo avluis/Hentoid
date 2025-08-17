@@ -455,85 +455,87 @@ private suspend fun processManhwaImageQueue(
         )
     } else bitmapBuffer
 
-    queue.forEach { img ->
-        withContext(Dispatchers.IO) {
-            // Build raw bitmap
-            getInputStream(context, img.doc).use {
-                val rawData = it.readBytes()
-                if (!containsLossless && isImageLossless(rawData)) containsLossless = true
-                val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
+    try {
+        queue.forEach { img ->
+            withContext(Dispatchers.IO) {
+                // Build raw bitmap
+                getInputStream(context, img.doc).use {
+                    val rawData = it.readBytes()
+                    if (!containsLossless && isImageLossless(rawData)) containsLossless = true
+                    val bmp = BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
 
-                // Clear pixelbuffer to avoid seeing ghosts of larger images
-                // behind thinner images that may be processed later
-                if (bmp.width < previousWidth) {
-                    pixelBuffer.fill(0)
-                    previousWidth = bmp.width
-                }
+                    // Clear pixelbuffer to avoid seeing ghosts of larger images
+                    // behind thinner images that may be processed later
+                    if (bmp.width < previousWidth) {
+                        pixelBuffer.fill(0)
+                        previousWidth = bmp.width
+                    }
 
-                var linesToBuffer = img.toConsumeHeight
-                Timber.v("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
-                while (linesToBuffer > 0) {
-                    val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
-                    val bufOffset = img.toConsumeHeight - linesToBuffer
-                    val targetX = bmpBuffer.width
-                    val xOffset = (targetX - img.dims.x) / 2 // Center pic
-                    // Copy source pic to buffer (centered)
-                    bmp.getPixels(
-                        pixelBuffer,
-                        xOffset,
-                        targetX,
-                        0,
-                        img.toConsumeOffset + bufOffset,
-                        img.dims.x,
-                        bufTaken
-                    )
-                    // Copy buffer to target pic (whole width)
-                    bmpBuffer.setPixels(
-                        pixelBuffer,
-                        0,
-                        targetX,
-                        0,
-                        yOffset + bufOffset,
-                        targetX,
-                        bufTaken
-                    )
-                    linesToBuffer -= bufTaken
+                    var linesToBuffer = img.toConsumeHeight
+                    Timber.v("copy ${img.doc.name ?: ""} from ${img.toConsumeOffset} to ${img.toConsumeOffset + img.toConsumeHeight} (dims ${img.dims} ${bmp.width}x${bmp.height})")
+                    while (linesToBuffer > 0) {
+                        val bufTaken = min(linesToBuffer, PIXEL_BUFFER_HEIGHT)
+                        val bufOffset = img.toConsumeHeight - linesToBuffer
+                        val targetX = bmpBuffer.width
+                        val xOffset = (targetX - img.dims.x) / 2 // Center pic
+                        // Copy source pic to buffer (centered)
+                        bmp.getPixels(
+                            pixelBuffer,
+                            xOffset,
+                            targetX,
+                            0,
+                            img.toConsumeOffset + bufOffset,
+                            img.dims.x,
+                            bufTaken
+                        )
+                        // Copy buffer to target pic (whole width)
+                        bmpBuffer.setPixels(
+                            pixelBuffer,
+                            0,
+                            targetX,
+                            0,
+                            yOffset + bufOffset,
+                            targetX,
+                            bufTaken
+                        )
+                        linesToBuffer -= bufTaken
+                    }
+                    yOffset += img.toConsumeHeight
+                    bmp.recycle()
                 }
-                yOffset += img.toConsumeHeight
-                bmp.recycle()
             }
+        } // queue loop
+
+        val encoder =
+            determineEncoder(containsLossless, Point(bmpBuffer.width, bmpBuffer.height), params)
+        val targetName = formatIntAsStr(startIndex, 4)
+        Timber.d("create image $targetName (${encoder.mimeType})")
+
+        createFile(
+            context,
+            targetFolder,
+            targetName,
+            encoder.mimeType,
+            false
+        ).let { targetUri ->
+            Timber.d("Compressing...")
+            val targetData = transcodeTo(bmpBuffer, encoder, params.transcodeQuality)
+            Timber.d("Saving...")
+            saveBinary(context, targetUri, targetData)
+            // Update image properties
+            val newImg = ImageFile()
+            newImg.name = targetName
+            newImg.order = startIndex
+            newImg.fileUri = targetUri.toString()
+            newImg.size = targetData.size.toLong()
+            newImg.status = StatusContent.DOWNLOADED
+            newImg.isTransformed = true
+            result.add(Pair(targetUri, newImg))
         }
-    } // queue loop
-
-    val encoder =
-        determineEncoder(containsLossless, Point(bmpBuffer.width, bmpBuffer.height), params)
-    val targetName = formatIntAsStr(startIndex, 4)
-    Timber.d("create image $targetName (${encoder.mimeType})")
-
-    createFile(
-        context,
-        targetFolder,
-        targetName,
-        encoder.mimeType,
-        false
-    ).let { targetUri ->
-        Timber.d("Compressing...")
-        val targetData = transcodeTo(bmpBuffer, encoder, params.transcodeQuality)
-        Timber.d("Saving...")
-        saveBinary(context, targetUri, targetData)
-        // Update image properties
-        val newImg = ImageFile()
-        newImg.name = targetName
-        newImg.order = startIndex
-        newImg.fileUri = targetUri.toString()
-        newImg.size = targetData.size.toLong()
-        newImg.status = StatusContent.DOWNLOADED
-        newImg.isTransformed = true
-        result.add(Pair(targetUri, newImg))
+    } finally {
+        // Recycle local bitmap buffer if any (all has been consumed)
+        if (bmpBuffer != bitmapBuffer) bmpBuffer.recycle()
     }
-
-    // Recycle local bitmap buffer if any (all has been consumed)
-    if (bmpBuffer != bitmapBuffer) bmpBuffer.recycle()
 
     val last = queue.last()
     queue.clear()
