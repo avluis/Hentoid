@@ -157,20 +157,21 @@ object AppStartup {
     private suspend fun loadSiteProperties(context: Context, emitter: (Float) -> Unit) =
         withContext(Dispatchers.IO) {
             Timber.i("Load site properties : start")
-            context.resources.openRawResource(R.raw.sites).use { stream ->
-                val siteSettingsStr = readStreamAsString(stream)
-                val siteSettings = jsonToObject(
-                    siteSettingsStr,
-                    JsonSiteSettings::class.java
-                )
-                if (null == siteSettings) return@withContext
+            val siteSettingsStr = context.resources.openRawResource(R.raw.sites).use { stream ->
+                readStreamAsString(stream)
+            }
+            // Initializes moshi for the first time -> takes time
+            val siteSettings = jsonToObject(
+                siteSettingsStr,
+                JsonSiteSettings::class.java
+            )
+            if (null == siteSettings) return@withContext
 
-                for ((key, value) in siteSettings.sites) {
-                    for (site in Site.entries) {
-                        if (site.name.equals(key, ignoreCase = true)) {
-                            site.updateFrom(value)
-                            break
-                        }
+            for ((key, value) in siteSettings.sites) {
+                for (site in Site.entries) {
+                    if (site.name.equals(key, ignoreCase = true)) {
+                        site.updateFrom(value)
+                        break
                     }
                 }
             }
