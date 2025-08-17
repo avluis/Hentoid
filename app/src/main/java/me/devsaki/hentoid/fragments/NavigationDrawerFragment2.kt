@@ -70,6 +70,9 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
 
     private var site: Site = Site.NONE
     private lateinit var origin: NavItem
+    private var isCustomGroupingAvailable = false
+    private var isDynamicGroupingAvailable = false
+    private var isFavBookAvailable = false
 
     private lateinit var menu: Menu
 
@@ -94,6 +97,8 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentNavigationDrawer2Binding.inflate(inflater, container, false)
+
+        Settings.artistGroupVisibility = Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
 
         // More listeners
         binding?.navigator?.apply {
@@ -152,6 +157,12 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
             val searchBundle = GroupSearchManager.GroupSearchBundle(it)
             onGroupingChanged(searchBundle.groupingId)
         }
+        libraryViewModel.isCustomGroupingAvailable.observe(viewLifecycleOwner) {
+            onCustomGroupingAvailable(it)
+        }
+        libraryViewModel.isDynamicGroupingAvailable.observe(viewLifecycleOwner) {
+            onDynamicGroupingAvailable(it)
+        }
         updateItems()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
@@ -173,7 +184,18 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     }
 
     private fun onFavPagesChanged(favPages: Int) {
-        getMenu(menu, NavItem.FAV_BOOK)?.isVisible = favPages > 0
+        isFavBookAvailable = favPages > 0
+        getMenu(menu, NavItem.FAV_BOOK)?.isVisible = isFavBookAvailable
+    }
+
+    private fun onCustomGroupingAvailable(isAvailable: Boolean) {
+        isCustomGroupingAvailable = isAvailable
+        getMenu(menu, NavItem.LIBRARY, Grouping.CUSTOM.id)?.isVisible = isAvailable
+    }
+
+    private fun onDynamicGroupingAvailable(isAvailable: Boolean) {
+        isDynamicGroupingAvailable = isAvailable
+        getMenu(menu, NavItem.LIBRARY, Grouping.DYNAMIC.id)?.isVisible = isAvailable
     }
 
     private fun onGroupingChanged(targetGroupingId: Int) {
@@ -228,12 +250,20 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                 )
                 addMenu(
                     submenu1,
+                    R.string.groups_dynamic,
+                    R.drawable.ic_search,
+                    NavItem.LIBRARY,
+                    Grouping.DYNAMIC.id,
+                    Settings.groupingDisplay == Grouping.DYNAMIC.id
+                ).isVisible = isDynamicGroupingAvailable
+                addMenu(
+                    submenu1,
                     R.string.groups_custom,
                     R.drawable.ic_custom_group,
                     NavItem.LIBRARY,
                     Grouping.CUSTOM.id,
                     Settings.groupingDisplay == Grouping.CUSTOM.id
-                )
+                ).isVisible = isCustomGroupingAvailable
                 addMenu(
                     submenu1,
                     R.string.groups_folders,
@@ -242,13 +272,12 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     Grouping.FOLDERS.id,
                     Settings.groupingDisplay == Grouping.FOLDERS.id
                 )
-                val favMenu = addMenu(
+                addMenu(
                     submenu1,
                     R.string.fav_pages,
                     R.drawable.ic_page_fav,
                     NavItem.FAV_BOOK
-                )
-                favMenu.isVisible = false
+                ).isVisible = isFavBookAvailable
             } else {
                 addMenu(
                     submenu1,
