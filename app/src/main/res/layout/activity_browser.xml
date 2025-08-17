@@ -315,7 +315,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_navigation_drawer"
-        android:name="me.devsaki.hentoid.fragments.NavigationDrawerFragment2"
+        android:name="me.devsaki.hentoid.fragments.NavigationDrawerFragment"
         android:layout_width="@dimen/drawer_layout_width_left"
         android:layout_height="match_parent"
         android:layout_gravity="start"

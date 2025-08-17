@@ -31,7 +31,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.database.domains.urlsAreSame
-import me.devsaki.hentoid.databinding.DialogWebBookmarksBinding
+import me.devsaki.hentoid.databinding.FragmentWebBookmarksBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
@@ -48,11 +48,10 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import timber.log.Timber
 
 private const val HOME_UNICODE = "\uD83C\uDFE0"
 
-class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
+class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
     ItemTouchCallback,
     SelectSiteDialogFragment.Parent,
     BookmarksImportDialogFragment.Parent {
@@ -62,7 +61,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
     private lateinit var viewModel: BrowserViewModel
 
     // === UI
-    private var binding: DialogWebBookmarksBinding? = null
+    private var binding: FragmentWebBookmarksBinding? = null
     private var editMenu: MenuItem? = null
     private var copyMenu: MenuItem? = null
     private var homeMenu: MenuItem? = null
@@ -103,7 +102,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.dialog_web_bookmarks),
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = DialogWebBookmarksBinding.inflate(inflater, container, false)
+        binding = FragmentWebBookmarksBinding.inflate(inflater, container, false)
 
         viewModel = ViewModelProvider(
             requireActivity(),

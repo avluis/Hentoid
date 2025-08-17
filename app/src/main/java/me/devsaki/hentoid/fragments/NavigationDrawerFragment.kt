@@ -32,7 +32,7 @@ import me.devsaki.hentoid.activities.prefs.PreferencesActivity
 import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
 import me.devsaki.hentoid.activities.sources.WelcomeActivity
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.databinding.FragmentNavigationDrawer2Binding
+import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -51,7 +51,7 @@ import kotlin.math.floor
 
 private const val MENU_FACTOR = 1000
 
-class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2) {
+class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     enum class NavItem {
         LIBRARY, FAV_BOOK, BROWSER, EDIT_SOURCES, QUEUE, SETTINGS, TOOLS, ABOUT
@@ -61,7 +61,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
     private lateinit var libraryViewModel: LibraryViewModel
 
     // === UI
-    private var binding: FragmentNavigationDrawer2Binding? = null
+    private var binding: FragmentNavigationDrawerBinding? = null
 
     // === VARS
     // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
@@ -96,13 +96,14 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentNavigationDrawer2Binding.inflate(inflater, container, false)
+        binding = FragmentNavigationDrawerBinding.inflate(inflater, container, false)
 
+        // As a remplacement for the loss of the toggle button in the old UI's Bottom bar
         Settings.artistGroupVisibility = Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
 
         // More listeners
         binding?.navigator?.apply {
-            this@NavigationDrawerFragment2.menu = menu
+            this@NavigationDrawerFragment.menu = menu
             setNavigationItemSelectedListener { item ->
                 when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
                     NavItem.LIBRARY.ordinal -> {
@@ -313,7 +314,7 @@ class NavigationDrawerFragment2 : Fragment(R.layout.fragment_navigation_drawer2)
                     }
                     val siteMenu =
                         addMenu(submenu2, sb.toSpannable(), site.ico, NavItem.BROWSER, site.code)
-                    if (this@NavigationDrawerFragment2.site == site) siteMenu.isChecked = true
+                    if (this@NavigationDrawerFragment.site == site) siteMenu.isChecked = true
                 }
                 addMenu(
                     submenu2,
