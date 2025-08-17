@@ -51,7 +51,6 @@ import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.LibraryArchiveDialogFragment
-import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.library.LibraryFoldersFragment
@@ -477,7 +476,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             it.recyclerView.adapter = gridSizefastAdapter
             val labels = resources.getStringArray(R.array.pref_grid_card_width_entries)
             val values =
-                resources.getStringArray(R.array.pref_grid_card_width_values).map { it.toInt() }
+                resources.getStringArray(R.array.pref_grid_card_width_values).map { v -> v.toInt() }
             val gridSizePref = Settings.libraryGridCardWidthDP
             labels.forEachIndexed { index, s ->
                 val item = TextItem(
@@ -684,11 +683,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 hasChangedGridDisplay = Settings.Value.LIBRARY_DISPLAY_GRID == displayType
                 resetActivity()
             }
-
-            R.id.action_browse_groups -> LibraryBottomGroupsFragment.invoke(
-                this,
-                this.supportFragmentManager
-            )
 
             R.id.action_sort_filter -> LibraryBottomSortFilterFragment.invoke(
                 this, this.supportFragmentManager, isGroupDisplayed(),

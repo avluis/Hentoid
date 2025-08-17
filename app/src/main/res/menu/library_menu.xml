@@ -34,13 +34,6 @@
         android:tooltipText="@string/menu_edit_order"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_browse_groups"
-        android:icon="@drawable/ic_folders"
-        android:title="@string/groups"
-        android:tooltipText="@string/groups"
-        android:visible="true"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/action_edit_confirm"
         android:icon="@drawable/ic_checked"
         android:title="@string/menu_edit_confirm"
