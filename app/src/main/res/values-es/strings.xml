@@ -825,7 +825,7 @@
     <string name="redownloaded_missing_webview">WebView no disponible, no es posible volver a descargar ahora</string>
     <plurals name="redownloaded_scratch">
         <item quantity="many">%1$d/%2$d elementos listos para volver a descargarse</item>
-        <item quantity="one">%1$d/%2$ elemento listo para volver a descargarse</item>
+        <item quantity="one">%1$d/%2$d elemento listo para volver a descargarse</item>
         <item quantity="other">%1$d/%2$d elementos listos para volver a descargarse</item>
     </plurals>
     <string name="redownloaded_updating_webview">La WebView se está actualizando, no se puede volver a descargar aún</string>
