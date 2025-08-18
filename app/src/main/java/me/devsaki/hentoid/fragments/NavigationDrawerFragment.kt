@@ -370,7 +370,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     }
 
     /**
-     * Callback for any change in Preferences
+     * Callback for any change in Settings
      */
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return

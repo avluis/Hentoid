@@ -913,7 +913,7 @@ data class Cookie(
  */
 class UriParts(uri: String, lowercase: Boolean = false) {
     val host: String // Host alone, subdomain included (e.g. http://subdomain.host.ext:80)
-    var path: String // Entire path, host included (e.g. http://subdomain.host.ext:80/this/is/the/police)
+    var path: String // Entire path, host included and file not included (e.g. http://subdomain.host.ext:80/this/is/the)
     var fileNameNoExt: String // Filename without extension (e.g. police)
     var extension: String // File extension alone (e.g. jpg)
     var query: String // Query alone (e.g. query=here)
@@ -921,6 +921,9 @@ class UriParts(uri: String, lowercase: Boolean = false) {
 
     val fileNameFull: String
         get() = if (extension.isNotEmpty()) "$fileNameNoExt.$extension" else fileNameNoExt
+
+    val pathFull: String
+        get() = "$path/$fileNameFull"
 
     init {
         var uriNoParams =

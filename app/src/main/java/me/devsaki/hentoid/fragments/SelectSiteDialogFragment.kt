@@ -90,13 +90,13 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
             .filter { includedSites.contains(it.code) }
             .sortedBy { it.name }
 
-        val itemAdapter = ItemAdapter<DrawerItem>()
-        val items: MutableList<DrawerItem> = ArrayList()
+        val itemAdapter = ItemAdapter<DrawerItem<Site>>()
+        val items: MutableList<DrawerItem<Site>> = ArrayList()
         val userTxt = resources.getString(R.string.user_generic).lowercase()
         sites.forEach {
             items.add(DrawerItem.fromSite(it))
             if (showAltSites && it == Site.PIXIV) {
-                val item = DrawerItem(
+                val item = DrawerItem<Site>(
                     it.description.uppercase() + " ($userTxt)",
                     it.ico,
                     it.code.toLong()
@@ -109,7 +109,7 @@ class SelectSiteDialogFragment : BaseDialogFragment<SelectSiteDialogFragment.Par
         itemAdapter.set(items)
 
         // Item click listener
-        val fastAdapter: FastAdapter<DrawerItem> = FastAdapter.with(itemAdapter)
+        val fastAdapter: FastAdapter<DrawerItem<Site>> = FastAdapter.with(itemAdapter)
         fastAdapter.onClickListener = { _, _, i, _ -> onItemSelected(i.site, i.tag as Int?) }
         binding?.recyclerview?.adapter = fastAdapter
     }

@@ -12,13 +12,14 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.Site
 
-class DrawerItem(
+class DrawerItem<T>(
     val label: String,
     val icon: Int,
     uniqueId: Long,
-    val italicFont: Boolean = false
+    val italicFont: Boolean = false,
+    private val mTag: T? = null
 ) :
-    AbstractItem<DrawerItem.ViewHolder>() {
+    AbstractItem<DrawerItem.ViewHolder<T>>() {
 
     var site: Site? = null
     var flagNew = false
@@ -28,20 +29,24 @@ class DrawerItem(
         identifier = uniqueId
     }
 
+    fun getObject(): T? {
+        return mTag
+    }
+
     override val type: Int get() = R.id.drawer
 
     override val layoutRes: Int get() = R.layout.item_drawer
 
-    override fun getViewHolder(v: View): ViewHolder {
+    override fun getViewHolder(v: View): ViewHolder<T> {
         return ViewHolder(v)
     }
 
-    class ViewHolder(view: View) : FastAdapter.ViewHolder<DrawerItem>(view) {
+    class ViewHolder<T>(view: View) : FastAdapter.ViewHolder<DrawerItem<T>>(view) {
         private val icon: ImageView = itemView.findViewById(R.id.drawer_item_icon)
         private val alert: ImageView = itemView.findViewById(R.id.drawer_item_alert)
         private val title: TextView = itemView.findViewById(R.id.drawer_item_txt)
 
-        override fun bindView(item: DrawerItem, payloads: List<Any>) {
+        override fun bindView(item: DrawerItem<T>, payloads: List<Any>) {
             icon.setImageResource(item.icon)
             if (item.alertStatus != AlertStatus.NONE) {
                 alert.visibility = View.VISIBLE
@@ -56,17 +61,18 @@ class DrawerItem(
             else title.setTypeface(null, Typeface.NORMAL)
         }
 
-        override fun unbindView(item: DrawerItem) {
+        override fun unbindView(item: DrawerItem<T>) {
             // Nothing special here
         }
     }
 
     companion object {
-        fun fromSite(site: Site): DrawerItem {
+        fun fromSite(site: Site): DrawerItem<Site> {
             val result = DrawerItem(
                 site.description.uppercase(),
                 site.ico,
-                site.code.toLong()
+                site.code.toLong(),
+                mTag = site
             )
             result.site = site
             return result

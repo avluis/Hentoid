@@ -85,7 +85,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     private var contentIndex = 0
     private var pageIndex = 0
     private var maxPages = -1
-    private val itemAdapter = ItemAdapter<DrawerItem>()
+    private val itemAdapter = ItemAdapter<DrawerItem<Any>>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private var targetDimsWarning = false
 
