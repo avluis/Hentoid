@@ -14,6 +14,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:gravity="center_vertical"
+        android:background="@color/black_opacity_25"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/web_bookmarks_menu" />
 
@@ -52,6 +53,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:gravity="center_vertical"
         android:visibility="invisible"
+        android:background="@color/black_opacity_25"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_scrollFlags="scroll|enterAlways"
         app:menu="@menu/web_bookmarks_selection_menu"
