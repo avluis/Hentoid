@@ -69,8 +69,7 @@ fun Context.clearWebviewCache(callback: Consumer<Boolean>?) {
 
 fun Context.clearAppCache() {
     try {
-        val dir = this.cacheDir
-        removeFile(dir)
+        removeFile(this.cacheDir)
     } catch (e: Exception) {
         Timber.e(e, "Error when clearing app cache upon update")
     }
@@ -85,7 +84,7 @@ fun Context.convertLocaleToEnglish() {
         val config = this.resources.configuration
         val localesList = config.locales
         var hasEnglish = false
-        for(i in 0..<localesList.size()) {
+        for (i in 0..<localesList.size()) {
             if (localesList[i] == Locale.ENGLISH) {
                 hasEnglish = true
                 break
