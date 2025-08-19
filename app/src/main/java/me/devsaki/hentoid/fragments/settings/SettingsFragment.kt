@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences
+package me.devsaki.hentoid.fragments.settings
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -26,11 +26,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.bundles.PrefsSourceSpecificsBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesPinActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesSourceSpecificsActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesStorageActivity
+import me.devsaki.hentoid.activities.bundles.SettingsSourceSpecificsBundle
+import me.devsaki.hentoid.activities.settings.SettingsPinActivity
+import me.devsaki.hentoid.activities.settings.SettingsSourceSelectActivity
+import me.devsaki.hentoid.activities.settings.SettingsSourceSpecificsActivity
+import me.devsaki.hentoid.activities.settings.SettingsStorageActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.enums.Site
@@ -45,7 +45,7 @@ import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.toast
-import me.devsaki.hentoid.viewmodels.PreferencesViewModel
+import me.devsaki.hentoid.viewmodels.SettingsViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
@@ -58,18 +58,18 @@ private const val EXTERNAL_LIBRARY = "pref_external_library"
 private const val EXTERNAL_LIBRARY_DETACH = "pref_detach_external_library"
 private const val STORAGE_MANAGEMENT = "storage_mgt"
 
-class PreferencesFragment : PreferenceFragmentCompat(),
+class SettingsFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
-    lateinit var viewModel: PreferencesViewModel
+    lateinit var viewModel: SettingsViewModel
     var site = Site.NONE
 
     companion object {
         private const val KEY_ROOT = "root"
         private const val KEY_SITE = "site"
 
-        fun newInstance(rootKey: String?, site: Site): PreferencesFragment {
-            val fragment = PreferencesFragment()
+        fun newInstance(rootKey: String?, site: Site): SettingsFragment {
+            val fragment = SettingsFragment()
             if (rootKey != null) {
                 val args = Bundle()
                 args.putCharSequence(KEY_ROOT, rootKey)
@@ -99,7 +99,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         view.fitsSystemWindows = true
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel =
-            ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]
+            ViewModelProvider(requireActivity(), vmFactory)[SettingsViewModel::class.java]
     }
 
     override fun onResume() {
@@ -151,13 +151,13 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
         when (preference.key) {
             DRAWER_SOURCES -> {
-                requireContext().startLocalActivity<PreferencesSourceSelectActivity>()
+                requireContext().startLocalActivity<SettingsSourceSelectActivity>()
                 true
             }
 
             SOURCE_SPECIFICS -> {
-                val intent = Intent(context, PreferencesSourceSpecificsActivity::class.java)
-                val outBundle = PrefsSourceSpecificsBundle()
+                val intent = Intent(context, SettingsSourceSpecificsActivity::class.java)
+                val outBundle = SettingsSourceSpecificsBundle()
                 outBundle.site = site.code
                 intent.putExtras(outBundle.bundle)
                 requireContext().startActivity(intent)
@@ -165,12 +165,12 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             }
 
             STORAGE_MANAGEMENT -> {
-                requireContext().startLocalActivity<PreferencesStorageActivity>()
+                requireContext().startLocalActivity<SettingsStorageActivity>()
                 true
             }
 
             Settings.Key.APP_LOCK -> {
-                requireContext().startLocalActivity<PreferencesPinActivity>()
+                requireContext().startLocalActivity<SettingsPinActivity>()
                 true
             }
 
@@ -197,8 +197,8 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             else -> super.onPreferenceTreeClick(preference)
         }
 
-    fun navigateToScreen(manager: FragmentManager, screenKey: String): PreferencesFragment {
-        val preferenceFragment = PreferencesFragment().withArguments {
+    fun navigateToScreen(manager: FragmentManager, screenKey: String): SettingsFragment {
+        val preferenceFragment = SettingsFragment().withArguments {
             putString(ARG_PREFERENCE_ROOT, screenKey)
         }
 

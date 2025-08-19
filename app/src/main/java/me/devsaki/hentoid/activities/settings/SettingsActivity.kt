@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.prefs
+package me.devsaki.hentoid.activities.settings
 
 import android.os.Bundle
 import android.view.MenuItem
@@ -7,19 +7,19 @@ import androidx.lifecycle.Lifecycle
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResult
 import com.bytehamster.lib.preferencesearch.SearchPreferenceResultListener
 import me.devsaki.hentoid.activities.BaseActivity
-import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
-import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
+import me.devsaki.hentoid.fragments.settings.SettingsFragment
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.useLegacyInsets
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
+class SettingsActivity : BaseActivity(), SearchPreferenceResultListener {
 
-    private lateinit var fragment: PreferencesFragment
+    private lateinit var fragment: SettingsFragment
     private lateinit var site: Site
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +33,7 @@ class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
             isStoragePrefs() -> rootKey = "storage"
         }
         site = getSiteFromIntent()
-        fragment = PreferencesFragment.newInstance(rootKey, site)
+        fragment = SettingsFragment.newInstance(rootKey, site)
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
         }
@@ -48,35 +48,35 @@ class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
 
     private fun isViewerPrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsBundle(intent.extras!!)
-            parser.isViewerPrefs
+            val parser = SettingsBundle(intent.extras!!)
+            parser.isViewerSettings
         } else false
     }
 
     private fun isBrowserPrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsBundle(intent.extras!!)
-            parser.isBrowserPrefs
+            val parser = SettingsBundle(intent.extras!!)
+            parser.isBrowserSettings
         } else false
     }
 
     private fun isDownloaderPrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsBundle(intent.extras!!)
-            parser.isDownloaderPrefs
+            val parser = SettingsBundle(intent.extras!!)
+            parser.isDownloaderSettings
         } else false
     }
 
     private fun isStoragePrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsBundle(intent.extras!!)
-            parser.isStoragePrefs
+            val parser = SettingsBundle(intent.extras!!)
+            parser.isStorageSettings
         } else false
     }
 
     private fun getSiteFromIntent(): Site {
         return if (intent.extras != null) {
-            val parser = PrefsBundle(intent.extras!!)
+            val parser = SettingsBundle(intent.extras!!)
             Site.searchByCode(parser.site)
         } else Site.NONE
     }
@@ -92,7 +92,7 @@ class PreferencesActivity : BaseActivity(), SearchPreferenceResultListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     override fun onCommunicationEvent(event: CommunicationEvent) {
-        if (event.recipient != CommunicationEvent.Recipient.PREFS || event.type != CommunicationEvent.Type.BROADCAST || event.message.isEmpty()) return
+        if (event.recipient != CommunicationEvent.Recipient.SETTINGS || event.type != CommunicationEvent.Type.BROADCAST || event.message.isEmpty()) return
         // Make sure current activity is active (=eligible to display that toast)
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) return
         toast(event.message)

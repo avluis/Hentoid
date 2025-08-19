@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.prefs
+package me.devsaki.hentoid.activities.settings
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -12,7 +12,7 @@ import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
-import me.devsaki.hentoid.databinding.ActivityPrefsSourcesEditBinding
+import me.devsaki.hentoid.databinding.ActivitySettingsSourcesEditBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
@@ -22,8 +22,8 @@ import me.devsaki.hentoid.viewholders.SiteItem
 /**
  * Activity to edit the left drawer where the sources are
  */
-class PreferencesSourceSelectActivity : BaseActivity(), ItemTouchCallback {
-    private var binding: ActivityPrefsSourcesEditBinding? = null
+class SettingsSourceSelectActivity : BaseActivity(), ItemTouchCallback {
+    private var binding: ActivitySettingsSourcesEditBinding? = null
     private lateinit var recyclerView: RecyclerView
     private val itemAdapter = ItemAdapter<SiteItem>()
     private val fastAdapter: FastAdapter<SiteItem> = FastAdapter.with(itemAdapter)
@@ -33,7 +33,7 @@ class PreferencesSourceSelectActivity : BaseActivity(), ItemTouchCallback {
         super.onCreate(savedInstanceState)
         applyTheme()
 
-        binding = ActivityPrefsSourcesEditBinding.inflate(layoutInflater)
+        binding = ActivitySettingsSourcesEditBinding.inflate(layoutInflater)
         binding?.let {
             setContentView(it.root)
 

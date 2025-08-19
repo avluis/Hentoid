@@ -663,7 +663,7 @@ fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation) {
     // NB : do NOT use ContentHelper.removeContent as it would remove files too
     // here we just want to remove DB entries without removing files
     dao.deleteAllInternalContents(getPathRoot(location), true)
-
+    dao.cleanup()
     // TODO groups
 }
 

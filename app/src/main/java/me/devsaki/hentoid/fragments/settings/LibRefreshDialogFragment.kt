@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences
+package me.devsaki.hentoid.fragments.settings
 
 import android.net.Uri
 import android.os.Bundle
@@ -20,7 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.databinding.DialogPrefsRefreshBinding
+import me.devsaki.hentoid.databinding.DialogSettingsRefreshBinding
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -60,7 +60,7 @@ private const val LOCATION = "location"
 
 class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Parent>() {
     // == UI
-    private var binding1: DialogPrefsRefreshBinding? = null
+    private var binding1: DialogSettingsRefreshBinding? = null
     private var binding2: IncludeImportStepsBinding? = null
 
     // === VARIABLES
@@ -99,7 +99,7 @@ class LibRefreshDialogFragment : BaseDialogFragment<LibRefreshDialogFragment.Par
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View? {
-        binding1 = DialogPrefsRefreshBinding.inflate(inflater, container, false)
+        binding1 = DialogSettingsRefreshBinding.inflate(inflater, container, false)
         requireNotNull(arguments) { "No arguments found" }
         arguments?.apply {
             showOptions = getBoolean(SHOW_OPTIONS, false)

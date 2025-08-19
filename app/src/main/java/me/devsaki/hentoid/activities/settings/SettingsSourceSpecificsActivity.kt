@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.prefs
+package me.devsaki.hentoid.activities.settings
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
@@ -9,8 +9,8 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
-import me.devsaki.hentoid.activities.bundles.PrefsSourceSpecificsBundle
-import me.devsaki.hentoid.databinding.ActivityPrefsSourceSpecificsBinding
+import me.devsaki.hentoid.activities.bundles.SettingsSourceSpecificsBundle
+import me.devsaki.hentoid.databinding.ActivitySettingsSourceSpecificsBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.util.PreferenceItem
@@ -22,8 +22,8 @@ import me.devsaki.hentoid.viewholders.ListPickerItem
 /**
  * Activity to edit source-specific settings
  */
-class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
-    private var binding: ActivityPrefsSourceSpecificsBinding? = null
+class SettingsSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
+    private var binding: ActivitySettingsSourceSpecificsBinding? = null
     private lateinit var site: Site
     private val preferenceItems: MutableList<PreferenceItem> = ArrayList()
 
@@ -38,12 +38,12 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
 
         if (null == intent || null == intent.extras) throw IllegalArgumentException("Required intent not found")
 
-        val parser = PrefsSourceSpecificsBundle(intent.extras!!)
+        val parser = SettingsSourceSpecificsBundle(intent.extras!!)
         val validSites = Site.entries.filter { it.isVisible }.sortedBy { it.name }
         site = Site.searchByCode(parser.site)
         if (!site.isVisible) site = validSites.first()
 
-        binding = ActivityPrefsSourceSpecificsBinding.inflate(layoutInflater)
+        binding = ActivitySettingsSourceSpecificsBinding.inflate(layoutInflater)
         binding?.apply {
             setContentView(root)
 
@@ -53,7 +53,7 @@ class PreferencesSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragm
             toolbar.setOnClickListener {
                 val codesToShow = validSites.map { it.code }
                 SelectSiteDialogFragment.invoke(
-                    this@PreferencesSourceSpecificsActivity,
+                    this@SettingsSourceSpecificsActivity,
                     getString(R.string.bookmark_change_site),
                     codesToShow
                 )

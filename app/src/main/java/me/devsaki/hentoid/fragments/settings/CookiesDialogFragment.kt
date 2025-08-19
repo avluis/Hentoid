@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences
+package me.devsaki.hentoid.fragments.settings
 
 import android.os.Bundle
 import android.text.TextUtils
@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.webkit.CookieManagerCompat
 import androidx.webkit.WebViewFeature
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.databinding.DialogPrefsCookiesBinding
+import me.devsaki.hentoid.databinding.DialogSettingsCookiesBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
@@ -31,7 +31,7 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     // == UI
-    private var binding: DialogPrefsCookiesBinding? = null
+    private var binding: DialogSettingsCookiesBinding? = null
 
     // === VARIABLES
     private lateinit var sites: List<Site>
@@ -42,7 +42,7 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View? {
-        binding = DialogPrefsCookiesBinding.inflate(inflater, container, false)
+        binding = DialogSettingsCookiesBinding.inflate(inflater, container, false)
         return binding?.root
     }
 

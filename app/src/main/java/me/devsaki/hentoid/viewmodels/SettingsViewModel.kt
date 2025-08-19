@@ -21,7 +21,7 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
-class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
+class SettingsViewModel(application: Application, val dao: CollectionDAO) :
     AndroidViewModel(application) {
 
     override fun onCleared() {
@@ -39,6 +39,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
             StorageLocation.EXTERNAL -> {
                 detachAllExternalContent(getApplication<Application>().applicationContext, dao)
                 dao.cleanupOrphanAttributes()
+                dao.cleanup()
                 Beholder.clearSnapshot(getApplication())
             }
 
@@ -70,6 +71,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
                     nbBooks
                 )
             )
+            dao.cleanup()
         }
     }
 

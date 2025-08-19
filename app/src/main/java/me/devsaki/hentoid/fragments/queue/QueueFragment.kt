@@ -38,9 +38,9 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
-import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
@@ -1049,10 +1049,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * Show the viewer settings dialog
      */
     private fun onSettingsClick() {
-        val intent = Intent(requireActivity(), PreferencesActivity::class.java)
-        val prefsBundle = PrefsBundle()
-        prefsBundle.isDownloaderPrefs = true
-        intent.putExtras(prefsBundle.bundle)
+        val intent = Intent(requireActivity(), SettingsActivity::class.java)
+        val settingsBundle = SettingsBundle()
+        settingsBundle.isDownloaderSettings = true
+        intent.putExtras(settingsBundle.bundle)
         requireContext().startActivity(intent)
     }
 

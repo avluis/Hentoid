@@ -8,9 +8,9 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.bundles.PrefsBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
-import me.devsaki.hentoid.databinding.DialogReaderBookPrefsBinding
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
+import me.devsaki.hentoid.activities.settings.SettingsActivity
+import me.devsaki.hentoid.databinding.DialogReaderBookSettingsBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
@@ -20,7 +20,7 @@ import me.devsaki.hentoid.util.Settings.Key.VIEWER_RENDERING
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_BROWSE_TTB
 import kotlin.math.min
 
-class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.Parent>() {
+class ReaderSettingsDialogFragment : BaseDialogFragment<ReaderSettingsDialogFragment.Parent>() {
     companion object {
 
         const val RENDERING_MODE = "render_mode"
@@ -48,12 +48,12 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
                 Settings.getContentDisplayMode(site, bookPrefs)
             )
             args.putInt(SITE, site.code)
-            invoke(parent, ReaderPrefsDialogFragment(), args)
+            invoke(parent, ReaderSettingsDialogFragment(), args)
         }
     }
 
     // UI
-    private var binding: DialogReaderBookPrefsBinding? = null
+    private var binding: DialogReaderBookSettingsBinding? = null
 
     // === VARIABLES
     private var bookRenderingMode = 0
@@ -82,7 +82,7 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
         container: ViewGroup?,
         savedState: Bundle?
     ): View? {
-        binding = DialogReaderBookPrefsBinding.inflate(inflater, container, false)
+        binding = DialogReaderBookSettingsBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
@@ -159,11 +159,11 @@ class ReaderPrefsDialogFragment : BaseDialogFragment<ReaderPrefsDialogFragment.P
 
         // == Bottom buttons
         binding?.appPrefsBtn?.setOnClickListener {
-            val intent = Intent(requireActivity(), PreferencesActivity::class.java)
-            val prefsBundle = PrefsBundle()
-            prefsBundle.isViewerPrefs = true
-            prefsBundle.site = site.code
-            intent.putExtras(prefsBundle.bundle)
+            val intent = Intent(requireActivity(), SettingsActivity::class.java)
+            val settingsBundle = SettingsBundle()
+            settingsBundle.isViewerSettings = true
+            settingsBundle.site = site.code
+            intent.putExtras(settingsBundle.bundle)
             requireContext().startActivity(intent)
         }
 

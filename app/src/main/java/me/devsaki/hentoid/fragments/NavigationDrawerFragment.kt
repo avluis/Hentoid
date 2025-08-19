@@ -28,8 +28,8 @@ import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.activities.bundles.ToolsBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
-import me.devsaki.hentoid.activities.prefs.PreferencesSourceSelectActivity
+import me.devsaki.hentoid.activities.settings.SettingsActivity
+import me.devsaki.hentoid.activities.settings.SettingsSourceSelectActivity
 import me.devsaki.hentoid.activities.sources.WelcomeActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
@@ -124,9 +124,9 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                         }
                     }
 
-                    NavItem.EDIT_SOURCES.ordinal -> launchActivity(PreferencesSourceSelectActivity::class.java)
+                    NavItem.EDIT_SOURCES.ordinal -> launchActivity(SettingsSourceSelectActivity::class.java)
                     NavItem.QUEUE.ordinal -> launchActivity(QueueActivity::class.java)
-                    NavItem.SETTINGS.ordinal -> launchActivity(PreferencesActivity::class.java)
+                    NavItem.SETTINGS.ordinal -> launchActivity(SettingsActivity::class.java)
                     NavItem.TOOLS.ordinal -> {
                         val toolsBuilder = ToolsBundle()
                         toolsBuilder.contentSearchBundle = contentSearchBundle

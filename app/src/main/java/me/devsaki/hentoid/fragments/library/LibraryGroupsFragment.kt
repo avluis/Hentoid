@@ -45,8 +45,8 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
-import me.devsaki.hentoid.activities.bundles.PrefsBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
+import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
@@ -506,10 +506,10 @@ class LibraryGroupsFragment : Fragment(),
                     )
                     snackbar.setAction(R.string.app_settings) {
                         // Open prefs on the "storage" category
-                        val intent = Intent(requireActivity(), PreferencesActivity::class.java)
-                        val prefsBundle = PrefsBundle()
-                        prefsBundle.isStoragePrefs = true
-                        intent.putExtras(prefsBundle.bundle)
+                        val intent = Intent(requireActivity(), SettingsActivity::class.java)
+                        val settingsBundle = SettingsBundle()
+                        settingsBundle.isStorageSettings = true
+                        intent.putExtras(settingsBundle.bundle)
                         requireContext().startActivity(intent)
                     }
                     snackbar.show()

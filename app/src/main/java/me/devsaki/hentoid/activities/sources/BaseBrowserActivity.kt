@@ -42,9 +42,9 @@ import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
-import me.devsaki.hentoid.activities.bundles.PrefsBundle
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.database.CollectionDAO
@@ -1728,11 +1728,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * Show the browser settings dialog
      */
     private fun onSettingsClick() {
-        val intent = Intent(this, PreferencesActivity::class.java)
-        val prefsBundle = PrefsBundle()
-        prefsBundle.isBrowserPrefs = true
-        prefsBundle.site = getStartSite().code
-        intent.putExtras(prefsBundle.bundle)
+        val intent = Intent(this, SettingsActivity::class.java)
+        val settingsBundle = SettingsBundle()
+        settingsBundle.isBrowserSettings = true
+        settingsBundle.site = getStartSite().code
+        intent.putExtras(settingsBundle.bundle)
         startActivity(intent)
     }
 

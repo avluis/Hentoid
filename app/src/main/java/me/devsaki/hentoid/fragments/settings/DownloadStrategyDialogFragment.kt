@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences
+package me.devsaki.hentoid.fragments.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.databinding.DialogPrefsDlStrategyBinding
+import me.devsaki.hentoid.databinding.DialogSettingsDlStrategyBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.coerceIn
@@ -20,7 +20,7 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
         }
     }
 
-    private var binding: DialogPrefsDlStrategyBinding? = null
+    private var binding: DialogSettingsDlStrategyBinding? = null
 
 
     override fun onCreateView(
@@ -28,7 +28,7 @@ class DownloadStrategyDialogFragment : BaseDialogFragment<DownloadStrategyDialog
         container: ViewGroup?,
         savedState: Bundle?
     ): View? {
-        binding = DialogPrefsDlStrategyBinding.inflate(inflater, container, false)
+        binding = DialogSettingsDlStrategyBinding.inflate(inflater, container, false)
         return binding?.root
     }
 

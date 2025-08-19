@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.prefs
+package me.devsaki.hentoid.activities.settings
 
 import android.content.DialogInterface
 import android.graphics.Typeface
@@ -23,14 +23,14 @@ import me.devsaki.hentoid.core.URL_GITHUB_WIKI_STORAGE
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.databinding.ActivityPrefsStorageBinding
+import me.devsaki.hentoid.databinding.ActivitySettingsStorageBinding
 import me.devsaki.hentoid.databinding.IncludePrefsStorageVolumeBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
-import me.devsaki.hentoid.fragments.preferences.DownloadStrategyDialogFragment
-import me.devsaki.hentoid.fragments.preferences.LibRefreshDialogFragment
-import me.devsaki.hentoid.fragments.preferences.StorageUsageDialogFragment
+import me.devsaki.hentoid.fragments.settings.DownloadStrategyDialogFragment
+import me.devsaki.hentoid.fragments.settings.LibRefreshDialogFragment
+import me.devsaki.hentoid.fragments.settings.StorageUsageDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
@@ -42,7 +42,7 @@ import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.getPathRoot
 import me.devsaki.hentoid.util.getPrefsIndex
 import me.devsaki.hentoid.util.toast
-import me.devsaki.hentoid.viewmodels.PreferencesViewModel
+import me.devsaki.hentoid.viewmodels.SettingsViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
@@ -50,14 +50,14 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent,
+class SettingsStorageActivity : BaseActivity(), DownloadStrategyDialogFragment.Parent,
     LibRefreshDialogFragment.Parent {
 
     // == Communication
-    private lateinit var viewModel: PreferencesViewModel
+    private lateinit var viewModel: SettingsViewModel
 
     // == UI
-    private var binding: ActivityPrefsStorageBinding? = null
+    private var binding: ActivitySettingsStorageBinding? = null
     private var binding1: IncludePrefsStorageVolumeBinding? = null
     private var binding2: IncludePrefsStorageVolumeBinding? = null
     private var bindingExt: IncludePrefsStorageVolumeBinding? = null
@@ -66,11 +66,11 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
         super.onCreate(savedInstanceState)
         applyTheme()
 
-        binding = ActivityPrefsStorageBinding.inflate(layoutInflater)
+        binding = ActivitySettingsStorageBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
         val vmFactory = ViewModelFactory(application)
-        viewModel = ViewModelProvider(this, vmFactory)[PreferencesViewModel::class.java]
+        viewModel = ViewModelProvider(this, vmFactory)[SettingsViewModel::class.java]
 
         bindUI()
     }
@@ -121,7 +121,7 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
             }
 
             alertLowPanel.setOnClickListener {
-                MaterialAlertDialogBuilder(this@PreferencesStorageActivity)
+                MaterialAlertDialogBuilder(this@SettingsStorageActivity)
                     .setCancelable(true)
                     .setTitle(R.string.pref_memory_alert_title)
                     .setSingleChoiceItems(
@@ -142,11 +142,11 @@ class PreferencesStorageActivity : BaseActivity(), DownloadStrategyDialogFragmen
             }
 
             strategyPanel.setOnClickListener {
-                DownloadStrategyDialogFragment.invoke(this@PreferencesStorageActivity)
+                DownloadStrategyDialogFragment.invoke(this@SettingsStorageActivity)
             }
 
             statsPanel.setOnClickListener {
-                StorageUsageDialogFragment.invoke(this@PreferencesStorageActivity)
+                StorageUsageDialogFragment.invoke(this@SettingsStorageActivity)
             }
         }
     }

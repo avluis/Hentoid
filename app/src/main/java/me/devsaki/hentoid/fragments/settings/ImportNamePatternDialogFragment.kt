@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences
+package me.devsaki.hentoid.fragments.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.setOnTextChangedListener
-import me.devsaki.hentoid.databinding.DialogPrefsImportNamePatternBinding
+import me.devsaki.hentoid.databinding.DialogSettingsImportNamePatternBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.patternToRegex
@@ -23,7 +23,7 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
         }
     }
 
-    private var binding: DialogPrefsImportNamePatternBinding? = null
+    private var binding: DialogSettingsImportNamePatternBinding? = null
 
 
     override fun onCreateView(
@@ -31,7 +31,7 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
         container: ViewGroup?,
         savedState: Bundle?
     ): View? {
-        binding = DialogPrefsImportNamePatternBinding.inflate(inflater, container, false)
+        binding = DialogSettingsImportNamePatternBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
@@ -103,8 +103,8 @@ class ImportNamePatternDialogFragment : BaseDialogFragment<Nothing>() {
         // Visual warnings
         val res = patternToRegex(pattern)
 
-        var hasTitle = res.second
-        var hasArtist = res.third
+        val hasTitle = res.second
+        val hasArtist = res.third
         if (!hasTitle) {
             binding?.apply {
                 titleVal.text = getString(R.string.import_ext_test_title_warning)

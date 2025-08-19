@@ -179,7 +179,7 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
         <activity
-            android:name=".activities.prefs.PreferencesActivity"
+            android:name=".activities.settings.SettingsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".activities.LibraryActivity"
@@ -210,11 +210,11 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
         <activity
-            android:name=".activities.prefs.PreferencesSourceSelectActivity"
+            android:name=".activities.settings.SettingsSourceSelectActivity"
             android:label="@string/pref_drawer_sources_title"
             tools:ignore="UnusedAttribute" />
         <activity
-            android:name=".activities.prefs.PreferencesSourceSpecificsActivity"
+            android:name=".activities.settings.SettingsSourceSpecificsActivity"
             android:label="@string/title_activity_source_specifics"
             tools:ignore="UnusedAttribute" />
         <activity
@@ -231,7 +231,7 @@
             android:resizeableActivity="false"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".activities.prefs.PreferencesPinActivity"
+            android:name=".activities.settings.SettingsPinActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait" />
         <activity
@@ -243,7 +243,7 @@
             android:label="@string/title_activity_rules"
             tools:ignore="UnusedAttribute" />
         <activity
-            android:name=".activities.prefs.PreferencesStorageActivity"
+            android:name=".activities.settings.SettingsStorageActivity"
             android:label="@string/title_activity_storage"
             tools:ignore="UnusedAttribute" />
         <activity

@@ -27,6 +27,6 @@ class CommunicationEvent(val type: Type, val recipient: Recipient = Recipient.AL
         DRAWER,
         DUPLICATE_MAIN,
         DUPLICATE_DETAILS,
-        PREFS
+        SETTINGS
     }
 }

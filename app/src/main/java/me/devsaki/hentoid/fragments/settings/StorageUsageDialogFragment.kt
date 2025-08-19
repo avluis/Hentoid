@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences
+package me.devsaki.hentoid.fragments.settings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentActivity
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.databinding.DialogPrefsStorageBinding
+import me.devsaki.hentoid.databinding.DialogSettingsStorageBinding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
@@ -29,7 +29,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     // == UI
-    private var binding: DialogPrefsStorageBinding? = null
+    private var binding: DialogSettingsStorageBinding? = null
 
     private var rowPadding = 0
 
@@ -37,7 +37,7 @@ class StorageUsageDialogFragment : BaseDialogFragment<Nothing>() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View? {
-        binding = DialogPrefsStorageBinding.inflate(inflater, container, false)
+        binding = DialogSettingsStorageBinding.inflate(inflater, container, false)
         return binding?.root
     }
 
