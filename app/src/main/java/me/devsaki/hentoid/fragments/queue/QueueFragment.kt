@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -38,8 +37,8 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
-import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -191,15 +190,15 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentQueueBinding.inflate(inflater, container, false)
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
         bottomBarBinding = IncludeQueueBottomBarBinding.bind(binding!!.root)
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
-        bottomBarBinding?.actionButton?.setOnClickListener {
-            if (isPaused()) viewModel.unpauseQueue()
-            else EventBus.getDefault()
+        bottomBarBinding?.actionButton?.addOnCheckedChangeListener { _, c ->
+            if (isPaused() && !c) viewModel.unpauseQueue()
+            if (c && !isPaused()) EventBus.getDefault()
                 .post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
         }
 
@@ -295,7 +294,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         addCustomBackControl()
 
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -745,6 +744,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         // Update list visibility
         binding?.queueEmptyTxt?.visibility = if (empty) View.VISIBLE else View.GONE
 
+        // Update button checkability
+        bottomBarBinding?.actionButton?.isCheckable = !empty
+
         activity.get()?.let { act ->
             // Save sources list if queue is unfiltered
             if (!act.isSearchActive()) {
@@ -838,12 +840,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 queueInfo.text = formatStep(preparationStep, log)
             }
             if (isActive) {
-                actionButton.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        requireActivity(),
-                        R.drawable.ic_action_pause
-                    )
-                )
+                actionButton.isChecked = true
                 if (content != null)
                     queueStatus.text = resources.getString(R.string.queue_dl, content.title)
 
@@ -856,12 +853,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         ?.getToolbar()?.menu?.findItem(R.id.action_error_stats)?.isVisible = false
                     queueStatus.text = ""
                 } else if (isPaused()) {
-                    actionButton.setImageDrawable(
-                        ContextCompat.getDrawable(
-                            requireActivity(),
-                            R.drawable.ic_action_play
-                        )
-                    )
+                    actionButton.isChecked = false
                     queueStatus.setText(R.string.queue_paused)
                     queueInfo.text = ""
 
