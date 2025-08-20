@@ -196,9 +196,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         bottomBarBinding = IncludeQueueBottomBarBinding.bind(binding!!.root)
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
-        bottomBarBinding?.actionButton?.addOnCheckedChangeListener { _, c ->
-            if (isPaused() && !c) viewModel.unpauseQueue()
-            if (c && !isPaused()) EventBus.getDefault()
+        bottomBarBinding?.actionButton?.setOnClickListener {
+            if (isPaused()) viewModel.unpauseQueue()
+            else EventBus.getDefault()
                 .post(DownloadCommandEvent(DownloadCommandEvent.Type.EV_PAUSE))
         }
 
@@ -744,9 +744,6 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         // Update list visibility
         binding?.queueEmptyTxt?.visibility = if (empty) View.VISIBLE else View.GONE
 
-        // Update button checkability
-        bottomBarBinding?.actionButton?.isCheckable = !empty
-
         activity.get()?.let { act ->
             // Save sources list if queue is unfiltered
             if (!act.isSearchActive()) {
@@ -840,7 +837,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 queueInfo.text = formatStep(preparationStep, log)
             }
             if (isActive) {
-                actionButton.isChecked = true
+                actionButton.setIconResource(R.drawable.ic_action_pause)
                 if (content != null)
                     queueStatus.text = resources.getString(R.string.queue_dl, content.title)
 
@@ -853,7 +850,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         ?.getToolbar()?.menu?.findItem(R.id.action_error_stats)?.isVisible = false
                     queueStatus.text = ""
                 } else if (isPaused()) {
-                    actionButton.isChecked = false
+                    actionButton.setIconResource(R.drawable.ic_action_play)
                     queueStatus.setText(R.string.queue_paused)
                     queueInfo.text = ""
 
