@@ -43,7 +43,6 @@
         <item name="android:textColorSecondary">@color/on_secondary_light</item>
         <item name="android:textColorTertiary">@color/on_primary_light</item>
         <!-- Custom items for specific places of the app -->
-        <item name="drawer_header_diagonal">@color/drawer_header_diagonal_light</item>
         <item name="card_title">@color/card_title_light</item>
         <item name="card_surface">@color/card_surface_light</item>
         <item name="card_pressed">@color/card_pressed_light</item>
@@ -130,7 +129,7 @@
     </style>
 
     <style name="Theme.Light.ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="backgroundTint">@color/window_background_light</item>
+        <item name="backgroundTint">@color/drawer_background</item>
     </style>
 
     <!-- PIN screens -->
@@ -150,7 +149,7 @@
 
     <style name="Theme.Light.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="titleTextColor">@color/white_opacity_87</item>
-        <item name="android:background">@color/dialog_background_light</item>
+        <item name="android:background">@color/bar</item>
     </style>
 
     <style name="Theme.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">

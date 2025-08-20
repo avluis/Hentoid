@@ -8,14 +8,18 @@
     <color name="on_secondary_light">@color/white_opacity_87</color>
     <color name="surface_light">@color/white</color>
     <color name="on_surface_light">@color/white_opacity_87</color>
-    <color name="window_background_light">@color/taupe_elevated_2</color>
+    <color name="window_background_light">@color/taupe_p1</color>
     <color name="dialog_background_light">@color/taupe</color>
     <color name="on_background_light">@color/white_opacity_87</color>
     <color name="ripple_light">@color/light_red</color>
 
-    <!-- Drawer header -->
-    <color name="drawer_header_diagonal_light">@color/very_dark_pink</color>
+    <!-- Drawers, bottom panels -->
     <color name="drawer_background">@color/taupe</color>
+
+    <!-- Sub-bars -->
+    <color name="bar">@color/taupe</color>
+    <color name="subbar_1">@color/taupe_m1</color>
+    <color name="subbar_2">@color/taupe_m2</color>
 
     <!-- Content cards -->
     <color name="card_title_light">@color/secondary_light</color>

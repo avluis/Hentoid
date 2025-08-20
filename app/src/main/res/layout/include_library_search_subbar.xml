@@ -5,7 +5,7 @@
     android:id="@+id/background"
     android:layout_width="match_parent"
     android:layout_height="?android:attr/actionBarSize"
-    android:background="@color/black_opacity_50">
+    android:background="@color/subbar_1">
 
     <TextView
         android:id="@+id/advanced_search_btn"

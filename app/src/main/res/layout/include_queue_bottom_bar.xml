@@ -16,10 +16,10 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
+            style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="64dp"
             android:layout_height="64dp"
             app:iconSize="32dp"
-            android:insetLeft="-8dp"
             app:icon="@drawable/ic_action_play"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

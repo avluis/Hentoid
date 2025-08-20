@@ -4,7 +4,7 @@
     <color name="dark_red">#470000</color>
     <color name="very_dark_red">#3f0000</color>
     <color name="super_dark_red">#2b0000</color>
-    <color name="taupe">#3e1c1c</color>
+
     <color name="taupe_elevated_1">#4b2222</color>
     <color name="taupe_elevated_2">#592828</color> <!-- Original taupe from v1.7 theme -->
     <color name="taupe_elevated_3">#672e2e</color>
@@ -12,6 +12,21 @@
     <color name="accent_red">#b25959</color>
     <color name="light_red">#ffebee</color>
     <color name="very_dark_pink">#6d0721</color>
+
+
+    <color name="taupe_m4">#261616</color> <!-- black 50 HSL -->
+    <color name="taupe_m3">#2b1818</color> <!-- black 33 HSL -->
+    <color name="taupe_m2">#2f1919</color> <!-- black 25 HSL -->
+    <color name="taupe_m1">#361b1b</color> <!-- black 12 HSL -->
+
+    <color name="taupe">#3e1c1c</color>
+
+    <color name="taupe_p1">#5a2d2d</color> <!-- white 12 HSL -->
+    <color name="taupe_p2">#713d3d</color> <!-- white 25 HSL -->
+    <color name="taupe_p3">#7d4646</color> <!-- white 33 HSL -->
+    <color name="taupe_p4">#905656</color> <!-- white 50 HSL -->
+
+
 
     <!-- Neutral Colors -->
     <color name="white">#FFFFFF</color>
