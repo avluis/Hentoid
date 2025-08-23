@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -147,8 +146,8 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun updateFavouriteDisplay(isFavourited: Boolean) {
         binding?.apply {
-            if (isFavourited) imgActionFavourite.setImageResource(R.drawable.ic_fav_full)
-            else imgActionFavourite.setImageResource(R.drawable.ic_fav_empty)
+            if (isFavourited) imgActionFavourite.setIconResource(R.drawable.ic_fav_full)
+            else imgActionFavourite.setIconResource(R.drawable.ic_fav_empty)
         }
     }
 
@@ -183,7 +182,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
             context.setStyle(
                 fragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
 

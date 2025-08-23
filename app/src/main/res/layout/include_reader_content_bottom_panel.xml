@@ -6,12 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:theme="@style/Theme.Light.BottomSheetDialog">
+    android:theme="@style/Theme.Light.MonochromeBottomSheetDialog">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/Theme.Light.BottomSheetDialog">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/ivCover"
@@ -90,15 +89,13 @@
             android:background="?colorOnPrimary"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/img_action_favourite"
+            style="?attr/materialIconButtonOutlinedStyle"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="8dp"
-            android:src="@drawable/ic_fav_empty"
             android:tooltipText="@string/page_fav_help"
+            app:icon="@drawable/ic_fav_empty"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />
@@ -112,7 +109,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_2"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/rating_2"
@@ -123,7 +120,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_3"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/rating_3"
@@ -134,7 +131,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_4"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/rating_4"
@@ -145,7 +142,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toStartOf="@id/rating_5"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/rating_5"
@@ -157,7 +154,7 @@
             android:tooltipText="@string/filter_rating"
             app:layout_constraintEnd_toEndOf="@id/img_divider"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
