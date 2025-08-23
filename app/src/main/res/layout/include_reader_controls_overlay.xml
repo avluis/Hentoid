@@ -20,88 +20,68 @@
 
     <!-- Bottom controls -->
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/info_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginStart="8dp"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_info"
         android:tooltipText="@string/information_help"
+        app:icon="@drawable/ic_info"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/prev_book_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_previous_item"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:tooltipText="@string/previous_book_help"
+        app:icon="@drawable/ic_action_previous_item"
         android:visibility="invisible"
+        tools:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/favourite_action_btn"
         app:layout_constraintStart_toEndOf="@id/info_btn"
-        app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
+        tools:ignore="ContentDescription" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/favourite_action_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_fav_bottom_half"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:tooltipText="@string/fav_help"
+        app:icon="@drawable/ic_fav_bottom_half"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/next_book_btn"
         app:layout_constraintStart_toEndOf="@id/prev_book_btn"
-        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/next_book_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_next_item"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:tooltipText="@string/next_book_help"
+        app:icon="@drawable/ic_action_next_item"
         android:visibility="invisible"
+        tools:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/gallery_btn"
         app:layout_constraintStart_toEndOf="@id/favourite_action_btn"
-        app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
+        tools:ignore="ContentDescription" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/gallery_btn"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        style="?attr/materialIconButtonOutlinedStyle"
         android:layout_marginEnd="8dp"
-        android:background="@color/transparent"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_view_gallery"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:tooltipText="@string/gallery_help"
+        app:icon="@drawable/ic_view_gallery"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
     <!-- Progress bar -->

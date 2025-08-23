@@ -651,7 +651,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 iconRes =
                     if (isContentFavourite) R.drawable.ic_fav_full else R.drawable.ic_fav_bottom_half
             } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half
-            favouriteActionBtn.setImageResource(iconRes)
+            favouriteActionBtn.setIconResource(iconRes)
             favouriteActionBtn.visibility = if (isFoldersMode) View.INVISIBLE else View.VISIBLE
         }
     }
