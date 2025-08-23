@@ -3,7 +3,6 @@ package me.devsaki.hentoid.fragments
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
@@ -43,7 +42,6 @@ import me.devsaki.hentoid.util.getTextColorForBackground
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.GroupSearchManager
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -105,7 +103,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                 when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
                     NavItem.LIBRARY.ordinal -> {
                         val grouping = Grouping.searchById(item.itemId % MENU_FACTOR)
-                        if (Grouping.NONE == grouping) launchActivity(
+                        if (origin != NavItem.LIBRARY) launchActivity(
                             LibraryActivity::class.java,
                             clearTop = true
                         )
@@ -158,10 +156,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         libraryViewModel.contentSearchBundle.observe(viewLifecycleOwner) {
             contentSearchBundle = it
         }
-        libraryViewModel.groupSearchBundle.observe(viewLifecycleOwner) {
-            val searchBundle = GroupSearchManager.GroupSearchBundle(it)
-            onGroupingChanged(searchBundle.groupingId)
-        }
         libraryViewModel.isCustomGroupingAvailable.observe(viewLifecycleOwner) {
             onCustomGroupingAvailable(it)
         }
@@ -201,11 +195,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     private fun onDynamicGroupingAvailable(isAvailable: Boolean) {
         isDynamicGroupingAvailable = isAvailable
         getMenu(menu, NavItem.LIBRARY, Grouping.DYNAMIC.id)?.isVisible = isAvailable
-    }
-
-    private fun onGroupingChanged(targetGroupingId: Int) {
-        val targetGrouping = Grouping.searchById(targetGroupingId)
-        // if (Grouping.FLAT == targetGrouping) binding?.backBooksBtn?.isVisible = false
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -289,7 +278,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                     R.string.title_activity_downloads,
                     R.drawable.ic_menu_home,
                     NavItem.LIBRARY,
-                    Grouping.NONE.id
+                    Grouping.FLAT.id
                 )
             }
 
