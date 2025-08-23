@@ -47,6 +47,7 @@ import me.devsaki.hentoid.widget.GroupSearchManager
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import timber.log.Timber
 import kotlin.math.floor
 
 private const val MENU_FACTOR = 1000
@@ -108,7 +109,10 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                 when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
                     NavItem.LIBRARY.ordinal -> {
                         val grouping = Grouping.searchById(item.itemId % MENU_FACTOR)
-                        if (Grouping.NONE == grouping) launchActivity(LibraryActivity::class.java)
+                        if (Grouping.NONE == grouping) launchActivity(
+                            LibraryActivity::class.java,
+                            clearTop = true
+                        )
                         libraryViewModel.setGrouping(grouping.id)
                     }
 
@@ -120,7 +124,11 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                         if (!site.isVisible) {
                             launchActivity(WelcomeActivity::class.java)
                         } else {
-                            launchActivity(Content.getWebActivityClass(site), singleTop = true)
+                            Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
+                            launchActivity(
+                                Content.getWebActivityClass(site),
+                                reorderToFront = this@NavigationDrawerFragment.site.isVisible
+                            )
                         }
                     }
 
@@ -292,13 +300,23 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
             val submenu2 =
                 navigator.menu.addSubMenu(1, getRandomInt(), 1, R.string.title_submenu_content)
+            // Browser welcome screen
+            addMenu(
+                submenu2,
+                R.string.title_activity_browser,
+                R.drawable.ic_browser,
+                NavItem.BROWSER,
+                isSelected = origin == NavItem.BROWSER && this@NavigationDrawerFragment.site == Site.NONE
+            )
+            addMenu(
+                submenu2,
+                R.string.title_activity_queue,
+                R.drawable.ic_action_download,
+                NavItem.QUEUE,
+                isSelected = origin == NavItem.QUEUE
+            )
+
             if (origin == NavItem.BROWSER) {
-                addMenu(
-                    submenu2,
-                    R.string.title_activity_queue,
-                    R.drawable.ic_action_download,
-                    NavItem.QUEUE
-                )
                 // All sites
                 Settings.activeSites.forEach { site ->
                     val sb = SpannableStringBuilder.valueOf(site.name)
@@ -321,21 +339,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                     R.string.pref_drawer_sources_title,
                     R.drawable.ic_edit_square,
                     NavItem.EDIT_SOURCES
-                )
-            } else {
-                // Generic browser
-                addMenu(
-                    submenu2,
-                    R.string.title_activity_browser,
-                    R.drawable.ic_browser,
-                    NavItem.BROWSER
-                )
-                addMenu(
-                    submenu2,
-                    R.string.title_activity_queue,
-                    R.drawable.ic_action_download,
-                    NavItem.QUEUE,
-                    isSelected = origin == NavItem.QUEUE
                 )
             }
 
@@ -409,13 +412,14 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     private fun launchActivity(
         activityClass: Class<*>,
         bundle: Bundle? = null,
-        singleTop: Boolean = false
+        clearTop: Boolean = false,
+        reorderToFront: Boolean = false
     ) {
         val intent = Intent(requireActivity(), activityClass)
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
-        // it can interfere with actions mapped to the "back" command
-        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-        if (singleTop) intent.flags = intent.flags or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        // it can interfere with Double-Back (press back twice) to exit
+        if (clearTop) intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        //if (reorderToFront) intent.flags = intent.flags or Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP
         if (bundle != null) intent.putExtras(bundle)
         ContextCompat.startActivity(requireContext(), intent, null)
         activity?.apply {
@@ -426,6 +430,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
             }
             EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
         }
+        if (reorderToFront) activity?.finish()
     }
 
     private fun launchFavBook() {

@@ -42,8 +42,8 @@ import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
-import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.initDrawerLayout
@@ -74,7 +74,6 @@ import me.devsaki.hentoid.ui.invokeNumberInputDialog
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
-import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.calcPhash
 import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
@@ -212,7 +211,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     private val queuedBooksUrls: MutableList<String> = ArrayList()
 
     // List of tags of Preference-browser-blocked tags
-    private var m_prefBlockedTags: MutableList<String> = ArrayList()
+    private var internalPrefBlockedTags: MutableList<String> = ArrayList()
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -228,7 +227,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     protected var fetchHandler: BiConsumer<String, String>? = null
     protected var xhrHandler: BiConsumer<String, String>? = null
     private var jsInterceptorScript: String? = null
-    private var m_customCss: String? = null
+    private var internalCustomCss: String? = null
 
 
     protected abstract fun createWebClient(): CustomWebViewClient
@@ -328,12 +327,15 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         callback?.remove()
         callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                // Close drawers
                 binding?.apply {
-                    if (fragmentBookmarksDrawer.isVisible || fragmentNavigationDrawer.isVisible)
+                    if (fragmentBookmarksDrawer.isVisible || fragmentNavigationDrawer.isVisible) {
                         EventBus.getDefault()
                             .post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
-                    return
+                        return
+                    }
                 }
+                // Previous webpage
                 if (webView.canGoBack()) return
 
                 // Other cases
@@ -342,6 +344,98 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             }
         }
         onBackPressedDispatcher.addCallback(this, callback!!)
+    }
+
+    override fun onDestroy() {
+        webClient.destroy()
+
+        webView.apply {
+            // the WebView must be removed from the view hierarchy before calling destroy
+            // to prevent a memory leak
+            // See https://developer.android.com/reference/android/webkit/WebView.html#destroy%28%29
+            (parent as ViewGroup).removeView(this)
+            removeAllViews()
+            destroy()
+        }
+        Settings.unregisterPrefsChangedListener(listener)
+
+        // Cancel any previous extra page load
+        EventBus.getDefault().post(
+            DownloadCommandEvent(
+                DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT,
+                currentContent
+            )
+        )
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        binding = null
+        super.onDestroy()
+    }
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
+        // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
+        val url = webView.url
+        if (url != null) {
+            val bundle = BaseWebActivityBundle()
+            if (WebkitPackageHelper.getWebViewAvailable()) bundle.url = url
+            outState.putAll(bundle.bundle)
+        }
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
+        // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
+        val url = BaseWebActivityBundle(savedInstanceState).url
+        if (url.isNotEmpty()) webView.loadUrl(url)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            startActivity(Intent(this, MissingWebViewActivity::class.java))
+            return
+        }
+
+        checkPermissions()
+
+        // Refresh navigation drawer display
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.Type.SIGNAL_SITE,
+                CommunicationEvent.Recipient.DRAWER,
+                getStartSite().name
+            )
+        )
+
+        webView.url?.let { url ->
+            Timber.i(">> WebActivity resume : $url ${currentContent != null} ${currentContent?.title ?: ""}")
+            if (!webClient.isGalleryPage(url)) return
+
+            // TODO Cancel whichever process was happening before
+            currentContent?.let { cc ->
+                lifecycleScope.launch {
+                    try {
+                        val status = processContent(cc, false)
+                        onContentProcessed(cc, status, false)
+                    } catch (t: Throwable) {
+                        Timber.e(t)
+                        onContentProcessed(cc, ContentStatus.UNKNOWN, false)
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onStop() {
+        if (WebkitPackageHelper.getWebViewAvailable()) {
+            webView.url?.let { viewModel.saveCurrentUrl(getStartSite(), it) }
+        }
+        super.onStop()
     }
 
     /**
@@ -418,92 +512,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 progressBar.visibility = View.VISIBLE
             }
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
-        // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        val url = webView.url
-        if (url != null) {
-            val bundle = BaseWebActivityBundle()
-            if (WebkitPackageHelper.getWebViewAvailable()) bundle.url = url
-            outState.putAll(bundle.bundle)
-        }
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-
-        // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
-        // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        val url = BaseWebActivityBundle(savedInstanceState).url
-        if (url.isNotEmpty()) webView.loadUrl(url)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!WebkitPackageHelper.getWebViewAvailable()) {
-            startActivity(Intent(this, MissingWebViewActivity::class.java))
-            return
-        }
-        checkPermissions()
-        val url = webView.url
-        Timber.i(
-            ">> WebActivity resume : %s %s %s",
-            url,
-            currentContent != null,
-            if (currentContent != null) currentContent!!.title else ""
-        )
-        if (url != null && createWebClient().isGalleryPage(url)) {
-            // TODO Cancel whichever process was happening before
-            currentContent?.let { cc ->
-                lifecycleScope.launch {
-                    try {
-                        val status = withContext(Dispatchers.IO) {
-                            processContent(cc, false)
-                        }
-                        onContentProcessed(cc, status, false)
-                    } catch (t: Throwable) {
-                        Timber.e(t)
-                        onContentProcessed(cc, ContentStatus.UNKNOWN, false)
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onStop() {
-        if (WebkitPackageHelper.getWebViewAvailable()) {
-            webView.url?.let { viewModel.saveCurrentUrl(getStartSite(), it) }
-        }
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-        webClient.destroy()
-
-        webView.apply {
-            // the WebView must be removed from the view hierarchy before calling destroy
-            // to prevent a memory leak
-            // See https://developer.android.com/reference/android/webkit/WebView.html#destroy%28%29
-            (parent as ViewGroup).removeView(this)
-            removeAllViews()
-            destroy()
-        }
-        Settings.unregisterPrefsChangedListener(listener)
-
-        // Cancel any previous extra page load
-        EventBus.getDefault().post(
-            DownloadCommandEvent(
-                DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT,
-                currentContent
-            )
-        )
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        binding = null
-        super.onDestroy()
     }
 
     // Make sure permissions are set at resume time; if not, warn the user
@@ -1261,10 +1269,12 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * @param onlineContent Currently displayed content
      * @return The status of the Content after being processed
      */
-    private fun processContent(onlineContent: Content, quickDownload: Boolean): ContentStatus {
-        assertNonUiThread()
-        if (onlineContent.url.isEmpty()) return ContentStatus.UNDOWNLOADABLE
-        if (onlineContent.status == StatusContent.IGNORED) return ContentStatus.UNDOWNLOADABLE
+    private suspend fun processContent(
+        onlineContent: Content,
+        quickDownload: Boolean
+    ): ContentStatus = withContext(Dispatchers.IO) {
+        if (onlineContent.url.isEmpty()) return@withContext ContentStatus.UNDOWNLOADABLE
+        if (onlineContent.status == StatusContent.IGNORED) return@withContext ContentStatus.UNDOWNLOADABLE
         currentContent = null
         Timber.i("Processing ${onlineContent.site.name} Content @ ${onlineContent.url} ${onlineContent.coverImageUrl}")
         val searchUrl =
@@ -1314,7 +1324,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                     // Look for duplicates
                     try {
                         val duplicateResult = findDuplicate(
-                            this,
+                            this@BaseBrowserActivity,
                             onlineContent,
                             Settings.duplicateBrowserUseTitle,
                             Settings.duplicateBrowserUseArtist,
@@ -1339,7 +1349,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 }
                 if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                     onlineContent.status = StatusContent.SAVED
-                    addContent(this, dao, onlineContent)
+                    addContent(this@BaseBrowserActivity, dao, onlineContent)
                 } else {
                     onlineContent.id = contentDB.id
                     currentContent = contentDB
@@ -1351,9 +1361,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             if (null == currentContent) currentContent = onlineContent
             if (isInCollection) {
                 if (!quickDownload) searchForExtraImages(contentDB, onlineContent)
-                return ContentStatus.IN_COLLECTION
+                return@withContext ContentStatus.IN_COLLECTION
             }
-            return if (isInQueue) ContentStatus.IN_QUEUE else ContentStatus.UNKNOWN
+            return@withContext if (isInQueue) ContentStatus.IN_QUEUE else ContentStatus.UNKNOWN
         } finally {
             dao.cleanup()
         }
@@ -1365,9 +1375,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
         lifecycleScope.launch {
             try {
-                val status = withContext(Dispatchers.IO) {
-                    processContent(content, quickDownload)
-                }
+                val status = processContent(content, quickDownload)
                 onContentProcessed(content, status, quickDownload)
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -1616,12 +1624,12 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     }
 
     private fun updatePrefBlockedTags() {
-        m_prefBlockedTags.clear()
-        m_prefBlockedTags.addAll(Settings.blockedTags)
+        internalPrefBlockedTags.clear()
+        internalPrefBlockedTags.addAll(Settings.blockedTags)
     }
 
     private fun clearPrefBlockedTags() {
-        m_prefBlockedTags.clear()
+        internalPrefBlockedTags.clear()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1743,7 +1751,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     override val allQueuedBooksUrls: List<String>
         get() = queuedBooksUrls.toMutableList()
     override val prefBlockedTags: List<String>
-        get() = m_prefBlockedTags.toMutableList()
+        get() = internalPrefBlockedTags.toMutableList()
     override val customCss: String
         get() = computeCustomCss()
     override val alertStatus: AlertStatus
@@ -1752,7 +1760,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         get() = lifecycleScope
 
     private fun computeCustomCss(): String {
-        if (null == m_customCss) {
+        if (null == internalCustomCss) {
             val sb = StringBuilder()
             if (Settings.isBrowserMarkDownloaded || Settings.isBrowserMarkMerged || Settings.isBrowserMarkQueued || Settings.isBrowserMarkBlockedTags) getAssetAsString(
                 assets, "downloaded.css", sb
@@ -1771,9 +1779,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             )
             if (getStartSite() == Site.PIXIV && Settings.isBrowserAugmented(getStartSite()))
                 getAssetAsString(assets, "pixiv.css", sb)
-            m_customCss = sb.toString()
+            internalCustomCss = sb.toString()
         }
-        return m_customCss!!
+        return internalCustomCss!!
     }
 
 
@@ -1790,22 +1798,22 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 if (Settings.getBrowserDlAction() == DownloadMode.STREAM) R.drawable.selector_download_stream_action else R.drawable.selector_download_action
             lifecycleScope.launch { setActionMode(actionButtonMode) }
         } else if (Settings.Key.BROWSER_MARK_DOWNLOADED == key) {
-            m_customCss = null
+            internalCustomCss = null
             webClient.setMarkDownloaded(Settings.isBrowserMarkDownloaded)
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls() else clearDownloadedBooksUrls()
             reload = true
         } else if (Settings.Key.BROWSER_MARK_MERGED == key) {
-            m_customCss = null
+            internalCustomCss = null
             webClient.setMarkMerged(Settings.isBrowserMarkMerged)
             if (webClient.isMarkMerged()) updateMergedBooksUrls() else clearMergedBooksUrls()
             reload = true
         } else if (Settings.Key.BROWSER_MARK_QUEUED == key) {
-            m_customCss = null
+            internalCustomCss = null
             webClient.setMarkQueued(Settings.isBrowserMarkQueued)
             if (webClient.isMarkQueued()) updateQueuedBooksUrls() else clearQueueBooksUrls()
             reload = true
         } else if (Settings.Key.BROWSER_MARK_BLOCKED == key) {
-            m_customCss = null
+            internalCustomCss = null
             webClient.setMarkBlockedTags(Settings.isBrowserMarkBlockedTags)
             if (webClient.isMarkBlockedTags()) updatePrefBlockedTags() else clearPrefBlockedTags()
             reload = true
@@ -1813,7 +1821,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             updatePrefBlockedTags()
             reload = true
         } else if (Settings.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST == key) {
-            m_customCss = null
+            internalCustomCss = null
             reload = true
         } else if (Settings.Key.BROWSER_DNS_OVER_HTTPS == key) {
             webClient.setDnsOverHttpsEnabled(Settings.dnsOverHttps > -1)
