@@ -531,10 +531,13 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 alertIcon.visibility = View.VISIBLE
                 alertFixBtn.visibility = View.GONE
             } else {
+                root.isVisible = false
                 alertTxt.visibility = View.GONE
                 alertIcon.visibility = View.GONE
                 alertFixBtn.visibility = View.GONE
+                return
             }
+            root.isVisible = true
         }
     }
 
@@ -946,10 +949,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun isLowDatabaseStorage(): Boolean {
-        val dbMaxSizeKb = Settings.maxDbSizeKb
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
-            return dao.getDbSizeBytes() / 1024f / dbMaxSizeKb < 0.02
+            return dao.getDbSizeBytes() / 1024.0 / Settings.maxDbSizeKb > 0.98
         } finally {
             dao.cleanup()
         }
@@ -965,12 +967,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             if (RQST_STORAGE_PERMISSION == requestCode) {
                 if (permissions.size < 2) return
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    root.isVisible = false
                     alertTxt.visibility = View.GONE
                     alertIcon.visibility = View.GONE
                     alertFixBtn.visibility = View.GONE
                 } // Don't show rationales here; the alert still displayed on screen should be enough
             } else if (RQST_NOTIFICATION_PERMISSION == requestCode) {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    root.isVisible = false
                     alertTxt.visibility = View.GONE
                     alertIcon.visibility = View.GONE
                     alertFixBtn.visibility = View.GONE
