@@ -310,7 +310,7 @@ class SettingsStorageActivity : BaseActivity(), DownloadStrategyDialogFragment.P
             .setLifecycleOwner(this)
             .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
+            .setMenuColor(ContextCompat.getColor(this, R.color.subbar_1))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
             .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setAutoDismiss(true)

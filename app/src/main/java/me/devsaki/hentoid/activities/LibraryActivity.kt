@@ -719,7 +719,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     ContextCompat.getColor(this, R.color.white_opacity_87)
                 ).setTextTypeface(Typeface.DEFAULT).setShowBackground(false).setWidth(
                     resources.getDimension(R.dimen.dialog_width).toInt()
-                ).setMenuColor(ContextCompat.getColor(this, R.color.medium_gray)).setTextSize(
+                ).setMenuColor(ContextCompat.getColor(this, R.color.subbar_2)).setTextSize(
                     dimensAsDp(this, R.dimen.text_subtitle_2)
                 ).setAutoDismiss(true)
             for (i in searchRecords.indices.reversed()) powerMenuBuilder.addItem(

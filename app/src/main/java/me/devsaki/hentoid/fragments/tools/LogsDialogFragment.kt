@@ -134,7 +134,7 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
             .setLifecycleOwner(requireActivity())
             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
+            .setMenuColor(ContextCompat.getColor(requireContext(), R.color.subbar_1))
             .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
             .setAutoDismiss(true)
             .build()

@@ -65,7 +65,7 @@ fun buildDownloadModeMenu(
         .setLifecycleOwner(lifecycle)
         .setTextColor(ContextCompat.getColor(context, R.color.white_opacity_87))
         .setTextTypeface(Typeface.DEFAULT)
-        .setMenuColor(ContextCompat.getColor(context, R.color.dark_gray))
+        .setMenuColor(ContextCompat.getColor(context, R.color.subbar_1))
         .setTextSize(dimensAsDp(context, R.dimen.text_subtitle_1))
         .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
         .setAutoDismiss(autoDismiss)
