@@ -288,39 +288,28 @@
             app:layout_constraintTop_toBottomOf="@id/preview_dims"
             tools:text="548 KB ➤ 450 KB" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/prev_page_btn"
+            style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:contentDescription="@string/previous_page"
-            android:focusable="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_previous_item"
             android:tooltipText="@string/previous_page"
+            app:icon="@drawable/ic_action_previous_item"
             app:layout_constraintBottom_toBottomOf="@id/thumb"
             app:layout_constraintEnd_toStartOf="@id/next_page_btn"
             app:layout_constraintStart_toEndOf="@id/thumb"
-            app:tint="?colorOnPrimary"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/next_page_btn"
+            style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:contentDescription="@string/next_page"
-            android:focusable="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_next_item"
             android:tooltipText="@string/next_page"
+            app:icon="@drawable/ic_action_next_item"
             app:layout_constraintBottom_toBottomOf="@id/thumb"
             app:layout_constraintStart_toEndOf="@id/prev_page_btn"
-            app:tint="?colorOnPrimary"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
