@@ -66,27 +66,29 @@
             app:layout_constraintTop_toBottomOf="@id/toolbar"
             tools:visibility="visible">
 
-            <TextView
+            <Button
                 android:id="@+id/search_source_btn"
-                style="@style/TextButton"
-                android:layout_width="wrap_content"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="start"
+                android:gravity="start|center_vertical"
                 android:text="@string/filter_by_source"
+                android:textAllCaps="true"
+                android:textColor="@color/white_opacity_87"
+                android:visibility="gone"
                 app:layout_constraintBottom_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                tools:ignore="ContentDescription"
+                tools:visibility="visible" />
 
             <ImageView
                 android:id="@+id/search_clear_btn"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="8dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:adjustViewBounds="true"
                 android:clickable="true"
                 android:focusable="true"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_cancel"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
