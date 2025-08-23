@@ -1003,8 +1003,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * @param mode Mode to switch to
      */
     private fun changeSeekMode(mode: SeekMode, enabled: Boolean) {
-        @DrawableRes var resId: Int = R.drawable.selector_back_gallery
-        if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek
+        @DrawableRes var resId: Int = R.drawable.ic_action_back_gallery
+        if (SeekMode.PAGE == mode) resId = R.drawable.ic_page_seek
         seekButtonMode = mode
         binding?.apply {
             menuSeek.setIconResource(resId)

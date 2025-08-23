@@ -71,6 +71,25 @@
         <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
     </style>
 
+    <style name="Theme.Light.MonochromeBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+
+        <!-- Depending on APIs, any of them might be applicable :/ -->
+        <item name="android:windowBackground">@color/cod_gray</item>
+        <item name="colorSurface">@color/cod_gray</item>
+        <item name="android:background">@color/cod_gray</item>
+        <item name="android:colorBackground">@color/cod_gray</item>
+
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary_light</item>
+        <item name="bottomSheetStyle">@style/Theme.Light.MonochromeModalBottomSheetDialog</item>
+    </style>
+
+    <style name="Theme.Light.MonochromeModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/cod_gray</item>
+    </style>
+
     <!-- Prefs Activity -->
     <style name="Theme.Light.Prefs">
         <!-- Display action bar -->
