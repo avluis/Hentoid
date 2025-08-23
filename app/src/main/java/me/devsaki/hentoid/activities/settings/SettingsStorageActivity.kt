@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.getPathRoot
 import me.devsaki.hentoid.util.getPrefsIndex
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.SettingsViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -310,7 +311,7 @@ class SettingsStorageActivity : BaseActivity(), DownloadStrategyDialogFragment.P
             .setLifecycleOwner(this)
             .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ContextCompat.getColor(this, R.color.subbar_1))
+            .setMenuColor(this.getThemedColor(R.color.subbar_1_light))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
             .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setAutoDismiss(true)

@@ -38,6 +38,7 @@ import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.copyPlainTextToClipboard
 import me.devsaki.hentoid.util.dimensAsDp
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.util.toastShort
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder
@@ -312,7 +313,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
                         ContextCompat.getColor(requireContext(), R.color.white_opacity_87)
                     )
                     .setTextTypeface(Typeface.DEFAULT)
-                    .setMenuColor(ContextCompat.getColor(requireContext(), R.color.subbar_1))
+                    .setMenuColor(requireContext().getThemedColor(R.color.subbar_1_light))
                     .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                     .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
                     .setAutoDismiss(true)

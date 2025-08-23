@@ -28,6 +28,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.lockType
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.toast
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -105,7 +106,7 @@ abstract class BaseActivity : AppCompatActivity {
             .setLifecycleOwner(this).setBackgroundAlpha(0f)
             .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ContextCompat.getColor(this, R.color.subbar_1))
+            .setMenuColor(this.getThemedColor(R.color.subbar_1_light))
             .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt()).setAutoDismiss(true)
             .build()

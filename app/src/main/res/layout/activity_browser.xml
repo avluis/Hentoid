@@ -201,7 +201,7 @@
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_gravity="bottom"
-            android:backgroundTint="@color/bar"
+            android:backgroundTint="?bar"
             app:layout_behavior="me.devsaki.hentoid.widget.BottomNavigationBehaviour">
 
             <androidx.constraintlayout.widget.ConstraintLayout

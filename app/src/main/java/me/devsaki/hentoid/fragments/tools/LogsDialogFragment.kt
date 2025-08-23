@@ -29,6 +29,7 @@ import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.formatEpochToDate
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.viewholders.TextItem
 import timber.log.Timber
 import java.time.format.DateTimeFormatter
@@ -134,7 +135,7 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
             .setLifecycleOwner(requireActivity())
             .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ContextCompat.getColor(requireContext(), R.color.subbar_1))
+            .setMenuColor(requireContext().getThemedColor(R.color.subbar_1_light))
             .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
             .setAutoDismiss(true)
             .build()

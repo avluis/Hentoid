@@ -11,6 +11,7 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.dimensAsDp
+import me.devsaki.hentoid.util.getThemedColor
 
 fun showRedownloadMenu(
     context: Context,
@@ -39,7 +40,7 @@ fun showRedownloadMenu(
         .setLifecycleOwner(lifecycle)
         .setTextColor(ContextCompat.getColor(context, R.color.white_opacity_87))
         .setTextTypeface(Typeface.DEFAULT)
-        .setMenuColor(ContextCompat.getColor(context, R.color.subbar_1))
+        .setMenuColor(context.getThemedColor(R.color.subbar_1_light))
         .setTextSize(dimensAsDp(context, R.dimen.text_subtitle_1))
         .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
         .setAutoDismiss(true)

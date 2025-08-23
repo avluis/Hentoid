@@ -14,12 +14,12 @@
     <color name="ripple_light">@color/light_red</color>
 
     <!-- Drawers, bottom panels -->
-    <color name="drawer_background">@color/taupe</color>
+    <color name="drawer_background_light">@color/taupe</color>
 
     <!-- Sub-bars -->
-    <color name="bar">@color/taupe</color>
-    <color name="subbar_1">@color/taupe_m1</color>
-    <color name="subbar_2">@color/taupe_m2</color>
+    <color name="bar_light">@color/taupe</color>
+    <color name="subbar_1_light">@color/taupe_m1</color>
+    <color name="subbar_2_light">@color/taupe_m2</color>
 
     <!-- Content cards -->
     <color name="card_title_light">@color/secondary_light</color>

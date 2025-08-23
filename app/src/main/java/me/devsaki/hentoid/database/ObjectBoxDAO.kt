@@ -1128,7 +1128,7 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectHistory()
     }
 
-    override fun insertSiteHistory(site: Site, url: String, timestamp : Long) {
+    override fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
         ObjectBoxDB.insertSiteHistory(site, url, timestamp)
     }
 
@@ -1169,8 +1169,8 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.deleteBookmark(bookmarkId)
     }
 
-    override fun deleteBookmarks(ids: List<Long>) {
-        ObjectBoxDB.deleteBookmarks(ids)
+    override fun deleteBookmarks(bookmarkIds: List<Long>) {
+        ObjectBoxDB.deleteBookmarks(bookmarkIds)
     }
 
 

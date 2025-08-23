@@ -399,7 +399,7 @@ class LibraryGroupsFragment : Fragment(),
                         )
                     )
                     .setTextTypeface(Typeface.DEFAULT)
-                    .setMenuColor(requireContext().getThemedColor(R.color.subbar_1))
+                    .setMenuColor(requireContext().getThemedColor(R.color.subbar_1_light))
                     .setTextSize(dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
                     .setAutoDismiss(true)
                 if (!Settings.getGroupingDisplayG().canDeleteGroups) {

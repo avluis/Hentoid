@@ -71,6 +71,7 @@ import me.devsaki.hentoid.util.file.checkNotificationPermission
 import me.devsaki.hentoid.util.file.isLowDeviceStorage
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.file.requestNotificationPermission
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.runExternalImport
 import me.devsaki.hentoid.util.showTooltip
@@ -719,7 +720,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     ContextCompat.getColor(this, R.color.white_opacity_87)
                 ).setTextTypeface(Typeface.DEFAULT).setShowBackground(false).setWidth(
                     resources.getDimension(R.dimen.dialog_width).toInt()
-                ).setMenuColor(ContextCompat.getColor(this, R.color.subbar_2)).setTextSize(
+                ).setMenuColor(this.getThemedColor(R.color.subbar_2_light)).setTextSize(
                     dimensAsDp(this, R.dimen.text_subtitle_2)
                 ).setAutoDismiss(true)
             for (i in searchRecords.indices.reversed()) powerMenuBuilder.addItem(

@@ -43,11 +43,14 @@
         <item name="android:textColorSecondary">@color/on_secondary_light</item>
         <item name="android:textColorTertiary">@color/on_primary_light</item>
         <!-- Custom items for specific places of the app -->
+        <item name="bar">@color/bar_light</item>
+        <item name="subbar_1">@color/subbar_1_light</item>
+        <item name="subbar_2">@color/subbar_2_light</item>
         <item name="card_title">@color/card_title_light</item>
         <item name="card_surface">@color/card_surface_light</item>
         <item name="card_pressed">@color/card_pressed_light</item>
         <item name="card_selected">@color/card_selected_light</item>
-        <item name="drawer_background">@color/drawer_background</item>
+        <item name="drawer_background">@color/drawer_background_light</item>
         <!-- Toolbar as ActionBar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
@@ -148,7 +151,7 @@
     </style>
 
     <style name="Theme.Light.ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="backgroundTint">@color/drawer_background</item>
+        <item name="backgroundTint">@color/drawer_background_light</item>
     </style>
 
     <!-- PIN screens -->
@@ -162,13 +165,13 @@
 
     <!-- Themes for subcomponents -->
     <style name="Theme.Light.ActionBar">
-        <item name="colorSurface">@color/bar</item>
+        <item name="colorSurface">?bar</item>
         <item name="colorOnSurface">@color/on_primary_light</item>
     </style>
 
     <style name="Theme.Light.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="titleTextColor">@color/white_opacity_87</item>
-        <item name="android:background">@color/bar</item>
+        <item name="android:background">?bar</item>
     </style>
 
     <style name="Theme.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">
