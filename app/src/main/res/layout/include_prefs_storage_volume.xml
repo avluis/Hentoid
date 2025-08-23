@@ -35,8 +35,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="4dp"
-        android:progress="50"
         android:indeterminate="false"
+        android:progress="50"
         app:indicatorColor="@color/secondary_light"
         app:indicatorSize="24dp"
         app:layout_constraintStart_toEndOf="@id/number"
@@ -53,17 +53,16 @@
         app:layout_constraintTop_toTopOf="@id/stats_graph"
         tools:text="4.5 GB (30%) free" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/actions_btn"
+        style="?attr/materialIconButtonFilledTonalStyle"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="8dp"
-        android:background="@color/transparent"
-        android:padding="8dp"
-        android:src="@drawable/ic_more_vertical"
         android:tooltipText="@string/actions_generic"
+        app:icon="@drawable/ic_more_vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 </merge>
