@@ -201,52 +201,50 @@
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_gravity="bottom"
-            android:backgroundTint="?colorPrimary"
+            android:backgroundTint="@color/bar"
             app:layout_behavior="me.devsaki.hentoid.widget.BottomNavigationBehaviour">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu_seek"
+                    style="?attr/materialIconButtonFilledTonalStyle"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:background="@color/transparent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:padding="8dp"
-                    android:src="@drawable/selector_back_gallery"
+                    android:enabled="false"
+                    android:tooltipText="@string/previous_book_help"
+                    android:visibility="invisible"
+                    app:icon="@drawable/ic_action_back_gallery"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="ContentDescription" />
+                    tools:ignore="ContentDescription"
+                    tools:visibility="visible" />
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu_back"
+                    style="?attr/materialIconButtonFilledTonalStyle"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:background="@color/transparent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:padding="8dp"
-                    android:src="@drawable/selector_back_action"
+                    android:enabled="false"
+                    android:tooltipText="@string/previous_book_help"
+                    app:icon="@drawable/ic_action_back"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/menu_forward"
                     app:layout_constraintStart_toEndOf="@id/menu_seek"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
 
-                <ImageButton
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu_forward"
+                    style="?attr/materialIconButtonFilledTonalStyle"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:layout_marginEnd="64dp"
-                    android:background="@color/transparent"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:padding="8dp"
-                    android:src="@drawable/selector_forward_action"
+                    android:enabled="false"
+                    android:tooltipText="@string/next_book_help"
+                    app:icon="@drawable/ic_action_forward"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/menu_back"

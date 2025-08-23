@@ -1007,7 +1007,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         if (SeekMode.PAGE == mode) resId = R.drawable.selector_page_seek
         seekButtonMode = mode
         binding?.apply {
-            menuSeek.setImageDrawable(ContextCompat.getDrawable(this@BaseBrowserActivity, resId))
+            menuSeek.setIconResource(resId)
             menuSeek.isEnabled = enabled
         }
     }

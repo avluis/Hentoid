@@ -143,7 +143,7 @@
 
     <!-- Themes for subcomponents -->
     <style name="Theme.Light.ActionBar">
-        <item name="colorSurface">@color/primary_light</item>
+        <item name="colorSurface">@color/bar</item>
         <item name="colorOnSurface">@color/on_primary_light</item>
     </style>
 
