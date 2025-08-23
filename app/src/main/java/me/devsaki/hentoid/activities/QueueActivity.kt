@@ -348,9 +348,9 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         reparseContent: Boolean,
         reparseImages: Boolean
     ) {
-        binding?.let {
+        binding?.let { b ->
             if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-                showAddQueueMenu(this, it.queueTabs, this) { position: Int, _: PowerMenuItem? ->
+                showAddQueueMenu(this, b.queueTabs, this) { position: Int, _: PowerMenuItem? ->
                     redownloadContent(
                         contentList,
                         reparseContent,
@@ -405,7 +405,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
                     snack.setAction(R.string.view_queue) { binding?.queuePager?.currentItem = 0 }
                     snack.setAnchorView(it.snackbarLocation).show()
                 }
-            }, { t: Throwable -> Timber.i(t) }
+            }, { Timber.i(it) }
         )
     }
 

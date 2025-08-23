@@ -3,7 +3,6 @@ package me.devsaki.hentoid.fragments.queue
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -14,6 +13,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.annotation.StringRes
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -271,8 +271,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         if (isSelected) IntRange(start, end).forEach {
                             selectExtension.select(
                                 it,
-                                false,
-                                true
+                                fireEvent = false,
+                                considerSelectableFlag = true
                             )
                         }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
@@ -627,7 +627,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun searchQueue(uri: String) {
-        val searchArgs = SearchActivityBundle.parseSearchUri(Uri.parse(uri))
+        val searchArgs = SearchActivityBundle.parseSearchUri(uri.toUri())
         val sourceAttr = searchArgs.attributes.firstOrNull { a -> AttributeType.SOURCE == a.type }
         val site = if (sourceAttr != null) Site.searchByName(sourceAttr.name) else null
         viewModel.searchQueueUniversal(searchArgs.query, site)
@@ -1109,7 +1109,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 selectExtension.apply {
                     while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
                         IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
-                            select(it, false, true)
+                            select(it, fireEvent = false, considerSelectableFlag = true)
                         }
                 }
                 keepToolbar = true
@@ -1170,7 +1170,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * @param items Items to be deleted if the answer is yes
      */
     private fun askDeleteSelected(items: List<Content>) {
-        val context = getActivity() ?: return
+        val context = requireContext()
         val builder = MaterialAlertDialogBuilder(context)
         val title = context.resources.getQuantityString(R.plurals.ask_cancel_multiple, items.size)
         builder.setMessage(title).setPositiveButton(
