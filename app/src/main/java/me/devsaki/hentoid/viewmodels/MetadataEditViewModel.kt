@@ -366,18 +366,22 @@ class MetadataEditViewModel(
             dao.insertGroup(group)
             updateGroupsJson(getApplication(), dao)
         }
+        dao.cleanup()
 
         // Mark all related books for update
         val contents = attr.contents
         if (!contents.isEmpty()) {
-            contents.forEach {
-                // Update the 'author' pre-calculated field for all related books if needed
-                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
-                    it.computeAuthor()
-                    persistJson(getApplication(), it)
+            viewModelScope.launch {
+                contents.forEach {
+                    // Update the 'author' pre-calculated field for all related books if needed
+                    if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
+                        it.computeAuthor()
+                        persistJson(getApplication(), it)
+                    }
+                    it.lastEditDate = Instant.now().toEpochMilli()
+                    dao.insertContent(it)
                 }
-                it.lastEditDate = Instant.now().toEpochMilli()
-                dao.insertContent(it)
+                dao.cleanup()
             }
         }
     }

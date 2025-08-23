@@ -488,7 +488,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private fun importFolder(
+    private suspend fun importFolder(
         context: Context,
         explorer: FileExplorer,
         dao: CollectionDAO,
@@ -910,7 +910,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         return false
     }
 
-    private fun renumberPages(
+    private suspend fun renumberPages(
         context: Context,
         content: Content,
         contentImages: List<ImageFile>,
@@ -918,8 +918,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     ) {
         var naturalOrder = 0
         var nbRenumbered = 0
-        val orderedImages = contentImages.sortedBy { obj: ImageFile -> obj.order }
-            .filter { obj: ImageFile -> obj.isReadable }
+        val orderedImages = contentImages.sortedBy { it.order }.filter { it.isReadable }
         val nbMaxDigits = (floor(log10(orderedImages.size.toDouble())) + 1).toInt()
         for (img in orderedImages) {
             naturalOrder++

@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.browser
 
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -41,13 +40,10 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
     private var parent: CustomWebViewClient.BrowserActivity? = null
     private var sitePerTimestamp: List<Site> = emptyList()
 
-    // Settings listener
-    private val prefsListener =
-        OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Settings.registerPrefsChangedListener({ _, key -> onSharedPreferenceChanged(key) })
     }
 
     override fun onDestroy() {

@@ -111,64 +111,71 @@ suspend fun indexCovers(
     }
 }
 
-private fun indexContent(
+private suspend fun indexContent(
     context: Context,
     dao: CollectionDAO,
     content: Content,
     hashEngine: ImagePHash,
 ) {
     val bitmap = getCoverBitmapFromContent(context, content)
-    val pHash = calcPhash(hashEngine, bitmap)
-    bitmap?.recycle()
-    savePhash(context, dao, content, pHash)
-}
-
-fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
-    if (content.cover.fileUri.isEmpty()) return null
-
     try {
-        getInputStream(context, content.cover.fileUri.toUri())
-            .use {
-                return getCoverBitmapFromStream(it)
-            }
-    } catch (e: IOException) {
-        Timber.w(e) // Doesn't break the loop
-        return null
+        val pHash = calcPhash(hashEngine, bitmap)
+        savePhash(context, dao, content, pHash)
+    } finally {
+        bitmap?.recycle()
     }
 }
 
-fun getCoverBitmapFromStream(stream: InputStream): Bitmap? {
-    return decodeSampledBitmapFromStream(
-        stream,
-        COVER_WORK_RESOLUTION,
-        COVER_WORK_RESOLUTION
-    )
-}
+suspend fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? =
+    withContext(Dispatchers.IO) {
+        if (content.cover.fileUri.isEmpty()) return@withContext null
 
-fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long {
-    return if (null == bitmap) Long.MIN_VALUE
-    else hashEngine.calcPHash(bitmap)
-}
-
-private fun savePhash(context: Context, dao: CollectionDAO, content: Content, pHash: Long) {
-    content.cover.imageHash = pHash
-    // Update the picture in DB
-    dao.insertImageFile(content.cover)
-    // The following block has to be abandoned if the cost of retaining all Content in memory is too high
-    try {
-        // Update the book JSON if the book folder still exists
-        if (content.storageUri.isNotEmpty()) {
-            val folder =
-                getDocumentFromTreeUriString(context, content.storageUri)
-            if (folder != null) {
-                if (content.jsonUri.isNotEmpty()) updateJson(context, content)
-                else createJson(context, content)
-            }
+        return@withContext try {
+            getInputStream(context, content.cover.fileUri.toUri())
+                .use {
+                    getCoverBitmapFromStream(it)
+                }
+        } catch (e: IOException) {
+            Timber.w(e) // Doesn't break the loop
+            null
         }
-    } catch (e: IOException) {
-        Timber.w(e) // Doesn't break the loop
     }
-}
+
+suspend fun getCoverBitmapFromStream(stream: InputStream): Bitmap? =
+    withContext(Dispatchers.IO) {
+        return@withContext decodeSampledBitmapFromStream(
+            stream,
+            COVER_WORK_RESOLUTION,
+            COVER_WORK_RESOLUTION
+        )
+    }
+
+suspend fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long =
+    withContext(Dispatchers.Default) {
+        return@withContext if (null == bitmap) Long.MIN_VALUE
+        else hashEngine.calcPHash(bitmap)
+    }
+
+private suspend fun savePhash(context: Context, dao: CollectionDAO, content: Content, pHash: Long) =
+    withContext(Dispatchers.IO) {
+        content.cover.imageHash = pHash
+        // Update the picture in DB
+        dao.insertImageFile(content.cover)
+        // The following block has to be abandoned if the cost of retaining all Content in memory is too high
+        try {
+            // Update the book JSON if the book folder still exists
+            if (content.storageUri.isNotEmpty()) {
+                val folder =
+                    getDocumentFromTreeUriString(context, content.storageUri)
+                if (folder != null) {
+                    if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+                    else createJson(context, content)
+                }
+            }
+        } catch (e: IOException) {
+            Timber.w(e) // Doesn't break the loop
+        }
+    }
 
 fun processContent(
     reference: DuplicateCandidate,

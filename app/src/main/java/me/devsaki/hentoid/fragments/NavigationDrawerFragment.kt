@@ -77,10 +77,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private lateinit var menu: Menu
 
-    // Settings listener
-    private val prefsListener =
-        OnSharedPreferenceChangeListener { _, key -> onSharedPreferenceChanged(key) }
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -147,7 +143,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                 true
             }
         }
-        Settings.registerPrefsChangedListener(prefsListener)
+        Settings.registerPrefsChangedListener { _, key -> onSharedPreferenceChanged(key) }
 
         return binding?.root
     }

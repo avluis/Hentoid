@@ -1027,7 +1027,7 @@ class ReaderViewModel(
      */
     private suspend fun loadContent(c: Content, pageNumber: Int = -1) {
         Settings.readerCurrentContent = c.id
-        var listSize = 0
+        var listSize: Int
         currentContentIndex = if (c.status == StatusContent.STORAGE_RESOURCE) {
             listSize = folderFiles.size
             folderFiles.indexOf(c.storageUri.toUri())
