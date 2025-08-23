@@ -86,98 +86,94 @@ class BrowserViewModel(
 
     fun loadBookmarks(sortAsc: Boolean? = null) {
         val theSite = getProperSite()
-        try {
-            // Fetch custom bookmarks
-            var bookmarks = dao.selectBookmarks(theSite)
+        // Fetch custom bookmarks
+        var bookmarks = dao.selectBookmarks(theSite)
 
-            // Apply sort if needed
-            if (sortAsc != null) {
-                bookmarks = bookmarks.sortedWith(InnerNameNumberBookmarkComparator())
-                if (!sortAsc) bookmarks = bookmarks.reversed()
+        // Apply sort if needed
+        if (sortAsc != null) {
+            bookmarks = bookmarks.sortedWith(InnerNameNumberBookmarkComparator())
+            if (!sortAsc) bookmarks = bookmarks.reversed()
 
-                // Renumber and save new order
-                bookmarks.forEachIndexed { i, b -> b.order = i }
-                dao.insertBookmarks(bookmarks)
-            }
-            this.bookmarks.postValue(bookmarks)
-
-            val bookmarkedSites = dao.selectAllBookmarks().groupBy { it.site }.keys
-            this.bookmarkedSites.postValue(Site.entries.filter { bookmarkedSites.contains(it) && it.isVisible })
-        } finally {
-            dao.cleanup()
+            // Renumber and save new order
+            bookmarks.forEachIndexed { i, b -> b.order = i }
+            dao.insertBookmarks(bookmarks)
         }
+        this.bookmarks.postValue(bookmarks)
+
+        val bookmarkedSites = dao.selectAllBookmarks().groupBy { it.site }.keys
+        this.bookmarkedSites.postValue(Site.entries.filter { bookmarkedSites.contains(it) && it.isVisible })
     }
 
     fun addBookmark(title: String) {
-        browserSite.value?.let { s ->
-            try {
-                dao.insertBookmark(
-                    SiteBookmark(
-                        site = s,
-                        title = title,
-                        url = pageUrl.value ?: ""
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                browserSite.value?.let { s ->
+                    dao.insertBookmark(
+                        SiteBookmark(
+                            site = s,
+                            title = title,
+                            url = pageUrl.value ?: ""
+                        )
                     )
-                )
-            } finally {
-                dao.cleanup()
+                    loadBookmarks()
+                    dao.cleanup()
+                }
             }
-            loadBookmarks()
         }
     }
 
     fun updateBookmark(b: SiteBookmark) {
-        try {
-            dao.insertBookmark(b)
-        } finally {
-            dao.cleanup()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                dao.insertBookmark(b)
+                loadBookmarks()
+                dao.cleanup()
+            }
         }
-        loadBookmarks()
     }
 
     fun moveBookmark(oldPosition: Int, newPosition: Int) {
         val bookmarks = bookmarks.value?.toMutableList() ?: return
-        try {
-            if (oldPosition < 0 || oldPosition >= bookmarks.size) return
+        if (oldPosition < 0 || oldPosition >= bookmarks.size) return
 
-            // Add a bogus item on Position 0 to simulate the "Homepage" UI item
-            bookmarks.add(0, SiteBookmark(site = Site.NONE))
+        // Add a bogus item on Position 0 to simulate the "Homepage" UI item
+        bookmarks.add(0, SiteBookmark(site = Site.NONE))
 
-            // Move the item
-            val fromValue = bookmarks[oldPosition]
-            val delta = if (oldPosition < newPosition) 1 else -1
-            var i = oldPosition
-            while (i != newPosition) {
-                bookmarks[i] = bookmarks[i + delta]
-                i += delta
-            }
-            bookmarks[newPosition] = fromValue
-
-            // Remove the bogus element before saving
-            bookmarks.removeIf { b -> b.site == Site.NONE }
-
-            // Renumber everything
-            bookmarks.forEachIndexed { idx, b -> b.order = idx + 1 }
-
-            // Update DB
-            dao.insertBookmarks(bookmarks)
-        } finally {
-            dao.cleanup()
+        // Move the item
+        val fromValue = bookmarks[oldPosition]
+        val delta = if (oldPosition < newPosition) 1 else -1
+        var i = oldPosition
+        while (i != newPosition) {
+            bookmarks[i] = bookmarks[i + delta]
+            i += delta
         }
+        bookmarks[newPosition] = fromValue
+
+        // Remove the bogus element before saving
+        bookmarks.removeIf { b -> b.site == Site.NONE }
+
+        // Renumber everything
+        bookmarks.forEachIndexed { idx, b -> b.order = idx + 1 }
+
+        // Update DB
+        dao.insertBookmarks(bookmarks)
+        dao.cleanup()
     }
 
     fun setBookmarkAsHome(id: Long) {
         val theSite = getProperSite()
-        try {
-            val bookmarks = dao.selectBookmarks(theSite)
-            for (b in bookmarks) {
-                if (b.id == id) b.isHomepage = !b.isHomepage
-                else b.isHomepage = false
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val bookmarks = dao.selectBookmarks(theSite)
+                for (b in bookmarks) {
+                    if (b.id == id) b.isHomepage = !b.isHomepage
+                    else b.isHomepage = false
+                }
+                dao.insertBookmarks(bookmarks)
+                loadBookmarks()
+                dao.cleanup()
             }
-            dao.insertBookmarks(bookmarks)
-        } finally {
-            dao.cleanup()
         }
-        loadBookmarks()
     }
 
     fun deleteBookmark(id: Long) {
@@ -185,39 +181,39 @@ class BrowserViewModel(
     }
 
     fun deleteBookmarks(ids: List<Long>) {
-        try {
-            dao.deleteBookmarks(ids)
-        } finally {
-            dao.cleanup()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                dao.deleteBookmarks(ids)
+                loadBookmarks()
+                dao.cleanup()
+            }
         }
-        loadBookmarks()
     }
 
     fun updateBookmarksJson() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                try {
-                    updateBookmarksJson(HentoidApp.getInstance(), dao)
-                } finally {
-                    dao.cleanup()
-                }
+                updateBookmarksJson(HentoidApp.getInstance(), dao)
+                dao.cleanup()
             }
         }
     }
 
     fun saveCurrentUrl(site: Site, url: String) {
-        try {
-            dao.insertSiteHistory(site, url, Instant.now().toEpochMilli())
-        } finally {
-            dao.cleanup()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                dao.insertSiteHistory(site, url, Instant.now().toEpochMilli())
+                dao.cleanup()
+            }
         }
     }
 
     fun loadHistory() {
-        try {
-            siteHistory.postValue(dao.selectHistory())
-        } finally {
-            dao.cleanup()
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                siteHistory.postValue(dao.selectHistory())
+                dao.cleanup()
+            }
         }
     }
 }
