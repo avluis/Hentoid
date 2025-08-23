@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:background="@color/white_opacity_66"
-    android:padding="16dp"
+    android:padding="8dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
 
     <TextView
-        android:id="@+id/chooseDirectionTitle"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/viewer_choose_direction"
@@ -23,97 +21,42 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:id="@+id/chooseHorizontalLtr"
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/selector"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
-        android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/chooseVertical"
-        app:layout_constraintEnd_toStartOf="@id/chooseHorizontalRtl"
-        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chooseDirectionTitle">
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:selectionRequired="true"
+        app:singleSelection="true">
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_direction_ltr_icons"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_ltr"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/viewer_direction_ltr" />
+            android:text="@string/viewer_direction_ltr"
+            app:icon="@drawable/ic_direction_ltr_icons"
+            app:iconSize="48dp" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/chooseHorizontalRtl"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/chooseVertical"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/chooseHorizontalLtr"
-        app:layout_constraintTop_toBottomOf="@id/chooseDirectionTitle">
-
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_direction_rtl_icons"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_rtl"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/viewer_direction_rtl" />
+            android:text="@string/viewer_direction_rtl"
+            app:icon="@drawable/ic_direction_rtl_icons"
+            app:iconSize="48dp" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/chooseVertical"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?selectableItemBackground"
-        android:clickable="true"
-        android:focusable="true"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="80dp"
-            android:layout_gravity="center"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_direction_ttb_icons"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_ttb"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/viewer_direction_ttb" />
+            android:text="@string/viewer_direction_ttb"
+            app:icon="@drawable/ic_direction_ttb_icons"
+            app:iconSize="48dp" />
 
-    </LinearLayout>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

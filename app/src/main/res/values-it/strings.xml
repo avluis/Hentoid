@@ -1041,7 +1041,7 @@
     <string name="view_source_help">Visualizza sorgente nel browser</string>
     <string name="viewer_ask_cover">Impostare questa pagina come copertina del libro?</string>
     <string name="viewer_ask_delete_page">Cancellare questa pagina\?</string>
-    <string name="viewer_choose_direction">Scegli la tua direzione di lettura</string>
+    <string name="viewer_choose_direction">Scegli la direzione di lettura</string>
     <string name="viewer_delete_book">Cancella libro</string>
     <string name="viewer_direction_ltr">Da sinistra a destra</string>
     <string name="viewer_direction_rtl">Da destra a sinistra</string>

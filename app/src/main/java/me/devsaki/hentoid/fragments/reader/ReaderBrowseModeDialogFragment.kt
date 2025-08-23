@@ -41,14 +41,13 @@ class ReaderBrowseModeDialogFragment : BaseDialogFragment<ReaderBrowseModeDialog
         super.onViewCreated(rootView, savedInstanceState)
 
         binding?.apply {
-            chooseHorizontalLtr.setOnClickListener {
-                chooseBrowseMode(VIEWER_BROWSE_LTR)
-            }
-            chooseHorizontalRtl.setOnClickListener {
-                chooseBrowseMode(VIEWER_BROWSE_RTL)
-            }
-            chooseVertical.setOnClickListener {
-                chooseBrowseMode(VIEWER_BROWSE_TTB)
+            selector.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (!isChecked) return@addOnButtonCheckedListener
+                when (checkedId) {
+                    choiceLtr.id -> chooseBrowseMode(VIEWER_BROWSE_LTR)
+                    choiceRtl.id -> chooseBrowseMode(VIEWER_BROWSE_RTL)
+                    choiceTtb.id -> chooseBrowseMode(VIEWER_BROWSE_TTB)
+                }
             }
         }
     }
