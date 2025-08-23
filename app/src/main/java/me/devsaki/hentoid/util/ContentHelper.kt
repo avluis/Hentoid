@@ -22,7 +22,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ReaderActivity.ReaderActivityMulti
 import me.devsaki.hentoid.activities.UnlockActivity.Companion.wrapIntent
-import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
+import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
@@ -320,7 +320,7 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
     }
 
     var intent = Intent(context, Content.getWebActivityClass(content.site))
-    val bundle = BaseWebActivityBundle()
+    val bundle = BaseBrowserActivityBundle()
     bundle.url = content.galleryUrl
     intent.putExtras(bundle.bundle)
     if (wrapPin) intent = wrapIntent(context, intent)
@@ -1253,7 +1253,7 @@ fun launchBrowserFor(
 
     val intent = Intent(context, Content.getWebActivityClass(targetSite))
 
-    val bundle = BaseWebActivityBundle()
+    val bundle = BaseBrowserActivityBundle()
     bundle.url = targetUrl
     intent.putExtras(bundle.bundle)
 

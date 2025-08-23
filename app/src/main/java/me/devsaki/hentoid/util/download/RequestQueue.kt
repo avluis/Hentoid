@@ -128,7 +128,7 @@ class RequestQueue(
      *
      * The return value is empty if the download fails
      */
-    private fun downloadPic(
+    private suspend fun downloadPic(
         context: Context,
         site: Site,
         url: String,

@@ -63,7 +63,7 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     @Throws(IOException::class)
-    private fun downloadUpdate(apkUrl: String) {
+    private suspend fun downloadUpdate(apkUrl: String) {
         Timber.d("DOWNLOADING APK")
         val apk = downloadToFile(
             applicationContext,

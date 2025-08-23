@@ -20,16 +20,12 @@ import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.WindowManager
 import androidx.annotation.DimenRes
-import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.menu.MenuBuilder
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.MenuCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.customview.widget.ViewDragHelper
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -39,6 +35,8 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.whitfin.siphash.SipHasher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BOOKMARKS_JSON_FILE_NAME
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
@@ -46,7 +44,6 @@ import me.devsaki.hentoid.core.RENAMING_RULES_JSON_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.StorageLocation
-import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.file.FILE_IO_BUFFER_SIZE
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
@@ -60,7 +57,6 @@ import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
-import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -404,38 +400,38 @@ fun formatEpochToDate(epoch: Long, formatter: DateTimeFormatter?): String {
  * @param dao     DAO to be used
  * @return True if the bookmarks JSON file has been updated properly; false instead
  */
-fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean {
-    assertNonUiThread()
-    val bookmarks = dao.selectAllBookmarks()
+suspend fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean =
+    withContext(Dispatchers.IO) {
+        val bookmarks = dao.selectAllBookmarks()
 
-    val contentCollection = JsonContentCollection()
-    contentCollection.replaceBookmarks(bookmarks)
+        val contentCollection = JsonContentCollection()
+        contentCollection.replaceBookmarks(bookmarks)
 
-    val rootFolder =
-        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
-            ?: return false
+        val rootFolder =
+            getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                ?: return@withContext false
 
-    try {
-        jsonToFile(
-            context, contentCollection,
-            JsonContentCollection::class.java, rootFolder, BOOKMARKS_JSON_FILE_NAME
-        )
-    } catch (e: IOException) {
-        // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-        // even though all the file existence checks are in place
-        // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
-    } catch (e: IllegalArgumentException) {
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
+        try {
+            jsonToFile(
+                context, contentCollection,
+                JsonContentCollection::class.java, rootFolder, BOOKMARKS_JSON_FILE_NAME
+            )
+        } catch (e: IOException) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        }
+        return@withContext true
     }
-    return true
-}
 
 /**
  * Update the JSON file that stores renaming rules with the current rules
@@ -444,38 +440,38 @@ fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean {
  * @param dao     DAO to be used
  * @return True if the rules JSON file has been updated properly; false instead
  */
-fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
-    assertNonUiThread()
-    val rules = dao.selectRenamingRules(AttributeType.UNDEFINED, null)
+suspend fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean =
+    withContext(Dispatchers.IO) {
+        val rules = dao.selectRenamingRules(AttributeType.UNDEFINED, null)
 
-    val contentCollection = JsonContentCollection()
-    contentCollection.replaceRenamingRules(rules)
+        val contentCollection = JsonContentCollection()
+        contentCollection.replaceRenamingRules(rules)
 
-    val rootFolder =
-        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
-            ?: return false
+        val rootFolder =
+            getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                ?: return@withContext false
 
-    try {
-        jsonToFile(
-            context, contentCollection,
-            JsonContentCollection::class.java, rootFolder, RENAMING_RULES_JSON_FILE_NAME
-        )
-    } catch (e: IOException) {
-        // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-        // even though all the file existence checks are in place
-        // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
-    } catch (e: IllegalArgumentException) {
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
+        try {
+            jsonToFile(
+                context, contentCollection,
+                JsonContentCollection::class.java, rootFolder, RENAMING_RULES_JSON_FILE_NAME
+            )
+        } catch (e: IOException) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        }
+        return@withContext true
     }
-    return true
-}
 
 fun logException(t: Throwable, context: Context? = null) {
     val log: MutableList<LogEntry> = ArrayList()

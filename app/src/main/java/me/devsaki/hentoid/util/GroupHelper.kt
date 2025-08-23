@@ -2,6 +2,8 @@ package me.devsaki.hentoid.util
 
 import android.content.Context
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.GROUPS_JSON_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
@@ -82,45 +84,44 @@ fun addContentsToAttributeGroup(
  * @param dao     DAO to be used
  * @return True if the groups JSON file has been updated properly; false instead
  */
-fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean {
-    assertNonUiThread()
+suspend fun updateGroupsJson(context: Context, dao: CollectionDAO): Boolean =
+    withContext(Dispatchers.IO) {
+        val contentCollection = JsonContentCollection()
 
-    val contentCollection = JsonContentCollection()
+        // Save dynamic groups
+        val dynamicGroups = dao.selectGroups(Grouping.DYNAMIC.id)
+        contentCollection.replaceGroups(Grouping.DYNAMIC, dynamicGroups)
 
-    // Save dynamic groups
-    val dynamicGroups = dao.selectGroups(Grouping.DYNAMIC.id)
-    contentCollection.replaceGroups(Grouping.DYNAMIC, dynamicGroups)
+        // Save custom groups
+        val customGroups = dao.selectGroups(Grouping.CUSTOM.id)
+        contentCollection.replaceGroups(Grouping.CUSTOM, customGroups)
 
-    // Save custom groups
-    val customGroups = dao.selectGroups(Grouping.CUSTOM.id)
-    contentCollection.replaceGroups(Grouping.CUSTOM, customGroups)
+        // Save other groups whose favourite or rating has been set
+        val editedArtistGroups = dao.selectEditedGroups(Grouping.ARTIST.id)
+        contentCollection.replaceGroups(Grouping.ARTIST, editedArtistGroups)
+        val editedDateGroups = dao.selectEditedGroups(Grouping.DL_DATE.id)
+        contentCollection.replaceGroups(Grouping.DL_DATE, editedDateGroups)
 
-    // Save other groups whose favourite or rating has been set
-    val editedArtistGroups = dao.selectEditedGroups(Grouping.ARTIST.id)
-    contentCollection.replaceGroups(Grouping.ARTIST, editedArtistGroups)
-    val editedDateGroups = dao.selectEditedGroups(Grouping.DL_DATE.id)
-    contentCollection.replaceGroups(Grouping.DL_DATE, editedDateGroups)
+        val rootFolder =
+            getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                ?: return@withContext false
 
-    val rootFolder =
-        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
-            ?: return false
-
-    try {
-        jsonToFile(
-            context, contentCollection,
-            JsonContentCollection::class.java, rootFolder, GROUPS_JSON_FILE_NAME
-        )
-    } catch (e: Exception) {
-        // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-        // even though all the file existence checks are in place
-        // ("Failed to determine if primary:.Hentoid/groups.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/groups.json at /storage/emulated/0/.Hentoid/groups.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
+        try {
+            jsonToFile(
+                context, contentCollection,
+                JsonContentCollection::class.java, rootFolder, GROUPS_JSON_FILE_NAME
+            )
+        } catch (e: Exception) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/groups.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/groups.json at /storage/emulated/0/.Hentoid/groups.json")
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        }
+        return@withContext true
     }
-    return true
-}
 
 /**
  * Move the given Content to the given custom Group

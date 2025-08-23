@@ -3,6 +3,8 @@ package me.devsaki.hentoid.util.download
 import android.content.Context
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.database.domains.Content
@@ -12,7 +14,6 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.parsers.ContentParserFactory
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.take
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -63,7 +64,7 @@ private const val DL_IO_BUFFER_SIZE_B = 50 * 1024
  *
  * The return value is empty if the download fails
  */
-fun downloadPic(
+suspend fun downloadPic(
     context: Context,
     content: Content,
     img: ImageFile,
@@ -71,9 +72,7 @@ fun downloadPic(
     targetFolderUri: Uri? = null,
     onProgress: ((Float, Int) -> Unit)? = null,
     stopDownload: AtomicBoolean? = null
-): Pair<Int, String>? {
-    assertNonUiThread()
-
+): Pair<Int, String>? = withContext(Dispatchers.IO) {
     try {
         val targetFile: File
 
@@ -138,13 +137,13 @@ fun downloadPic(
         val targetFileUri = result ?: throw ParseException("Resource is not available")
         targetFile = File(targetFileUri.path!!)
 
-        return Pair(resourceId, Uri.fromFile(targetFile).toString())
+        return@withContext Pair(resourceId, Uri.fromFile(targetFile).toString())
     } catch (_: DownloadInterruptedException) {
         Timber.d("Download interrupted for pic %d", resourceId)
     } catch (e: Exception) {
         Timber.w(e)
     }
-    return null
+    return@withContext null
 }
 
 /**
@@ -167,7 +166,7 @@ fun downloadPic(
     EmptyResultException::class,
     DownloadInterruptedException::class
 )
-private fun downloadPictureFromPage(
+private suspend fun downloadPictureFromPage(
     context: Context,
     content: Content,
     img: ImageFile,
@@ -239,7 +238,7 @@ private fun downloadPictureFromPage(
     DownloadInterruptedException::class,
     IllegalStateException::class
 )
-fun downloadToFileCached(
+suspend fun downloadToFileCached(
     context: Context,
     site: Site,
     rawUrl: String,
@@ -264,7 +263,7 @@ fun downloadToFileCached(
     DownloadInterruptedException::class,
     IllegalStateException::class
 )
-fun downloadToFile(
+suspend fun downloadToFile(
     context: Context,
     site: Site,
     rawUrl: String,
@@ -308,7 +307,7 @@ fun downloadToFile(
     DownloadInterruptedException::class,
     IllegalStateException::class
 )
-private fun downloadToFile(
+private suspend fun downloadToFile(
     context: Context,
     site: Site,
     rawUrl: String,
@@ -319,8 +318,7 @@ private fun downloadToFile(
     failFast: Boolean = true,
     resourceId: Int,
     notifyProgress: Consumer<Float>? = null
-): Uri? {
-    assertNonUiThread()
+): Uri? = withContext(Dispatchers.IO) {
     val url = fixUrl(rawUrl, site.url)
     if (interruptDownload?.get() == true) throw DownloadInterruptedException("Download interrupted")
     Timber.d("DOWNLOADING %d %s", resourceId, url)
@@ -408,7 +406,7 @@ private fun downloadToFile(
                         )
                     )
                 }
-                return targetFileUri
+                return@withContext targetFileUri
             }
         }
     }

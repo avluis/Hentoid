@@ -95,12 +95,10 @@ class MetadataEditViewModel(
      * @param contentId  IDs of the Contents to load
      */
     fun loadContent(contentId: LongArray) {
-        val contents = dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray())
+        val contents = dao.selectContent(contentId.filter { it > 0 }.toLongArray())
         val rawAttrs = ArrayList<Attribute>()
-        contents.forEach { c ->
-            rawAttrs.addAll(c.attributes)
-        }
-        val attrsCount = rawAttrs.groupingBy { a -> a }.eachCount()
+        contents.forEach { rawAttrs.addAll(it.attributes) }
+        val attrsCount = rawAttrs.groupingBy { it }.eachCount()
         attrsCount.entries.forEach { it.key.count = it.value }
 
         contentList.postValue(contents)
@@ -113,15 +111,11 @@ class MetadataEditViewModel(
 
         imageFiles.find { it.order == order }?.let { img ->
             viewModelScope.launch {
-                withContext(Dispatchers.IO) {
-                    try {
-                        if (setContentCover(application, content, imageFiles, img))
-                            contentList.postValue(mutableListOf(content))
-                    } catch (t: Throwable) {
-                        Timber.e(t)
-                    } finally {
-                        dao.cleanup()
-                    }
+                try {
+                    if (setContentCover(application, content, imageFiles, img))
+                        contentList.postValue(mutableListOf(content))
+                } catch (t: Throwable) {
+                    Timber.e(t)
                 }
             }
         }
@@ -317,61 +311,57 @@ class MetadataEditViewModel(
 
     fun renameAttribute(newName: String, id: Long, createRule: Boolean) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    doRenameAttribute(newName, id, createRule)
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                } finally {
-                    dao.cleanup()
-                }
+            try {
+                doRenameAttribute(newName, id, createRule)
+            } catch (t: Throwable) {
+                Timber.e(t)
             }
         }
     }
 
-    private fun doRenameAttribute(newName: String, id: Long, createRule: Boolean) {
-        val attr = dao.selectAttribute(id) ?: return
+    private suspend fun doRenameAttribute(newName: String, id: Long, createRule: Boolean) =
+        withContext(Dispatchers.IO) {
+            val attr = dao.selectAttribute(id) ?: return@withContext
 
-        // Update displayed attributes
-        val newAttrs = ArrayList<Attribute>()
-        if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
-        newAttrs.remove(attr)
+            // Update displayed attributes
+            val newAttrs = ArrayList<Attribute>()
+            if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
+            newAttrs.remove(attr)
 
-        // Persist rule
-        if (createRule) {
-            val newRule = RenamingRule(
-                attributeType = attr.type,
-                sourceName = attr.name,
-                targetName = newName
-            )
-            val existingRules = HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
-            if (!existingRules.contains(newRule)) {
-                dao.insertRenamingRule(newRule)
-                updateRenamingRulesJson(getApplication(), dao)
+            // Persist rule
+            if (createRule) {
+                val newRule = RenamingRule(
+                    attributeType = attr.type,
+                    sourceName = attr.name,
+                    targetName = newName
+                )
+                val existingRules = HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
+                if (!existingRules.contains(newRule)) {
+                    dao.insertRenamingRule(newRule)
+                    updateRenamingRulesJson(getApplication(), dao)
+                }
             }
-        }
 
-        // Update attribute
-        attr.name = newName
-        attr.displayName = newName
-        dao.insertAttribute(attr)
+            // Update attribute
+            attr.name = newName
+            attr.displayName = newName
+            dao.insertAttribute(attr)
 
-        newAttrs.add(attr)
-        contentAttributes.postValue(newAttrs)
+            newAttrs.add(attr)
+            contentAttributes.postValue(newAttrs)
 
-        // Update corresponding group if needed
-        val group = attr.getLinkedGroup()
-        if (group != null) {
-            group.name = newName
-            dao.insertGroup(group)
-            updateGroupsJson(getApplication(), dao)
-        }
-        dao.cleanup()
+            // Update corresponding group if needed
+            val group = attr.getLinkedGroup()
+            if (group != null) {
+                group.name = newName
+                dao.insertGroup(group)
+                updateGroupsJson(getApplication(), dao)
+            }
+            dao.cleanup()
 
-        // Mark all related books for update
-        val contents = attr.contents
-        if (!contents.isEmpty()) {
-            viewModelScope.launch {
+            // Mark all related books for update
+            val contents = attr.contents
+            if (!contents.isEmpty()) {
                 contents.forEach {
                     // Update the 'author' pre-calculated field for all related books if needed
                     if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
@@ -384,5 +374,4 @@ class MetadataEditViewModel(
                 dao.cleanup()
             }
         }
-    }
 }

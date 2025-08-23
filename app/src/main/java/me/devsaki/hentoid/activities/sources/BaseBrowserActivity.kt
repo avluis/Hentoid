@@ -41,7 +41,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
 import me.devsaki.hentoid.activities.QueueActivity
-import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
+import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.settings.SettingsActivity
@@ -379,7 +379,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         val url = webView.url
         if (url != null) {
-            val bundle = BaseWebActivityBundle()
+            val bundle = BaseBrowserActivityBundle()
             if (WebkitPackageHelper.getWebViewAvailable()) bundle.url = url
             outState.putAll(bundle.bundle)
         }
@@ -390,7 +390,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        val url = BaseWebActivityBundle(savedInstanceState).url
+        val url = BaseBrowserActivityBundle(savedInstanceState).url
         if (url.isNotEmpty()) webView.loadUrl(url)
     }
 
@@ -452,7 +452,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             if (!homepageOnly) {
                 // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
                 if (intent.extras != null) {
-                    val bundle = BaseWebActivityBundle(intent.extras!!)
+                    val bundle = BaseBrowserActivityBundle(intent.extras!!)
                     val intentUrl = bundle.url
                     if (intentUrl.isNotEmpty()) return intentUrl
                 }

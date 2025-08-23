@@ -1307,7 +1307,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * @param dir  Folder to save the picture to
      * @param site Correponding site
      */
-    private fun downloadAndUnzipUgoira(
+    private suspend fun downloadAndUnzipUgoira(
         img: ImageFile,
         dir: DocumentFile,
         site: Site

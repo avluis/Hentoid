@@ -1114,8 +1114,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param groupId      Group ID to set the rating for
      * @param targetRating Rating to set
      */
-    private fun doRateGroup(groupId: Long, targetRating: Int): Group {
-
+    private suspend fun doRateGroup(groupId: Long, targetRating: Int): Group {
         // Check if given content still exists in DB
         val theGroup = dao.selectGroup(groupId)
             ?: throw InvalidParameterException("Invalid GroupId : $groupId")
@@ -1128,7 +1127,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             // Persist in it DB
             dao.insertGroup(theGroup)
         }
-        dao.cleanup()
         return theGroup
     }
 
