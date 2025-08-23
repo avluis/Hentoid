@@ -11,7 +11,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
@@ -325,11 +324,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             updateSelectionToolbarVis(false)
         } else {
             callback?.remove()
-            activity.get()?.let { act ->
-                act.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                    act.finish()
-                }
-            }
+            activity.get()?.onBackPressedDispatcher?.onBackPressed()
         }
     }
 
@@ -375,16 +370,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun initSelectionToolbar() {
-        activity.get()?.getSelectionToolbar()?.let {
-            it.setNavigationOnClickListener { _ ->
-                selectExtension.apply {
-                    deselect(selections.toMutableSet())
-                }
-                it.visibility = View.GONE
+        activity.get()?.getSelectionToolbar()?.apply {
+            setNavigationOnClickListener { _ ->
+                selectExtension.apply { deselect(selections.toMutableSet()) }
+                visibility = View.GONE
             }
-            it.setOnMenuItemClickListener { menuItem: MenuItem ->
-                onSelectionMenuItemClicked(menuItem)
-            }
+            setOnMenuItemClickListener { onSelectionMenuItemClicked(it) }
         }
     }
 
