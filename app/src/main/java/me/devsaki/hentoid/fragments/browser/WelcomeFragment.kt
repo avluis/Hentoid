@@ -81,8 +81,6 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
             historyFastAdapter.onClickListener = { _, _, i, _ -> onHistoryClick(i) }
         }
 
-        loadActiveSites()
-
         viewModel.loadHistory()
     }
 
@@ -91,6 +89,23 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
         items.addAll(sitePerTimestamp)
         items.addAll(Settings.activeSites.filter { it.isVisible })
         sitesItemAdapter.set(items.map { IconItem(it.ico, it) })
+    }
+
+    private fun onHistoryChanged(history: List<SiteHistory>) {
+        historyItemAdapter.set(
+            history
+                .sortedBy { it.timestamp * -1 }
+                .filter { it.site.isVisible }
+                .map {
+                    val parts = UriParts(it.url)
+                    val shortUrl = parts.pathFull.substring(parts.host.length)
+                    DrawerItem(shortUrl, it.site.ico, it.id, mTag = it)
+                }.filter { it.label.length > 1 } // Don't include site roots or '/'
+        )
+        sitePerTimestamp = history.sortedBy { it.timestamp * -1 }
+            .map { it.site }.distinct()
+            .filter { it.isVisible }
+        loadActiveSites()
     }
 
     private fun onSiteClick(item: IconItem<Site>): Boolean {
@@ -111,23 +126,6 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
             }
         }
         return false
-    }
-
-    private fun onHistoryChanged(history: List<SiteHistory>) {
-        historyItemAdapter.set(
-            history
-                .sortedBy { it.timestamp * -1 }
-                .filter { it.site.isVisible }
-                .map {
-                    val parts = UriParts(it.url)
-                    val shortUrl = parts.pathFull.substring(parts.host.length)
-                    DrawerItem(shortUrl, it.site.ico, it.id, mTag = it)
-                }.filter { it.label.length > 1 } // Don't include site roots or '/'
-        )
-        sitePerTimestamp = history.sortedBy { it.timestamp * -1 }
-            .map { it.site }.distinct()
-            .filter { it.isVisible }
-        loadActiveSites()
     }
 
     /**
