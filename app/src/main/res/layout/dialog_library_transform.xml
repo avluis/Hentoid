@@ -221,11 +221,11 @@
             app:layout_constraintTop_toBottomOf="@id/warnings_list"
             tools:ignore="ContentDescription" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/preview_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
-            android:layout_height="4dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
             android:indeterminate="true"

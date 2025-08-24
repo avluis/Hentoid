@@ -215,9 +215,9 @@
         app:menu="@menu/reader_pager_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_bar"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="match_parent"
         android:layout_height="2dp"
         android:layout_gravity="top"

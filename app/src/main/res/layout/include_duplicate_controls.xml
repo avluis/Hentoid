@@ -123,9 +123,9 @@
         app:layout_constraintTop_toBottomOf="@id/scan_fab"
         tools:visibility="visible" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/index_pictures_pb"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="0dp"
         android:layout_height="4dp"
         android:visibility="gone"
@@ -161,9 +161,9 @@
         app:layout_constraintTop_toBottomOf="@id/index_pictures_txt"
         tools:visibility="visible" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/detect_books_pb"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="0dp"
         android:layout_height="4dp"
         android:visibility="gone"

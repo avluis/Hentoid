@@ -58,18 +58,20 @@
             tools:src="@drawable/flag_cn"
             tools:visibility="visible" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/pbDownload"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:indeterminate="true"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivCover"
             app:layout_constraintTop_toTopOf="parent"
+            app:trackThickness="2dp"
             tools:visibility="visible" />
 
         <TextView
@@ -77,6 +79,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="2dp"
             android:layout_marginEnd="8dp"
             android:ellipsize="middle"
             android:singleLine="true"

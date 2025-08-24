@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -17,6 +16,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -182,7 +182,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
      */
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
         content ?: return
-        val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload) ?: return
+        val pb = vh.itemView.findViewById<LinearProgressIndicator>(R.id.pbDownload) ?: return
         if (!isInQueue(content.status)) {
             pb.visibility = View.GONE
             return
@@ -204,9 +204,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 ) else ContextCompat.getColor(pb.context, R.color.medium_gray)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    pb.progressDrawable.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
+                    pb.progressDrawable?.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
                 } else {
-                    @Suppress("DEPRECATION") pb.progressDrawable.setColorFilter(
+                    @Suppress("DEPRECATION") pb.progressDrawable?.setColorFilter(
                         color,
                         PorterDuff.Mode.SRC_IN
                     )
@@ -301,7 +301,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 bundleParser.readPagesCount?.let { item.content?.readPagesCount = it }
                 bundleParser.coverUri?.let { item.content?.cover?.fileUri = it }
                 bundleParser.title?.let { item.content?.title = it }
-                bundleParser.downloadMode?.let { item.content?.downloadMode = DownloadMode.fromValue(it) }
+                bundleParser.downloadMode?.let {
+                    item.content?.downloadMode = DownloadMode.fromValue(it)
+                }
                 bundleParser.frozen?.let { item.queueRecord?.frozen = it }
                 bundleParser.processed?.let { item.content?.isBeingProcessed = it }
                 bundleParser.qtyPages?.let { item.content?.qtyPages = it }
@@ -474,7 +476,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     val nbMissingPages = qtyPages - content!!.getNbDownloadedPages()
                     if (nbMissingPages > 0) {
                         val missingStr = " " + context.resources.getQuantityString(
-                            R.plurals.work_pages_missing, nbMissingPages.toInt(), nbMissingPages
+                            R.plurals.work_pages_missing, nbMissingPages, nbMissingPages
                         )
                         context.resources.getString(R.string.work_pages_queue, nbPages, missingStr)
                     } else context.resources.getString(R.string.work_pages_queue, nbPages, "")

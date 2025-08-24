@@ -11,6 +11,7 @@
     <color name="window_background_dark">@color/taupe</color>
     <color name="dialog_background_dark">@color/taupe_m1</color>
     <color name="on_background_dark">@color/white_opacity_87</color>
+    <color name="container_dark">@color/taupe_m2</color>
     <color name="ripple_dark">@color/medium_gray</color>
 
     <!-- Drawers, bottom panels -->

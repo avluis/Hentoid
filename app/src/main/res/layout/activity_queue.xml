@@ -118,9 +118,9 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/download_revive_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"

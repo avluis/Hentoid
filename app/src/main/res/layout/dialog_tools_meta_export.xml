@@ -249,11 +249,11 @@
         app:layout_constraintTop_toBottomOf="@id/export_file_help2_text"
         app:strokeColor="@color/secondary_color_selector" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/export_progress_bar"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="0dp"
-        android:layout_height="4dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"

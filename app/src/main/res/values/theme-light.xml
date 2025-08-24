@@ -15,13 +15,13 @@
         <item name="colorSurfaceVariant">@color/primary_light</item>
         <item name="colorOnSurface">@color/on_surface_light</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_light</item>
-        <item name="colorContainer">@color/window_background_light</item>
+        <item name="colorContainer">@color/container_light</item>
         <item name="colorOnContainer">@color/on_surface_light</item>
-        <item name="colorPrimaryContainer">@color/window_background_light</item>
+        <item name="colorPrimaryContainer">@color/container_light</item>
         <item name="colorOnPrimaryContainer">@color/on_surface_light</item>
-        <item name="colorSecondaryContainer">@color/window_background_light</item>
+        <item name="colorSecondaryContainer">@color/container_light</item>
         <item name="colorOnSecondaryContainer">@color/on_surface_light</item>
-        <item name="colorTertiaryContainer">@color/window_background_light</item>
+        <item name="colorTertiaryContainer">@color/container_light</item>
         <item name="colorOnTertiaryContainer">@color/on_surface_light</item>
 
         <item name="android:windowBackground">@color/window_background_light</item>
