@@ -151,62 +151,35 @@
             tools:ignore="ContentDescription"
             tools:visibility="visible" />
 
-        <TextView
-            android:id="@+id/delete_choice"
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/delete_keep_choice"
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:layout_marginBottom="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:singleLine="true"
-            android:text="@string/duplicate_delete"
-            android:textAllCaps="true"
-            android:textColor="@color/medium_gray"
-            android:textSize="@dimen/caption"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_action_delete"
-            app:drawableTint="@color/medium_gray"
+            android:layout_height="wrap_content"
+            app:checkedButton="@id/keep_choice"
+            android:layout_marginStart="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/keep_delete"
-            app:layout_constraintStart_toEndOf="@id/ivCover" />
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toBottomOf="@id/ivFavourite"
+            app:selectionRequired="true"
+            app:singleSelection="true">
 
-        <com.google.android.material.materialswitch.MaterialSwitch
-            android:id="@+id/keep_delete"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginBottom="4dp"
-            android:checked="true"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/keep_choice"
-            app:layout_constraintStart_toEndOf="@id/delete_choice" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/delete_choice"
+                style="@style/HentoidCheckButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:icon="@drawable/ic_action_delete"
+                android:text="@string/duplicate_delete" />
 
-        <TextView
-            android:id="@+id/keep_choice"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:singleLine="true"
-            android:text="@string/duplicate_keep"
-            android:textAllCaps="true"
-            android:textColor="?colorSecondary"
-            android:textSize="@dimen/caption"
-            android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_checked"
-            app:drawableTint="?colorSecondary"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/keep_delete"
-            app:layout_constraintTop_toBottomOf="@id/ivFavourite" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/keep_choice"
+                style="@style/HentoidCheckButtonOutlinedStyle"
+                app:icon="@drawable/ic_checked"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/duplicate_keep" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_middle"
@@ -275,13 +248,6 @@
             android:layout_height="wrap_content"
             android:visibility="visible"
             app:constraint_referenced_ids="title_score,cover_score,artist_score,total_score" />
-
-        <androidx.constraintlayout.widget.Group
-            android:id="@+id/keep_delete_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="visible"
-            app:constraint_referenced_ids="keep_choice,keep_delete,delete_choice" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

@@ -87,9 +87,8 @@ class DuplicateViewModel(
     }
 
     fun setContent(content: Content) {
-        if (null == allDuplicates.value) return
         val selectedDupes =
-            allDuplicates.value!!.filter { it.referenceId == content.id }.toMutableList()
+            allDuplicates.value?.filter { it.referenceId == content.id }?.toMutableList() ?: return
         // Add reference item on top
         val refEntry = DuplicateEntry(
             content.id,
@@ -106,18 +105,14 @@ class DuplicateViewModel(
         selectedDuplicates.postValue(selectedDupes)
     }
 
-    fun setBookChoice(content: Content, choice: Boolean) {
-        if (null == selectedDuplicates.value) return
-        val selectedDupes = selectedDuplicates.value!!.toMutableList()
-        for (dupe in selectedDupes) {
-            if (dupe.duplicateId == content.id) dupe.keep = choice
-        }
+    fun setBookChoice(content: Content, isKeep: Boolean) {
+        val selectedDupes = selectedDuplicates.value?.toMutableList() ?: return
+        selectedDupes.forEach { if (it.duplicateId == content.id) it.keep = isKeep }
         selectedDuplicates.postValue(selectedDupes)
     }
 
     fun applyChoices(onComplete: Runnable) {
-        if (null == selectedDuplicates.value) return
-        val selectedDupes = selectedDuplicates.value!!
+        val selectedDupes = selectedDuplicates.value ?: return
 
         // Mark as "is being deleted" to trigger blink animation
         val deleteList = ArrayList<Long>()
@@ -169,9 +164,7 @@ class DuplicateViewModel(
         onSuccess: Runnable
     ) {
         if (contentList.isEmpty()) return
-        if (null == selectedDuplicates.value) return
-
-        val selectedDupes = selectedDuplicates.value!!
+        val selectedDupes = selectedDuplicates.value ?: return
         val context = getApplication<Application>().applicationContext
 
         viewModelScope.launch {

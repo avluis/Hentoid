@@ -1,23 +1,18 @@
 package me.devsaki.hentoid.viewholders
 
-import android.graphics.BlendMode
-import android.graphics.BlendModeColorFilter
-import android.graphics.PorterDuff
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.constraintlayout.widget.Group
-import androidx.core.content.ContextCompat
 import coil3.dispose
-import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.requireById
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
@@ -52,6 +47,8 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         private set
     var isBeingDeleted = false
         private set
+
+    var onKeepChange: Consumer<Boolean>? = null
 
     init {
         identifier = result.uniqueHash()
@@ -104,18 +101,14 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         // Specific to details screen
         private var tvLaunchCode: TextView? = itemView.findViewById(R.id.tvLaunchCode)
         private var scores: Group? = itemView.findViewById(R.id.scores)
-        private var keepDeleteGroup: Group? = itemView.findViewById(R.id.keep_delete_group)
         private var titleScore: TextView? = itemView.findViewById(R.id.title_score)
         private var coverScore: TextView? = itemView.findViewById(R.id.cover_score)
         private var artistScore: TextView? = itemView.findViewById(R.id.artist_score)
         private var totalScore: TextView? = itemView.findViewById(R.id.total_score)
-        private var keepButton: TextView? = itemView.findViewById(R.id.keep_choice)
-        private var deleteButton: TextView? = itemView.findViewById(R.id.delete_choice)
-        var keepDeleteSwitch: MaterialSwitch? = itemView.findViewById(R.id.keep_delete)
+        var keepDeleteChoice: MaterialButtonToggleGroup? =
+            itemView.findViewById(R.id.delete_keep_choice)
 
         override fun bindView(item: DuplicateItem, payloads: List<Any>) {
-            item.content ?: return
-
             // Payloads are set when the content stays the same but some properties alone change
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
@@ -126,12 +119,14 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                 if (boolValue != null) item.isBeingDeleted = boolValue
             }
             updateLayoutVisibility(item)
-            if (ivCover != null) attachCover(item.content!!)
-            attachFlag(item.content!!)
-            attachTitle(item.content!!)
-            if (tvLaunchCode != null) attachLaunchCode(item.content!!)
-            if (tvArtist != null) attachArtist(item.content!!)
-            if (tvPages != null) attachPages(item.content!!)
+            item.content?.let { c ->
+                if (ivCover != null) attachCover(c)
+                attachFlag(c)
+                attachTitle(c)
+                if (tvLaunchCode != null) attachLaunchCode(c)
+                if (tvArtist != null) attachArtist(c)
+                if (tvPages != null) attachPages(c)
+            }
             if (titleScore != null) attachScores(item)
             attachButtons(item)
         }
@@ -163,24 +158,24 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachLaunchCode(content: Content) {
-            val res = tvPages!!.context.resources
-            tvLaunchCode!!.text = res.getString(R.string.book_launchcode, content.uniqueSiteId)
+            val res = baseLayout.context.resources
+            tvLaunchCode?.text = res.getString(R.string.book_launchcode, content.uniqueSiteId)
         }
 
         private fun attachArtist(content: Content) {
-            tvArtist!!.text = formatArtistForDisplay(tvArtist.context, content)
+            tvArtist?.text = formatArtistForDisplay(tvArtist.context, content)
         }
 
         private fun attachPages(content: Content) {
-            tvPages!!.visibility = if (0 == content.qtyPages) View.INVISIBLE else View.VISIBLE
-            val context = tvPages.context
+            tvPages?.visibility = if (0 == content.qtyPages) View.INVISIBLE else View.VISIBLE
+            val context = baseLayout.context
             val template = context.resources.getQuantityString(
                 R.plurals.work_pages_library,
                 content.getNbDownloadedPages(),
                 content.getNbDownloadedPages(),
                 content.size * 1.0 / (1024 * 1024)
             )
-            tvPages.text = template
+            tvPages?.text = template
         }
 
         private fun attachScores(item: DuplicateItem) {
@@ -206,7 +201,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         }
 
         private fun attachButtons(item: DuplicateItem) {
-            val context = tvPages!!.context
+            val context = baseLayout.context
             val content = item.content ?: return
 
             // Source icon
@@ -241,59 +236,16 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
                 R.plurals.duplicate_count, item.nbDuplicates + 1, item.nbDuplicates + 1
             )
 
+            keepDeleteChoice?.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                if (isChecked) item.onKeepChange?.invoke(checkedId == R.id.keep_choice)
+            }
+
             if (item.canDelete) {
-                keepDeleteGroup?.visibility = View.VISIBLE
-
-                // Keep and delete buttons
-                keepButton?.apply {
-                    @ColorInt val targetColor =
-                        if (item.keep) context.getThemedColor(R.color.secondary_light)
-                        else ContextCompat.getColor(context, R.color.medium_gray)
-                    setTextColor(targetColor)
-
-                    val drawables = compoundDrawablesRelative
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        drawables[0]?.colorFilter =
-                            BlendModeColorFilter(targetColor, BlendMode.SRC_IN)
-                    } else {
-                        @Suppress("DEPRECATION") drawables[0]?.setColorFilter(
-                            targetColor,
-                            PorterDuff.Mode.SRC_IN
-                        )
-                    }
-
-                    setOnClickListener {
-                        keepDeleteSwitch?.isChecked = true
-                        keepDeleteSwitch?.callOnClick()
-                    }
-                }
-
-                deleteButton?.apply {
-                    @ColorInt val targetColor = if (!item.keep) context.getThemedColor(
-                        R.color.secondary_light
-                    ) else ContextCompat.getColor(context, R.color.medium_gray)
-                    setTextColor(targetColor)
-
-                    val drawables = compoundDrawablesRelative
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        drawables[0]?.colorFilter =
-                            BlendModeColorFilter(targetColor, BlendMode.SRC_IN)
-                    } else {
-                        @Suppress("DEPRECATION") drawables[0]?.setColorFilter(
-                            targetColor,
-                            PorterDuff.Mode.SRC_IN
-                        )
-                    }
-
-                    setOnClickListener {
-                        keepDeleteSwitch?.isChecked = false
-                        keepDeleteSwitch?.callOnClick()
-                    }
-                }
-                keepDeleteSwitch?.isChecked = item.keep
+                keepDeleteChoice?.visibility = View.VISIBLE
+                keepDeleteChoice?.check(if (!item.keep) R.id.delete_choice else R.id.keep_choice)
             } else {
-                keepDeleteGroup?.visibility = View.INVISIBLE
-                keepDeleteSwitch?.isChecked = true
+                keepDeleteChoice?.visibility = View.INVISIBLE
+                keepDeleteChoice?.check(R.id.keep_choice)
             }
         }
 
