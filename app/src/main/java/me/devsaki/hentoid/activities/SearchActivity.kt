@@ -121,8 +121,8 @@ class SearchActivity : BaseActivity() {
             viewModel.nbAttributesPerType.observe(this@SearchActivity) { attrCount: SparseIntArray ->
                 onQueryUpdated(attrCount)
             }
-            viewModel.selectedAttributes.observe(this@SearchActivity) { selectedAttributes: List<Attribute> ->
-                onSelectedAttributesChanged(selectedAttributes)
+            viewModel.selectedAttributes.observe(this@SearchActivity) {
+                onSelectedAttributesChanged(it)
             }
             viewModel.selectedContentCount.observe(this@SearchActivity) { count: Int ->
                 onBooksCounted(count)

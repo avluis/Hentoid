@@ -183,7 +183,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
     private fun updateAttrsList() {
         val items = contentAttributes.filter { selectedAttributeTypes.contains(it.type) }
             .sortedWith(compareBy({ it.type }, { -it.count }, { it.name }))
-            .map { AttributeItem(it, contents.size > 1) }
+            .map { AttributeItem(it, contents.size > 1, true) }
 
         FastAdapterDiffUtil.set(itemAdapter, items, attributeItemDiffCallback)
     }

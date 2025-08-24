@@ -23,7 +23,7 @@ class AvailableAttributeAdapter : RecyclerView.Adapter<AttributeViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AttributeViewHolder {
         val view: View =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_badge, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.item_badge_suggestion, parent, false)
         return AttributeViewHolder(view)
     }
 
