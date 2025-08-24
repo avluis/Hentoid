@@ -15,6 +15,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
@@ -239,11 +240,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private val tvTitle: TextView = view.requireById(R.id.tvTitle)
         private val ivCover: ImageView = view.requireById(R.id.ivCover)
         private val ivFlag: ImageView? = view.findViewById(R.id.ivFlag)
-        private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
+        private val ivSite: MaterialButton? = view.findViewById(R.id.queue_site_button)
         private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
         private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
-        private val ivError: ImageView? = view.findViewById(R.id.ivError)
         private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
         override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
         private val deleteButton: View? = view.findViewById(R.id.delete_btn)
@@ -252,8 +252,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var ivNew: View? = view.findViewById(R.id.lineNew)
         private var tvTags: TextView? = view.findViewById(R.id.tvTags)
         private var tvSeries: TextView? = view.findViewById(R.id.tvSeries)
-        private var ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
-        private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
+        private var ivFavourite: MaterialButton? = view.findViewById(R.id.ivFavourite)
+        private var ivRating: MaterialButton? = view.findViewById(R.id.iv_rating)
         private var ivExternal: ImageView? = view.findViewById(R.id.ivExternal)
         private var readingProgress: CircularProgressIndicator? =
             view.findViewById(R.id.reading_progress)
@@ -265,10 +265,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
         // Specific to Queued content
-        var topButton: View? = view.findViewById(R.id.queueTopBtn)
-        var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
+        var topButton: MaterialButton? = view.findViewById(R.id.queueTopBtn)
+        var bottomButton: MaterialButton? = view.findViewById(R.id.queueBottomBtn)
+        private val ivError: MaterialButton? = view.findViewById(R.id.ivError)
+        var downloadButton: MaterialButton? = view.findViewById(R.id.ivRedownload)
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
-        var downloadButton: View? = view.findViewById(R.id.ivRedownload)
 
         private var deleteActionRunnable: Runnable? = null
 
@@ -547,8 +548,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 val site = content.site
                 visibility =
                     if (site != Site.NONE && (!isGrid || Settings.libraryDisplayGridSource)) {
-                        val img = site.ico
-                        setImageResource(img)
+                        setIconResource(site.ico)
                         View.VISIBLE
                     } else {
                         View.GONE
@@ -591,13 +591,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 ivFavourite?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-                    if (content.favourite) setImageResource(R.drawable.ic_fav_full)
-                    else setImageResource(R.drawable.ic_fav_empty)
+                    if (content.favourite) setIconResource(R.drawable.ic_fav_full)
+                    else setIconResource(R.drawable.ic_fav_empty)
                 }
 
                 ivRating?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-                    setImageResource(getRatingResourceId(content.rating))
+                    setIconResource(getRatingResourceId(content.rating))
                 }
             }
         }

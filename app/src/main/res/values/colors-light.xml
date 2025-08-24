@@ -23,7 +23,7 @@
     <color name="subbar_2_light">@color/taupe_m2</color>
 
     <!-- Content cards -->
-    <color name="card_title_light">@color/secondary_light</color>
+    <color name="card_title_light">@color/dark_gray</color>
     <color name="card_surface_light">@color/white</color>
     <color name="card_selected_light">@color/light_red</color>
     <color name="card_pressed_light">@color/light_gray</color>

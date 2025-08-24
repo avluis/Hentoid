@@ -23,7 +23,7 @@
     <color name="subbar_2_dark">@color/taupe_m3</color>
 
     <!-- Content cards -->
-    <color name="card_title_dark">@color/secondary_dark</color>
+    <color name="card_title_dark">@color/white_opacity_66</color>
     <color name="card_surface_dark">@color/taupe</color>
     <color name="card_selected_dark">@color/taupe_p1</color>
     <color name="card_pressed_dark">@color/taupe_p2</color>

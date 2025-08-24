@@ -23,7 +23,7 @@
     <color name="subbar_2_black">@color/black_opacity_87</color>
 
     <!-- Content cards -->
-    <color name="card_title_black">@color/white_opacity_87</color>
+    <color name="card_title_black">@color/white_opacity_66</color>
     <color name="card_surface_black">@color/cod_gray</color>
     <color name="card_selected_black">@color/cod_gray</color>
     <color name="card_pressed_black">@color/black</color>
