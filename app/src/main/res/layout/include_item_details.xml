@@ -19,7 +19,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_hentoid_trans"
+        tools:src="@drawable/ic_hentoid_shape"
         tools:tint="@color/light_gray" />
 
     <ImageView

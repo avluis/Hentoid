@@ -247,8 +247,8 @@
             android:focusable="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/preview_header"
-            tools:src="@drawable/ic_hentoid_trans"
-            tools:tint="@color/light_gray" />
+            tools:src="@drawable/ic_hentoid_shape"
+            tools:tint="@color/medium_gray" />
 
         <TextView
             android:id="@+id/preview_name"

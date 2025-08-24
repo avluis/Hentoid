@@ -25,10 +25,13 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="cod_gray">#121212</color>
+    <color name="lighter_gray">#cccccc</color>
     <color name="light_gray">#aaaaaa</color>
     <color name="medium_gray">#888888</color>
     <color name="dark_gray">#FF444444</color>
     <color name="darker_gray">#FF222222</color>
+
+    <!-- Alphas -->
     <color name="black_opacity_12">#1F000000</color>
     <color name="black_opacity_25">#40000000</color>
     <color name="black_opacity_33">#54000000</color>
