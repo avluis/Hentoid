@@ -511,7 +511,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="imhentai.com"
+                    android:host="imhentai.xxx"
                     android:pathPattern="/gallery/..*"
                     android:scheme="https" />
             </intent-filter>
