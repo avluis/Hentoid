@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.json.sources.kemono
 
 import com.squareup.moshi.JsonClass
+import me.devsaki.hentoid.activities.sources.KemonoActivity.Companion.DOMAIN_FILTER
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
@@ -50,7 +51,7 @@ data class KemonoGallery(
                 Attribute(
                     AttributeType.TAG,
                     it,
-                    "https://kemono.cr/posts?tag=$it",
+                    "https://$DOMAIN_FILTER/posts?tag=$it",
                     Site.KEMONO
                 )
             )
@@ -67,7 +68,7 @@ data class KemonoGallery(
             }.distinct()
         if (imageUrls.isNotEmpty()) {
             post.file?.let {
-                content.coverImageUrl = "https://img.kemono.cr/thumbnail/data/${it.path}"
+                content.coverImageUrl = "https://img.$DOMAIN_FILTER/thumbnail/data/${it.path}"
             } ?: run {
                 content.coverImageUrl = imageUrls[0]
             }

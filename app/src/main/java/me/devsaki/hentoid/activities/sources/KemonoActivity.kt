@@ -12,12 +12,12 @@ import timber.log.Timber
 
 class KemonoActivity : BaseWebActivity() {
     companion object {
-        private const val DOMAIN_FILTER = "kemono.cr"
+        const val DOMAIN_FILTER = "kemono.cr"
         private val GALLERY_FILTER = arrayOf(
-            "kemono.cr/[\\w_%\\-]+/user/[\\d\\-]+$",
-            "kemono.cr/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/posts-legacy$",
-            "kemono.cr/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$",
-            "kemono.cr/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$"
+            "$DOMAIN_FILTER/[\\w_%\\-]+/user/[\\d\\-]+$",
+            "$DOMAIN_FILTER/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/posts-legacy$",
+            "$DOMAIN_FILTER/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$",
+            "$DOMAIN_FILTER/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$"
         )
         private val BLOCKED_CONTENT = arrayOf("popunder")
         private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")

@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.retrofit.sources
 
+import me.devsaki.hentoid.activities.sources.KemonoActivity.Companion.DOMAIN_FILTER
 import me.devsaki.hentoid.json.sources.kemono.KemonoArtist
 import me.devsaki.hentoid.json.sources.kemono.KemonoGallery
-import me.devsaki.hentoid.json.sources.kemono.KemonoPosts
+import me.devsaki.hentoid.json.sources.kemono.KemonoPost
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -12,7 +13,7 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 
 object KemonoServer {
-    private const val KEMONO_URL = "https://kemono.cr/api/v1/"
+    private const val KEMONO_URL = "https://$DOMAIN_FILTER/api/v1/"
 
     lateinit var api: Api
 
@@ -40,14 +41,14 @@ object KemonoServer {
             @Header("user-agent") userAgent: String
         ): Call<KemonoArtist>
 
-        @GET("{service}/user/{id}/posts-legacy")
+        @GET("{service}/user/{id}/posts")
         fun getArtistGalleries(
             @Path("service") service: String,
             @Path("id") userId: String,
             @Header("cookie") cookies: String,
             @Header("accept") accept: String,
             @Header("user-agent") userAgent: String
-        ): Call<KemonoPosts>
+        ): Call<List<KemonoPost>>
 
         @GET("{service}/user/{user_id}/post/{id}")
         fun getGallery(
