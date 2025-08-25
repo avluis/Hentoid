@@ -73,7 +73,7 @@
         android:focusable="false"
         android:progress="76"
         android:visibility="gone"
-        app:indicatorColor="@color/secondary_light"
+        app:indicatorColor="?colorSecondary"
         app:indicatorSize="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pbDownload"
@@ -87,7 +87,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
+        android:textColor="?card_tags"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivCover"
@@ -99,7 +99,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
+        android:textColor="?card_tags"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="@id/tvArtist"
         app:layout_constraintStart_toStartOf="@id/tvArtist"
@@ -114,7 +114,7 @@
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="@id/tvArtist"
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        app:tint="@color/card_tags_light"
+        app:tint="?card_tags"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -123,7 +123,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
+        android:textColor="?card_tags"
         app:layout_constraintBottom_toBottomOf="@id/ivPages"
         app:layout_constraintStart_toEndOf="@id/ivPages"
         app:layout_constraintTop_toTopOf="@id/ivPages"
@@ -139,7 +139,7 @@
         android:visibility="visible"
         app:layout_constraintStart_toEndOf="@id/tvPages"
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        app:tint="@color/card_tags_light"
+        app:tint="?card_tags"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -148,7 +148,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
+        android:textColor="?card_tags"
         app:layout_constraintBottom_toBottomOf="@id/ivPages"
         app:layout_constraintStart_toEndOf="@id/ivChapters"
         app:layout_constraintTop_toTopOf="@id/ivPages"
@@ -163,7 +163,7 @@
         android:visibility="visible"
         app:layout_constraintStart_toEndOf="@id/tvChapters"
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        app:tint="@color/card_tags_light"
+        app:tint="?card_tags"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -172,7 +172,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
+        android:textColor="?card_tags"
         app:layout_constraintBottom_toBottomOf="@id/ivPages"
         app:layout_constraintStart_toEndOf="@id/ivStorage"
         app:layout_constraintTop_toTopOf="@id/ivPages"
@@ -198,7 +198,7 @@
         android:id="@+id/tvTags"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/card_tags_light"
+        android:textColor="?card_tags"
         android:textSize="11sp"
         app:layout_constraintEnd_toEndOf="@id/divider"
         app:layout_constraintStart_toStartOf="@id/divider"

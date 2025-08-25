@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.You" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="colorPrimary">@color/primary_you</item>
+        <item name="colorPrimaryInverse">@color/secondary_you</item>
+        <item name="colorOnPrimary">@color/on_primary_you</item>
+        <item name="colorSecondary">@color/secondary_you</item>
+        <item name="colorOnSecondary">@color/on_secondary_you</item>
+        <item name="colorTertiary">@color/primary_you</item>
+        <item name="colorOnTertiary">@color/on_secondary_you</item>
+
+        <item name="colorSurface">@color/window_background_you</item>
+        <item name="colorSurfaceVariant">@color/primary_you</item>
+        <item name="colorOnSurface">@color/on_surface_you</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_you</item>
+        <item name="colorContainer">@color/container_you</item>
+        <item name="colorOnContainer">@color/on_surface_you</item>
+        <item name="colorPrimaryContainer">@color/container_you</item>
+        <item name="colorOnPrimaryContainer">@color/on_surface_you</item>
+        <item name="colorSecondaryContainer">@color/container_you</item>
+        <item name="colorOnSecondaryContainer">@color/on_surface_you</item>
+        <item name="colorTertiaryContainer">@color/container_you</item>
+        <item name="colorOnTertiaryContainer">@color/on_surface_you</item>
+
+        <item name="android:windowBackground">@color/window_background_you</item>
+        <item name="android:colorBackground">@color/window_background_you</item>
+        <item name="colorOnBackground">@color/on_background_you</item>
+        <!-- Toolbars -->
+        <item name="toolbarStyle">@style/Theme.You.Toolbar</item>
+        <!-- Dialogs -->
+        <item name="materialAlertDialogTheme">@style/Theme.You.Dialog</item>
+        <item name="dialogTheme">@style/Theme.You.DialogFragment</item>
+        <item name="android:dialogTheme">@style/Theme.You.DialogFragment</item>
+        <!-- Preferences -->
+        <item name="alertDialogTheme">@style/Theme.You.Dialog</item>
+        <!-- Radio button -->
+        <item name="radioButtonStyle">@style/Widget.App.RadioButton</item>
+        <!-- Text -->
+        <item name="android:editTextColor">@color/on_primary_you</item>
+        <item name="android:textColorPrimary">@color/on_primary_you</item>
+        <item name="android:textColorSecondary">@color/on_secondary_you</item>
+        <item name="android:textColorTertiary">@color/on_primary_you</item>
+        <!-- Custom items for specific places of the app -->
+        <item name="bar">@color/bar_you</item>
+        <item name="subbar_1">@color/subbar_1_you</item>
+        <item name="subbar_2">@color/subbar_2_you</item>
+        <item name="card_title">@color/card_title_you</item>
+        <item name="card_tags">@color/card_tags_you</item>
+        <item name="card_surface">@color/card_surface_you</item>
+        <item name="card_pressed">@color/card_pressed_you</item>
+        <item name="card_selected">@color/card_selected_you</item>
+        <item name="drawer_background">@color/drawer_background_you</item>
+        <!-- Toolbar as ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Intent activity -->
+    <style name="Theme.Invisible" parent="Theme.You">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <!-- Picture viewer -->
+    <style name="Theme.You.Monochrome">
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
+        <item name="colorOnPrimary">@color/light_gray</item>
+        <item name="android:windowBackground">@color/cod_gray</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+    </style>
+
+    <style name="Theme.You.MonochromeBottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+
+        <!-- Depending on APIs, any of them might be applicable :/ -->
+        <item name="android:windowBackground">@color/cod_gray</item>
+        <item name="colorSurface">@color/cod_gray</item>
+        <item name="android:background">@color/cod_gray</item>
+        <item name="android:colorBackground">@color/cod_gray</item>
+
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary_you</item>
+        <item name="bottomSheetStyle">@style/Theme.You.MonochromeModalBottomSheetDialog</item>
+    </style>
+
+    <style name="Theme.You.MonochromeModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/cod_gray</item>
+    </style>
+
+    <!-- Prefs Activity -->
+    <style name="Theme.You.Prefs">
+        <!-- Display action bar -->
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
+        <item name="actionBarTheme">@style/Theme.You.ActionBar</item>
+        <item name="android:divider">@color/secondary_you</item>
+        <item name="android:textColor">@color/primary_text_color_selector</item>
+        <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
+        <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
+        <item name="android:textColorHint">@color/light_gray</item>
+        <!-- alertDialogTheme is the actual theme used by PreferenceFragmentCompat -->
+        <item name="alertDialogTheme">@style/Theme.You.Dialog</item>
+    </style>
+
+    <!-- Dialog themes -->
+
+    <style name="Theme.You.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorPrimary">@color/primary_you</item>
+        <item name="colorSecondary">@color/secondary_you</item>
+
+        <!-- Depending on APIs, any of them might be applicable :/ -->
+        <item name="colorSurface">@color/dialog_background_you</item>
+        <item name="android:background">@color/dialog_background_you</item>
+        <item name="android:windowBackground">@color/dialog_background_you</item>
+        <item name="android:colorBackground">@color/dialog_background_you</item>
+
+        <item name="colorOnSurface">@color/on_primary_you</item>
+        <item name="android:textColor">@color/on_primary_you</item>
+        <item name="android:textColorPrimary">@color/on_primary_you</item>
+        <item name="android:textColorSecondary">@color/on_secondary_you</item>
+        <item name="android:editTextColor">@color/on_primary_you</item>
+        <item name="android:textColorHint">@color/on_primary_you</item>
+        <item name="textColorAlertDialogListItem">@color/on_primary_you</item>
+        <item name="android:checkboxStyle">@style/Theme.DialogCheckbox</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.App.DialogButton</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.App.DialogButton</item>
+    </style>
+
+    <style name="Theme.You.DialogFragment" parent="Theme.You.Dialog">
+        <!-- Equivalent to DialogFragment.STYLE_NO_FRAME -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
+    <!-- Search Activity -->
+    <style name="Theme.You.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="colorPrimary">@color/primary_you</item>
+        <item name="colorSecondary">@color/secondary_you</item>
+        <item name="bottomSheetStyle">@style/Theme.You.ModalBottomSheetDialog</item>
+    </style>
+
+    <style name="Theme.You.ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/drawer_background_you</item>
+    </style>
+
+    <!-- PIN screens -->
+    <style name="Theme.You.PinEntryDialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="colorPrimary">@color/primary_you</item>
+        <item name="colorSecondary">@color/secondary_you</item>
+        <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
+        <item name="actionMenuTextColor">@color/on_primary_you</item>
+    </style>
+
+
+    <!-- Themes for subcomponents -->
+    <style name="Theme.You.ActionBar">
+        <item name="colorSurface">?bar</item>
+        <item name="colorOnSurface">@color/on_primary_you</item>
+    </style>
+
+    <style name="Theme.You.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextColor">@color/white_opacity_87</item>
+        <item name="android:background">?bar</item>
+    </style>
+
+    <style name="Theme.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/on_primary_you</item>
+    </style>
+</resources>

@@ -1132,6 +1132,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_deep_red">Deep Red</string>
     <string name="theme_dark">Dark</string>
+    <string name="theme_you">Material You</string>
 
     <!-- Book languages detected by the app -->
     <string name="lang_sv">Swedsih</string>

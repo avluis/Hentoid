@@ -5,6 +5,7 @@
     <attr name="subbar_1" format="reference" />
     <attr name="subbar_2" format="reference" />
     <attr name="card_title" format="reference" />
+    <attr name="card_tags" format="reference" />
     <attr name="card_surface" format="reference" />
     <attr name="card_pressed" format="reference" />
     <attr name="card_selected" format="reference" />

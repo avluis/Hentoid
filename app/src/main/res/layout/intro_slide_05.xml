@@ -69,5 +69,14 @@
             android:gravity="start|center_vertical"
             android:insetTop="8dp"
             android:text="@string/theme_dark" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/intro_5_you"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:gravity="start|center_vertical"
+            android:insetTop="8dp"
+            android:text="@string/theme_you" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 </LinearLayout>

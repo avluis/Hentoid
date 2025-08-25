@@ -47,6 +47,7 @@
         <item name="subbar_1">@color/subbar_1_black</item>
         <item name="subbar_2">@color/subbar_2_black</item>
         <item name="card_title">@color/card_title_black</item>
+        <item name="card_tags">@color/card_tags_black</item>
         <item name="card_surface">@color/card_surface_black</item>
         <item name="card_pressed">@color/card_pressed_black</item>
         <item name="card_selected">@color/card_selected_black</item>
