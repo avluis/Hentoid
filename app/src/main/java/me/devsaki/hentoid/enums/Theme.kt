@@ -10,12 +10,15 @@ enum class Theme(val id: Int, val resourceName: String) {
     // "Dark" in settings, not to be mistaken with usual "black" that means AMOLED
     BLACK(2, "Black"),
 
+    // Material You
+    YOU(3, "You"),
+
     // Fallback
     NONE(99, "Light");
 
     companion object {
         fun searchById(id: Int): Theme {
-            for (s in Theme.values()) if (id == s.id) return s
+            for (s in entries) if (id == s.id) return s
             return Theme.NONE
         }
     }

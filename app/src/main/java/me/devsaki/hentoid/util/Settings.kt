@@ -882,5 +882,6 @@ object Settings {
         val COLOR_THEME_LIGHT = Theme.LIGHT.id
         val COLOR_THEME_DARK = Theme.DARK.id
         val COLOR_THEME_BLACK = Theme.BLACK.id
+        val COLOR_THEME_YOU = Theme.YOU.id
     }
 }

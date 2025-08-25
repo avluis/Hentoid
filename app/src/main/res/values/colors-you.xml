@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy of colors-light for < API31 devices -->
+<resources>
+    <color name="primary_you">@color/dark_red</color>
+    <color name="primary_variant_you">@color/very_dark_red</color>
+    <color name="on_primary_you">@color/white_opacity_87</color>
+    <color name="secondary_you">@color/accent_red</color>
+    <color name="secondary_variant_you">@color/light_red</color>
+    <color name="on_secondary_you">@color/white_opacity_87</color>
+    <color name="surface_you">@color/white</color>
+    <color name="on_surface_you">@color/white_opacity_87</color>
+    <color name="window_background_you">@color/taupe_p1</color>
+    <color name="dialog_background_you">@color/taupe</color>
+    <color name="on_background_you">@color/white_opacity_87</color>
+    <color name="container_you">@color/taupe_p2</color>
+    <color name="ripple_you">@color/light_red</color>
+
+    <!-- Drawers, bottom panels -->
+    <color name="drawer_background_you">@color/taupe</color>
+
+    <!-- Sub-bars -->
+    <color name="bar_you">@color/taupe</color>
+    <color name="subbar_1_you">@color/taupe_m1</color>
+    <color name="subbar_2_you">@color/taupe_m2</color>
+
+    <!-- Content cards -->
+    <color name="card_title_you">@color/dark_gray</color>
+    <color name="card_surface_you">@color/white</color>
+    <color name="card_selected_you">@color/light_red</color>
+    <color name="card_pressed_you">@color/light_gray</color>
+    <color name="card_tags_you">@color/medium_gray</color>
+</resources>
