@@ -122,7 +122,7 @@
         <item name="android:editTextColor">@color/on_primary_black</item>
         <item name="android:textColorHint">@color/on_primary_black</item>
         <item name="textColorAlertDialogListItem">@color/on_primary_black</item>
-        <item name="android:checkboxStyle">@style/Theme.DialogCheckbox</item>
+        <item name="android:checkboxStyle">@style/Theme.Black.DialogCheckbox</item>
         <item name="buttonBarNegativeButtonStyle">@style/Widget.App.DialogButton</item>
         <item name="buttonBarPositiveButtonStyle">@style/Widget.App.DialogButton</item>
     </style>

@@ -128,7 +128,7 @@
         <item name="android:editTextColor">@color/on_primary_light</item>
         <item name="android:textColorHint">@color/on_primary_light</item>
         <item name="textColorAlertDialogListItem">@color/on_primary_light</item>
-        <item name="android:checkboxStyle">@style/Theme.DialogCheckbox</item>
+        <item name="android:checkboxStyle">@style/Theme.Light.DialogCheckbox</item>
         <item name="buttonBarNegativeButtonStyle">@style/Widget.App.DialogButton</item>
         <item name="buttonBarPositiveButtonStyle">@style/Widget.App.DialogButton</item>
     </style>
@@ -175,7 +175,7 @@
         <item name="android:background">?bar</item>
     </style>
 
-    <style name="Theme.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">
+    <style name="Theme.Light.DialogCheckbox" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="android:textColor">@color/on_primary_light</item>
     </style>
 </resources>

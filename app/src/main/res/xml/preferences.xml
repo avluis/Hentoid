@@ -147,7 +147,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_color_theme_default"
                 android:entries="@array/pref_color_theme_entries"
-                android:entryValues="@array/int_three"
+                android:entryValues="@array/int_four"
                 android:key="pref_color_theme"
                 android:summary="@string/pref_color_theme_summary"
                 android:title="@string/pref_color_theme_title"
