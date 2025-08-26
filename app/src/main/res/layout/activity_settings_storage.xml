@@ -72,14 +72,14 @@
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/primary_library" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/add_primary_1"
+        style="@style/Widget.Material3.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:padding="16dp"
         android:text="@string/add_primary_1"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_add"
         app:layout_constraintStart_toEndOf="parent"
@@ -105,14 +105,14 @@
         <include layout="@layout/include_prefs_storage_volume" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/add_primary_2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        style="@style/Widget.Material3.Button"
         android:layout_margin="8dp"
         android:padding="16dp"
         android:text="@string/add_primary_2"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_add"
         app:layout_constraintStart_toEndOf="parent"
@@ -266,14 +266,14 @@
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/external_library" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/add_external"
+        style="@style/Widget.Material3.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:padding="16dp"
         android:text="@string/add_external"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_add"
         app:layout_constraintStart_toEndOf="parent"

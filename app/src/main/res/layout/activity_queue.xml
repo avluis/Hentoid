@@ -136,7 +136,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/download_revive_cancel"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"

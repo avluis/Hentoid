@@ -152,8 +152,8 @@
         android:text="@string/export_location"
         android:textStyle="bold"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_file_library_chk"
         tools:visibility="visible" />
 
@@ -165,8 +165,8 @@
         android:switchPadding="10dp"
         android:text="@string/export_favs_only"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_location"
         tools:visibility="visible" />
 
@@ -178,8 +178,8 @@
         android:switchPadding="10dp"
         android:text="@string/export_groups"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_favs_only"
         tools:visibility="visible" />
 
@@ -235,19 +235,14 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/export_run_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
         android:layout_margin="8dp"
         android:text="@string/export_run"
-        android:textColor="@color/secondary_color_selector"
-        android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_simple_arrow_down"
-        app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_file_help2_text"
-        app:strokeColor="@color/secondary_color_selector" />
+        app:layout_constraintTop_toBottomOf="@id/export_file_help2_text" />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/export_progress_bar"

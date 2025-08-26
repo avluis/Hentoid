@@ -137,21 +137,17 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_run_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_margin="8dp"
         android:enabled="false"
         android:text="@string/import_run"
-        android:textColor="@color/secondary_color_selector"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_action_import"
-        app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_file_bookmarks_chk"
-        app:strokeColor="@color/secondary_color_selector"
         tools:visibility="visible" />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator

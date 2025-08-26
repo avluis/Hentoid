@@ -56,7 +56,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/changelogButton"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -64,7 +64,6 @@
             android:text="@string/view_changelog"
             app:flow_horizontalAlign="start"
             app:icon="@drawable/ic_logs"
-            app:iconTint="@color/secondary_color_selector"
             app:layout_constraintStart_toEndOf="@id/appLogo"
             app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name" />
 
@@ -159,7 +158,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/licensesButton"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -169,7 +168,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/achievementsButton"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"

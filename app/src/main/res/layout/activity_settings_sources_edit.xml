@@ -36,7 +36,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/ok_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:text="@android:string/ok"

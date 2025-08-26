@@ -23,7 +23,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/star_2"
@@ -40,7 +40,7 @@
         app:layout_constraintStart_toEndOf="@id/star_1"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/star_3"
@@ -57,7 +57,7 @@
         app:layout_constraintStart_toEndOf="@id/star_2"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/star_4"
@@ -74,7 +74,7 @@
         app:layout_constraintStart_toEndOf="@id/star_3"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <ImageView
         android:id="@+id/star_5"
@@ -91,18 +91,15 @@
         app:layout_constraintStart_toEndOf="@id/star_4"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorOnPrimary"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/clear_rating_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="wrap_content"
         android:layout_height="?android:attr/actionBarSize"
         android:text="@string/clear_rating"
-        android:textColor="@color/secondary_color_selector"
-        android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_cancel"
-        app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/star_1"

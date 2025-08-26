@@ -65,28 +65,23 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/app_prefs_btn"
-            style="@style/Widget.Material3.Button.TextButton.Dialog"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
             android:layout_width="wrap_content"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="32dp"
             android:text="@string/goto_app_prefs"
-            android:textColor="?colorSecondary"
             app:icon="@drawable/ic_settings"
-            app:iconTint="?colorSecondary"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/display_picker" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
             android:layout_width="96dp"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="32dp"
             android:text="@string/ok"
-            android:textColor="?colorSecondary"
-            android:textSize="@dimen/text_body_1"
             app:icon="@drawable/ic_checked"
-            app:iconTint="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/display_picker" />
 
