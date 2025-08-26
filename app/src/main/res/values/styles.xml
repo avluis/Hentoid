@@ -1,7 +1,6 @@
 <resources>
 
     <style name="HentoidCheckButtonOutlinedStyle" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="strokeColor">@color/secondary_color_selector_check</item>
         <item name="android:textColor">@color/secondary_text_color_selector_check</item>
         <item name="iconTint">@color/secondary_text_color_selector_check</item>
     </style>

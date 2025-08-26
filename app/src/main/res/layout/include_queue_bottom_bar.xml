@@ -9,7 +9,7 @@
         android:id="@+id/background_bottom_bar"
         android:layout_width="0dp"
         android:layout_height="64dp"
-        android:background="@color/dialog_background_light"
+        android:background="?bar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
