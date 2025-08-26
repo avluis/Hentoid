@@ -192,19 +192,16 @@
         app:layout_constraintTop_toBottomOf="@id/location_picker"
         app:title="@string/search_type" />
 
-    <TextView
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/search_fab"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/bg_fab_extended"
-        android:drawablePadding="12dp"
-        android:gravity="center"
-        android:paddingStart="12dp"
-        android:paddingEnd="20dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:layout_margin="16dp"
+        android:contentDescription="@plurals/search_button"
         android:text="@plurals/search_button"
         android:visibility="gone"
-        app:drawableStartCompat="@drawable/ic_search"
+        app:icon="@drawable/ic_search"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

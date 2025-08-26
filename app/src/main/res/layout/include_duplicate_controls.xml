@@ -80,43 +80,38 @@
         app:layout_constraintStart_toEndOf="@id/use_sensitivity_txt"
         app:layout_constraintTop_toTopOf="@id/use_sensitivity_txt" />
 
-    <TextView
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/scan_fab"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_fab_extended"
-        android:drawablePadding="12dp"
-        android:gravity="center"
-        android:paddingStart="12dp"
-        android:paddingEnd="20dp"
+        app:icon="@drawable/ic_search"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_gravity="bottom|center"
+        android:contentDescription="@string/duplicate_find_action"
         android:text="@string/duplicate_find_action"
-        app:drawableStartCompat="@drawable/ic_search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/use_sensitivity" />
+        app:layout_constraintTop_toBottomOf="@id/use_sensitivity"/>
 
-    <TextView
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/stop_fab"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_fab_extended"
-        android:gravity="center"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
-        android:text="@string/stop"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_gravity="bottom|center"
         android:visibility="invisible"
+        android:contentDescription="@string/stop"
+        android:text="@string/stop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/use_sensitivity" />
+        app:layout_constraintTop_toBottomOf="@id/use_sensitivity"/>
 
     <TextView
         android:id="@+id/index_pictures_txt"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:checked="true"
-        android:paddingTop="16dp"
         android:text="@string/duplicate_index_covers"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
