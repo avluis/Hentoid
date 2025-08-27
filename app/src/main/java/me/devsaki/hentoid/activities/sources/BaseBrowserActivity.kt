@@ -1009,6 +1009,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         binding?.apply {
             menuSeek.setIconResource(resId)
             menuSeek.isEnabled = enabled
+            menuSeek.isVisible = true
         }
     }
 

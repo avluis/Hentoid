@@ -209,6 +209,19 @@
                 android:layout_height="match_parent">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/menu_back"
+                    style="?attr/materialIconButtonFilledTonalStyle"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:enabled="false"
+                    android:tooltipText="@string/previous_book_help"
+                    app:icon="@drawable/ic_action_back"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu_seek"
                     style="?attr/materialIconButtonFilledTonalStyle"
                     android:layout_width="48dp"
@@ -218,24 +231,11 @@
                     android:visibility="invisible"
                     app:icon="@drawable/ic_action_back_gallery"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="ContentDescription"
-                    tools:visibility="visible" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/menu_back"
-                    style="?attr/materialIconButtonFilledTonalStyle"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:enabled="false"
-                    android:tooltipText="@string/previous_book_help"
-                    app:icon="@drawable/ic_action_back"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/menu_forward"
                     app:layout_constraintStart_toEndOf="@id/menu_seek"
                     app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="ContentDescription" />
+                    tools:ignore="ContentDescription"
+                    tools:visibility="visible" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu_forward"
@@ -247,7 +247,7 @@
                     app:icon="@drawable/ic_action_forward"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/menu_back"
+                    app:layout_constraintStart_toEndOf="@id/menu_seek"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
 
