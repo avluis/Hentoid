@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.browser
 
+import android.content.Intent
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.settings.SettingsSourceSelectActivity
 import me.devsaki.hentoid.activities.sources.CustomWebViewClient
 import me.devsaki.hentoid.database.domains.SiteHistory
 import me.devsaki.hentoid.databinding.FragmentWebWelcomeBinding
@@ -82,6 +84,10 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
         binding?.apply {
             activeSites.adapter = sitesFastAdapter
             sitesFastAdapter.onClickListener = { _, _, i, _ -> onSiteClick(i) }
+
+            editSites.setOnClickListener {
+                startActivity(Intent(requireActivity(), SettingsSourceSelectActivity::class.java))
+            }
 
             recentHistory.adapter = historyFastAdapter
             historyFastAdapter.onClickListener = { _, _, i, _ -> onHistoryClick(i) }

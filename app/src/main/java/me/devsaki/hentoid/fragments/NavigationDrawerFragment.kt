@@ -13,7 +13,6 @@ import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.core.text.toSpannable
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
@@ -406,7 +405,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         if (clearTop) intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         //if (reorderToFront) intent.flags = intent.flags or Intent.FLAG_ACTIVITY_PREVIOUS_IS_TOP
         if (bundle != null) intent.putExtras(bundle)
-        ContextCompat.startActivity(requireContext(), intent, null)
+        requireContext().startActivity(intent)
         activity?.apply {
             if (Build.VERSION.SDK_INT >= 34) {
                 overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
