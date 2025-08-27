@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.browser
 
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,10 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
     // Viewmodel
     private lateinit var viewModel: BrowserViewModel
 
+    private val prefsListener =
+        OnSharedPreferenceChangeListener { _, k -> onSharedPreferenceChanged(k) }
+
+
     // === UI
     private var binding: FragmentWebWelcomeBinding? = null
 
@@ -43,11 +48,12 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Settings.registerPrefsChangedListener({ _, key -> onSharedPreferenceChanged(key) })
+        Settings.registerPrefsChangedListener(prefsListener)
     }
 
     override fun onDestroy() {
         parent = null
+        Settings.unregisterPrefsChangedListener(prefsListener)
         super.onDestroy()
     }
 
@@ -85,9 +91,10 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
     }
 
     private fun loadActiveSites() {
+        val activeSites = Settings.activeSites.filter { it.isVisible }
         val items = mutableSetOf<Site>()
-        items.addAll(sitePerTimestamp)
-        items.addAll(Settings.activeSites.filter { it.isVisible })
+        items.addAll(sitePerTimestamp.filter { activeSites.contains(it) })
+        items.addAll(activeSites)
         sitesItemAdapter.set(items.map { IconItem(it.ico, it) })
     }
 
