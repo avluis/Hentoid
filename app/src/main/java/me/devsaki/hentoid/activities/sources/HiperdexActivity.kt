@@ -4,9 +4,9 @@ import me.devsaki.hentoid.enums.Site
 
 class HiperdexActivity : BaseBrowserActivity() {
     companion object {
-        const val GALLERY_PATTERN = "//hiperdex.tv/[manga|comic]+/[%\\w\\-]+[/]{0,1}$"
+        private const val DOMAIN_FILTER = "hiperdex.com"
+        const val GALLERY_PATTERN = "//$DOMAIN_FILTER/[manga|comic]+/[%\\w\\-]+[/]{0,1}$"
 
-        private const val DOMAIN_FILTER = "hiperdex.tv"
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+[%\\w\\-]*/$")
         private val REMOVABLE_ELEMENTS = arrayOf(".c-ads")

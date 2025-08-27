@@ -678,7 +678,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:host="hiperdex.tv"
+                    android:host="hiperdex.com"
                     android:pathPattern="/manga/..*/"
                     android:scheme="https" />
             </intent-filter>
