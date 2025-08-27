@@ -46,14 +46,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_select_file_btn"
-        style="@style/Widget.Material3.Button.TextButton"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="wrap_content"
-        android:layout_height="?android:attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:backgroundTint="?colorSecondary"
-        android:padding="8dp"
         android:text="@string/import_select_file"
-        android:textColor="@color/white_opacity_87"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_mode" />
