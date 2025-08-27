@@ -37,8 +37,8 @@ class NovelcrowContent : BaseContentParser() {
     @Selector(value = ".genres-content a")
     private var tags: List<Element>? = null
 
-    @Selector(value = "#chapter-heading")
-    private var chapterTitle: Element? = null
+    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
+    private var chapterTitle: String? = null
 
     @Selector(value = ".reading-content img")
     private var chapterImgs: List<Element>? = null
@@ -57,7 +57,7 @@ class NovelcrowContent : BaseContentParser() {
     private fun updateSingleChapter(content: Content, url: String, updateImages: Boolean): Content {
         var title = NO_TITLE
         chapterTitle?.let {
-            title = cleanup(it.text())
+            title = cleanup(it.replace("Chapter Title: ", "").replace(" - NovelCrow", ""))
         }
         content.title = title
         val urlParts = url.split("/")
