@@ -2144,4 +2144,8 @@ object ObjectBoxDB {
             }
         return allContentQ.safeFindIds()
     }
+
+    fun selectContentSizes(ids: LongArray): LongArray {
+        return store.boxFor(Content::class.java).get(ids).map { it.size }.toLongArray()
+    }
 }

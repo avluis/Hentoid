@@ -9,17 +9,18 @@ import me.devsaki.hentoid.database.safeReach
 data class GroupItem(
     @Id
     var id: Long = 0,
-    var order: Int = 0
+    var order: Int = 0,
+    var size: Long = 0
 ) {
     lateinit var content: ToOne<Content>
     lateinit var group: ToOne<Group>
 
-    constructor(content: Content, group: Group, order: Int) : this(0, order) {
+    constructor(content: Content, group: Group, order: Int, size: Long = 0) : this(0, order, size) {
         this.content.target = content
         this.group.target = group
     }
 
-    constructor(contentId: Long, group: Group, order: Int) : this(0, order) {
+    constructor(contentId: Long, group: Group, order: Int, size: Long = 0) : this(0, order, size) {
         content.targetId = contentId
         this.group.target = group
     }

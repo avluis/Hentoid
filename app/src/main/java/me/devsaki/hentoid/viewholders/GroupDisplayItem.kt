@@ -135,8 +135,7 @@ class GroupDisplayItem(
                     else items.size.toString() + ""
 
                 else -> {
-                    val size =
-                        if (items.isEmpty()) 0L else items.sumOf { it.linkedContent?.size ?: 0 }
+                    val size = if (items.isEmpty()) 0L else items.sumOf { it.size }
                     formatHumanReadableSizeInt(size, title.resources)
                 }
             }

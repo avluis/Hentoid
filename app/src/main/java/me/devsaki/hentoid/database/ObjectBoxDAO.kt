@@ -632,23 +632,22 @@ class ObjectBoxDAO : CollectionDAO {
 
     private fun enrichCustomGroups(g: Group): Group {
         if (g.grouping == Grouping.CUSTOM) {
-            val newItems: MutableList<GroupItem>
-            if (g.isUngroupedGroup) { // Populate Ungrouped custom group
-                newItems = ObjectBoxDB.selectUngroupedContentIds().map { id ->
-                    GroupItem(id, g, -1)
-                }.toMutableList()
+            val newItems: MutableList<GroupItem> = ArrayList()
+
+            val groupContent = if (g.isUngroupedGroup) { // Populate Ungrouped custom group
+                ObjectBoxDB.selectUngroupedContentIds().toLongArray()
             } else { // Reselect items; only take items from the library to avoid counting those who've been sent back to the Queue
-                val groupContent =
-                    ObjectBoxDB.selectContentIdsByGroup(g.id) // Specific query to get there fast
-                newItems = ArrayList()
-                for (i in groupContent.indices) {
-                    newItems.add(GroupItem(groupContent[i], g, i))
-                }
+                ObjectBoxDB.selectContentIdsByGroup(g.id)
+            }
+            val sizes = ObjectBoxDB.selectContentSizes(groupContent)
+            for (i in groupContent.indices) {
+                val order = if (g.isUngroupedGroup) -1 else i
+                newItems.add(GroupItem(groupContent[i], g, order, sizes[i]))
             }
             g.setItems(newItems)
             // Reset cover content if it isn't among remaining books
             if (newItems.isNotEmpty()) {
-                val newContents = newItems.map { obj: GroupItem -> obj.contentId }
+                val newContents = newItems.map { it.contentId }
                 if (!newContents.contains(g.coverContent.targetId)) {
                     val c = selectContent(newItems[0].contentId)
                     g.coverContent.target = c
