@@ -9,7 +9,9 @@ class ManhwaActivity : BaseBrowserActivity() {
         private const val DOMAIN_FILTER = "manhwahentai.me"
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+/$")
-        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads", "\$x//a[contains(@href,\"ourdream.ai\")]/..")
+        private val REMOVABLE_ELEMENTS =
+            arrayOf(".c-ads", "iframe", "\$x//a[contains(@href,\"ourdream.ai\")]/..")
+        private val JS_CONTENT_BLACKLIST = arrayOf("adprovider")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }
 
@@ -24,6 +26,7 @@ class ManhwaActivity : BaseBrowserActivity() {
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
+        client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
         return client
     }
 }
