@@ -227,6 +227,9 @@
     <string name="pref_viewer_slideshow_delay">Presentazione / Ritardo tra ogni pagina (orizzontalmente)</string>
     <string name="pref_viewer_slideshow_delay_vertical">Presentazione / Velocità scorrimento (verticalmente)</string>
     <string name="pref_viewer_slideshow_loop">Loop</string>
+    <string name="pref_viewer_smart_crop">Ritaglio intelligente</string>
+    <string name="pref_viewer_smart_crop_summary_off">Le immagini sono mostrate così come sono</string>
+    <string name="pref_viewer_smart_crop_summary_on">I bordi neri sono rimossi automaticamente</string>
     <string name="pref_viewer_swipe_to_fling">Scorri per lanciare</string>
     <string name="pref_viewer_tap_transitions">Abilita animazione volta pagina</string>
     <string name="pref_viewer_vertical_reader">Lettore verticale</string>
@@ -237,6 +240,11 @@
     <string name="pref_viewer_zoom_transitions">Abilita animazione zoom</string>
     <string name="prefs_ask_detach_external_library">Sei sicuro di voler staccare la libreria esterna\?</string>
     <string name="prefs_external_library_detached">Libreria esterna staccata</string>
+    <string name="searchpreference_clear">Cancella</string>
+    <string name="searchpreference_clear_history">Rimozione cronologia</string>
+    <string name="searchpreference_more">Altro</string>
+    <string name="searchpreference_no_results">Nessun risultato</string>
+    <string name="searchpreference_search">Cerca…</string>
     <string name="tag_blocking_screen_title">Blocco dei tag</string>
     <string name="title_activity_source_specifics">Impostazione fonti specifiche</string>
     <string name="use_app_prefs">Impostazioni app (%s)</string>
