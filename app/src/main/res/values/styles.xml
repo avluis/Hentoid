@@ -28,7 +28,7 @@
         <item name="android:layout_marginBottom">48dp</item>
         <item name="android:layout_marginTop">24dp</item>
         <item name="android:visibility">invisible</item>
-        <item name="android:src">@drawable/ic_circle</item>
+        <item name="android:src">@drawable/ic_disc_shape</item>
     </style>
 
     <style name="PlaceholderUnderline">

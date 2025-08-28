@@ -26,7 +26,7 @@
         android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:scaleType="centerInside"
-        android:src="@drawable/ic_circle"
+        android:src="@drawable/ic_disc_shape"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/drawer_item_icon"
         app:layout_constraintEnd_toEndOf="@id/drawer_item_icon"

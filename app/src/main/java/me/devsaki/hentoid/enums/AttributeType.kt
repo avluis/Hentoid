@@ -68,7 +68,7 @@ enum class AttributeType(
         7,
         R.string.category_circle,
         R.string.object_circle,
-        R.drawable.ic_hentoid_shape,
+        R.drawable.ic_attribute_circle,
         R.color.purple_light
     ),
     CHARACTER(
