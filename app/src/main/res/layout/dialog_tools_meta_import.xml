@@ -151,6 +151,7 @@
         android:id="@+id/import_progress_bar"
         style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
