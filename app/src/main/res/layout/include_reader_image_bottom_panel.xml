@@ -6,12 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="16dp"
-    android:theme="@style/Theme.Light.BottomSheetDialog">
+    android:theme="@style/Theme.Light.MonochromeBottomSheetDialog">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/Theme.Light.BottomSheetDialog">
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/ivThumb"
@@ -21,8 +20,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_trans"
-            tools:tint="@color/light_gray" />
+            tools:src="@drawable/ic_hentoid_shape"
+            tools:tint="@color/dark_gray" />
 
         <TextView
             android:id="@+id/image_path"
@@ -56,71 +55,55 @@
             android:background="?colorOnPrimary"
             app:layout_constraintTop_toBottomOf="@id/ivThumb" />
 
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/img_action_favourite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_fav_empty"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
             android:tooltipText="@string/page_fav_help"
+            app:icon="@drawable/ic_fav_empty"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />
 
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/img_action_copy"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_action_download"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
             android:tooltipText="@string/page_copy_help"
+            app:icon="@drawable/ic_action_download"
             app:layout_constraintEnd_toStartOf="@id/img_action_share"
             app:layout_constraintStart_toEndOf="@id/img_action_favourite"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />
 
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/img_action_share"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_action_share"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
             android:tooltipText="@string/page_share_help"
+            app:icon="@drawable/ic_action_share"
             app:layout_constraintEnd_toStartOf="@id/img_action_delete"
             app:layout_constraintStart_toEndOf="@id/img_action_copy"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />
 
-        <ImageView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/img_action_delete"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="8dp"
-            android:adjustViewBounds="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:src="@drawable/ic_action_delete"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="4dp"
             android:tooltipText="@string/page_delete_help"
+            app:icon="@drawable/ic_action_delete"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_divider"
             tools:ignore="ContentDescription" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

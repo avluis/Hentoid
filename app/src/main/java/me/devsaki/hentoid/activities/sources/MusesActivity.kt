@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class MusesActivity : BaseWebActivity() {
+class MusesActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "8muses.com"

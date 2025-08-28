@@ -13,7 +13,7 @@ private val JS_WHITELIST = arrayOf(
 )
 private val AD_ELEMENTS = arrayOf("iframe", ".c-ads")
 
-class AllPornComicActivity : BaseWebActivity() {
+class AllPornComicActivity : BaseBrowserActivity() {
 
     override fun getStartSite(): Site {
         return Site.ALLPORNCOMIC

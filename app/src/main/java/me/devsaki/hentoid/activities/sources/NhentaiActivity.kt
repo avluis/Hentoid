@@ -4,7 +4,7 @@ import android.net.Uri
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.network.parseParameters
 
-class NhentaiActivity : BaseWebActivity() {
+class NhentaiActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "nhentai.net"
         private val GALLERY_FILTER =

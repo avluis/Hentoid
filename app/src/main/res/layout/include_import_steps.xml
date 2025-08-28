@@ -64,18 +64,14 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/import_step1_button"
-            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="8dp"
-            android:backgroundTint="?colorSecondary"
             android:text="@string/refresh_step1_select"
-            android:textColor="@color/white_opacity_87"
             android:textSize="@dimen/text_body_1"
             android:visibility="gone"
             app:icon="@drawable/ic_folder_full"
-            app:iconTint="@color/white_opacity_87"
             app:layout_constraintBottom_toBottomOf="@id/import_step1_number"
             app:layout_constraintEnd_toStartOf="@id/import_step1_check"
             app:layout_constraintStart_toEndOf="@id/import_step1_number"
@@ -119,14 +115,15 @@
             app:layout_constraintStart_toEndOf="@id/import_step2_number"
             app:layout_constraintTop_toTopOf="@id/import_step2_number" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/import_step2_bar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
-            android:layout_height="4dp"
-            android:paddingStart="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="2dp"
             android:paddingEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@id/import_step2_number"
+            app:layout_constraintBottom_toBottomOf="@id/import_step2"
             app:layout_constraintEnd_toStartOf="@id/import_step2_check"
             app:layout_constraintStart_toEndOf="@id/import_step2_number"
             app:layout_constraintTop_toBottomOf="@id/import_step2_text" />
@@ -177,30 +174,32 @@
             app:layout_constraintLeft_toRightOf="@id/import_step3_number"
             app:layout_constraintTop_toTopOf="@id/import_step3_number" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/import_step3_bar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
-            android:layout_height="4dp"
-            android:paddingStart="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="2dp"
             android:paddingEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@id/import_step3_number"
+            app:layout_constraintBottom_toTopOf="@id/import_step3_sub_bar"
             app:layout_constraintEnd_toStartOf="@id/import_step3_check"
             app:layout_constraintStart_toEndOf="@id/import_step3_number"
             app:layout_constraintTop_toBottomOf="@id/import_step3_text" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/import_step3_sub_bar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:layout_marginTop="4dp"
-            android:paddingStart="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:paddingEnd="16dp"
             android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/import_step3"
             app:layout_constraintEnd_toStartOf="@id/import_step3_check"
             app:layout_constraintStart_toEndOf="@id/import_step3_number"
             app:layout_constraintTop_toBottomOf="@id/import_step3_bar"
+            app:trackThickness="2dp"
             tools:visibility="visible" />
 
         <ImageView
@@ -249,14 +248,15 @@
             app:layout_constraintLeft_toRightOf="@id/import_step4_number"
             app:layout_constraintTop_toTopOf="@id/import_step4_number" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/import_step4_bar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
-            android:layout_height="4dp"
-            android:paddingStart="16dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="2dp"
             android:paddingEnd="16dp"
-            app:layout_constraintBottom_toBottomOf="@id/import_step4_number"
+            app:layout_constraintBottom_toBottomOf="@id/import_step4"
             app:layout_constraintEnd_toStartOf="@id/import_step4_check"
             app:layout_constraintStart_toEndOf="@id/import_step4_number"
             app:layout_constraintTop_toBottomOf="@id/import_step4_text" />

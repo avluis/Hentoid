@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
-import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
@@ -16,7 +15,9 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.progressindicator.CircularProgressIndicator
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -182,7 +183,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
      */
     fun updateProgress(vh: RecyclerView.ViewHolder, isPausedEvent: Boolean, isIndividual: Boolean) {
         content ?: return
-        val pb = vh.itemView.findViewById<ProgressBar>(R.id.pbDownload) ?: return
+        val pb = vh.itemView.findViewById<LinearProgressIndicator>(R.id.pbDownload) ?: return
         if (!isInQueue(content.status)) {
             pb.visibility = View.GONE
             return
@@ -204,9 +205,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 ) else ContextCompat.getColor(pb.context, R.color.medium_gray)
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    pb.progressDrawable.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
+                    pb.progressDrawable?.colorFilter = BlendModeColorFilter(color, BlendMode.SRC_IN)
                 } else {
-                    @Suppress("DEPRECATION") pb.progressDrawable.setColorFilter(
+                    @Suppress("DEPRECATION") pb.progressDrawable?.setColorFilter(
                         color,
                         PorterDuff.Mode.SRC_IN
                     )
@@ -239,11 +240,10 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private val tvTitle: TextView = view.requireById(R.id.tvTitle)
         private val ivCover: ImageView = view.requireById(R.id.ivCover)
         private val ivFlag: ImageView? = view.findViewById(R.id.ivFlag)
-        private val ivSite: ImageView? = view.findViewById(R.id.queue_site_button)
+        private val ivSite: MaterialButton? = view.findViewById(R.id.queue_site_button)
         private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
         private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
-        private val ivError: ImageView? = view.findViewById(R.id.ivError)
         private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
         override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
         private val deleteButton: View? = view.findViewById(R.id.delete_btn)
@@ -252,8 +252,8 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var ivNew: View? = view.findViewById(R.id.lineNew)
         private var tvTags: TextView? = view.findViewById(R.id.tvTags)
         private var tvSeries: TextView? = view.findViewById(R.id.tvSeries)
-        private var ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
-        private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
+        private var ivFavourite: MaterialButton? = view.findViewById(R.id.ivFavourite)
+        private var ivRating: MaterialButton? = view.findViewById(R.id.iv_rating)
         private var ivExternal: ImageView? = view.findViewById(R.id.ivExternal)
         private var readingProgress: CircularProgressIndicator? =
             view.findViewById(R.id.reading_progress)
@@ -265,10 +265,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
 
         // Specific to Queued content
-        var topButton: View? = view.findViewById(R.id.queueTopBtn)
-        var bottomButton: View? = view.findViewById(R.id.queueBottomBtn)
+        var topButton: MaterialButton? = view.findViewById(R.id.queueTopBtn)
+        var bottomButton: MaterialButton? = view.findViewById(R.id.queueBottomBtn)
+        private val ivError: MaterialButton? = view.findViewById(R.id.ivError)
+        var downloadButton: MaterialButton? = view.findViewById(R.id.ivRedownload)
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
-        var downloadButton: View? = view.findViewById(R.id.ivRedownload)
 
         private var deleteActionRunnable: Runnable? = null
 
@@ -301,7 +302,9 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 bundleParser.readPagesCount?.let { item.content?.readPagesCount = it }
                 bundleParser.coverUri?.let { item.content?.cover?.fileUri = it }
                 bundleParser.title?.let { item.content?.title = it }
-                bundleParser.downloadMode?.let { item.content?.downloadMode = DownloadMode.fromValue(it) }
+                bundleParser.downloadMode?.let {
+                    item.content?.downloadMode = DownloadMode.fromValue(it)
+                }
                 bundleParser.frozen?.let { item.queueRecord?.frozen = it }
                 bundleParser.processed?.let { item.content?.isBeingProcessed = it }
                 bundleParser.qtyPages?.let { item.content?.qtyPages = it }
@@ -474,7 +477,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     val nbMissingPages = qtyPages - content!!.getNbDownloadedPages()
                     if (nbMissingPages > 0) {
                         val missingStr = " " + context.resources.getQuantityString(
-                            R.plurals.work_pages_missing, nbMissingPages.toInt(), nbMissingPages
+                            R.plurals.work_pages_missing, nbMissingPages, nbMissingPages
                         )
                         context.resources.getString(R.string.work_pages_queue, nbPages, missingStr)
                     } else context.resources.getString(R.string.work_pages_queue, nbPages, "")
@@ -545,8 +548,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 val site = content.site
                 visibility =
                     if (site != Site.NONE && (!isGrid || Settings.libraryDisplayGridSource)) {
-                        val img = site.ico
-                        setImageResource(img)
+                        setIconResource(site.ico)
                         View.VISIBLE
                     } else {
                         View.GONE
@@ -589,13 +591,13 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
 
                 ivFavourite?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-                    if (content.favourite) setImageResource(R.drawable.ic_fav_full)
-                    else setImageResource(R.drawable.ic_fav_empty)
+                    if (content.favourite) setIconResource(R.drawable.ic_fav_full)
+                    else setIconResource(R.drawable.ic_fav_empty)
                 }
 
                 ivRating?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-                    setImageResource(getRatingResourceId(content.rating))
+                    setIconResource(getRatingResourceId(content.rating))
                 }
             }
         }

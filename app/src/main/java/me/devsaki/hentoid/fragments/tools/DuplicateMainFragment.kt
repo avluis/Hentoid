@@ -36,8 +36,7 @@ import java.lang.ref.WeakReference
 
 class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
-    private var _binding: FragmentDuplicateMainBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentDuplicateMainBinding? = null
 
     // Communication
     private var callback: OnBackPressedCallback? = null
@@ -64,16 +63,16 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
+    ): View? {
+        binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
         addCustomBackControl()
         activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
-        return binding.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 
     override fun onStart() {
@@ -87,11 +86,12 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-
-        binding.list.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        FastScrollerBuilder(binding.list).build()
-        binding.list.adapter = fastAdapter
+        binding?.apply {
+            list.layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            FastScrollerBuilder(list).build()
+            list.adapter = fastAdapter
+        }
 
         // Item click listener
         // TODO it's actually on the "X duplicates" button...
@@ -103,7 +103,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.allDuplicates.observe(viewLifecycleOwner) { this.onDuplicatesChanged(it) }
-        viewModel.firstUse.observe(viewLifecycleOwner) { b -> firstUse = b }
+        viewModel.firstUse.observe(viewLifecycleOwner) { firstUse = it }
     }
 
     private fun addCustomBackControl() {
@@ -133,23 +133,20 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
 
         // Update settings panel visibility
-        if (duplicates.isEmpty()) {
-            binding.emptyTxt.visibility = View.VISIBLE
-            when {
-                firstUse -> {
-                    binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
-                }
+        binding?.emptyTxt?.apply {
+            if (duplicates.isEmpty()) {
+                visibility = View.VISIBLE
+                text = when {
+                    firstUse -> context?.getText(R.string.duplicate_empty_first_use)
 
-                DuplicateDetectorWorker.isRunning(requireContext()) -> {
-                    binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
-                }
+                    DuplicateDetectorWorker.isRunning(requireContext()) ->
+                        context?.getText(R.string.duplicate_processing)
 
-                else -> {
-                    binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
+                    else -> context?.getText(R.string.duplicate_empty_no_result)
                 }
+            } else {
+                visibility = View.GONE
             }
-        } else {
-            binding.emptyTxt.visibility = View.GONE
         }
 
         // TODO update UI title
@@ -197,14 +194,14 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 requireContext()
             )
         ) {
-            binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
+            binding?.emptyTxt?.text = context?.getText(R.string.duplicate_processing)
         }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ServiceDestroyedEvent) {
         if (event.service != R.id.duplicate_detector_service) return
-        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
+        binding?.emptyTxt?.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
     /**
@@ -236,7 +233,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             topPanel.dismiss()
             topPanel.onServiceDestroyedEvent()
             if (0 == itemAdapter.adapterItemCount)
-                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
+                binding?.emptyTxt?.text = context?.getText(R.string.duplicate_empty_no_result)
         }
     }
 

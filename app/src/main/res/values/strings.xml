@@ -63,9 +63,15 @@
     <string name="dark_grey">Dark grey</string>
     <string name="black">Black</string>
 
+    <!-- Navigation panel -->
+    <string name="title_submenu_library">My Library</string>
+    <string name="title_submenu_content">Content</string>
+    <string name="title_submenu_settings">Advanced</string>
+
     <!-- Activities -->
     <string name="title_activity_downloads">Library</string>
     <string name="title_activity_queue">Queue</string>
+    <string name="title_activity_browser">Browser</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
@@ -760,7 +766,9 @@
     <string name="about_chrome_unavailable">WebView is unavailable</string>
     <string name="about_chrome_updating">WebView is updating right now</string>
 
-    <!-- Web browser -->
+    <!-- Browser -->
+    <string name="active_sites">Active sites</string>
+    <string name="recent_history">Recent history</string>
     <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
@@ -848,7 +856,7 @@
     <string name="loading_archive">Loading: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
     <string name="loading_image">Loading image: <x:g example="50%" id="percentage">%d%%</x:g></string>
     <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (scale <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
-    <string name="viewer_choose_direction">Choose your reading direction</string>
+    <string name="viewer_choose_direction">Choose reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
     <string name="viewer_direction_ttb">Top to bottom</string>
@@ -1124,6 +1132,7 @@
     <string name="theme_light">Light</string>
     <string name="theme_deep_red">Deep Red</string>
     <string name="theme_dark">Dark</string>
+    <string name="theme_you">Material You</string>
 
     <!-- Book languages detected by the app -->
     <string name="lang_sv">Swedsih</string>

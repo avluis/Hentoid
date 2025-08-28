@@ -35,6 +35,8 @@ import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import io.whitfin.siphash.SipHasher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BOOKMARKS_JSON_FILE_NAME
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
@@ -340,7 +342,7 @@ fun pause(millis: Int) {
  * @param maxExclude Upper bound (excluded)
  * @return Random positive integer (zero included) bound to the given argument (excluded)
  */
-fun getRandomInt(maxExclude: Int): Int {
+fun getRandomInt(maxExclude: Int = Int.MAX_VALUE): Int {
     return rand.nextInt(maxExclude)
 }
 
@@ -398,38 +400,38 @@ fun formatEpochToDate(epoch: Long, formatter: DateTimeFormatter?): String {
  * @param dao     DAO to be used
  * @return True if the bookmarks JSON file has been updated properly; false instead
  */
-fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean {
-    assertNonUiThread()
-    val bookmarks = dao.selectAllBookmarks()
+suspend fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean =
+    withContext(Dispatchers.IO) {
+        val bookmarks = dao.selectAllBookmarks()
 
-    val contentCollection = JsonContentCollection()
-    contentCollection.replaceBookmarks(bookmarks)
+        val contentCollection = JsonContentCollection()
+        contentCollection.replaceBookmarks(bookmarks)
 
-    val rootFolder =
-        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
-            ?: return false
+        val rootFolder =
+            getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                ?: return@withContext false
 
-    try {
-        jsonToFile(
-            context, contentCollection,
-            JsonContentCollection::class.java, rootFolder, BOOKMARKS_JSON_FILE_NAME
-        )
-    } catch (e: IOException) {
-        // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-        // even though all the file existence checks are in place
-        // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
-    } catch (e: IllegalArgumentException) {
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
+        try {
+            jsonToFile(
+                context, contentCollection,
+                JsonContentCollection::class.java, rootFolder, BOOKMARKS_JSON_FILE_NAME
+            )
+        } catch (e: IOException) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        }
+        return@withContext true
     }
-    return true
-}
 
 /**
  * Update the JSON file that stores renaming rules with the current rules
@@ -438,38 +440,38 @@ fun updateBookmarksJson(context: Context, dao: CollectionDAO): Boolean {
  * @param dao     DAO to be used
  * @return True if the rules JSON file has been updated properly; false instead
  */
-fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean {
-    assertNonUiThread()
-    val rules = dao.selectRenamingRules(AttributeType.UNDEFINED, null)
+suspend fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boolean =
+    withContext(Dispatchers.IO) {
+        val rules = dao.selectRenamingRules(AttributeType.UNDEFINED, null)
 
-    val contentCollection = JsonContentCollection()
-    contentCollection.replaceRenamingRules(rules)
+        val contentCollection = JsonContentCollection()
+        contentCollection.replaceRenamingRules(rules)
 
-    val rootFolder =
-        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
-            ?: return false
+        val rootFolder =
+            getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                ?: return@withContext false
 
-    try {
-        jsonToFile(
-            context, contentCollection,
-            JsonContentCollection::class.java, rootFolder, RENAMING_RULES_JSON_FILE_NAME
-        )
-    } catch (e: IOException) {
-        // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-        // even though all the file existence checks are in place
-        // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
-    } catch (e: IllegalArgumentException) {
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
+        try {
+            jsonToFile(
+                context, contentCollection,
+                JsonContentCollection::class.java, rootFolder, RENAMING_RULES_JSON_FILE_NAME
+            )
+        } catch (e: IOException) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        }
+        return@withContext true
     }
-    return true
-}
 
 fun logException(t: Throwable, context: Context? = null) {
     val log: MutableList<LogEntry> = ArrayList()

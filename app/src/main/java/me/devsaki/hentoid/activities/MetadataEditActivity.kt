@@ -43,6 +43,7 @@ import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.getFlagResourceId
+import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
@@ -182,7 +183,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
     private fun updateAttrsList() {
         val items = contentAttributes.filter { selectedAttributeTypes.contains(it.type) }
             .sortedWith(compareBy({ it.type }, { -it.count }, { it.name }))
-            .map { AttributeItem(it, contents.size > 1) }
+            .map { AttributeItem(it, contents.size > 1, true) }
 
         FastAdapterDiffUtil.set(itemAdapter, items, attributeItemDiffCallback)
     }
@@ -399,7 +400,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             .setLifecycleOwner(this)
             .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
             .setTextTypeface(Typeface.DEFAULT)
-            .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
+            .setMenuColor(this.getThemedColor(R.color.subbar_1_light))
             .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
             .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_1))
             .setAutoDismiss(true)

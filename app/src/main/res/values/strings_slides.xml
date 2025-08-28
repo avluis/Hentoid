@@ -20,7 +20,7 @@
     <string name="slide_06_header">Sources</string>
     <!-- Description text -->
     <string name="slide_06_text">Select sources to download from.</string>
-    <string name="slide_06_subtext">You can change this selection later at any time using the edit button on the left menu.</string>
+    <string name="slide_06_subtext">You can change this selection later at any time using Settings > Sources.</string>
     <string name="slide_end_header">All set up!</string>
     <string name="slide_end_text">We are set!\nEnjoy the app.</string>
 </resources>

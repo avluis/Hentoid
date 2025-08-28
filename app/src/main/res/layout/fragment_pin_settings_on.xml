@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_close"
+        app:title="@string/title_activity_app_lock" />
+
+    <me.devsaki.hentoid.views.ListPickerView
+        android:id="@+id/lock_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:entries="@array/lock_type_entries"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:rounded="false"
+        app:title="@string/lock_type" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/switch_lock_on_restore"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="1dp"
+        android:background="@color/item_highlight"
+        android:checked="false"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp"
+        android:text="@string/pin_lock_on_restore"
+        android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lock_type" />
+
+    <Spinner
+        android:id="@+id/lock_timer"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="1dp"
+        android:background="@color/item_highlight"
+        android:entries="@array/pref_lock_timer_entries"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp"
+        android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_lock_on_restore"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/text_reset_pin"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="1dp"
+        android:background="?selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="4dp"
+        android:paddingEnd="16dp"
+        android:text="@string/pin_reset"
+        android:textAllCaps="true"
+        android:textColor="?colorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/lock_timer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

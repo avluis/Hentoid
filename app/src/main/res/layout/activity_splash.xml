@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_light"
     tools:context=".activities.SplashActivity">
 
     <ImageView
@@ -32,7 +31,6 @@
         android:paddingEnd="16dp"
         android:paddingBottom="4dp"
         android:textAlignment="center"
-        android:textColor="@color/white"
         android:textSize="@dimen/text_body_1"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -40,26 +38,26 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:text="funny quote here funny quote here funny quote here funny quote here" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_main"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:indeterminate="false"
         android:max="100"
+        tools:progress="100"
         app:layout_constraintBottom_toTopOf="@id/progress_secondary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/progress_secondary"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:indeterminate="false"
         android:max="100"
+        tools:progress="100"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

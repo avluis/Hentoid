@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import androidx.annotation.ColorRes
 import androidx.annotation.StyleRes
 import androidx.appcompat.app.AppCompatActivity
@@ -201,4 +202,18 @@ fun Context.getThemedColor(@ColorRes colorId: Int): Int {
     val result = ContextCompat.getColor(this, getColorId(colorName))
     colorCache[key] = result
     return result
+}
+
+// Method to determine if text should be light or dark based on background color
+// Inspired by https://github.com/ronenfe/material-color-utilities-main
+fun getTextColorForBackground(background: Int): Int {
+    return getTextColorForBackground(Color.valueOf(background))
+}
+
+fun getTextColorForBackground(background: Color): Int {
+    // Calculate luminance
+    val luminance =
+        (0.2126 * background.red() + 0.7152 * background.green() + 0.0722 * background.blue()) / 255
+    // Return black text for light backgrounds, white text for dark backgrounds
+    return if (luminance > 0.5) Color.BLACK else Color.WHITE
 }

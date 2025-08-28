@@ -10,6 +10,7 @@ import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
 import androidx.core.view.inputmethod.EditorInfoCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -27,6 +28,7 @@ import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.QueueRecord
@@ -102,8 +104,9 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         }
 
         binding?.let {
+            initDrawerLayout(it.drawerLayout, it.toolbar)
+
             tryShowMenuIcons(this, it.toolbar.menu)
-            it.toolbar.setNavigationOnClickListener { finish() }
             it.downloadReviveCancel.setOnClickListener { clearReviveDownload() }
 
             // Instantiate a ViewPager and a PagerAdapter.
@@ -263,7 +266,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
             if (parser.isErrorsTab) binding?.queuePager?.currentItem = 1
             viewModel.setContentToShowFirst(contentHash)
         }
-        val revivedSite = Site.searchByCode(parser.reviveDownloadForSiteCode.toLong())
+        val revivedSite = Site.searchByCode(parser.reviveDownloadForSiteCode)
         val oldCookie = parser.reviveOldCookie
         if (revivedSite != Site.NONE && oldCookie.isNotEmpty()) reviveDownload(
             revivedSite,
@@ -345,9 +348,9 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         reparseContent: Boolean,
         reparseImages: Boolean
     ) {
-        binding?.let {
+        binding?.let { b ->
             if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-                showAddQueueMenu(this, it.queueTabs, this) { position: Int, _: PowerMenuItem? ->
+                showAddQueueMenu(this, b.queueTabs, this) { position: Int, _: PowerMenuItem? ->
                     redownloadContent(
                         contentList,
                         reparseContent,
@@ -402,7 +405,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
                     snack.setAction(R.string.view_queue) { binding?.queuePager?.currentItem = 0 }
                     snack.setAnchorView(it.snackbarLocation).show()
                 }
-            }, { t: Throwable -> Timber.i(t) }
+            }, { Timber.i(it) }
         )
     }
 
@@ -489,6 +492,16 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
         sourceFilter = site
         showSearchSubBar(site, showClear = true)
         signalCurrentFragment(CommunicationEvent.Type.SEARCH, buildSearchQuery())
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    override fun onCommunicationEvent(event: CommunicationEvent) {
+        super.onCommunicationEvent(event)
+        if (CommunicationEvent.Type.CLOSE_DRAWER == event.type) closeNavigationDrawer()
+    }
+
+    fun closeNavigationDrawer() {
+        binding?.drawerLayout?.closeDrawer(GravityCompat.START)
     }
 
     private fun enableCurrentFragment() {

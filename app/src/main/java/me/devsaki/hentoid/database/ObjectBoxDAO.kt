@@ -329,7 +329,12 @@ class ObjectBoxDAO : CollectionDAO {
     ): Content? {
         val coverUrlStart =
             if (coverUrl != null) Content.getNeutralCoverUrlRoot(coverUrl, site) else ""
-        return ObjectBoxDB.selectContentByUrlOrCover(site, contentUrl, coverUrlStart, searchChapters)
+        return ObjectBoxDB.selectContentByUrlOrCover(
+            site,
+            contentUrl,
+            coverUrlStart,
+            searchChapters
+        )
     }
 
     // Find any book that has the given content URL _and_ has a cover starting with the given cover URL
@@ -1119,8 +1124,12 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectHistory(s) ?: SiteHistory()
     }
 
-    override fun insertSiteHistory(site: Site, url: String) {
-        ObjectBoxDB.insertSiteHistory(site, url)
+    override fun selectHistory(): List<SiteHistory> {
+        return ObjectBoxDB.selectHistory()
+    }
+
+    override fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
+        ObjectBoxDB.insertSiteHistory(site, url, timestamp)
     }
 
     // BOOKMARKS
@@ -1158,6 +1167,10 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun deleteBookmark(bookmarkId: Long) {
         ObjectBoxDB.deleteBookmark(bookmarkId)
+    }
+
+    override fun deleteBookmarks(bookmarkIds: List<Long>) {
+        ObjectBoxDB.deleteBookmarks(bookmarkIds)
     }
 
 

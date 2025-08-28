@@ -77,7 +77,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     ANCHIRA(31, "Anchira", "https://anchira.to", R.drawable.ic_site_anchira),
     DEVIANTART(32, "DeviantArt", "https://www.deviantart.com/", R.drawable.ic_site_deviantart),
     MANGAGO(33, "Mangago", "https://www.mangago.me/", R.drawable.ic_site_mangago),
-    HIPERDEX(34, "Hiperdex", "https://hiperdex.tv/", R.drawable.ic_site_hiperdex),
+    HIPERDEX(34, "Hiperdex", "https://hiperdex.com/", R.drawable.ic_site_hiperdex),
     NOVELCROW(35, "Novelcrow", "https://novelcrow.com/", R.drawable.ic_site_novelcrow),
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
     KEMONO(37, "Kemono.cr", "https://kemono.cr/", R.drawable.ic_site_kemono),
@@ -182,8 +182,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     }
 
     companion object {
-        fun searchByCode(code: Long): Site {
-            for (s in Site.entries) if (s.code.toLong() == code) return s
+        fun searchByCode(code: Int): Site {
+            for (s in Site.entries) if (s.code == code) return s
             return NONE
         }
 

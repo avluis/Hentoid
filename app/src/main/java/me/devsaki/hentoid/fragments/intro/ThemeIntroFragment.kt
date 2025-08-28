@@ -9,6 +9,10 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide05Binding
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.COLOR_THEME_BLACK
+import me.devsaki.hentoid.util.Settings.Value.COLOR_THEME_DARK
+import me.devsaki.hentoid.util.Settings.Value.COLOR_THEME_LIGHT
+import me.devsaki.hentoid.util.Settings.Value.COLOR_THEME_YOU
 
 class ThemeIntroFragment : Fragment(R.layout.intro_slide_05) {
 
@@ -31,9 +35,23 @@ class ThemeIntroFragment : Fragment(R.layout.intro_slide_05) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val parentActivity = context as IntroActivity
         binding?.apply {
-            intro5Light.setOnClickListener { parentActivity.setThemePrefs(Settings.Value.COLOR_THEME_LIGHT) }
-            intro5Dark.setOnClickListener { parentActivity.setThemePrefs(Settings.Value.COLOR_THEME_DARK) }
-            intro5Black.setOnClickListener { parentActivity.setThemePrefs(Settings.Value.COLOR_THEME_BLACK) }
+            themeSelect.check(
+                if (COLOR_THEME_DARK == Settings.colorTheme) R.id.intro_5_dark
+                else if (COLOR_THEME_BLACK == Settings.colorTheme) R.id.intro_5_black
+                else if (COLOR_THEME_YOU == Settings.colorTheme) R.id.intro_5_you
+                else R.id.intro_5_light
+            )
+            themeSelect.addOnButtonCheckedListener { _, id, b ->
+                if (!b) return@addOnButtonCheckedListener
+
+                val theme = when (id) {
+                    R.id.intro_5_dark -> COLOR_THEME_DARK
+                    R.id.intro_5_black -> COLOR_THEME_BLACK
+                    R.id.intro_5_you -> COLOR_THEME_YOU
+                    else -> COLOR_THEME_LIGHT
+                }
+                parentActivity.setThemePrefs(theme)
+            }
         }
     }
 }

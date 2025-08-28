@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.databinding.FragmentPinPreferenceOffBinding
+import me.devsaki.hentoid.databinding.FragmentPinSettingsOffBinding
 import me.devsaki.hentoid.util.setStyle
 
 class BiometricsDialogFragment : DialogFragment() {
 
-    private var binding: FragmentPinPreferenceOffBinding? = null
+    private var binding: FragmentPinSettingsOffBinding? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requireActivity().setStyle(

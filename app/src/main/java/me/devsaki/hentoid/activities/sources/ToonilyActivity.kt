@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class ToonilyActivity : BaseWebActivity() {
+class ToonilyActivity : BaseBrowserActivity() {
     companion object {
         const val GALLERY_PATTERN = "//toonily.com/[\\w\\-]+/[%\\w\\-]+[/]{0,1}$"
 

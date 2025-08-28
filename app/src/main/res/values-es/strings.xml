@@ -9,6 +9,7 @@
     <string name="about_licenses">Mostrar licencias</string>
     <string name="about1">Hentoid es una aplicación para archivar Doujinshi y Manga-H. Hentoid fue creada originalmente por Cesar Arasaki.</string>
     <string name="actions_generic">Acciones</string>
+    <string name="active_sites">Sitios activos</string>
     <string name="add_external">Añadir ubicación externa</string>
     <string name="add_primary_1">Añadir ubicación primaria</string>
     <string name="add_primary_2">Añadir ubicación primaria 2</string>
@@ -141,6 +142,7 @@
     <string name="chapters_remove_failed">No se pudieron eliminar los capítulos</string>
     <string name="checking_file">Comprobando archivo…</string>
     <string name="checking_updates">Buscando actualizaciones</string>
+    <string name="clean_items_progress">Limpieza del elementos</string>
     <string name="clear_rating">Borrar apreciación</string>
     <string name="clear_search_history">Limpiar historial de búsqueda</string>
     <string name="clear_search_history_confirm">¿Limpiar historial de búsqueda?</string>
@@ -171,8 +173,10 @@
     <string name="delete_books_progress">Borrando libros</string>
     <string name="delete_chapters_progress">Eliminando capítulos</string>
     <string name="delete_images_progress">Eliminando imágenes</string>
+    <string name="delete_items_progress">Eliminar elementos</string>
     <string name="delete_limit">No se pueden eliminar más de 1000 libros a la vez</string>
     <string name="delete_pages_progress">Eliminando páginas</string>
+    <string name="delete_progress">Borrando…</string>
     <string name="delete_success">Eliminado</string>
     <plurals name="delete_success_books">
         <item quantity="many">%d libros</item>
@@ -185,6 +189,7 @@
         <item quantity="other">%d grupos</item>
     </plurals>
     <string name="dialog_prompt">Elegir Carpeta</string>
+    <string name="dimensions_warning">La configuración que has elegido creará imágenes de gran tamaño. ¿Estás seguro de que eso es lo que quieres?</string>
     <string name="disabled_generic">Desactivado</string>
     <string name="display">Mostrar</string>
     <string name="display_artists">Artistas</string>
@@ -696,6 +701,10 @@
         <item quantity="one">%d libro procesado con éxito</item>
         <item quantity="other">%d libros procesados con éxito</item>
     </plurals>
+    <plurals name="notif_process_complete_details_generic">
+        <item quantity="one">%d elemento procesado ​​con éxito</item>
+        <item quantity="other">%d elementos procesados ​​con éxito</item>
+    </plurals>
     <string name="notif_split_merge">Dividir / fusionar</string>
     <string name="notif_stream_complete">Transmisión completa</string>
     <string name="notif_stream_fail">Falló la transmisión</string>
@@ -799,6 +808,7 @@
     <string name="rating_help">Apreciación</string>
     <string name="read_log">Leer registro</string>
     <string name="reader_two_pages_mode">Modo de dos páginas (libro)</string>
+    <string name="recent_history">Historia reciente</string>
     <string name="redl_refresh">Solo actualizar metadatos</string>
     <string name="redl_scratch">Volver a descargar desde cero</string>
     <string name="redownload_action">VOLVER A DESCARGAR</string>
@@ -825,7 +835,7 @@
     <string name="redownloaded_missing_webview">WebView no disponible, no es posible volver a descargar ahora</string>
     <plurals name="redownloaded_scratch">
         <item quantity="many">%1$d/%2$d elementos listos para volver a descargarse</item>
-        <item quantity="one">%1$d/%2$ elemento listo para volver a descargarse</item>
+        <item quantity="one">%1$d/%2$d elemento listo para volver a descargarse</item>
         <item quantity="other">%1$d/%2$d elementos listos para volver a descargarse</item>
     </plurals>
     <string name="redownloaded_updating_webview">La WebView se está actualizando, no se puede volver a descargar aún</string>
@@ -871,6 +881,8 @@
     <string name="resize_method_3">% del tamaño original de la imagen</string>
     <string name="resize_method_3_prompt">% del tamaño original</string>
     <string name="resize_method_4">Escala con IA x2</string>
+    <string name="resize_method_5">Manhwa dividir/fusionar</string>
+    <string name="resize_method_5_prompt">Número de imágenes por capítulo</string>
     <string name="restart_needed">\"Los cambios se aplicarán luego de que Hentoid se reinicie\"</string>
     <string name="resume">Continuar </string>
     <string name="resume_closed">¿Resumir lectura?</string>
@@ -990,6 +1002,7 @@
     <string name="theme_light">Claro</string>
     <string name="title_activity_about">Acerca de</string>
     <string name="title_activity_app_lock">Bloqueo de la aplicación</string>
+    <string name="title_activity_browser">Navigador</string>
     <string name="title_activity_downloads">Biblioteca</string>
     <string name="title_activity_drawer_edit">Menú de edición</string>
     <string name="title_activity_duplicate_detector">Detector de duplicados</string>
@@ -1002,6 +1015,9 @@
     <string name="title_startup">Inicio</string>
     <string name="title_startup_complete">Inicialización completa</string>
     <string name="title_startup_progress">Iniciando…</string>
+    <string name="title_submenu_content">Contenido</string>
+    <string name="title_submenu_library">Mi biblioteca</string>
+    <string name="title_submenu_settings">Avanzado</string>
     <string name="torrent_dl_fail">No se pudo realizar la descarga del torrent: %s</string>
     <string name="transcode_encoder_jpeg">JPEG</string>
     <string name="transcode_encoder_png">PNG</string>

@@ -231,5 +231,7 @@ private fun detectY(pixels: IntArray, posY: Int, startX: Int, endX: Int, width: 
 }
 
 private fun getPxLumi(pixels: IntArray, x: Int, y: Int, width: Int): Float {
-    return Color.luminance(pixels[x + (y * width)])
+    val pos = x + (y * width)
+    if (pos < 0 || pos >= pixels.size) return 0f
+    return Color.luminance(pixels[pos])
 }

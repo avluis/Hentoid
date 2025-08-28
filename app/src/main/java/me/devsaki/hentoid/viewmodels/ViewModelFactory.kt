@@ -27,9 +27,10 @@ class ViewModelFactory(val application: Application) : ViewModelProvider.Factory
             )
 
             QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO())
+            BrowserViewModel::class.java -> BrowserViewModel(application, ObjectBoxDAO())
             ReaderViewModel::class.java -> ReaderViewModel(application, ObjectBoxDAO())
 
-            PreferencesViewModel::class.java -> PreferencesViewModel(
+            SettingsViewModel::class.java -> SettingsViewModel(
                 application,
                 ObjectBoxDAO()
             )

@@ -19,8 +19,7 @@
         android:paddingStart="32dp"
         android:paddingEnd="32dp"
         android:text="@string/slide_04_header"
-        android:textSize="28sp"
-        app:fontFamily="sans-serif-thin" />
+        android:textSize="28sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -72,6 +71,7 @@
             android:textColor="@color/white_opacity_87"
             app:icon="@drawable/ic_appintro_skip"
             app:iconTint="@color/white_opacity_87"
+            android:backgroundTint="@color/black_opacity_12"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

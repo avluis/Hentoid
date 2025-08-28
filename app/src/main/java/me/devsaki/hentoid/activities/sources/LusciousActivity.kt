@@ -13,7 +13,7 @@ import me.devsaki.hentoid.util.jsonToObject
 import timber.log.Timber
 import java.io.IOException
 
-class LusciousActivity : BaseWebActivity() {
+class LusciousActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "luscious.net"
@@ -42,7 +42,7 @@ class LusciousActivity : BaseWebActivity() {
     private inner class LusciousWebClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) :
         CustomWebViewClient(site, filter, activity) {
         fun onFetchCall(url: String, body: String) {

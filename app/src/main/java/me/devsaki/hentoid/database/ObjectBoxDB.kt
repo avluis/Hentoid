@@ -1735,13 +1735,15 @@ object ObjectBoxDB {
         return builder.build()
     }
 
-    fun insertSiteHistory(site: Site, url: String) {
+    fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
         val siteHistory = selectHistory(site)
         if (siteHistory != null) {
             siteHistory.url = url
+            siteHistory.timestamp = timestamp
             store.boxFor(SiteHistory::class.java).put(siteHistory)
         } else {
-            store.boxFor(SiteHistory::class.java).put(SiteHistory(site = site, url = url))
+            store.boxFor(SiteHistory::class.java)
+                .put(SiteHistory(site = site, url = url, timestamp = timestamp))
         }
     }
 
@@ -1749,6 +1751,10 @@ object ObjectBoxDB {
         return store.boxFor(SiteHistory::class.java).query()
             .equal(SiteHistory_.site, s.code.toLong())
             .safeFindFirst()
+    }
+
+    fun selectHistory(): List<SiteHistory> {
+        return store.boxFor(SiteHistory::class.java).query().safeFind()
     }
 
     // BOOKMARKS
@@ -1783,6 +1789,10 @@ object ObjectBoxDB {
 
     fun deleteBookmark(bookmarkId: Long) {
         store.boxFor(SiteBookmark::class.java).remove(bookmarkId)
+    }
+
+    fun deleteBookmarks(ids: List<Long>) {
+        store.boxFor(SiteBookmark::class.java).removeByIds(ids)
     }
 
     fun getMaxBookmarkOrderFor(site: Site): Int {

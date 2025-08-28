@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class Hentai2ReadActivity : BaseWebActivity() {
+class Hentai2ReadActivity : BaseBrowserActivity() {
 
     companion object {
         const val GALLERY_PATTERN = "//hentai2read.com/[\\w\\-]+/$"

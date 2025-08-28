@@ -10,14 +10,14 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.KemonoContent
 import timber.log.Timber
 
-class KemonoActivity : BaseWebActivity() {
+class KemonoActivity : BaseBrowserActivity() {
     companion object {
-        private const val DOMAIN_FILTER = "kemono.cr"
+        const val DOMAIN_FILTER = "kemono.cr"
         private val GALLERY_FILTER = arrayOf(
-            "kemono.cr/[\\w_%\\-]+/user/[\\d\\-]+$",
-            "kemono.cr/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/posts-legacy$",
-            "kemono.cr/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$",
-            "kemono.cr/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$"
+            "$DOMAIN_FILTER/[\\w_%\\-]+/user/[\\d\\-]+$",
+            "$DOMAIN_FILTER/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/posts-legacy$",
+            "$DOMAIN_FILTER/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$",
+            "$DOMAIN_FILTER/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$"
         )
         private val BLOCKED_CONTENT = arrayOf("popunder")
         private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")
@@ -39,7 +39,7 @@ class KemonoActivity : BaseWebActivity() {
     private inner class KemonoViewClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         // We call the API without using BaseWebActivity.parseResponse
         override fun parseResponse(

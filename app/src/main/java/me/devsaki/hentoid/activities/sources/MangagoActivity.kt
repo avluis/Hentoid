@@ -12,7 +12,7 @@ const val MGG_GALLERY = "//www.mangago.me/read-manga/[%\\w\\-_]+/$"
 val MGG_CHAPTER = MGG_GALLERY.replace("$", "") + "[%\\w\\-._]+/[%\\w\\-._]+(/pg-[%\\w\\-_]+)?/$"
 val MGG_CHAPTER_PATTERN: Pattern by lazy { Pattern.compile(MGG_CHAPTER) }
 
-class MangagoActivity : BaseWebActivity() {
+class MangagoActivity : BaseBrowserActivity() {
 
     override fun getStartSite(): Site {
         return Site.MANGAGO
@@ -35,7 +35,7 @@ class MangagoActivity : BaseWebActivity() {
             addJsReplacement("\$force_page", "false")
         }
 
-        internal constructor(activity: CustomWebActivity)
+        internal constructor(activity: BrowserActivity)
                 : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER), activity)
     }
 }

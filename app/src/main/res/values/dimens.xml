@@ -23,7 +23,8 @@
     <dimen name="popup_menu_width">300dp</dimen>
 
     <!-- navigation drawer -->
-    <dimen name="drawer_layout_width">320dp</dimen>
+    <dimen name="drawer_layout_width_left">320dp</dimen>
+    <dimen name="drawer_layout_width_right">350dp</dimen>
     <dimen name="drawer_item_padding_start">24dp</dimen>
     <dimen name="drawer_item_drawable_padding_start">24dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
@@ -83,4 +84,8 @@
     <dimen name="badge_padding_vertical">5dp</dimen>
     <dimen name="badge_padding_horizontal">10dp</dimen>
     <dimen name="badge_stroke_width">3dp</dimen>
+
+    <!-- navigator badges -->
+    <dimen name="nav_badge_padding_vertical">5dp</dimen>
+    <dimen name="nav_badge_padding_horizontal">5dp</dimen>
 </resources>

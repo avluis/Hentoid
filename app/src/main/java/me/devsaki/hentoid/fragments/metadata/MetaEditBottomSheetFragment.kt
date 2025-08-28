@@ -194,7 +194,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
         // Remove selected attributes from the result set
         val attrs = ArrayList<Attribute>()
-        attrs.removeAll(contentAttributes
+        attrs.removeAll(
+            contentAttributes
             .filter { a -> selectedAttributeTypes.contains(a.type) }
             .toSet())
 

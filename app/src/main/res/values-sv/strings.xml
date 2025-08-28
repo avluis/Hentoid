@@ -9,6 +9,7 @@
     <string name="about_licenses">Licenser</string>
     <string name="about1">Hentoid är en Doujinshi &amp; H-Manga arkiveringsapp. Hentoid utvecklades ursprungligen av Cesar Arasaki.</string>
     <string name="actions_generic">Handlingar</string>
+    <string name="active_sites">Aktiva sidor</string>
     <string name="add_external">Lägg till extern plats</string>
     <string name="add_primary_1">Lägg till primärplats 1</string>
     <string name="add_primary_2">Lägg till primärplats 2</string>
@@ -130,6 +131,7 @@
     <string name="chapters_remove_failed">Kunde inte ta bort kapitel</string>
     <string name="checking_file">Kontrollerar fil…</string>
     <string name="checking_updates">Söker efter uppdateringar</string>
+    <string name="clean_items_progress">Rensar föremål</string>
     <string name="clear_rating">Rensa betyg</string>
     <string name="clear_search_history">Rensa sökhistorik</string>
     <string name="clear_search_history_confirm">Rensa sökhistorik?</string>
@@ -159,8 +161,10 @@
     <string name="delete_books_progress">Tar bort böcker</string>
     <string name="delete_chapters_progress">Tar bort kapitel</string>
     <string name="delete_images_progress">Tar bort bilder</string>
+    <string name="delete_items_progress">Tar bort föremål</string>
     <string name="delete_limit">Kan inte ta bort fler än 1000 böcker samtidigt</string>
     <string name="delete_pages_progress">Tar bort sidor</string>
+    <string name="delete_progress">Tar bort…</string>
     <string name="delete_success">Borttagen</string>
     <plurals name="delete_success_books">
         <item quantity="one">%d bok</item>
@@ -171,6 +175,7 @@
         <item quantity="other">%d grupper</item>
     </plurals>
     <string name="dialog_prompt">Välj en mapp</string>
+    <string name="dimensions_warning">Inställningarna du valde kommer att skapa bilder med väldigt stora dimensioner. Är du säker på att detta är vad du vill?</string>
     <string name="disabled_generic">Inaktiverad</string>
     <string name="display">Visning</string>
     <string name="display_artists">Konstnärer</string>
@@ -653,6 +658,10 @@
         <item quantity="one">%d bok behandlad framgångsrikt</item>
         <item quantity="other">%d böcker färdigbehandlade</item>
     </plurals>
+    <plurals name="notif_process_complete_details_generic">
+        <item quantity="one">%d föremål framgångsrikt behandlat</item>
+        <item quantity="other">%d föremål framgångsrikt behandlade</item>
+    </plurals>
     <string name="notif_split_merge">Splittra / slå ihop</string>
     <string name="notif_stream_complete">Strömning färdig</string>
     <string name="notif_stream_fail">Strömning misslyckades</string>
@@ -756,6 +765,7 @@
     <string name="rating_help">Bokbetyg</string>
     <string name="read_log">Läs logg</string>
     <string name="reader_two_pages_mode">Tvåsidorsläge (bok)</string>
+    <string name="recent_history">Senaste historik</string>
     <string name="redl_refresh">Uppdatera endast metadata</string>
     <string name="redl_scratch">Ladda ner från början</string>
     <string name="redownload_action">ÅTERNERLADDA</string>
@@ -828,6 +838,8 @@
     <string name="resize_method_3">%% av original bildsdimensionerna</string>
     <string name="resize_method_3_prompt">%% av originalstorleken</string>
     <string name="resize_method_4">AI upskalning 2x</string>
+    <string name="resize_method_5">Manhwa splittra/sammanslå</string>
+    <string name="resize_method_5_prompt">Antalet bilder per kapitel</string>
     <string name="restart_needed">Ändringarna börjar gälla när Hentoid återstartats</string>
     <string name="resume">Fortsätt</string>
     <string name="resume_closed">Fortsätt läsa där du slutade\?</string>
@@ -945,6 +957,7 @@
     <string name="theme_light">Ljust</string>
     <string name="title_activity_about">Om</string>
     <string name="title_activity_app_lock">Applås</string>
+    <string name="title_activity_browser">Webbläsare</string>
     <string name="title_activity_downloads">Bibliotek</string>
     <string name="title_activity_drawer_edit">Ändra byrå</string>
     <string name="title_activity_duplicate_detector">Dubblettdetektor</string>
@@ -957,6 +970,9 @@
     <string name="title_startup">Uppstart</string>
     <string name="title_startup_complete">Uppstart lyckades</string>
     <string name="title_startup_progress">Startar…</string>
+    <string name="title_submenu_content">Innehåll</string>
+    <string name="title_submenu_library">Mitt bibliotek</string>
+    <string name="title_submenu_settings">Avancerat</string>
     <string name="torrent_dl_fail">Nerladdning av torrent misslyckades: %s</string>
     <string name="transcode_encoder_jpeg">JPEG</string>
     <string name="transcode_encoder_png">PNG</string>

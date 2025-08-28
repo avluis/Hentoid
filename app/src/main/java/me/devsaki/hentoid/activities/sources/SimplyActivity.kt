@@ -1,12 +1,10 @@
 package me.devsaki.hentoid.activities.sources
 
-import android.os.Build
 import android.webkit.ServiceWorkerClient
 import android.webkit.ServiceWorkerController
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,7 +14,7 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.SimplyApiContent
 import timber.log.Timber
 
-class SimplyActivity : BaseWebActivity() {
+class SimplyActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "simply-hentai.com"
@@ -42,7 +40,7 @@ class SimplyActivity : BaseWebActivity() {
     private inner class SimplyViewClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity,
+        activity: BrowserActivity,
         webView: WebView
     ) : CustomWebViewClient(site, filter, activity) {
         private var swClient: SimplyViewSwClient? = null

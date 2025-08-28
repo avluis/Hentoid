@@ -18,8 +18,7 @@
         android:paddingStart="32dp"
         android:paddingEnd="32dp"
         android:text="@string/slide_05_header"
-        android:textSize="28sp"
-        app:fontFamily="sans-serif-thin" />
+        android:textSize="28sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,43 +31,52 @@
         android:text="@string/slide_05_text"
         android:textSize="16sp" />
 
-    <LinearLayout
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/theme_select"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5"
+        android:gravity="center|center_vertical"
         android:minHeight="48dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:showDividers="middle"
+        app:selectionRequired="true"
+        app:singleSelection="true">
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/intro_5_light"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="30dp"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:gravity="start|center_vertical"
+            android:insetBottom="8dp"
             android:text="@string/theme_light" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/intro_5_dark"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:padding="30dp"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:gravity="start|center_vertical"
+            android:insetTop="8dp"
             android:text="@string/theme_deep_red" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/intro_5_black"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:padding="30dp"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:gravity="start|center_vertical"
+            android:insetTop="8dp"
             android:text="@string/theme_dark" />
-    </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/intro_5_you"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="300dp"
+            android:layout_height="60dp"
+            android:gravity="start|center_vertical"
+            android:insetTop="8dp"
+            android:text="@string/theme_you" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
 </LinearLayout>

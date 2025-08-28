@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class DoujinsActivity : BaseWebActivity() {
+class DoujinsActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "doujins.com"
         private val GALLERY_FILTER = arrayOf("//doujins.com/[\\w\\-]+/[\\w\\-]+-[0-9]+")

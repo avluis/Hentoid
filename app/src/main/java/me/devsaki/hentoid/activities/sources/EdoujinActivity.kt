@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class EdoujinActivity : BaseWebActivity() {
+class EdoujinActivity : BaseBrowserActivity() {
     companion object {
         const val GALLERY_PATTERN = "ehentaimanga.com/manga/[\\w\\-_%]+/$"
 

@@ -9,18 +9,18 @@
         android:id="@+id/background_bottom_bar"
         android:layout_width="0dp"
         android:layout_height="64dp"
-        android:background="?colorPrimary"
+        android:background="?bar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
+            style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:background="@drawable/selector_button_solid"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_play"
+            app:iconSize="32dp"
+            app:icon="@drawable/ic_action_play"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             tools:ignore="ContentDescription" />

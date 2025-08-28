@@ -681,7 +681,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var nbDeltaLowNetwork = 0
         val images = content.imageList
         // Compute total downloadable pages; online (stream) pages do not count
-        val totalPages = images.count { i: ImageFile -> i.status != StatusContent.ONLINE }
+        val totalPages = images.count { it.status != StatusContent.ONLINE }
         val contentQueueManager = ContentQueueManager
         do {
             val statuses = dao.countProcessedImagesById(content.id)
@@ -713,8 +713,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Download speed and size estimation
             val networkBytesNow = applicationContext.getIncomingNetworkUsage()
             deltaNetworkBytes = networkBytesNow - networkBytes
-            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++ // LOW_NETWORK_THRESHOLD KBps threshold once download has started
+
+            // LOW_NETWORK_THRESHOLD KBps threshold once download has started
+            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++
             else nbDeltaLowNetwork = 0
+
             networkBytes = networkBytesNow
             addSampleNow(networkBytes)
             val avgSpeedKbps = getAvgSpeedKbps().toInt()
@@ -1304,7 +1307,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * @param dir  Folder to save the picture to
      * @param site Correponding site
      */
-    private fun downloadAndUnzipUgoira(
+    private suspend fun downloadAndUnzipUgoira(
         img: ImageFile,
         dir: DocumentFile,
         site: Site
@@ -1502,11 +1505,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (contentId > 0) dao.insertErrorRecord(downloadRecord)
     }
 
-    private fun moveToErrors(contentId: Long) {
+    private suspend fun moveToErrors(contentId: Long) {
         val content = dao.selectContent(contentId) ?: return
         content.status = StatusContent.ERROR
-        content.downloadDate = Instant.now()
-            .toEpochMilli() // Needs a download date to appear the right location when sorted by download date
+        // Needs a download date to appear the right location when sorted by download date
+        content.downloadDate = Instant.now().toEpochMilli()
         dao.insertContent(content)
         dao.deleteQueue(content)
         val context = applicationContext
@@ -1517,6 +1520,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 R.string.queue_json_failed
             )
         )
+        dao.cleanup()
         notificationManager.notify(DownloadErrorNotification(content))
     }
 

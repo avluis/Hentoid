@@ -1,14 +1,12 @@
 package me.devsaki.hentoid.fragments.reader
 
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.isVisible
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -18,7 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding
@@ -149,8 +146,8 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun updateFavouriteDisplay(isFavourited: Boolean) {
         binding?.apply {
-            if (isFavourited) imgActionFavourite.setImageResource(R.drawable.ic_fav_full)
-            else imgActionFavourite.setImageResource(R.drawable.ic_fav_empty)
+            if (isFavourited) imgActionFavourite.setIconResource(R.drawable.ic_fav_full)
+            else imgActionFavourite.setIconResource(R.drawable.ic_fav_empty)
         }
     }
 
@@ -161,7 +158,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun setRating(rating: Int) {
         val targetRating = if (currentRating == rating) 0 else rating
-        viewModel.setContentRating(targetRating) { r: Int -> this.updateRatingDisplay(r) }
+        viewModel.setContentRating(targetRating) { this.updateRatingDisplay(it) }
     }
 
     private fun onFavouriteClick() {
@@ -185,7 +182,7 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
 
             context.setStyle(
                 fragment,
-                DialogFragment.STYLE_NORMAL,
+                STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
 

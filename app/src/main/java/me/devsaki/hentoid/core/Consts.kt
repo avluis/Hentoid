@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KProperty
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
+typealias SuspendBiConsumer<T, U> = suspend (T, U) -> Unit
 typealias Consumer<T> = (T) -> Unit
 typealias SuspendRunnable = suspend () -> Unit
 

@@ -31,12 +31,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/open_log_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/redownload_open_log"
-        android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_open_in_new"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,11 +43,10 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/share_log_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/redownload_share_log"
-        android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_share"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

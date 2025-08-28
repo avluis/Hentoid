@@ -23,7 +23,7 @@ import me.devsaki.hentoid.util.file.saveBinary
 import timber.log.Timber
 import java.io.IOException
 
-class ExHentaiActivity : BaseWebActivity() {
+class ExHentaiActivity : BaseBrowserActivity() {
 
     companion object {
         private val DOMAIN_FILTER = arrayOf("exhentai.org", "e-hentai.org", "ehtracker.org")
@@ -50,7 +50,7 @@ class ExHentaiActivity : BaseWebActivity() {
     private inner class ExHentaiWebClient constructor(
         site: Site?,
         filter: Array<String>?,
-        activity: CustomWebActivity?
+        activity: BrowserActivity?
     ) :
         CustomWebViewClient(site!!, filter!!, activity!!) {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {

@@ -1,12 +1,11 @@
 package me.devsaki.hentoid.fragments.reader
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -29,14 +28,12 @@ import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.shareFile
 import me.devsaki.hentoid.util.getIdForCurrentTheme
-import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.getImageDimensions
 import me.devsaki.hentoid.util.setStyle
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 import java.io.File
-import androidx.core.net.toUri
 
 class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
     ReaderCopyImgDialogFragment.Parent {
@@ -105,7 +102,6 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
      * @param images Book's list of images
      */
     private fun onImagesChanged(images: List<ImageFile>) {
-        val grayColor = requireContext().getThemedColor(R.color.dark_gray)
         // Might happen when deleting the last page
         if (imageIndex >= images.size) imageIndex = images.size - 1
 
@@ -151,19 +147,14 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
                     ivThumb.load(it.fileUri)
                 } else {
                     imageStats.setText(R.string.image_not_found)
-                    imgActionFavourite.imageTintList = ColorStateList.valueOf(grayColor)
                     imgActionFavourite.isEnabled = false
-                    imgActionCopy.imageTintList = ColorStateList.valueOf(grayColor)
                     imgActionCopy.isEnabled = false
-                    imgActionShare.imageTintList = ColorStateList.valueOf(grayColor)
                     imgActionShare.isEnabled = false
                 }
                 // Don't allow deleting the image if it is archived
                 if (it.isArchived) {
-                    imgActionDelete.imageTintList = ColorStateList.valueOf(grayColor)
                     imgActionDelete.isEnabled = false
                 } else {
-                    imgActionDelete.imageTintList = null
                     imgActionDelete.isEnabled = true
                 }
             }
@@ -195,8 +186,8 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
      */
     private fun updateFavouriteDisplay(isFavourited: Boolean) {
         binding?.imgActionFavourite?.apply {
-            if (isFavourited) setImageResource(R.drawable.ic_fav_full)
-            else setImageResource(R.drawable.ic_fav_empty)
+            if (isFavourited) setIconResource(R.drawable.ic_fav_full)
+            else setIconResource(R.drawable.ic_fav_empty)
         }
     }
 

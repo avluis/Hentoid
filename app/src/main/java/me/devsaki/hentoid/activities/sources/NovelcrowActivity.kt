@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class NovelcrowActivity : BaseWebActivity() {
+class NovelcrowActivity : BaseBrowserActivity() {
     companion object {
         const val GALLERY_PATTERN = "//novelcrow.com/[comic|manga]+/[%\\w\\-]+[/]{0,1}$"
 

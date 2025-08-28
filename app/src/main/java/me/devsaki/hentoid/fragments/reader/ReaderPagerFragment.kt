@@ -57,7 +57,7 @@ import me.devsaki.hentoid.fragments.reader.ReaderBrowseModeDialogFragment.Compan
 import me.devsaki.hentoid.fragments.reader.ReaderContentBottomSheetFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderDeleteDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.reader.ReaderImageBottomSheetFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.reader.ReaderPrefsDialogFragment.Companion.invoke
+import me.devsaki.hentoid.fragments.reader.ReaderSettingsDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Key.READER_SMART_CROP
@@ -101,7 +101,7 @@ private const val KEY_GALLERY_SHOWN = "gallery_shown"
 private const val KEY_IMG_INDEX = "image_index"
 
 class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
-    ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent,
+    ReaderBrowseModeDialogFragment.Parent, ReaderSettingsDialogFragment.Parent,
     ReaderDeleteDialogFragment.Parent, ReaderNavigation.Pager, ReaderSlideshow.Pager {
 
     override lateinit var adapter: ImagePagerAdapter
@@ -651,7 +651,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 iconRes =
                     if (isContentFavourite) R.drawable.ic_fav_full else R.drawable.ic_fav_bottom_half
             } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half
-            favouriteActionBtn.setImageResource(iconRes)
+            favouriteActionBtn.setIconResource(iconRes)
             favouriteActionBtn.visibility = if (isFoldersMode) View.INVISIBLE else View.VISIBLE
         }
     }

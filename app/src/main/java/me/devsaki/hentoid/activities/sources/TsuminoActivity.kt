@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.webkit.WebView
 import me.devsaki.hentoid.enums.Site
 
-class TsuminoActivity : BaseWebActivity() {
+class TsuminoActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "tsumino.com"
@@ -43,7 +43,7 @@ class TsuminoActivity : BaseWebActivity() {
     private inner class TsuminoWebViewClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)

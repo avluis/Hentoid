@@ -40,7 +40,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_BOOK
 import me.devsaki.hentoid.util.addContent
-import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.chapterStr
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.createImageListFromFiles
@@ -206,7 +205,14 @@ class ReaderViewModel(
     fun loadContentFromId(contentId: Long, pageNumber: Int) {
         if (contentId > 0) {
             viewModelScope.launch {
-                val loadedContent = withContext(Dispatchers.IO) { dao.selectContent(contentId) }
+                val loadedContent =
+                    withContext(Dispatchers.IO) {
+                        try {
+                            dao.selectContent(contentId)
+                        } finally {
+                            dao.cleanup()
+                        }
+                    }
                 if (loadedContent != null) {
                     if (contentIds.isEmpty()) contentIds.add(contentId)
                     loadContent(loadedContent, pageNumber)
@@ -238,13 +244,15 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    dao.cleanup()
-                    val list = contentSearchManager.searchContentIds(dao)
+                    val list = try {
+                        contentSearchManager.searchContentIds(dao)
+                    } finally {
+                        dao.cleanup()
+                    }
                     contentIds.clear()
                     contentIds.addAll(list)
                 }
                 loadContentFromId(contentId, pageNumber)
-                dao.cleanup()
             } catch (e: Throwable) {
                 Timber.w(e)
             }
@@ -278,9 +286,13 @@ class ReaderViewModel(
     private suspend fun loadContentFromFile(uri: Uri, rootUri: Uri) = withContext(Dispatchers.IO) {
         // Content has already been loaded from storage once
         folderContentsCache.get(uri)?.let {
-            dao.selectContent(it)?.let {
-                loadContent(it)
-                return@withContext
+            try {
+                dao.selectContent(it)?.let { c ->
+                    loadContent(c)
+                    return@withContext
+                }
+            } finally {
+                dao.cleanup()
             }
         }
 
@@ -383,10 +395,8 @@ class ReaderViewModel(
                 withContext(Dispatchers.IO) {
                     processStorageImages(theContent, newImages)
                     cacheJson(getApplication<Application>().applicationContext, theContent)
-                    dao.cleanup()
                 }
                 processImages(theContent, -1, newImages)
-                dao.cleanup()
             }
         } else {
             // Copy location properties of the new list on the current list
@@ -406,10 +416,10 @@ class ReaderViewModel(
      * @param theContent Content to use
      * @param newImages  Images to process
      */
-    private fun processStorageImages(
+    private suspend fun processStorageImages(
         theContent: Content,
         newImages: MutableList<ImageFile>
-    ) {
+    ) = withContext(Dispatchers.IO) {
         require(!theContent.isArchive) { "Content must not be an archive" }
         val missingUris = newImages.any { it.fileUri.isEmpty() }
         var newImageFiles: List<ImageFile> = ArrayList(newImages)
@@ -421,7 +431,11 @@ class ReaderViewModel(
                 if (newImages.isEmpty()) {
                     newImageFiles = createImageListFromFiles(pictureFiles)
                     theContent.setImageFiles(newImageFiles)
-                    dao.insertContent(theContent)
+                    try {
+                        dao.insertContent(theContent)
+                    } finally {
+                        dao.cleanup()
+                    }
                 } else {
                     // Match files for viewer display; no need to persist that
                     matchFilesToImageList(pictureFiles, newImageFiles)
@@ -623,7 +637,11 @@ class ReaderViewModel(
 
         // We do need GlobalScope to carry these beyond current lifecycleScope
         GlobalScope.launch {
-            val theContent = dao.selectContent(loadedContentId)
+            val theContent = try {
+                dao.selectContent(loadedContentId)
+            } finally {
+                dao.cleanup()
+            }
             if (null == theImages || null == theContent) return@launch
             val nbReadablePages = theImages.count { it.isReadable }
             val readThresholdPosition: Int = when (Settings.readerPageReadThreshold) {
@@ -658,8 +676,6 @@ class ReaderViewModel(
                 doLeaveBook(theContent.id, indexToSet, updateReads, markAsComplete)
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -743,10 +759,7 @@ class ReaderViewModel(
     fun toggleImageFavourite(images: List<ImageFile>, successCallback: Runnable) {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    doToggleImageFavourite(images)
-                    dao.cleanup()
-                }
+                doToggleImageFavourite(images)
                 successCallback.run()
             } catch (t: Throwable) {
                 Timber.e(t)
@@ -759,25 +772,32 @@ class ReaderViewModel(
      *
      * @param images images whose flag to toggle
      */
-    private fun doToggleImageFavourite(images: List<ImageFile>) {
-        assertNonUiThread()
-        if (images.isEmpty()) return
-        val theContent: Content = dao.selectContent(images[0].content.targetId) ?: return
+    private suspend fun doToggleImageFavourite(images: List<ImageFile>) =
+        withContext(Dispatchers.IO) {
+            if (images.isEmpty()) return@withContext
 
-        // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
-        val dbImages = theContent.imageFiles
-        for (img in images) for (dbImg in dbImages) if (img.id == dbImg.id) {
-            dbImg.favourite = !dbImg.favourite
-            break
+            try {
+                val theContent = dao.selectContent(images[0].content.targetId) ?: return@withContext
+
+                // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
+                val dbImages = theContent.imageFiles
+                for (img in images)
+                    for (dbImg in dbImages)
+                        if (img.id == dbImg.id) {
+                            dbImg.favourite = !dbImg.favourite
+                            break
+                        }
+
+                // Persist in DB
+                dao.insertImageFiles(dbImages)
+
+                // Persist new values in JSON
+                theContent.setImageFiles(dbImages)
+                persistJson(getApplication<Application>().applicationContext, theContent)
+            } finally {
+                dao.cleanup()
+            }
         }
-
-        // Persist in DB
-        dao.insertImageFiles(dbImages)
-
-        // Persist new values in JSON
-        theContent.setImageFiles(dbImages)
-        persistJson(getApplication<Application>().applicationContext, theContent)
-    }
 
     /**
      * Toggle the favourite flag of the given Content
@@ -790,10 +810,7 @@ class ReaderViewModel(
 
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    doToggleContentFavourite(theContent)
-                    dao.cleanup()
-                }
+                doToggleContentFavourite(theContent)
                 reloadContent(viewerIndex) // Must run on the main thread
                 successCallback.invoke(newState)
             } catch (t: Throwable) {
@@ -807,12 +824,15 @@ class ReaderViewModel(
      *
      * @param content content whose flag to toggle
      */
-    private fun doToggleContentFavourite(content: Content) {
-        assertNonUiThread()
+    private suspend fun doToggleContentFavourite(content: Content) = withContext(Dispatchers.IO) {
         content.favourite = !content.favourite
 
         // Persist in DB
-        dao.insertContent(content)
+        try {
+            dao.insertContent(content)
+        } finally {
+            dao.cleanup()
+        }
 
         // Persist new values in JSON
         persistJson(getApplication<Application>().applicationContext, content)
@@ -822,17 +842,20 @@ class ReaderViewModel(
      * Set the given rating for the current content
      */
     fun setContentRating(rating: Int, successCallback: (Int) -> Unit) {
-        val targetContent: Content = dao.selectContent(loadedContentId) ?: return
-
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    targetContent.rating = rating
-                    dao.insertContent(targetContent)
+                    val targetContent = try {
+                        val targetContent = dao.selectContent(loadedContentId) ?: return@withContext
+                        targetContent.rating = rating
+                        dao.insertContent(targetContent)
+                        targetContent
+                    } finally {
+                        dao.cleanup()
+                    }
                     persistJson(
                         getApplication<Application>().applicationContext, targetContent
                     )
-                    dao.cleanup()
                 }
                 successCallback.invoke(rating)
             } catch (t: Throwable) {
@@ -847,9 +870,10 @@ class ReaderViewModel(
      * @param onError Callback to use in case an error occurs
      */
     fun deleteContent(onError: (Throwable) -> Unit) {
-        val targetContent = dao.selectContent(loadedContentId)
+
+        var targetContent: Content? = null
         try {
-            targetContent
+            targetContent = dao.selectContent(loadedContentId)
                 ?: throw IllegalArgumentException("Content $loadedContentId not found")
 
             // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
@@ -877,6 +901,8 @@ class ReaderViewModel(
                     }
                 }
             }
+        } finally {
+            dao.cleanup()
         }
     }
 
@@ -915,10 +941,7 @@ class ReaderViewModel(
     fun deletePages(pages: List<ImageFile>, onError: (Throwable) -> Unit) {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    removePages(pages, dao, getApplication())
-                    dao.cleanup()
-                }
+                removePages(pages, dao, getApplication())
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
@@ -934,10 +957,7 @@ class ReaderViewModel(
     fun setCover(page: ImageFile) {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    setAndSaveContentCover(getApplication(), page, dao)
-                    dao.cleanup()
-                }
+                setAndSaveContentCover(getApplication(), page, dao)
             } catch (t: Throwable) {
                 Timber.e(t)
             }
@@ -1007,7 +1027,7 @@ class ReaderViewModel(
      */
     private suspend fun loadContent(c: Content, pageNumber: Int = -1) {
         Settings.readerCurrentContent = c.id
-        var listSize = 0
+        var listSize: Int
         currentContentIndex = if (c.status == StatusContent.STORAGE_RESOURCE) {
             listSize = folderFiles.size
             folderFiles.indexOf(c.storageUri.toUri())
@@ -1040,10 +1060,14 @@ class ReaderViewModel(
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         synchronized(databaseImages) {
             currentImageSource?.let { databaseImages.removeSource(it) }
-            currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.id)
+            currentImageSource = try {
+                dao.selectDownloadedImagesFromContentLive(theContent.id)
+            } finally {
+                dao.cleanup()
+            }
             currentImageSource?.let {
-                databaseImages.addSource(it) {
-                    loadImages(theContent, pageNumber, it.toMutableList())
+                databaseImages.addSource(it) { s ->
+                    loadImages(theContent, pageNumber, s.toMutableList())
                 }
             }
         }
@@ -1059,12 +1083,15 @@ class ReaderViewModel(
             try {
                 var theContent: Content?
                 withContext(Dispatchers.IO) {
-                    theContent = dao.selectContent(loadedContentId)
-                    theContent?.let {
-                        it.bookPreferences = newPrefs
-                        dao.insertContent(it)
+                    try {
+                        theContent = dao.selectContent(loadedContentId)
+                        theContent?.let {
+                            it.bookPreferences = newPrefs
+                            dao.insertContent(it)
+                        }
+                    } finally {
+                        dao.cleanup()
                     }
-                    dao.cleanup()
                 }
                 forceImageUIReload = true
                 reloadContent(viewerIndex) // Must run on the main thread
@@ -1073,12 +1100,9 @@ class ReaderViewModel(
                     theContent?.let {
                         persistJson(getApplication(), it)
                     }
-                    dao.cleanup()
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -1089,20 +1113,25 @@ class ReaderViewModel(
      * @param context Context to use
      * @param content Content to cache the JSON URI for
      */
-    private fun cacheJson(context: Context, content: Content) {
-        assertNonUiThread()
-        if (content.jsonUri.isNotEmpty() || content.isArchive) return
-        val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return
-        val foundFile = findFile(getApplication(), folder, JSON_FILE_NAME_V2)
-        if (null == foundFile) {
-            Timber.e("JSON file not detected in %s", content.storageUri)
-            return
-        }
+    private suspend fun cacheJson(context: Context, content: Content) =
+        withContext(Dispatchers.IO) {
+            if (content.jsonUri.isNotEmpty() || content.isArchive) return@withContext
+            val folder =
+                getDocumentFromTreeUriString(context, content.storageUri) ?: return@withContext
+            val foundFile = findFile(getApplication(), folder, JSON_FILE_NAME_V2)
+            if (null == foundFile) {
+                Timber.e("JSON file not detected in %s", content.storageUri)
+                return@withContext
+            }
 
-        // Cache the URI of the JSON to the database
-        content.jsonUri = foundFile.uri.toString()
-        dao.insertContent(content)
-    }
+            // Cache the URI of the JSON to the database
+            content.jsonUri = foundFile.uri.toString()
+            try {
+                dao.insertContent(content)
+            } finally {
+                dao.cleanup()
+            }
+        }
 
     /**
      * Mark the given page number as read
@@ -1135,7 +1164,6 @@ class ReaderViewModel(
     fun onPageChange(viewerIndex: Int, direction: Int) {
         viewModelScope.launch {
             doPageChange(viewerIndex, direction)
-            dao.cleanup()
         }
     }
 
@@ -1440,7 +1468,10 @@ class ReaderViewModel(
         maxElements: Int
     ) {
         getContent().value?.let {
-            if (it.folderExists) cacheJson(getApplication<Application>().applicationContext, it)
+            if (it.folderExists)
+                viewModelScope.launch {
+                    cacheJson(getApplication<Application>().applicationContext, it)
+                }
         }
 
         nbProcessed.getAndIncrement()
@@ -1523,28 +1554,27 @@ class ReaderViewModel(
      *
      * The return value is empty if the download fails
      */
-    private fun downloadPic(
+    private suspend fun downloadPic(
         pageIndex: Int,
         stopDownload: AtomicBoolean
-    ): Pair<Int, String>? {
-        assertNonUiThread()
-        if (viewerImagesInternal.size <= pageIndex) return null
+    ): Pair<Int, String>? = withContext(Dispatchers.IO) {
+        if (viewerImagesInternal.size <= pageIndex) return@withContext null
         val img = viewerImagesInternal[pageIndex]!!
         val content = img.content.target
 
         // Already downloaded
         if (img.fileUri.isNotEmpty() &&
             StorageCache.getFile(READER_CACHE, formatCacheKey(img)) != null
-        ) return Pair(pageIndex, img.fileUri)
+        ) return@withContext Pair(pageIndex, img.fileUri)
 
         // Run actual download
-        return me.devsaki.hentoid.util.download.downloadPic(
+        return@withContext me.devsaki.hentoid.util.download.downloadPic(
             application,
             content,
             img,
             pageIndex,
             null,
-            this::notifyDownloadProgress,
+            this@ReaderViewModel::notifyDownloadProgress,
             stopDownload
         )
     }
@@ -1599,6 +1629,7 @@ class ReaderViewModel(
 
         // Flag the content as "being deleted" (triggers blink animation)
         dao.updateContentsProcessedFlag(contentList, true)
+        dao.cleanup()
         val targetImageStatus = StatusContent.ERROR
 
         viewModelScope.launch {
@@ -1638,9 +1669,8 @@ class ReaderViewModel(
      * @param pageIndex  Index of downloaded page
      */
     private fun notifyDownloadProgress(progressPc: Float, pageIndex: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.Default) {
             doNotifyDownloadProgress(progressPc, pageIndex)
-            dao.cleanup()
         }
     }
 
@@ -1702,8 +1732,6 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -1718,7 +1746,6 @@ class ReaderViewModel(
      */
     fun createRemoveChapter(selectedPage: ImageFile, onError: (Throwable) -> Unit) {
         val theContent = content.value ?: return
-
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
@@ -1730,8 +1757,6 @@ class ReaderViewModel(
             } catch (t: Throwable) {
                 Timber.e(t)
                 onError.invoke(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }
@@ -1841,6 +1866,7 @@ class ReaderViewModel(
 
         // Save images
         dao.insertImageFiles(chapterImages)
+        dao.cleanup()
     }
 
     /**
@@ -1886,8 +1912,6 @@ class ReaderViewModel(
                 }
             } catch (t: Throwable) {
                 Timber.e(t)
-            } finally {
-                dao.cleanup()
             }
         }
     }

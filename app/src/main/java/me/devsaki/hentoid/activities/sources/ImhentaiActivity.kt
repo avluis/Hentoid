@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class ImhentaiActivity : BaseWebActivity() {
+class ImhentaiActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "imhentai.xxx"
         private val GALLERY_FILTER = arrayOf("//imhentai.xxx/gallery/")

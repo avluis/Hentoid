@@ -3,7 +3,6 @@ package me.devsaki.hentoid.fragments.queue
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,9 +11,8 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.annotation.StringRes
-import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -38,9 +36,9 @@ import com.skydoves.balloon.ArrowOrientation
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.QueueActivity
-import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
-import me.devsaki.hentoid.activities.prefs.PreferencesActivity
+import me.devsaki.hentoid.activities.bundles.SettingsBundle
+import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
@@ -191,7 +189,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentQueueBinding.inflate(inflater, container, false)
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
         bottomBarBinding = IncludeQueueBottomBarBinding.bind(binding!!.root)
@@ -272,8 +270,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         if (isSelected) IntRange(start, end).forEach {
                             selectExtension.select(
                                 it,
-                                false,
-                                true
+                                fireEvent = false,
+                                considerSelectableFlag = true
                             )
                         }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
@@ -295,7 +293,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
         addCustomBackControl()
 
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -326,11 +324,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             updateSelectionToolbarVis(false)
         } else {
             callback?.remove()
-            activity.get()?.let { act ->
-                act.onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                    act.finish()
-                }
-            }
+            activity.get()?.onBackPressedDispatcher?.onBackPressed()
         }
     }
 
@@ -376,16 +370,12 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun initSelectionToolbar() {
-        activity.get()?.getSelectionToolbar()?.let {
-            it.setNavigationOnClickListener { _ ->
-                selectExtension.apply {
-                    deselect(selections.toMutableSet())
-                }
-                it.visibility = View.GONE
+        activity.get()?.getSelectionToolbar()?.apply {
+            setNavigationOnClickListener { _ ->
+                selectExtension.apply { deselect(selections.toMutableSet()) }
+                visibility = View.GONE
             }
-            it.setOnMenuItemClickListener { menuItem: MenuItem ->
-                onSelectionMenuItemClicked(menuItem)
-            }
+            setOnMenuItemClickListener { onSelectionMenuItemClicked(it) }
         }
     }
 
@@ -628,7 +618,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     }
 
     private fun searchQueue(uri: String) {
-        val searchArgs = SearchActivityBundle.parseSearchUri(Uri.parse(uri))
+        val searchArgs = SearchActivityBundle.parseSearchUri(uri.toUri())
         val sourceAttr = searchArgs.attributes.firstOrNull { a -> AttributeType.SOURCE == a.type }
         val site = if (sourceAttr != null) Site.searchByName(sourceAttr.name) else null
         viewModel.searchQueueUniversal(searchArgs.query, site)
@@ -838,12 +828,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 queueInfo.text = formatStep(preparationStep, log)
             }
             if (isActive) {
-                actionButton.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        requireActivity(),
-                        R.drawable.ic_action_pause
-                    )
-                )
+                actionButton.setIconResource(R.drawable.ic_action_pause)
                 if (content != null)
                     queueStatus.text = resources.getString(R.string.queue_dl, content.title)
 
@@ -856,12 +841,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                         ?.getToolbar()?.menu?.findItem(R.id.action_error_stats)?.isVisible = false
                     queueStatus.text = ""
                 } else if (isPaused()) {
-                    actionButton.setImageDrawable(
-                        ContextCompat.getDrawable(
-                            requireActivity(),
-                            R.drawable.ic_action_play
-                        )
-                    )
+                    actionButton.setIconResource(R.drawable.ic_action_play)
                     queueStatus.setText(R.string.queue_paused)
                     queueInfo.text = ""
 
@@ -1049,10 +1029,10 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * Show the viewer settings dialog
      */
     private fun onSettingsClick() {
-        val intent = Intent(requireActivity(), PreferencesActivity::class.java)
-        val prefsBundle = PrefsBundle()
-        prefsBundle.isDownloaderPrefs = true
-        intent.putExtras(prefsBundle.bundle)
+        val intent = Intent(requireActivity(), SettingsActivity::class.java)
+        val settingsBundle = SettingsBundle()
+        settingsBundle.isDownloaderSettings = true
+        intent.putExtras(settingsBundle.bundle)
         requireContext().startActivity(intent)
     }
 
@@ -1120,7 +1100,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 selectExtension.apply {
                     while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
                         IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
-                            select(it, false, true)
+                            select(it, fireEvent = false, considerSelectableFlag = true)
                         }
                 }
                 keepToolbar = true
@@ -1181,7 +1161,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * @param items Items to be deleted if the answer is yes
      */
     private fun askDeleteSelected(items: List<Content>) {
-        val context = getActivity() ?: return
+        val context = requireContext()
         val builder = MaterialAlertDialogBuilder(context)
         val title = context.resources.getQuantityString(R.plurals.ask_cancel_multiple, items.size)
         builder.setMessage(title).setPositiveButton(

@@ -1838,9 +1838,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         // Deleted book is the last selected books => disable selection mode
         if (item.isSelected) {
             selectExtension!!.deselect(item)
-            if (selectExtension!!.selections.isEmpty()) activity.get()!!
-                .getSelectionToolbar()!!.visibility =
-                View.GONE
+            if (selectExtension!!.selections.isEmpty())
+                activity.get()!!.getSelectionToolbar()!!.visibility = View.GONE
         }
         val content = item.content
         if (content != null) viewModel.deleteItems(

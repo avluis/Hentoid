@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.materialswitch.MaterialSwitch
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.DiffCallback
@@ -47,8 +46,7 @@ import java.lang.ref.WeakReference
 class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
     MergeDialogFragment.Parent {
 
-    private var _binding: FragmentDuplicateDetailsBinding? = null
-    private val binding get() = _binding!!
+    private var binding: FragmentDuplicateDetailsBinding? = null
 
     // Communication
     private var callback: OnBackPressedCallback? = null
@@ -108,11 +106,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentDuplicateDetailsBinding.inflate(inflater, container, false)
+    ): View? {
+        binding = FragmentDuplicateDetailsBinding.inflate(inflater, container, false)
         addCustomBackControl()
         activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
-        return binding.root
+        return binding?.root
     }
 
     override fun onStart() {
@@ -127,7 +125,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        binding = null
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -135,10 +133,12 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
 
         // List
-        binding.list.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        FastScrollerBuilder(binding.list).build()
-        binding.list.adapter = fastAdapter
+        binding?.list?.apply {
+            layoutManager =
+                LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+            FastScrollerBuilder(this).build()
+            adapter = fastAdapter
+        }
 
         viewModel.selectedDuplicates.observe(
             viewLifecycleOwner
@@ -169,29 +169,13 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             }
         })
 
-        // "Keep/delete" switch click listener
-        fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
-            override fun onClick(
-                v: View,
-                position: Int,
-                fastAdapter: FastAdapter<DuplicateItem>,
-                item: DuplicateItem
-            ) {
-                onBookChoice(item.content, (v as MaterialSwitch).isChecked)
-            }
-
-            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is DuplicateItem.ViewHolder) {
-                    viewHolder.keepDeleteSwitch
-                } else super.onBind(viewHolder)
-            }
-        })
-
-        binding.applyBtn.setOnClickListener {
-            binding.applyBtn.isEnabled = false
-            viewModel.applyChoices {
-                binding.applyBtn.isEnabled = true
-                activity.get()?.goBackToMain()
+        binding?.applyBtn?.apply {
+            setOnClickListener {
+                isEnabled = false
+                viewModel.applyChoices {
+                    isEnabled = true
+                    activity.get()?.goBackToMain()
+                }
             }
         }
     }
@@ -222,9 +206,9 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             toast(R.string.err_no_content)
     }
 
-    private fun onBookChoice(item: Content?, choice: Boolean) {
-        if (item != null)
-            viewModel.setBookChoice(item, choice)
+    private fun onBookChoice(item: Content?, isKeep: Boolean) {
+        item ?: return
+        viewModel.setBookChoice(item, isKeep)
     }
 
     @Synchronized
@@ -253,6 +237,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }
             .map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
+        items.forEach { it.onKeepChange = { b -> onBookChoice(it.content, b) } }
         set(itemAdapter, items, ITEM_DIFF_CALLBACK)
     }
 

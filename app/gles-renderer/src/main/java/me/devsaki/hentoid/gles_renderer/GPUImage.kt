@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.graphics.Bitmap
 import me.devsaki.hentoid.gles_renderer.filter.GPUImageFilter
+import timber.log.Timber
 
 private const val SURFACE_TYPE_SURFACE_VIEW = 0
 private const val SURFACE_TYPE_TEXTURE_VIEW = 1
@@ -18,6 +19,7 @@ class GPUImage(val context: Context) {
     private var filter: GPUImageFilter
 
     init {
+        Timber.d("Init GPUImage")
         check(supportsOpenGLES2(context)) { "OpenGL ES 2.0 is not supported on this phone." }
         val filter = GPUImageFilter()
         this.filter = filter

@@ -22,7 +22,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.ReaderActivity.ReaderActivityMulti
 import me.devsaki.hentoid.activities.UnlockActivity.Companion.wrapIntent
-import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle
+import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
@@ -320,7 +320,7 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
     }
 
     var intent = Intent(context, Content.getWebActivityClass(content.site))
-    val bundle = BaseWebActivityBundle()
+    val bundle = BaseBrowserActivityBundle()
     bundle.url = content.galleryUrl
     intent.putExtras(bundle.bundle)
     if (wrapPin) intent = wrapIntent(context, intent)
@@ -333,9 +333,7 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
  * @param context Context to use for the action
  * @param content Content whose JSON file to update
  */
-fun updateJson(context: Context, content: Content): Boolean {
-    assertNonUiThread()
-
+suspend fun updateJson(context: Context, content: Content): Boolean = withContext(Dispatchers.IO) {
     getFileFromSingleUriString(context, content.jsonUri)?.let { file ->
         try {
             getOutputStream(context, file)?.use { output ->
@@ -343,7 +341,7 @@ fun updateJson(context: Context, content: Content): Boolean {
                     JsonContent(content),
                     JsonContent::class.java, output
                 )
-                return true
+                return@withContext true
             }
             Timber.w("JSON file creation failed for %s", file.uri)
         } catch (e: IOException) {
@@ -352,7 +350,7 @@ fun updateJson(context: Context, content: Content): Boolean {
     } ?: run {
         Timber.w("%s does not refer to a valid file", content.jsonUri)
     }
-    return false
+    return@withContext false
 }
 
 /**
@@ -362,23 +360,24 @@ fun updateJson(context: Context, content: Content): Boolean {
  * @param content Content whose JSON file to create
  * @return Created JSON file, or null if it couldn't be created
  */
-fun createJson(context: Context, content: Content): DocumentFile? {
-    assertNonUiThread()
-    if (content.isArchive || content.isPdf) return null // Keep that as is, we can't find the parent folder anyway
+suspend fun createJson(context: Context, content: Content): DocumentFile? =
+    withContext(Dispatchers.IO) {
+        if (content.isArchive || content.isPdf) return@withContext null // Keep that as is, we can't find the parent folder anyway
 
-    val folder = getDocumentFromTreeUriString(context, content.storageUri) ?: return null
-    try {
-        val newJson = jsonToFile(
-            context, JsonContent(content),
-            JsonContent::class.java, folder, JSON_FILE_NAME_V2
-        )
-        content.jsonUri = newJson.uri.toString()
-        return newJson
-    } catch (e: IOException) {
-        Timber.e(e, "Error while writing to %s", content.storageUri)
+        val folder =
+            getDocumentFromTreeUriString(context, content.storageUri) ?: return@withContext null
+        try {
+            val newJson = jsonToFile(
+                context, JsonContent(content),
+                JsonContent::class.java, folder, JSON_FILE_NAME_V2
+            )
+            content.jsonUri = newJson.uri.toString()
+            return@withContext newJson
+        } catch (e: IOException) {
+            Timber.e(e, "Error while writing to %s", content.storageUri)
+        }
+        return@withContext null
     }
-    return null
-}
 
 /**
  * Persist the given content's JSON file, whether it already exists or it needs to be created
@@ -386,7 +385,7 @@ fun createJson(context: Context, content: Content): DocumentFile? {
  * @param context Context to use
  * @param content Content to persist the JSON for
  */
-fun persistJson(context: Context, content: Content) {
+suspend fun persistJson(context: Context, content: Content) = withContext(Dispatchers.IO) {
     var result = false
     if (content.jsonUri.isNotEmpty()) result = updateJson(context, content)
     if (!result) createJson(context, content)
@@ -399,50 +398,52 @@ fun persistJson(context: Context, content: Content) {
  * @param dao     DAO to be used
  * @return True if the queue JSON file has been updated properly; false instead
  */
-fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean {
-    assertNonUiThread()
-    val queue = dao.selectQueue()
-    val errors = dao.selectErrorContent()
+suspend fun updateQueueJson(context: Context, dao: CollectionDAO): Boolean =
+    withContext(Dispatchers.IO) {
+        val queue = dao.selectQueue()
+        val errors = dao.selectErrorContent()
 
-    // Save current queue (to be able to restore it in case the app gets uninstalled)
-    val queuedContent = queue.mapNotNull { qr ->
-        val c = qr.content.target
-        if (c != null) c.isFrozen = qr.frozen
-        c
-    }.toMutableList()
-    queuedContent.addAll(errors)
+        // Save current queue (to be able to restore it in case the app gets uninstalled)
+        val queuedContent = queue.mapNotNull { qr ->
+            val c = qr.content.target
+            if (c != null) c.isFrozen = qr.frozen
+            c
+        }.toMutableList()
+        queuedContent.addAll(errors)
 
-    val rootFolder =
-        getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
-            ?: return false
+        val rootFolder =
+            getDocumentFromTreeUriString(context, Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                ?: return@withContext false
 
-    try {
-        val contentCollection = JsonContentCollection()
-        contentCollection.replaceQueue(queuedContent)
+        try {
+            val contentCollection = JsonContentCollection()
+            contentCollection.replaceQueue(queuedContent)
 
-        jsonToFile(
-            context,
-            contentCollection,
-            JsonContentCollection::class.java,
-            rootFolder,
-            QUEUE_JSON_FILE_NAME
-        )
-    } catch (e: IOException) {
-        // NB : IllegalArgumentException might happen for an unknown reason on certain devices
-        // even though all the file existence checks are in place
-        // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
-    } catch (e: IllegalArgumentException) {
-        Timber.e(e)
-        val crashlytics = FirebaseCrashlytics.getInstance()
-        crashlytics.recordException(e)
-        return false
+            jsonToFile(
+                context,
+                contentCollection,
+                JsonContentCollection::class.java,
+                rootFolder,
+                QUEUE_JSON_FILE_NAME
+            )
+        } catch (e: IOException) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        } catch (e: IllegalArgumentException) {
+            Timber.e(e)
+            val crashlytics = FirebaseCrashlytics.getInstance()
+            crashlytics.recordException(e)
+            return@withContext false
+        }
+
+        dao.cleanup()
+        return@withContext true
     }
-    return true
-}
 
 /**
  * Open the given Content in the built-in image viewer
@@ -524,25 +525,25 @@ suspend fun updateContentReadStats(
  * @param content Content to retrieve picture files for
  * @return List of picture files
  */
-fun getPictureFilesFromContent(context: Context, content: Content): List<DocumentFile> {
-    assertNonUiThread()
-    val storageUri = content.storageUri
+suspend fun getPictureFilesFromContent(context: Context, content: Content): List<DocumentFile> =
+    withContext(Dispatchers.IO) {
+        val storageUri = content.storageUri
 
-    Timber.d("Opening: %s from: %s", content.title, storageUri)
-    val folder = getDocumentFromTreeUriString(context, storageUri)
-    if (null == folder) {
-        Timber.d("File not found!! Exiting method.")
-        return ArrayList()
-    }
+        Timber.d("Opening: %s from: %s", content.title, storageUri)
+        val folder = getDocumentFromTreeUriString(context, storageUri)
+        if (null == folder) {
+            Timber.d("File not found!! Exiting method.")
+            return@withContext emptyList()
+        }
 
-    return listFoldersFilter(
-        context, folder
-    ) { displayName: String ->
-        (displayName.lowercase(
-            Locale.getDefault()
-        ).startsWith(THUMB_FILE_NAME) && isSupportedImage(displayName))
+        return@withContext listFoldersFilter(
+            context, folder
+        ) { displayName: String ->
+            (displayName.lowercase(
+                Locale.getDefault()
+            ).startsWith(THUMB_FILE_NAME) && isSupportedImage(displayName))
+        }
     }
-}
 
 /**
  * Remove the given Content from the storage and the DB
@@ -663,7 +664,7 @@ fun detachAllPrimaryContent(dao: CollectionDAO, location: StorageLocation) {
     // NB : do NOT use ContentHelper.removeContent as it would remove files too
     // here we just want to remove DB entries without removing files
     dao.deleteAllInternalContents(getPathRoot(location), true)
-
+    dao.cleanup()
     // TODO groups
 }
 
@@ -892,21 +893,25 @@ fun addAttribute(
  */
 suspend fun setAndSaveContentCover(context: Context, newCover: ImageFile, dao: CollectionDAO) =
     withContext(Dispatchers.IO) {
-        // Get all images from the DB
-        val content = dao.selectContent(newCover.content.targetId) ?: return@withContext
-        val images = content.imageList.toMutableList()
+        try {
+            // Get all images from the DB
+            val content = dao.selectContent(newCover.content.targetId) ?: return@withContext
+            val images = content.imageList.toMutableList()
 
-        // Remove current cover from the set
-        if (!setContentCover(context, content, images, newCover)) return@withContext
+            // Remove current cover from the set
+            if (!setContentCover(context, content, images, newCover)) return@withContext
 
-        // Update images directly
-        dao.insertImageFiles(images)
+            // Update images directly
+            dao.insertImageFiles(images)
 
-        // Update the whole list
-        dao.insertContentCore(content)
+            // Update the whole list
+            dao.insertContentCore(content)
 
-        // Update content JSON if it exists (i.e. if book is not queued)
-        if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+            // Update content JSON if it exists (i.e. if book is not queued)
+            if (content.jsonUri.isNotEmpty()) updateJson(context, content)
+        } finally {
+            dao.cleanup()
+        }
     }
 
 /**
@@ -1244,11 +1249,11 @@ fun launchBrowserFor(
         return
     }
     val targetSite = Site.searchByUrl(targetUrl)
-    if (null == targetSite || targetSite == Site.NONE) return
+    if (null == targetSite || !targetSite.isVisible) return
 
     val intent = Intent(context, Content.getWebActivityClass(targetSite))
 
-    val bundle = BaseWebActivityBundle()
+    val bundle = BaseBrowserActivityBundle()
     bundle.url = targetUrl
     intent.putExtras(bundle.bundle)
 
@@ -1646,7 +1651,7 @@ fun getContentHeaders(content: Content?): List<Pair<String, String>> {
  * - left side : Best match for the given Content inside the library and queue
  * - Right side : Similarity score (between 0 and 1; 1=100%)
  */
-fun findDuplicate(
+suspend fun findDuplicate(
     context: Context,
     content: Content, useTitle: Boolean, useArtist: Boolean, useLanguage: Boolean,
     useCover: Boolean, sensitivity: Int, pHashIn: Long, dao: CollectionDAO
@@ -1684,22 +1689,21 @@ fun findDuplicate(
             Long.MIN_VALUE
         )
     }.toList()
+
     for (candidate in candidates) {
-        val entry = processContent(
+        processContent(
             reference,
             candidate, useTitle, useCover, useArtist, useLanguage, true, sensitivity, cosine
-        )
-        if (entry != null) entries.add(entry)
+        )?.let { entries.add(it) }
     }
+
     // Sort by similarity and size
-    val bestMatch = entries.sortedWith { obj, other ->
-        obj.compareTo(other!!)
-    }.firstOrNull()
-    if (bestMatch != null) {
-        val resultContent = dao.selectContent(bestMatch.duplicateId)
-        val resultScore = bestMatch.calcTotalScore()
-        if (resultContent != null) return Pair(resultContent, resultScore)
-    }
+    entries.sortedWith { obj, other -> obj.compareTo(other!!) }
+        .firstOrNull()?.let { bestMatch ->
+            val resultContent = dao.selectContent(bestMatch.duplicateId)
+            val resultScore = bestMatch.calcTotalScore()
+            if (resultContent != null) return Pair(resultContent, resultScore)
+        }
 
     return null
 }
@@ -1711,15 +1715,19 @@ fun findDuplicate(
  * @param content Content to process
  * @param dao     Dao used to save cover hash
  */
-fun computeAndSaveCoverHash(
+suspend fun computeAndSaveCoverHash(
     context: Context,
-    content: Content, dao: CollectionDAO
+    content: Content,
+    dao: CollectionDAO
 ) {
     val coverBitmap = getCoverBitmapFromContent(context, content)
-    val pHash = calcPhash(getHashEngine(), coverBitmap)
-    coverBitmap?.recycle()
-    content.cover.imageHash = pHash
-    dao.insertImageFile(content.cover)
+    try {
+        val pHash = calcPhash(getHashEngine(), coverBitmap)
+        content.cover.imageHash = pHash
+        dao.insertImageFile(content.cover)
+    } finally {
+        coverBitmap?.recycle()
+    }
 }
 
 /**

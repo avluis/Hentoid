@@ -197,7 +197,13 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                         isSelected: Boolean,
                         calledFromOnStart: Boolean
                     ) {
-                        if (isSelected) IntRange(start, end).forEach { selectExtension.select(it, false, true) }
+                        if (isSelected) IntRange(start, end).forEach {
+                            selectExtension.select(
+                                it,
+                                false,
+                                true
+                            )
+                        }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
                     }
                 }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -427,7 +433,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
         activity.get()?.let { act ->
             if (!act.isSearchActive()) {
                 unfilteredSources.clear()
-                unfilteredSources.addAll(result.mapNotNull { c -> c.site })
+                unfilteredSources.addAll(result.map { it.site })
             }
         }
 
@@ -541,7 +547,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
 
     private fun searchErrors(uri: String) {
         val searchArgs = SearchActivityBundle.parseSearchUri(Uri.parse(uri))
-        val sourceAttr = searchArgs.attributes.firstOrNull { a -> AttributeType.SOURCE == a.type }
+        val sourceAttr = searchArgs.attributes.firstOrNull { AttributeType.SOURCE == it.type }
         val site = if (sourceAttr != null) Site.searchByName(sourceAttr.name) else null
         viewModel.searchErrorContentUniversal(searchArgs.query, site)
     }

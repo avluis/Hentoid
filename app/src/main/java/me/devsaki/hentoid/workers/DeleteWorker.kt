@@ -467,14 +467,14 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private fun removeImageFiles(ids: LongArray) {
+    private suspend fun removeImageFiles(ids: LongArray) = withContext(Dispatchers.IO) {
         val imgs = dao.selectImageFiles(ids)
         trace(Log.INFO, "Removing %s images...", imgs.size)
         val uris = imgs.filterNot { it.isPdf || it.isArchived }.map { it.fileUri }
         val contentIds = imgs.map { it.contentId }.distinct()
         dao.deleteImageFiles(imgs)
         uris.forEachIndexed { index, uri ->
-            if (isStopped) return
+            if (isStopped) return@withContext
             removeFile(applicationContext, uri.toUri())
             progressItem("", Operation.DELETE, Target.IMAGE)
         }
@@ -486,6 +486,8 @@ abstract class BaseDeleteWorker(
                     updateJson(applicationContext, content)
             }
         }
+
+        dao.cleanup()
         progressDone()
         trace(Log.INFO, "Removed %s images", imgs.size)
     }

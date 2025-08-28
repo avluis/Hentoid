@@ -36,6 +36,6 @@
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/title"
         app:spanCount="2"
-        tools:listitem="@layout/item_badge" />
+        tools:listitem="@layout/item_badge_suggestion" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

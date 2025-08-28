@@ -43,8 +43,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_trans"
-            tools:tint="@color/light_gray" />
+            tools:src="@drawable/ic_hentoid_shape"
+            tools:tint="@color/lighter_gray" />
 
         <ImageView
             android:id="@+id/ivFlag"

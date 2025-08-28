@@ -13,22 +13,80 @@
 
         <ImageView
             android:id="@+id/appLogo"
-            android:layout_width="@dimen/about_ic_hentoid_width"
-            android:layout_height="@dimen/about_ic_hentoid_height"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
             android:src="@drawable/ic_hentoid"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
 
+        <TextView
+            android:id="@+id/tv_version_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@id/appLogo"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Hentoid X.X.X (bbb)" />
+
+        <TextView
+            android:id="@+id/tv_chrome_version_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:textSize="16sp"
+            app:layout_constraintStart_toEndOf="@id/appLogo"
+            app:layout_constraintTop_toBottomOf="@id/tv_version_name"
+            tools:text="Chrome vXX" />
+
+        <TextView
+            android:id="@+id/tv_android_api"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/tv_chrome_version_name"
+            app:layout_constraintTop_toTopOf="@id/tv_chrome_version_name"
+            tools:text="/ API XX" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/changelogButton"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/view_changelog"
+            app:flow_horizontalAlign="start"
+            app:icon="@drawable/ic_logs"
+            app:layout_constraintStart_toEndOf="@id/appLogo"
+            app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name" />
+
+        <TextView
+            android:id="@+id/aboutText1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/about1"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@id/tv_version_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/appLogo" />
+
         <ImageView
             android:id="@+id/githubIcon"
             android:layout_width="@dimen/about_ic_icons_width"
             android:layout_height="@dimen/about_ic_icons_height"
+            android:layout_marginTop="8dp"
             android:cropToPadding="true"
             android:src="@drawable/ic_social_github"
-            app:layout_constraintBottom_toTopOf="@id/discordIcon"
-            app:layout_constraintStart_toEndOf="@id/appLogo"
-            app:layout_constraintTop_toTopOf="@id/appLogo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/aboutText1"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -37,7 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:text="@string/about_github"
-            android:textSize="@dimen/about_ic_icons_textSize"
+            android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="@id/githubIcon"
             app:layout_constraintStart_toEndOf="@id/githubIcon"
             app:layout_constraintTop_toTopOf="@id/githubIcon"
@@ -48,9 +106,10 @@
             android:layout_width="@dimen/about_ic_icons_width"
             android:layout_height="@dimen/about_ic_icons_height"
             android:cropToPadding="true"
+            android:layout_marginStart="16dp"
             android:src="@drawable/ic_social_discord"
-            app:layout_constraintStart_toEndOf="@id/appLogo"
-            app:layout_constraintTop_toBottomOf="@id/githubIcon"
+            app:layout_constraintStart_toEndOf="@id/githubText"
+            app:layout_constraintTop_toTopOf="@id/githubIcon"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -59,68 +118,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:text="@string/about_discord"
-            android:textSize="@dimen/about_ic_icons_textSize"
+            android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="@id/discordIcon"
             app:layout_constraintStart_toEndOf="@id/discordIcon"
             app:layout_constraintTop_toTopOf="@id/discordIcon" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/changelogButton"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:text="@string/view_changelog"
-            app:flow_horizontalAlign="start"
-            app:icon="@drawable/ic_logs"
-            app:iconTint="@color/secondary_color_selector"
-            app:layout_constraintBottom_toBottomOf="@id/appLogo"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/appLogo" />
-
-        <TextView
-            android:id="@+id/tv_version_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:textSize="@dimen/about_textSize"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/appLogo"
-            tools:text="Hentoid X.X.X (bbb)" />
-
-        <TextView
-            android:id="@+id/tv_chrome_version_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:textSize="@dimen/about_textSize"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_version_name"
-            tools:text="Chrome version XX" />
-
-        <TextView
-            android:id="@+id/tv_android_api"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:textSize="@dimen/about_textSize"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/tv_chrome_version_name"
-            app:layout_constraintTop_toBottomOf="@id/tv_version_name"
-            tools:text="Android API XX" />
-
-        <TextView
-            android:id="@+id/aboutText1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/about1"
-            android:textSize="@dimen/about_textSize"
-            app:layout_constraintEnd_toEndOf="@id/tv_version_name"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name" />
 
         <TextView
             android:id="@+id/personalDataStatement1"
@@ -128,10 +129,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/personalDataStatement1"
-            android:textSize="@dimen/about_textSize"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="@id/aboutText1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/aboutText1" />
+            app:layout_constraintTop_toBottomOf="@id/discordIcon" />
 
         <TextView
             android:id="@+id/personalDataStatement2"
@@ -139,7 +140,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/personalDataStatement2"
-            android:textSize="@dimen/about_textSize"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="@id/personalDataStatement1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement1" />
@@ -150,14 +151,14 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/personalDataStatement3"
-            android:textSize="@dimen/about_textSize"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="@id/personalDataStatement2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement2" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/licensesButton"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -167,13 +168,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/achievementsButton"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/about_achievements"
             app:icon="@drawable/ic_achievement"
-            app:iconTint="@color/secondary_color_selector"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
 

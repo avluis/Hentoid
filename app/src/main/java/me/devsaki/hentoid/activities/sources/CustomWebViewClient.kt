@@ -91,7 +91,7 @@ open class CustomWebViewClient : WebViewClient {
     val site: Site
 
     // Listener to the results of the page parser
-    protected val activity: CustomWebActivity?
+    protected val activity: BrowserActivity?
 
     private val scope: CoroutineScope
 
@@ -208,7 +208,7 @@ open class CustomWebViewClient : WebViewClient {
     constructor(
         site: Site,
         galleryUrl: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) {
         this.site = site
         this.activity = activity
@@ -1039,7 +1039,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
 
-    interface CustomWebActivity : WebResultConsumer {
+    interface BrowserActivity : WebResultConsumer {
         // ACTIONS
         fun loadUrl(url: String)
 

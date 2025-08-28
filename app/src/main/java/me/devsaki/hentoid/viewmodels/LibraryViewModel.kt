@@ -37,7 +37,6 @@ import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
-import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
@@ -47,7 +46,6 @@ import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
-import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -199,6 +197,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             val searchUri =
                 buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
             dao.insertSearchRecord(SearchRecord(searchUri), 10)
+            dao.cleanup()
         }
         viewModelScope.launch { doSearchContent() }
     }
@@ -221,6 +220,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 metadata.toString(getApplication())
             ), 10
         )
+        dao.cleanup()
         viewModelScope.launch { doSearchContent() }
     }
 
@@ -228,6 +228,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         currentSource?.let { libraryPaged.removeSource(it) }
         currentSource = dao.selectNoContent()
         currentSource?.let { s -> libraryPaged.addSource(s) { libraryPaged.value = it } }
+        dao.cleanup()
     }
 
     fun searchGroup() {
@@ -235,7 +236,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     private suspend fun doSearchGroup() {
-        dao.cleanup()
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Settings.groupSortField)
         groupSearchManager.setSortDesc(Settings.isGroupSortDesc)
@@ -272,6 +272,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun refreshAvailableGroupings() {
         isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0)
         isDynamicGroupingAvailable.postValue(dao.countGroupsFor(Grouping.DYNAMIC) > 0)
+        dao.cleanup()
     }
 
     private suspend fun doSearchFolders() {
@@ -343,6 +344,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         accumulator
                     }
                     .collect { foldersDetail.postValue(it) }
+                dao.cleanup()
             }
         }
     }
@@ -518,14 +520,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     // =========================
     fun toggleContentCompleted(content: List<Content>, onSuccess: Runnable) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    content.forEach { doToggleContentCompleted(it.id) }
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                } finally {
-                    dao.cleanup()
-                }
+            try {
+                doToggleContentCompleted(content.map { it.id })
+            } catch (t: Throwable) {
+                Timber.e(t)
             }
             onSuccess.run()
         }
@@ -534,33 +532,29 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Toggle the "completed" state of the given content
      *
-     * @param contentId ID of the content whose completed state to toggle
+     * @param ids ID of the content whose completed state to toggle
      */
-    private fun doToggleContentCompleted(contentId: Long) {
-        assertNonUiThread()
-
+    private suspend fun doToggleContentCompleted(ids: List<Long>) = withContext(Dispatchers.IO) {
         // Check if given content still exists in DB
-        val theContent = dao.selectContent(contentId)
-        if (theContent != null) {
-            if (theContent.isBeingProcessed) return
+        ids.forEach {
+            val theContent = dao.selectContent(it)
+                ?: throw InvalidParameterException("Invalid ContentId : $it")
+
+            if (theContent.isBeingProcessed) return@forEach
+
             theContent.completed = !theContent.completed
             persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
-            return
         }
-        throw InvalidParameterException("Invalid ContentId : $contentId")
+        dao.cleanup()
     }
 
     fun resetReadStats(content: List<Content>, onSuccess: Runnable) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    content.forEach { doResetReadStats(it.id) }
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                } finally {
-                    dao.cleanup()
-                }
+            try {
+                doResetReadStats(content.map { it.id })
+            } catch (t: Throwable) {
+                Timber.e(t)
             }
             onSuccess.run()
         }
@@ -569,27 +563,27 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Reset read stats of the given content
      *
-     * @param contentId ID of the content whose read stats to reset
+     * @param ids ID of the content whose read stats to reset
      */
-    private fun doResetReadStats(contentId: Long) {
-        assertNonUiThread()
+    private suspend fun doResetReadStats(ids: List<Long>) = withContext(Dispatchers.IO) {
+        ids.forEach {
+            // Check if given content still exists in DB
+            val theContent = dao.selectContent(it)
+                ?: throw InvalidParameterException("Invalid ContentId : $it")
 
-        // Check if given content still exists in DB
-        val theContent = dao.selectContent(contentId)
-        if (theContent != null) {
-            if (theContent.isBeingProcessed) return
+            if (theContent.isBeingProcessed) return@forEach
+
             theContent.reads = 0
             theContent.readPagesCount = 0
             theContent.lastReadPageIndex = 0
             theContent.lastReadDate = 0
-            val imgs: List<ImageFile> = theContent.imageFiles
+            val imgs = theContent.imageFiles
             for (img in imgs) img.read = false
             dao.insertImageFiles(imgs)
             persistJson(getApplication(), theContent)
             dao.insertContentCore(theContent)
-            return
         }
-        throw InvalidParameterException("Invalid ContentId : $contentId")
+        dao.cleanup()
     }
 
     /**
@@ -599,14 +593,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun toggleContentFavourite(content: Content, onSuccess: Runnable) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    doToggleContentFavourite(content.id)
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                } finally {
-                    dao.cleanup()
-                }
+            try {
+                doToggleContentFavourite(content.id)
+            } catch (t: Throwable) {
+                Timber.e(t)
+            } finally {
+                dao.cleanup()
             }
             onSuccess.run()
         }
@@ -618,19 +610,17 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param contentId ID of the content whose favourite state to toggle
      * @return Resulting content
      */
-    private fun doToggleContentFavourite(contentId: Long): Content {
-        assertNonUiThread()
+    private suspend fun doToggleContentFavourite(contentId: Long) =
+        withContext(Dispatchers.IO) {
+            // Check if given content still exists in DB
+            val theContent = dao.selectContent(contentId)
+                ?: throw InvalidParameterException("Invalid ContentId : $contentId")
 
-        // Check if given content still exists in DB
-        val theContent = dao.selectContent(contentId)
-        if (theContent != null) {
             theContent.favourite = !theContent.favourite
             persistJson(getApplication(), theContent)
             dao.insertContent(theContent)
-            return theContent
+            dao.cleanup()
         }
-        throw InvalidParameterException("Invalid ContentId : $contentId")
-    }
 
     /**
      * Set the rating to the given value for the given content IDs
@@ -641,16 +631,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun rateContents(contentIds: List<Long>, targetRating: Int, onSuccess: Runnable) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                try {
-                    contentIds.forEach {
-                        doRateContent(it, targetRating)
-                    }
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                } finally {
-                    dao.cleanup()
-                }
+            try {
+                doRateContent(contentIds, targetRating)
+            } catch (t: Throwable) {
+                Timber.e(t)
             }
             onSuccess.run()
         }
@@ -659,22 +643,22 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Set the rating to the given value for the given content ID
      *
-     * @param contentId    Content ID to set the rating for
+     * @param ids    Content ID to set the rating for
      * @param targetRating Rating to set
      */
-    private fun doRateContent(contentId: Long, targetRating: Int): Content {
-        assertNonUiThread()
+    private suspend fun doRateContent(ids: List<Long>, targetRating: Int) =
+        withContext(Dispatchers.IO) {
+            ids.forEach {
+                // Check if given content still exists in DB
+                val theContent = dao.selectContent(it)
+                    ?: throw InvalidParameterException("Invalid ContentId : $it")
 
-        // Check if given content still exists in DB
-        val theContent = dao.selectContent(contentId)
-        if (theContent != null) {
-            theContent.rating = targetRating
-            persistJson(getApplication(), theContent)
-            dao.insertContent(theContent)
-            return theContent
+                theContent.rating = targetRating
+                persistJson(getApplication(), theContent)
+                dao.insertContent(theContent)
+            }
+            dao.cleanup()
         }
-        throw InvalidParameterException("Invalid ContentId : $contentId")
-    }
 
     /**
      * General purpose download/redownload
@@ -792,7 +776,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 dao.updateContentsProcessedFlag(contentList, false)
                 onError.invoke(t)
             }
-        }
+        } // ViewModelScope
+        dao.cleanup()
     }
 
     /**
@@ -926,6 +911,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun setGroupCoverContent(groupId: Long, coverContent: Content) {
         val localGroup = dao.selectGroup(groupId) ?: return
         localGroup.coverContent.setAndPutTarget(coverContent)
+        dao.cleanup()
     }
 
     fun saveContentPositions(
@@ -958,6 +944,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             break
         }
         dao.insertGroup(localGroup)
+        dao.cleanup()
     }
 
     fun saveGroupPositions(orderedGroups: List<Group>) {
@@ -980,6 +967,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             g.order = order++
             dao.insertGroup(g)
         }
+        dao.cleanup()
     }
 
     fun getGroupContents(group: Group): List<Content> {
@@ -1015,6 +1003,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 }
             }
         }
+        dao.cleanup()
     }
 
     fun renameGroup(
@@ -1071,10 +1060,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    doToggleGroupFavourite(group.id)
-                    dao.cleanup()
-                }
+                doToggleGroupFavourite(group.id)
             } catch (t: Throwable) {
                 Timber.e(t)
             }
@@ -1087,9 +1073,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param groupId ID of the group whose favourite state to toggle
      * @return Resulting group
      */
-    private fun doToggleGroupFavourite(groupId: Long): Group {
-        assertNonUiThread()
-
+    private suspend fun doToggleGroupFavourite(groupId: Long) = withContext(Dispatchers.IO) {
         // Check if given group still exists in DB
         val theGroup = dao.selectGroup(groupId)
             ?: throw InvalidParameterException("Invalid GroupId : $groupId")
@@ -1101,7 +1085,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
         // Persist in it JSON
         updateGroupsJson(getApplication(), dao)
-        return theGroup
+        dao.cleanup()
     }
 
     /**
@@ -1130,8 +1114,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param groupId      Group ID to set the rating for
      * @param targetRating Rating to set
      */
-    private fun doRateGroup(groupId: Long, targetRating: Int): Group {
-
+    private suspend fun doRateGroup(groupId: Long, targetRating: Int): Group {
         // Check if given content still exists in DB
         val theGroup = dao.selectGroup(groupId)
             ?: throw InvalidParameterException("Invalid GroupId : $groupId")
@@ -1155,6 +1138,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val newGroup = Group(Grouping.CUSTOM, newGroupName.trim(), -1)
         newGroup.id = dao.insertGroup(newGroup)
         moveContentsToCustomGroup(contentIds, newGroup, onProcessed)
+        dao.cleanup()
     }
 
     fun moveContentsToCustomGroup(
@@ -1191,6 +1175,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun shuffleContent() {
         RandomSeed.renewSeed(SEED_CONTENT)
         dao.shuffleContent()
+        dao.cleanup()
     }
 
     fun mergeContents(
@@ -1238,5 +1223,6 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     fun clearSearchHistory() {
         dao.deleteAllSearchRecords()
+        dao.cleanup()
     }
 }

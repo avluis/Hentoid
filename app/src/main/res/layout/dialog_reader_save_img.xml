@@ -22,16 +22,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="8dp"
             android:text="@string/copy_generic"
-            android:textColor="?colorSecondary"
-            android:textSize="@dimen/text_body_1"
             app:icon="@drawable/ic_action_download"
-            app:iconSize="24dp"
-            app:iconTint="?colorSecondary"
             app:layout_constraintTop_toBottomOf="@id/target_folder" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

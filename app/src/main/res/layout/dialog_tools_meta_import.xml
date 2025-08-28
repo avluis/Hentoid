@@ -46,14 +46,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_select_file_btn"
-        style="@style/Widget.Material3.Button.TextButton"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="wrap_content"
-        android:layout_height="?android:attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:backgroundTint="?colorSecondary"
-        android:padding="8dp"
         android:text="@string/import_select_file"
-        android:textColor="@color/white_opacity_87"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_mode" />
@@ -137,33 +134,29 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_run_btn"
-        style="@style/HentoidMaterialButtonOutlinedStyle"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_margin="8dp"
         android:enabled="false"
         android:text="@string/import_run"
-        android:textColor="@color/secondary_color_selector"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_action_import"
-        app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_file_bookmarks_chk"
-        app:strokeColor="@color/secondary_color_selector"
         tools:visibility="visible" />
 
-    <ProgressBar
+    <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/import_progress_bar"
-        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        style="@style/Widget.Material3.LinearProgressIndicator"
         android:layout_width="0dp"
-        android:layout_height="4dp"
         android:layout_marginTop="8dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_run_btn"
+        app:trackThickness="2dp"
         tools:visibility="visible" />
 
     <TextView

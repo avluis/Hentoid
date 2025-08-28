@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import coil3.dispose
+import com.google.android.material.button.MaterialButton
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -71,8 +72,8 @@ class GroupDisplayItem(
         FastAdapter.ViewHolder<GroupDisplayItem>(view) {
         private val baseLayout: View = view.requireById(R.id.item)
         private val title: TextView = view.requireById(R.id.tvTitle)
-        private val ivFavourite: ImageView? = view.findViewById(R.id.ivFavourite)
-        private val ivRating: ImageView? = view.findViewById(R.id.iv_rating)
+        private val ivFavourite: MaterialButton? = view.findViewById(R.id.ivFavourite)
+        private val ivRating: MaterialButton? = view.findViewById(R.id.iv_rating)
         private var ivCover: ImageView? = view.findViewById(R.id.ivCover)
         var ivReorder: View? = view.findViewById(R.id.ivReorder)
         private var selectionBorder: View? = view.findViewById(R.id.selection_border)
@@ -144,15 +145,15 @@ class GroupDisplayItem(
             ivFavourite?.let {
                 it.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
                 if (item.group.favourite) {
-                    it.setImageResource(R.drawable.ic_fav_full)
+                    it.setIconResource(R.drawable.ic_fav_full)
                 } else {
-                    it.setImageResource(R.drawable.ic_fav_empty)
+                    it.setIconResource(R.drawable.ic_fav_empty)
                 }
             }
 
             ivRating?.let {
                 it.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-                it.setImageResource(getRatingResourceId(item.group.rating))
+                it.setIconResource(getRatingResourceId(item.group.rating))
             }
 
             topButton?.isVisible = true

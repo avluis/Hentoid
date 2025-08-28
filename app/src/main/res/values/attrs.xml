@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Custom attributes -->
-    <attr name="drawer_header_diagonal" format="reference" />
+    <attr name="bar" format="reference" />
+    <attr name="subbar_1" format="reference" />
+    <attr name="subbar_2" format="reference" />
     <attr name="card_title" format="reference" />
+    <attr name="card_tags" format="reference" />
     <attr name="card_surface" format="reference" />
     <attr name="card_pressed" format="reference" />
     <attr name="card_selected" format="reference" />
+    <attr name="drawer_background" format="reference" />
 
     <declare-styleable name="MaxHeightRecyclerView">
         <attr name="maxHeight" format="dimension" />

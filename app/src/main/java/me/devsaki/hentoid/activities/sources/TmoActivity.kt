@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class TmoActivity : BaseWebActivity() {
+class TmoActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "tmohentai.com"
         private val GALLERY_FILTER = arrayOf("tmohentai.com/contents/[\\w\\-]+[/]{0,1}$")

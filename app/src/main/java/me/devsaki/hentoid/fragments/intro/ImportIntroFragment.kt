@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -63,11 +64,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = IntroSlide04Binding.inflate(inflater, container, false)
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
         mergedBinding = IncludeImportStepsBinding.bind(binding!!.root)
-        return binding!!.root
+        return binding?.root
     }
 
     /**
@@ -232,7 +233,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             importStep1Button.visibility = View.INVISIBLE
             importStep1Folder.text = getFullPathFromUri(
                 requireContext(),
-                Uri.parse(Settings.getStorageUri(StorageLocation.PRIMARY_1))
+                Settings.getStorageUri(StorageLocation.PRIMARY_1).toUri()
             )
             importStep1Check.visibility = View.VISIBLE
             importStep2.visibility = View.VISIBLE

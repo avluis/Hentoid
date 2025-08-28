@@ -9,14 +9,21 @@
     <color name="surface_black">@color/cod_gray</color>
     <color name="on_surface_black">@color/white_opacity_87</color>
     <color name="window_background_black">@color/black</color>
+    <color name="dialog_background_black">@color/cod_gray</color>
     <color name="on_background_black">@color/white_opacity_87</color>
+    <color name="container_black">@color/darker_gray</color>
     <color name="ripple_black">@color/cod_gray</color>
 
-    <!-- Drawer header -->
-    <color name="drawer_header_diagonal_black">@color/cod_gray</color>
+    <!-- Drawers, bottom panels -->
+    <color name="drawer_background_black">@color/cod_gray</color>
+
+    <!-- Sub-bars -->
+    <color name="bar_black">@color/darker_gray</color>
+    <color name="subbar_1_black">@color/cod_gray</color>
+    <color name="subbar_2_black">@color/black_opacity_87</color>
 
     <!-- Content cards -->
-    <color name="card_title_black">@color/white_opacity_87</color>
+    <color name="card_title_black">@color/white_opacity_66</color>
     <color name="card_surface_black">@color/cod_gray</color>
     <color name="card_selected_black">@color/cod_gray</color>
     <color name="card_pressed_black">@color/black</color>

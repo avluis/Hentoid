@@ -35,6 +35,7 @@ data class ImageFile(
     var name: String = "",
     var fileUri: String = "",
     var read: Boolean = false,
+    @Index // Added to speed up the "favourite pages" book
     var favourite: Boolean = false,
     @Uid(946562145146984364L)
     var dbIsCover: Boolean = false,

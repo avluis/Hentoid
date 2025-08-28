@@ -214,18 +214,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:text="@string/preview"
             android:textSize="@dimen/text_header_6"
             android:textStyle="bold"
-            android:text="@string/preview"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/warnings_list"
             tools:ignore="ContentDescription" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/preview_progress"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            style="@style/Widget.Material3.LinearProgressIndicator"
             android:layout_width="0dp"
-            android:layout_height="4dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
             android:indeterminate="true"
@@ -247,8 +247,8 @@
             android:focusable="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/preview_header"
-            tools:src="@drawable/ic_hentoid_trans"
-            tools:tint="@color/light_gray" />
+            tools:src="@drawable/ic_hentoid_shape"
+            tools:tint="@color/medium_gray" />
 
         <TextView
             android:id="@+id/preview_name"
@@ -288,52 +288,37 @@
             app:layout_constraintTop_toBottomOf="@id/preview_dims"
             tools:text="548 KB ➤ 450 KB" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/prev_page_btn"
+            style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:contentDescription="@string/previous_page"
-            android:focusable="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_previous_item"
             android:tooltipText="@string/previous_page"
+            app:icon="@drawable/ic_action_previous_item"
             app:layout_constraintBottom_toBottomOf="@id/thumb"
             app:layout_constraintEnd_toStartOf="@id/next_page_btn"
             app:layout_constraintStart_toEndOf="@id/thumb"
-            app:tint="?colorOnPrimary"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
-        <ImageButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/next_page_btn"
+            style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:contentDescription="@string/next_page"
-            android:focusable="true"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_next_item"
             android:tooltipText="@string/next_page"
+            app:icon="@drawable/ic_action_next_item"
             app:layout_constraintBottom_toBottomOf="@id/thumb"
             app:layout_constraintStart_toEndOf="@id/prev_page_btn"
-            app:tint="?colorOnPrimary"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
-            style="@style/HentoidMaterialButtonOutlinedStyle"
+            style="@style/Widget.Material3.Button.TonalButton.Icon"
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="8dp"
             android:text="@string/transform"
-            android:textColor="?colorSecondary"
-            android:textSize="@dimen/text_body_1"
             app:icon="@drawable/ic_action_transform"
-            app:iconSize="24dp"
-            app:iconTint="?colorSecondary"
             app:layout_constraintTop_toBottomOf="@id/thumb" />
 
         <ImageView

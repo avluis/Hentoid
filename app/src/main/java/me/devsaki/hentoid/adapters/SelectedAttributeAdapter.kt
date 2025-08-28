@@ -39,12 +39,12 @@ class SelectedAttributeAdapter : ListAdapter<Attribute, AttributeViewHolder>(DIF
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AttributeViewHolder {
         val view: View =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_badge, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.item_badge_input, parent, false)
         return AttributeViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: AttributeViewHolder, position: Int) {
-        holder.bindTo(getItem(position))
+        holder.bindTo(getItem(position), false)
         holder.itemView.setOnClickListener(onClickListener)
     }
 }

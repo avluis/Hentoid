@@ -45,8 +45,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_hentoid_trans"
-        tools:tint="@color/light_gray" />
+        tools:src="@drawable/ic_hentoid_shape"
+        tools:tint="@color/medium_gray" />
 
     <ImageView
         android:id="@+id/ivFlag"
@@ -70,7 +70,7 @@
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:spanCount="2"
-        tools:listitem="@layout/item_badge" />
+        tools:listitem="@layout/item_attribute_type_filter" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/title_new"
@@ -111,7 +111,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tag_filter"
-        tools:listitem="@layout/item_badge" />
+        tools:listitem="@layout/item_badge_suggestion" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/tags_fab"

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/active_sites_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingStart="8dp"
+        android:text="@string/active_sites"
+        android:textSize="@dimen/text_header_6"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <me.devsaki.hentoid.views.MaxHeightRecyclerView
+        android:id="@+id/active_sites"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/active_sites_txt"
+        app:maxHeight="300dp"
+        app:spanCount="5"
+        tools:listitem="@layout/item_icon_simple" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/edit_sites"
+        style="@style/Widget.Material3.Button.TonalButton.Icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/pref_drawer_sources_title"
+        app:icon="@drawable/ic_edit_square"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/active_sites" />
+
+    <TextView
+        android:id="@+id/recent_history_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:paddingStart="8dp"
+        android:text="@string/recent_history"
+        android:textSize="@dimen/text_header_6"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/edit_sites" />
+
+    <me.devsaki.hentoid.views.MaxHeightRecyclerView
+        android:id="@+id/recent_history"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/recent_history_txt"
+        app:maxHeight="600dp"
+        tools:listitem="@layout/item_drawer" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

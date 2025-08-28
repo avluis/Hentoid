@@ -18,7 +18,7 @@ import org.jsoup.nodes.Document
 import timber.log.Timber
 import java.util.Locale
 
-class HitomiActivity : BaseWebActivity() {
+class HitomiActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "hitomi.la"
         private val GALLERY_FILTER =
@@ -165,7 +165,7 @@ class HitomiActivity : BaseWebActivity() {
     private open inner class HitomiWebClient(
         site: Site,
         filter: Array<String>,
-        activity: CustomWebActivity
+        activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
         init {
             setCustomHtmlRewriter { processDoc(it) }

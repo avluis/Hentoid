@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities.sources
 
 import me.devsaki.hentoid.enums.Site
 
-class MultpornActivity : BaseWebActivity() {
+class MultpornActivity : BaseBrowserActivity() {
 
     companion object {
         private const val DOMAIN_FILTER = "multporn.net"
