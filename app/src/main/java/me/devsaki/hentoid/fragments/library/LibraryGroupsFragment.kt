@@ -50,6 +50,7 @@ import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
+import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.AppUpdatedEvent
@@ -61,6 +62,9 @@ import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS
+import me.devsaki.hentoid.util.Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
+import me.devsaki.hentoid.util.Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.exportToDownloadsFolder
@@ -186,6 +190,12 @@ class LibraryGroupsFragment : Fragment(),
         EventBus.getDefault().register(this)
     }
 
+    override fun onDestroy() {
+        EventBus.getDefault().unregister(this)
+        callback?.remove()
+        super.onDestroy()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -239,6 +249,14 @@ class LibraryGroupsFragment : Fragment(),
                 .setPopupTextProvider(this)
                 .useMd2Style()
                 .build()
+        }
+
+        binding?.artistCircleFilter?.setOnClickListener {
+            var next = Settings.artistGroupVisibility + 1
+            if (next > ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS) next = 0
+            Settings.artistGroupVisibility = next
+            updateArtistGroupingFilter()
+            viewModel.searchGroup()
         }
 
         // Pager
@@ -640,6 +658,7 @@ class LibraryGroupsFragment : Fragment(),
         if (event.recipient != CommunicationEvent.Recipient.GROUPS && event.recipient != CommunicationEvent.Recipient.ALL) return
         when (event.type) {
             CommunicationEvent.Type.UPDATE_TOOLBAR -> {
+                updateArtistGroupingFilter()
                 addCustomBackControl()
                 selectExtension?.let { se ->
                     activity.get()?.initFragmentToolbars(se, { onToolbarItemClicked(it) })
@@ -653,10 +672,17 @@ class LibraryGroupsFragment : Fragment(),
         }
     }
 
-    override fun onDestroy() {
-        EventBus.getDefault().unregister(this)
-        callback?.remove()
-        super.onDestroy()
+    private fun updateArtistGroupingFilter() {
+        binding?.apply {
+            artistCircleFilter.setImageResource(
+                when (Settings.artistGroupVisibility) {
+                    ARTIST_GROUP_VISIBILITY_ARTISTS -> R.drawable.ic_attribute_artist
+                    ARTIST_GROUP_VISIBILITY_GROUPS -> R.drawable.ic_attribute_circle
+                    else -> R.drawable.ic_attribute_circle_artist
+                }
+            )
+            artistCircleFilter.isVisible = Settings.groupingDisplay == Grouping.ARTIST.id
+        }
     }
 
     private fun customBackPress() {

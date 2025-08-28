@@ -92,9 +92,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     ): View? {
         binding = FragmentNavigationDrawerBinding.inflate(inflater, container, false)
 
-        // As a remplacement for the loss of the toggle button in the old UI's Bottom bar
-        Settings.artistGroupVisibility = Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
-
         // More listeners
         binding?.navigator?.apply {
             this@NavigationDrawerFragment.menu = menu
