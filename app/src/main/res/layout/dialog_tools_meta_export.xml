@@ -237,6 +237,7 @@
         android:id="@+id/export_run_btn"
         style="@style/Widget.Material3.Button.TonalButton.Icon"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:text="@string/export_run"
         app:icon="@drawable/ic_simple_arrow_down"
