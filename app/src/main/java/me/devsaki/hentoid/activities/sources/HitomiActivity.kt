@@ -11,7 +11,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.logException
+import me.devsaki.hentoid.util.createExceptionLogFile
 import me.devsaki.hentoid.util.network.parseParameters
 import me.devsaki.hentoid.util.pause
 import org.jsoup.nodes.Document
@@ -209,7 +209,6 @@ class HitomiActivity : BaseBrowserActivity() {
                 parser.parseImageListWithWebview(content, webView)
                 content.status = StatusContent.SAVED
             } catch (e: Exception) {
-                logException(e)
                 Timber.i(e)
                 content.status = StatusContent.IGNORED
             }

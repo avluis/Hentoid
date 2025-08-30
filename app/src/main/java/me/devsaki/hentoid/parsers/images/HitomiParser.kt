@@ -22,7 +22,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.jsonToObject
-import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.util.pause
@@ -60,7 +59,7 @@ class HitomiParser : BaseImageListParser() {
             result = parseImageListWithWebview(onlineContent, null)
             setDownloadParams(result, onlineContent.site.url)
         } catch (e: Exception) {
-            logException(e, webview?.context)
+            Timber.w(e)
             result = ArrayList()
         } finally {
             EventBus.getDefault().unregister(this)

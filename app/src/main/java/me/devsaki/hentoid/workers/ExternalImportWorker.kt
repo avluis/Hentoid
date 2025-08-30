@@ -50,7 +50,7 @@ import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.isSupportedArchivePdf
 import me.devsaki.hentoid.util.jsonToContent
-import me.devsaki.hentoid.util.logException
+import me.devsaki.hentoid.util.createExceptionLogFile
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.scanArchivePdf
@@ -195,7 +195,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             }
         } catch (e: IOException) {
             Timber.w(e)
-            logException(e, context)
+            createExceptionLogFile(e, context, "external import crash")
         } finally {
             notificationManager.notify(ImportCompleteNotification(itemsOK, itemsKO))
         }

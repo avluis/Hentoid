@@ -473,14 +473,18 @@ suspend fun updateRenamingRulesJson(context: Context, dao: CollectionDAO): Boole
         return@withContext true
     }
 
-fun logException(t: Throwable, context: Context? = null) {
+fun createExceptionLogFile(
+    t: Throwable,
+    context: Context? = null,
+    fileName: String = "latest-crash"
+) {
     val log: MutableList<LogEntry> = ArrayList()
     log.add(LogEntry(t.message ?: ""))
     log.add(LogEntry(getStackTraceString(t)))
 
-    val logInfo = LogInfo("latest-crash")
+    val logInfo = LogInfo(fileName)
     logInfo.setEntries(log)
-    logInfo.setHeaderName("latest-crash")
+    logInfo.setHeaderName(fileName)
     val ctx = context ?: getInstance()
     ctx.writeLog(logInfo)
 }

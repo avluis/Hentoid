@@ -30,7 +30,6 @@ import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.exportToDownloadsFolder
 import me.devsaki.hentoid.util.getPathRoot
-import me.devsaki.hentoid.util.logException
 import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
@@ -221,7 +220,6 @@ class MetaExportDialogFragment : BaseDialogFragment<Nothing>() {
                         )
                     } catch (e: Exception) {
                         Timber.w(e)
-                        logException(e, activity)
                         Snackbar.make(
                             it.root,
                             R.string.export_failed,
