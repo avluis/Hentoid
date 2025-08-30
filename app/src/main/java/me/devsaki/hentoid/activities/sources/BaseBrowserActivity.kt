@@ -1306,7 +1306,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                         val onlineCover = getOnlineResourceFast(
                             fixUrl(
                                 onlineContent.coverImageUrl,
-                                getStartUrl()
+                                getStartUrl() // TODO is that the URL we need?!
                             ),
                             requestHeadersList,
                             getStartSite().useMobileAgent,

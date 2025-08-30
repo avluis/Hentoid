@@ -1234,7 +1234,7 @@ fun parseDownloadParams(downloadParamsStr: String?): Map<String, String> {
 
 
 /**
- * Launch the web browser for the given site and URL
+ * Launch the web browser for the given URL
  *
  * @param context   Context to be used
  * @param targetUrl Url to navigate to
@@ -1257,6 +1257,25 @@ fun launchBrowserFor(
     bundle.url = targetUrl
     intent.putExtras(bundle.bundle)
 
+    context.startActivity(intent)
+}
+
+/**
+ * Launch the web browser for the given site
+ *
+ * @param context   Context to be used
+ * @param site      Site to navigate to
+ */
+fun launchBrowserFor(
+    context: Context,
+    site: Site
+) {
+    if (!getWebViewAvailable()) {
+        if (getWebViewUpdating()) context.toast(R.string.error_updating_webview)
+        else context.toast(R.string.error_missing_webview)
+        return
+    }
+    val intent = Intent(context, Content.getWebActivityClass(site))
     context.startActivity(intent)
 }
 

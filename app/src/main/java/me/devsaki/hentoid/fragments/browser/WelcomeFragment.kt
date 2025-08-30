@@ -124,7 +124,7 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
     private fun onSiteClick(item: IconItem<Site>): Boolean {
         context?.let {
             item.getObject()?.let { o ->
-                launchBrowserFor(it, o.url)
+                launchBrowserFor(requireContext(), Site.searchByCode(o.code))
                 return true
             }
         }
