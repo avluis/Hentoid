@@ -127,9 +127,9 @@
 
             <ImageView
                 android:id="@+id/top_alert_close_btn"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_margin="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_cancel"
                 app:layout_constraintEnd_toEndOf="@id/top_alert_txt"
                 app:layout_constraintTop_toTopOf="@id/top_alert_txt"

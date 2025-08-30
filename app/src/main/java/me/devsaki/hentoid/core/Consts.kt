@@ -5,10 +5,13 @@ package me.devsaki.hentoid.core
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KProperty
 
+typealias KRunnable = () -> Unit
+typealias SuspendRunnable = suspend () -> Unit
+
+typealias Consumer<T> = (T) -> Unit
+
 typealias BiConsumer<T, U> = (T, U) -> Unit
 typealias SuspendBiConsumer<T, U> = suspend (T, U) -> Unit
-typealias Consumer<T> = (T) -> Unit
-typealias SuspendRunnable = suspend () -> Unit
 
 fun <T> lazyWithReset(initializer: () -> T): ResetLazy<T> = ResetLazy(initializer)
 
@@ -28,6 +31,7 @@ const val JSON_ARCHIVE_SUFFIX = "_h"
 
 // Cache subfolder for reader pics extracted from archives and PDFs or downlodaded
 const val READER_CACHE = "disk_cache"
+
 // Cache subfolder for cover thumbs extracted from archives and PDFs
 const val THUMBS_CACHE = "thumbs_cache"
 

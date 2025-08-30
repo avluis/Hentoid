@@ -37,6 +37,7 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.LibraryActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
+import me.devsaki.hentoid.core.KRunnable
 import me.devsaki.hentoid.core.convertLocaleToEnglish
 import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.database.CollectionDAO
@@ -91,6 +92,10 @@ import timber.log.Timber
 import java.time.Instant
 
 private const val BEHOLDER_DELAY_MS = 2 * 60 * 1000 // 2 min
+
+// == VALUES TO PASS ACROSS ACTIVITY RESET (that shouldn't be saved when closing the app)
+var hasChangedGridDisplay = false
+var hasClosedTopAlert = false
 
 class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
@@ -326,7 +331,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 R.string.help_search, ArrowOrientation.TOP,
                 it.toolbar, this
             )
-            updateAlertBanner()
+            updateTopAlert()
             if (hasChangedGridDisplay) {
                 it.gridSizeBanner.root.alpha = 1f
                 it.gridSizeBanner.root.isVisible = true
@@ -444,6 +449,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
      * Initialize the UI components
      */
     private fun initUI() {
+        // Top alert
+        binding?.alertBanner?.alertCloseBtn?.setOnClickListener { closeTopAlert() }
+
         // Search bar
         binding?.advancedSearch?.apply {
             // Link to advanced search
@@ -501,44 +509,45 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         }
     }
 
-    private fun updateAlertBanner() {
+    private fun closeTopAlert() {
+        binding?.alertBanner?.root?.isVisible = false
+        hasClosedTopAlert = true
+    }
+
+    private fun updateTopAlert() {
+        if (hasClosedTopAlert) return
+
+        // Remind user that the app is in browser mode
+        if (Settings.isBrowserMode)
+            doUpdateTopAlert(R.string.alert_browser_mode, false)
+        else if (!this@LibraryActivity.checkExternalStorageReadWritePermission())
+        // Warn about permissions being lost
+            doUpdateTopAlert(R.string.alert_permissions_lost) { fixPermissions() }
+        else if (!this@LibraryActivity.checkNotificationPermission())
+        // Warn about notiftications not being enabled
+            doUpdateTopAlert(R.string.alert_notifications) { fixNotifications() }
+        else if (this@LibraryActivity.isLowDeviceStorage())
+        // Display low device storage alert
+            doUpdateTopAlert(R.string.alert_low_memory)
+        else if (isLowDatabaseStorage())
+        // Display low database storage alert
+            doUpdateTopAlert(R.string.alert_low_memory_db)
+        else
+            closeTopAlert()
+    }
+
+    private fun doUpdateTopAlert(
+        textId: Int,
+        hasIcon: Boolean = true,
+        fixHandler: KRunnable? = null
+    ) {
         binding?.alertBanner?.apply {
-            // Remind user that the app is in browser mode
-            if (Settings.isBrowserMode) {
-                alertTxt.setText(R.string.alert_browser_mode)
-                alertTxt.visibility = View.VISIBLE
-                alertIcon.visibility = View.GONE
-                alertFixBtn.visibility = View.GONE
-            } else if (!this@LibraryActivity.checkExternalStorageReadWritePermission()) { // Warn about permissions being lost
-                alertTxt.setText(R.string.alert_permissions_lost)
-                alertTxt.visibility = View.VISIBLE
-                alertIcon.visibility = View.VISIBLE
-                alertFixBtn.setOnClickListener { fixPermissions() }
-                alertFixBtn.visibility = View.VISIBLE
-            } else if (!this@LibraryActivity.checkNotificationPermission()) { // Warn about notiftications not being enabled
-                alertTxt.setText(R.string.alert_notifications)
-                alertTxt.visibility = View.VISIBLE
-                alertIcon.visibility = View.VISIBLE
-                alertFixBtn.setOnClickListener { fixNotifications() }
-                alertFixBtn.visibility = View.VISIBLE
-            } else if (this@LibraryActivity.isLowDeviceStorage()) { // Display low device storage alert
-                alertTxt.setText(R.string.alert_low_memory)
-                alertTxt.visibility = View.VISIBLE
-                alertIcon.visibility = View.VISIBLE
-                alertFixBtn.visibility = View.GONE
-            } else if (isLowDatabaseStorage()) { // Display low database storage alert
-                alertTxt.setText(R.string.alert_low_memory_db)
-                alertTxt.visibility = View.VISIBLE
-                alertIcon.visibility = View.VISIBLE
-                alertFixBtn.visibility = View.GONE
-            } else {
-                root.isVisible = false
-                alertTxt.visibility = View.GONE
-                alertIcon.visibility = View.GONE
-                alertFixBtn.visibility = View.GONE
-                return
-            }
             root.isVisible = true
+            alertIcon.isVisible = hasIcon
+            alertTxt.setText(textId)
+            alertFixBtn.isVisible = (fixHandler != null)
+            alertFixBtn.setOnClickListener { fixHandler }
+            alertCloseBtn.isVisible = null == fixHandler
         }
     }
 
@@ -873,7 +882,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 viewModel.setGrouping(Grouping.FLAT.id)
             }
 
-            Settings.Key.BROWSER_MODE -> updateAlertBanner()
+            Settings.Key.BROWSER_MODE -> updateTopAlert()
 
             Settings.Key.GROUPING_DISPLAY -> onGroupingChanged(Settings.groupingDisplay)
             else -> {}
@@ -942,11 +951,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun fixPermissions() {
-        if (this.requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) updateAlertBanner()
+        if (this.requestExternalStorageReadWritePermission(RQST_STORAGE_PERMISSION)) updateTopAlert()
     }
 
     private fun fixNotifications() {
-        if (this.requestNotificationPermission(RQST_NOTIFICATION_PERMISSION)) updateAlertBanner()
+        if (this.requestNotificationPermission(RQST_NOTIFICATION_PERMISSION)) updateTopAlert()
     }
 
     private fun isLowDatabaseStorage(): Boolean {
@@ -964,24 +973,16 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         grantResults: IntArray
     ) {
         if (grantResults.isEmpty()) return
-        binding?.alertBanner?.apply {
-            if (RQST_STORAGE_PERMISSION == requestCode) {
-                if (permissions.size < 2) return
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    root.isVisible = false
-                    alertTxt.visibility = View.GONE
-                    alertIcon.visibility = View.GONE
-                    alertFixBtn.visibility = View.GONE
-                } // Don't show rationales here; the alert still displayed on screen should be enough
-            } else if (RQST_NOTIFICATION_PERMISSION == requestCode) {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    root.isVisible = false
-                    alertTxt.visibility = View.GONE
-                    alertIcon.visibility = View.GONE
-                    alertFixBtn.visibility = View.GONE
-                } // Don't show rationales here; the alert still displayed on screen should be enough
-            }
+
+        if (RQST_STORAGE_PERMISSION == requestCode) {
+            if (permissions.size < 2) return
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) closeTopAlert()
+            // Don't show rationales here; the alert still displayed on screen should be enough
+        } else if (RQST_NOTIFICATION_PERMISSION == requestCode) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) closeTopAlert()
+            // Don't show rationales here; the alert still displayed on screen should be enough
         }
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
@@ -1169,7 +1170,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     fun askDeleteItems(
         contentIds: List<Long>,
         groupIds: List<Long>,
-        onSuccess: Runnable?,
+        onSuccess: KRunnable?,
         selectExtension: SelectExtension<*>
     ) {
         val builder = MaterialAlertDialogBuilder(this)
@@ -1345,7 +1346,3 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         }
     }
 }
-
-// == VALUES TO PASS ACROSS ACTIVITY RESET (that shouldn't be saved when closing the app)
-var hasChangedGridDisplay = false
-

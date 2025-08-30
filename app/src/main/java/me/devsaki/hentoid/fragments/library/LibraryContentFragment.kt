@@ -602,7 +602,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 // Remove external items if they can't be deleted
                 if (!Settings.isDeleteExternalLibrary) selectedContent = selectedContent
                     .filterNot { it.status == StatusContent.EXTERNAL }
-                if (selectedContent.isNotEmpty()) activity.get()!!.askDeleteItems(
+                if (selectedContent.isNotEmpty()) activity.get()?.askDeleteItems(
                     selectedContent.map { it.id }, emptyList(),
                     { refreshIfNeeded() }, selectExtension!!
                 )
