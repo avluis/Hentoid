@@ -10,6 +10,8 @@ import me.devsaki.hentoid.database.domains.Group_
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.database.domains.QueueRecord_
+import me.devsaki.hentoid.database.domains.SearchRecord
+import me.devsaki.hentoid.database.domains.SearchRecord_
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.getQueueTabStatuses
 
@@ -87,6 +89,11 @@ class MaintenanceDAO {
             .safeFind()
     }
 
+    fun selectSearchRecordWithNullEntity(): List<SearchRecord> {
+        return ObjectBoxDB.store.boxFor(SearchRecord::class.java).query()
+            .isNull(SearchRecord_.entityType).safeFind()
+    }
+
     fun selectOrphanQueueRecordIds(): LongArray {
         val qrCondition = QueueRecord_.contentId.lessOrEqual(0).or(QueueRecord_.contentId.isNull)
         return ObjectBoxDB.store.boxFor(QueueRecord::class.java).query(qrCondition).safeFindIds()
@@ -94,7 +101,8 @@ class MaintenanceDAO {
 
     // Select content that have a queue status but no corresponding QueueRecord
     fun selectOrphanQueueContent(): List<Content> {
-        val qrCondition = Content_.status.oneOf(getQueueTabStatuses()).and(Content_.queueRecords.relationCount(0))
+        val qrCondition =
+            Content_.status.oneOf(getQueueTabStatuses()).and(Content_.queueRecords.relationCount(0))
         return ObjectBoxDB.store.boxFor(Content::class.java).query(qrCondition).safeFind()
     }
 
@@ -118,6 +126,10 @@ class MaintenanceDAO {
 
     fun insertChapters(chps: List<Chapter>) {
         ObjectBoxDB.insertChapters(chps)
+    }
+
+    fun insertSearchRecords(data: List<SearchRecord>) {
+        ObjectBoxDB.insertSearchRecords(data)
     }
 
     fun deleteQueueRecords(ids: LongArray) {

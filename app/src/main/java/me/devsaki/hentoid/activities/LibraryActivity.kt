@@ -159,7 +159,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
 
     // ======== DATA SYNC
-    private val searchRecords: MutableList<SearchRecord> = ArrayList()
+    private val contentSearchRecords: MutableList<SearchRecord> = ArrayList()
+    private val groupSearchRecords: MutableList<SearchRecord> = ArrayList()
 
     // ======== INNER VARIABLES
     // Used to ignore native calls to onQueryTextChange
@@ -274,8 +275,10 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
         viewModel.searchRecords.observe(this)
         {
-            searchRecords.clear()
-            searchRecords.addAll(it)
+            contentSearchRecords.clear()
+            contentSearchRecords.addAll(it.filter { sr -> sr.entityType == SearchRecord.EntityType.CONTENT })
+            groupSearchRecords.clear()
+            groupSearchRecords.addAll(it.filter { sr -> sr.entityType == SearchRecord.EntityType.GROUP })
         }
 
         if (!Settings.recentVisibility) {
@@ -723,6 +726,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 advancedSearchBtn.isVisible || searchClearBtn.isVisible || searchSaveBtn.isVisible
         }
 
+        val searchRecords = if (isGroupDisplayed()) groupSearchRecords else contentSearchRecords
         if (showSearchHistory && searchRecords.isNotEmpty()) {
             val powerMenuBuilder = PowerMenu.Builder(this).setAnimation(MenuAnimation.DROP_DOWN)
                 .setLifecycleOwner(this)
@@ -770,7 +774,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                     } else { // Clear history
                         val builder = MaterialAlertDialogBuilder(this@LibraryActivity)
                         builder.setMessage(resources.getString(R.string.clear_search_history_confirm))
-                            .setPositiveButton(R.string.yes) { _, _ -> viewModel.clearSearchHistory() }
+                            .setPositiveButton(R.string.yes) { _, _ ->
+                                viewModel.clearSearchHistory(isGroupDisplayed())
+                            }
                             .setNegativeButton(R.string.no) { _, _ -> }.create().show()
                     }
                 }

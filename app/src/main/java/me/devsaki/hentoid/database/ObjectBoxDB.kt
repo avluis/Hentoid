@@ -1814,11 +1814,12 @@ object ObjectBoxDB {
 
 
     // SEARCH RECORDS
-    fun selectSearchRecordsQ(): Query<SearchRecord> {
-        return store.boxFor(SearchRecord::class.java).query()
-            .order(SearchRecord_.timestamp)
+    fun selectSearchRecordsQ(entityType: SearchRecord.EntityType? = null): Query<SearchRecord> {
+        val query = store.boxFor(SearchRecord::class.java).query()
+        if (entityType != null) query.equal(SearchRecord_.entityType, entityType.code.toLong())
+        query.order(SearchRecord_.timestamp)
             .order(SearchRecord_.id)
-            .build()
+        return query.build()
     }
 
     fun deleteSearchRecord(id: Long) {
@@ -2151,7 +2152,16 @@ object ObjectBoxDB {
         return allContentQ.safeFindIds()
     }
 
-    fun selectContentSizes(ids: Collection<Long>): LongArray {
-        return store.boxFor(Content::class.java).get(ids).map { it.size }.toLongArray()
+    fun selectContentSizes(ids: LongArray): LongArray {
+        val result = LongArray(ids.size)
+        store.boxFor(Content::class.java).query()
+            .`in`(Content_.status, getLibraryStatuses())
+            .`in`(Content_.id, ids)
+            .build().use { qb ->
+                val id = qb.property(Content_.id).findLong()
+                val index = ids.indexOf(id)
+                if (index > -1) result[index] = qb.property(Content_.size).findLong()
+            }
+        return result
     }
 }

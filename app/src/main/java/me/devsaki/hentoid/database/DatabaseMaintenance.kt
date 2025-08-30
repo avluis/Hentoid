@@ -14,6 +14,7 @@ import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
@@ -313,6 +314,18 @@ object DatabaseMaintenance {
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 db.insertChapters(chapters)
+                val searchRecords = db.selectSearchRecordWithNullEntity()
+                Timber.i(
+                    "Set default value for SearchRecord.entityType field : %s items detected",
+                    searchRecords.size
+                )
+                max = searchRecords.size
+                pos = 1f
+                for (c in searchRecords) {
+                    c.entityType = SearchRecord.EntityType.CONTENT
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
+                }
+                db.insertSearchRecords(searchRecords)
                 Timber.i("Set default ObjectBox properties : done")
             } finally {
                 db.cleanup()

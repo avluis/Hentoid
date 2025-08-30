@@ -38,6 +38,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.SearchRecord
+import me.devsaki.hentoid.database.domains.SiteHistory
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Location
@@ -196,7 +197,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (query.isNotEmpty()) {
             val searchUri =
                 buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
-            dao.insertSearchRecord(SearchRecord(searchUri), 10)
+            dao.insertSearchRecord(SearchRecord.contentSearch(searchUri), 10)
             dao.cleanup()
         }
         viewModelScope.launch { doSearchContent() }
@@ -214,13 +215,15 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         contentSearchManager.setLocation(metadata.location.value)
         contentSearchManager.setContentType(metadata.contentType.value)
         newContentSearch.value = true
-        if (!metadata.isEmpty()) dao.insertSearchRecord(
-            SearchRecord(
-                searchUri,
-                metadata.toString(getApplication())
-            ), 10
-        )
-        dao.cleanup()
+        if (!metadata.isEmpty()) {
+            dao.insertSearchRecord(
+                SearchRecord.contentSearch(
+                    searchUri,
+                    metadata.toString(getApplication())
+                ), 10
+            )
+            dao.cleanup()
+        }
         viewModelScope.launch { doSearchContent() }
     }
 
@@ -428,6 +431,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     }
 
     fun setGroupQuery(value: String) {
+        if (value.isNotEmpty()) {
+            val searchUri =
+                buildSearchUri(null, value, Location.ANY.value, Type.ANY.value)
+            dao.insertSearchRecord(SearchRecord.groupSearch(searchUri), 10)
+            dao.cleanup()
+        }
         groupSearchManager.setQuery(value)
         viewModelScope.launch { doSearchGroup() }
     }
@@ -1221,8 +1230,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         )
     }
 
-    fun clearSearchHistory() {
-        dao.deleteAllSearchRecords()
+    fun clearSearchHistory(isGroup: Boolean) {
+        dao.deleteAllSearchRecords(if (isGroup) SearchRecord.EntityType.GROUP else SearchRecord.EntityType.CONTENT)
         dao.cleanup()
     }
 }

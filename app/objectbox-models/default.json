@@ -744,7 +744,7 @@
     },
     {
       "id": "16:6863432510804694130",
-      "lastPropertyId": "5:8789159866060410895",
+      "lastPropertyId": "6:3956784361954569913",
       "name": "SearchRecord",
       "properties": [
         {
@@ -767,6 +767,13 @@
           "id": "5:8789159866060410895",
           "name": "timestamp",
           "type": 6
+        },
+        {
+          "id": "6:3956784361954569913",
+          "name": "entityType",
+          "indexId": "29:4569320214470216852",
+          "type": 5,
+          "flags": 8
         }
       ],
       "relations": []
@@ -806,7 +813,7 @@
     }
   ],
   "lastEntityId": "17:6641557876936961674",
-  "lastIndexId": "28:5301287883951113525",
+  "lastIndexId": "29:4569320214470216852",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

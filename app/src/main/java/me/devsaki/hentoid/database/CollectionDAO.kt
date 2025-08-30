@@ -347,7 +347,7 @@ interface CollectionDAO {
 
     fun insertSearchRecord(record: SearchRecord, limit: Int)
 
-    fun deleteAllSearchRecords()
+    fun deleteAllSearchRecords(entityType: SearchRecord.EntityType)
 
 
     // RENAMING RULES

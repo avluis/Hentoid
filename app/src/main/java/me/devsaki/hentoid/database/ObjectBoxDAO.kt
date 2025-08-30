@@ -590,7 +590,7 @@ class ObjectBoxDAO : CollectionDAO {
         if (displaySize) {
             val livedata3 = MediatorLiveData<List<Group>>()
             livedata3.addSource(workingData) { groups ->
-                val enrichedWithSize = groups.map { enrichGroupsWithSize(it) }
+                val enrichedWithSize = groups.map { enrichGroupWithSize(it) }
                 livedata3.value = enrichedWithSize
             }
             workingData = livedata3
@@ -668,10 +668,13 @@ class ObjectBoxDAO : CollectionDAO {
         return g
     }
 
-    private fun enrichGroupsWithSize(g: Group): Group {
-        val contentIds = g.getItems().map { it.contentId }
+    private fun enrichGroupWithSize(g: Group): Group {
+        val items = g.getItems()
+        if (items.isEmpty()) return g
+
+        val contentIds = items.map { it.contentId }.toLongArray()
         val sizes = ObjectBoxDB.selectContentSizes(contentIds)
-        g.getItems().forEachIndexed { idx, gi -> gi.size = sizes[idx] }
+        items.forEachIndexed { idx, gi -> gi.size = sizes[idx] }
         return g
     }
 
@@ -1196,13 +1199,14 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxLiveData(ObjectBoxDB.selectSearchRecordsQ())
     }
 
-    private fun selectSearchRecords(): List<SearchRecord> {
-        return ObjectBoxDB.selectSearchRecordsQ().safeFind()
+    private fun selectSearchRecords(entityType: SearchRecord.EntityType): List<SearchRecord> {
+        return ObjectBoxDB.selectSearchRecordsQ(entityType).safeFind()
     }
 
     override fun insertSearchRecord(record: SearchRecord, limit: Int) {
         record.timestamp = Instant.now().toEpochMilli()
-        val records = selectSearchRecords().toMutableList()
+
+        val records = selectSearchRecords(record.entityType).toMutableList()
         val existing = records.firstOrNull { it == record }
         if (existing != null) {
             // Update timestamp on existing entry
@@ -1210,6 +1214,7 @@ class ObjectBoxDAO : CollectionDAO {
             ObjectBoxDB.insertSearchRecords(listOf(existing))
             return
         }
+
         while (records.size >= limit) {
             ObjectBoxDB.deleteSearchRecord(records.first().id)
             records.removeAt(0)
@@ -1218,8 +1223,8 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.insertSearchRecords(records)
     }
 
-    override fun deleteAllSearchRecords() {
-        ObjectBoxDB.selectSearchRecordsQ().safeRemove()
+    override fun deleteAllSearchRecords(entityType: SearchRecord.EntityType) {
+        ObjectBoxDB.selectSearchRecordsQ(entityType).safeRemove()
     }
 
 
