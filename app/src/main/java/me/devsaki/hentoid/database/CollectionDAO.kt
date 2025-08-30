@@ -120,7 +120,8 @@ interface CollectionDAO {
         artistGroupVisibility: Int,
         groupFavouritesOnly: Boolean,
         groupNonFavouritesOnly: Boolean,
-        filterRating: Int
+        filterRating: Int,
+        displaySize : Boolean
     ): LiveData<List<Group>>
 
     fun selectGroups(grouping: Int): List<Group>

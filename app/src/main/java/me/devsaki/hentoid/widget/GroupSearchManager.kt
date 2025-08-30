@@ -6,6 +6,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.LIBRARY_DISPLAY_GROUP_SIZE
 import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.string
@@ -78,7 +79,8 @@ class GroupSearchManager() {
             values.artistGroupVisibility,
             values.filterFavourites,
             values.filterNonFavourites,
-            values.filterRating
+            values.filterRating,
+            Settings.libraryDisplayGroupFigure == LIBRARY_DISPLAY_GROUP_SIZE
         )
     }
 
@@ -89,9 +91,10 @@ class GroupSearchManager() {
             values.sortField,
             values.sortDesc,
             Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
-            false,
-            false,
-            -1
+            groupFavouritesOnly = false,
+            groupNonFavouritesOnly = false,
+            filterRating = -1,
+            displaySize = Settings.libraryDisplayGroupFigure == LIBRARY_DISPLAY_GROUP_SIZE
         )
     }
 

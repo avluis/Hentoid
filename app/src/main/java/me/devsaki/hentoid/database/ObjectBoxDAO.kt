@@ -35,6 +35,7 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.Settings.Value.LIBRARY_DISPLAY_GROUP_SIZE
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -520,7 +521,8 @@ class ObjectBoxDAO : CollectionDAO {
         artistGroupVisibility: Int,
         groupFavouritesOnly: Boolean,
         groupNonFavouritesOnly: Boolean,
-        filterRating: Int
+        filterRating: Int,
+        displaySize : Boolean
     ): LiveData<List<Group>> {
         // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
         val subType = if (grouping == Grouping.ARTIST.id) artistGroupVisibility else -1
@@ -584,6 +586,16 @@ class ObjectBoxDAO : CollectionDAO {
             workingData = livedata2
         }
 
+        // === SIZE
+        if (displaySize) {
+            val livedata3 = MediatorLiveData<List<Group>>()
+            livedata3.addSource(workingData) { groups ->
+                val enrichedWithSize = groups.map { enrichGroupsWithSize(it) }
+                livedata3.value = enrichedWithSize
+            }
+            workingData = livedata3
+        }
+
 
         // === ORDERING
 
@@ -635,14 +647,13 @@ class ObjectBoxDAO : CollectionDAO {
             val newItems: MutableList<GroupItem> = ArrayList()
 
             val groupContent = if (g.isUngroupedGroup) { // Populate Ungrouped custom group
-                ObjectBoxDB.selectUngroupedContentIds().toLongArray()
+                ObjectBoxDB.selectUngroupedContentIds().toList()
             } else { // Reselect items; only take items from the library to avoid counting those who've been sent back to the Queue
-                ObjectBoxDB.selectContentIdsByGroup(g.id)
+                ObjectBoxDB.selectContentIdsByGroup(g.id).toList()
             }
-            val sizes = ObjectBoxDB.selectContentSizes(groupContent)
-            for (i in groupContent.indices) {
-                val order = if (g.isUngroupedGroup) -1 else i
-                newItems.add(GroupItem(groupContent[i], g, order, sizes[i]))
+            groupContent.forEachIndexed { idx, c ->
+                val order = if (g.isUngroupedGroup) -1 else idx
+                newItems.add(GroupItem(c, g, order))
             }
             g.setItems(newItems)
             // Reset cover content if it isn't among remaining books
@@ -654,6 +665,13 @@ class ObjectBoxDAO : CollectionDAO {
                 }
             }
         }
+        return g
+    }
+
+    private fun enrichGroupsWithSize(g: Group): Group {
+        val contentIds = g.getItems().map { it.contentId }
+        val sizes = ObjectBoxDB.selectContentSizes(contentIds)
+        g.getItems().forEachIndexed { idx, gi -> gi.size = sizes[idx] }
         return g
     }
 
