@@ -882,7 +882,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 viewModel.setGrouping(Grouping.FLAT.id)
             }
 
-            Settings.Key.BROWSER_MODE -> updateTopAlert()
+            Settings.Key.MEMORY_ALERT_THRESHOLD,
+            Settings.Key.BROWSER_MODE ->
+                updateTopAlert()
 
             Settings.Key.GROUPING_DISPLAY -> onGroupingChanged(Settings.groupingDisplay)
             else -> {}

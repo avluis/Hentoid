@@ -490,7 +490,7 @@ object Settings {
         Value.STORAGE_FILL_BALANCE_FREE
     )
     var storageSwitchThresholdPc: Int by IntSettingStr(Key.PRIMARY_STORAGE_SWITCH_THRESHOLD_PC, 90)
-    var memoryAlertThreshold: Int by IntSettingStr("pref_memory_alert", 110)
+    var memoryAlertThreshold: Int by IntSettingStr(Key.MEMORY_ALERT_THRESHOLD, 110)
     val isDeleteExternalLibrary: Boolean by BoolSetting(Key.EXTERNAL_LIBRARY_DELETE, false)
     val folderTruncationNbChars: Int by IntSettingStr("pref_folder_trunc_lists", 100)
     var latestBeholderTimestamp: Long by LongSetting("pref_latest_beholder_timestamp", 0)
@@ -691,6 +691,7 @@ object Settings {
         const val PRIMARY_STORAGE_FILL_METHOD = "pref_storage_fill_method"
         const val PRIMARY_STORAGE_SWITCH_THRESHOLD_PC = "pref_storage_switch_threshold_pc"
         const val EXTERNAL_LIBRARY_DELETE = "pref_external_library_delete"
+        const val MEMORY_ALERT_THRESHOLD = "pref_memory_alert"
 
         const val DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists"
         const val DL_SPEED_CAP = "dl_speed_cap"
