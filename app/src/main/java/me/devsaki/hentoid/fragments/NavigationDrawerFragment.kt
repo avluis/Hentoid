@@ -39,6 +39,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.getTextColorForBackground
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import org.greenrobot.eventbus.EventBus
@@ -49,7 +50,8 @@ import kotlin.math.floor
 
 private const val MENU_FACTOR = 1000
 
-class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
+class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
+    SelectSiteDialogFragment.Parent {
 
     enum class NavItem {
         LIBRARY, FAV_BOOK, BROWSER, EDIT_SOURCES, QUEUE, SETTINGS, TOOLS, ABOUT
@@ -106,16 +108,22 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                     NavItem.FAV_BOOK.ordinal -> launchFavBook()
 
                     NavItem.BROWSER.ordinal -> {
-                        val code = item.itemId % MENU_FACTOR
-                        val site = Site.searchByCode(code)
-                        if (!site.isVisible) {
-                            launchActivity(WelcomeActivity::class.java)
+                        if (origin == NavItem.BROWSER) {
+                            val code = item.itemId % MENU_FACTOR
+                            val site = Site.searchByCode(code)
+                            if (!site.isVisible) {
+                                launchActivity(WelcomeActivity::class.java)
+                            } else {
+                                Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
+                                launchActivity(
+                                    Content.getWebActivityClass(site),
+                                    reorderToFront = this@NavigationDrawerFragment.site.isVisible
+                                )
+                            }
                         } else {
-                            Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
-                            launchActivity(
-                                Content.getWebActivityClass(site),
-                                reorderToFront = this@NavigationDrawerFragment.site.isVisible
-                            )
+                            SelectSiteDialogFragment.invoke(
+                                this@NavigationDrawerFragment, "",
+                                Settings.activeSites.map { it.code })
                         }
                     }
 
@@ -459,5 +467,9 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private fun getMenu(m: Menu, navItem: NavItem, subItem: Int = 0): MenuItem? {
         return m.findItem(menuId(navItem, subItem))
+    }
+
+    override fun onSiteSelected(site: Site, altCode: Int) {
+        launchBrowserFor(requireContext(), site)
     }
 }
