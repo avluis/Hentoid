@@ -17,12 +17,13 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/action_button"
             style="?attr/materialIconButtonFilledTonalStyle"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            app:iconSize="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             app:icon="@drawable/ic_action_play"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/queueDownloadPreparationProgressBar"
+            app:layout_constraintTop_toTopOf="@id/queueDownloadPreparationProgressBar"
+            app:layout_constraintStart_toStartOf="@id/queueDownloadPreparationProgressBar"
+            app:layout_constraintEnd_toEndOf="@id/queueDownloadPreparationProgressBar"
             tools:ignore="ContentDescription" />
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
