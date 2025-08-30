@@ -99,11 +99,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                 when (floor(item.itemId * 1f / MENU_FACTOR).toInt()) {
                     NavItem.LIBRARY.ordinal -> {
                         val grouping = Grouping.searchById(item.itemId % MENU_FACTOR)
-                        if (origin != NavItem.LIBRARY) launchActivity(
-                            LibraryActivity::class.java,
-                            clearTop = true
-                        )
-                        libraryViewModel.setGrouping(grouping.id)
+                        if (origin == NavItem.LIBRARY) libraryViewModel.setGrouping(grouping.id)
+                        else launchActivity(LibraryActivity::class.java, clearTop = true)
                     }
 
                     NavItem.FAV_BOOK.ordinal -> launchFavBook()
