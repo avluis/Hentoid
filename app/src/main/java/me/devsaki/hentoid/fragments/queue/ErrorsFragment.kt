@@ -2,7 +2,6 @@ package me.devsaki.hentoid.fragments.queue
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -200,8 +200,8 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                         if (isSelected) IntRange(start, end).forEach {
                             selectExtension.select(
                                 it,
-                                false,
-                                true
+                                fireEvent = false,
+                                considerSelectableFlag = true
                             )
                         }
                         else selectExtension.deselect(IntRange(start, end).toMutableList())
@@ -330,7 +330,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
                 selectExtension.apply {
                     while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
                         IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
-                            select(it, false, true)
+                            select(it, fireEvent = false, considerSelectableFlag = true)
                         }
                 }
                 keepToolbar = true
@@ -546,7 +546,7 @@ class ErrorsFragment : Fragment(R.layout.fragment_queue_errors), ItemTouchCallba
     }
 
     private fun searchErrors(uri: String) {
-        val searchArgs = SearchActivityBundle.parseSearchUri(Uri.parse(uri))
+        val searchArgs = SearchActivityBundle.parseSearchUri(uri.toUri())
         val sourceAttr = searchArgs.attributes.firstOrNull { AttributeType.SOURCE == it.type }
         val site = if (sourceAttr != null) Site.searchByName(sourceAttr.name) else null
         viewModel.searchErrorContentUniversal(searchArgs.query, site)

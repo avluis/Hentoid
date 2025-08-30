@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities.bundles
 
 import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.enums.AttributeType
@@ -81,7 +82,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
         }
 
         fun parseSearchUri(uri: String): SearchCriteria {
-            return parseSearchUri(Uri.parse(uri))
+            return parseSearchUri(uri.toUri())
         }
 
         fun parseSearchUri(uri: Uri): SearchCriteria {

@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
-import android.net.Uri
+import androidx.core.net.toUri
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
@@ -110,7 +110,7 @@ class DeviantArtContent : BaseContentParser() {
 
     private fun parseXhrDeviation(content: Content, url: String, updateImages: Boolean): Content {
         try {
-            val uri = Uri.parse(url)
+            val uri = url.toUri()
             val cookieStr = getCookies(
                 url,
                 null,
@@ -142,7 +142,7 @@ class DeviantArtContent : BaseContentParser() {
     }
 
     private fun parseXhrGallection(content: Content, url: String): Content {
-        val uri = Uri.parse(url)
+        val uri = url.toUri()
         val userName = uri.getQueryParameter("username") ?: ""
         content.title = userName
         content.url = "$userName/gallery"
@@ -158,7 +158,7 @@ class DeviantArtContent : BaseContentParser() {
     }
 
     private fun parseXhrUserProfile(content: Content, url: String): Content {
-        val uri = Uri.parse(url)
+        val uri = url.toUri()
         val userName = uri.getQueryParameter("username") ?: ""
 
         val cookieStr = getCookies(

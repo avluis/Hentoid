@@ -2,6 +2,7 @@ package me.devsaki.hentoid.views
 
 import android.content.Context
 import android.util.AttributeSet
+import androidx.core.content.withStyledAttributes
 import androidx.recyclerview.widget.RecyclerView
 import me.devsaki.hentoid.R
 
@@ -23,9 +24,9 @@ class MaxHeightRecyclerView : RecyclerView {
     }
 
     private fun initialize(context: Context, attrs: AttributeSet?) {
-        val arr = context.obtainStyledAttributes(attrs, R.styleable.MaxHeightRecyclerView)
-        mMaxHeight = arr.getLayoutDimension(R.styleable.MaxHeightRecyclerView_maxHeight, mMaxHeight)
-        arr.recycle()
+        context.withStyledAttributes(attrs, R.styleable.MaxHeightRecyclerView) {
+            mMaxHeight = getLayoutDimension(R.styleable.MaxHeightRecyclerView_maxHeight, mMaxHeight)
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
