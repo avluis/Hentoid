@@ -35,6 +35,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord_
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.database.domains.RenamingRule_
 import me.devsaki.hentoid.database.domains.SearchRecord
+import me.devsaki.hentoid.database.domains.SearchRecord_
 import me.devsaki.hentoid.database.domains.ShuffleRecord
 import me.devsaki.hentoid.database.domains.ShuffleRecord_
 import me.devsaki.hentoid.database.domains.SiteBookmark
@@ -1811,9 +1812,13 @@ object ObjectBoxDB {
         return query.build()
     }
 
+
     // SEARCH RECORDS
     fun selectSearchRecordsQ(): Query<SearchRecord> {
-        return store.boxFor(SearchRecord::class.java).query().build()
+        return store.boxFor(SearchRecord::class.java).query()
+            .order(SearchRecord_.timestamp)
+            .order(SearchRecord_.id)
+            .build()
     }
 
     fun deleteSearchRecord(id: Long) {
@@ -1823,6 +1828,7 @@ object ObjectBoxDB {
     fun insertSearchRecords(records: List<SearchRecord>) {
         store.boxFor(SearchRecord::class.java).put(records)
     }
+
 
     // RENAMING RULES
     fun selectRenamingRule(id: Long): RenamingRule? {

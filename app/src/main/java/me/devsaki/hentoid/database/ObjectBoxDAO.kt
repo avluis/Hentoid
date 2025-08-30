@@ -35,12 +35,12 @@ import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.Settings.Value.LIBRARY_DISPLAY_GROUP_SIZE
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle.Companion.fromSearchCriteria
 import timber.log.Timber
+import java.time.Instant
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -522,7 +522,7 @@ class ObjectBoxDAO : CollectionDAO {
         groupFavouritesOnly: Boolean,
         groupNonFavouritesOnly: Boolean,
         filterRating: Int,
-        displaySize : Boolean
+        displaySize: Boolean
     ): LiveData<List<Group>> {
         // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
         val subType = if (grouping == Grouping.ARTIST.id) artistGroupVisibility else -1
@@ -1201,10 +1201,17 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     override fun insertSearchRecord(record: SearchRecord, limit: Int) {
+        record.timestamp = Instant.now().toEpochMilli()
         val records = selectSearchRecords().toMutableList()
-        if (records.contains(record)) return
+        val existing = records.firstOrNull { it == record }
+        if (existing != null) {
+            // Update timestamp on existing entry
+            existing.timestamp = record.timestamp
+            ObjectBoxDB.insertSearchRecords(listOf(existing))
+            return
+        }
         while (records.size >= limit) {
-            ObjectBoxDB.deleteSearchRecord(records[0].id)
+            ObjectBoxDB.deleteSearchRecord(records.first().id)
             records.removeAt(0)
         }
         records.add(record)

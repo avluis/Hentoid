@@ -744,7 +744,7 @@
     },
     {
       "id": "16:6863432510804694130",
-      "lastPropertyId": "4:6744868481394814636",
+      "lastPropertyId": "5:8789159866060410895",
       "name": "SearchRecord",
       "properties": [
         {
@@ -762,6 +762,11 @@
           "id": "4:6744868481394814636",
           "name": "label",
           "type": 9
+        },
+        {
+          "id": "5:8789159866060410895",
+          "name": "timestamp",
+          "type": 6
         }
       ],
       "relations": []

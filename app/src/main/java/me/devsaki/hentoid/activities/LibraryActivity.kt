@@ -273,9 +273,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         }
 
         viewModel.searchRecords.observe(this)
-        { records ->
+        {
             searchRecords.clear()
-            searchRecords.addAll(records)
+            searchRecords.addAll(it)
         }
 
         if (!Settings.recentVisibility) {
@@ -725,13 +725,14 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
         if (showSearchHistory && searchRecords.isNotEmpty()) {
             val powerMenuBuilder = PowerMenu.Builder(this).setAnimation(MenuAnimation.DROP_DOWN)
-                .setLifecycleOwner(this).setTextColor(
-                    ContextCompat.getColor(this, R.color.white_opacity_87)
-                ).setTextTypeface(Typeface.DEFAULT).setShowBackground(false).setWidth(
-                    resources.getDimension(R.dimen.dialog_width).toInt()
-                ).setMenuColor(this.getThemedColor(R.color.subbar_2_light)).setTextSize(
-                    dimensAsDp(this, R.dimen.text_subtitle_2)
-                ).setAutoDismiss(true)
+                .setLifecycleOwner(this)
+                .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
+                .setTextTypeface(Typeface.DEFAULT)
+                .setShowBackground(false)
+                .setWidth(resources.getDimension(R.dimen.dialog_width).toInt())
+                .setMenuColor(this.getThemedColor(R.color.subbar_2_light))
+                .setTextSize(dimensAsDp(this, R.dimen.text_subtitle_2))
+                .setAutoDismiss(true)
             for (i in searchRecords.indices.reversed()) powerMenuBuilder.addItem(
                 PowerMenuItem(
                     searchRecords[i].label,

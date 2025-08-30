@@ -9,7 +9,8 @@ data class SearchRecord(
     @Id
     var id: Long = 0,
     val searchString: String = "",
-    var label: String = ""
+    var label: String = "",
+    var timestamp: Long = 0
 ) {
     constructor(searchString: String, label: String) : this(0, searchString, label)
     constructor(searchUri: Uri) : this(searchUri.toString(), searchUri.path?.substring(1) ?: "")
