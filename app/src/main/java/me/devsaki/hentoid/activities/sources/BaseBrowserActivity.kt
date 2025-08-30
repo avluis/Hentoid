@@ -1514,10 +1514,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             progressBar.progress = progressBar.max
             progressBar.visibility = View.VISIBLE
             progressBar.progressTintList = ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    baseContext,
-                    R.color.green
-                )
+                ContextCompat.getColor(baseContext, R.color.green)
             )
         }
         if (null == currentContent || additionalImages.isEmpty()) return
