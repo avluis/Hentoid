@@ -22,6 +22,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.formatArtistForDisplay
 import me.devsaki.hentoid.util.getFlagResourceId
+import me.devsaki.hentoid.util.getRatingResourceId
 import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.image.loadCover
 
@@ -92,6 +93,7 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
         private val ivSite: ImageView = itemView.requireById(R.id.ivSite)
         private val tvArtist: TextView? = itemView.findViewById(R.id.tvArtist)
         private val tvPages: TextView? = itemView.findViewById(R.id.tvPages)
+        private var ivRating: ImageView? = view.findViewById(R.id.iv_rating)
         private val ivFavourite: ImageView = itemView.findViewById(R.id.ivFavourite)
         private val ivExternal: ImageView = itemView.findViewById(R.id.ivExternal)
 
@@ -229,6 +231,11 @@ class DuplicateItem(result: DuplicateEntry, private val viewType: ViewType) :
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty)
                 ivFavourite.tooltipText = context.getText(R.string.book_unfavourite_success)
+            }
+
+            // Rating icon
+            ivRating?.apply {
+                setImageResource(getRatingResourceId(content.rating))
             }
 
             // View details icon

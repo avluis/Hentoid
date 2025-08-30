@@ -24,7 +24,7 @@
             android:layout_width="75dp"
             android:layout_height="100dp"
             android:adjustViewBounds="true"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/ivExternal"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
@@ -41,6 +41,21 @@
             app:layout_constraintEnd_toEndOf="@id/ivCover"
             tools:ignore="ContentDescription"
             tools:src="@drawable/flag_cn"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/ivExternal"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_folder_full"
+            android:tooltipText="@string/external_help"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivCover"
+            app:layout_constraintStart_toStartOf="parent"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription"
             tools:visibility="visible" />
 
         <TextView
@@ -136,27 +151,25 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/ivExternal"
+            android:id="@+id/iv_rating"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:padding="8dp"
-            android:src="@drawable/ic_folder_full"
-            android:tooltipText="@string/external_help"
-            android:visibility="gone"
+            android:src="@drawable/ic_star_5"
+            android:tooltipText="@string/rating_help"
             app:layout_constraintEnd_toStartOf="@id/ivFavourite"
-            app:layout_constraintTop_toTopOf="@id/ivSite"
+            app:layout_constraintTop_toTopOf="@id/ivFavourite"
             app:layout_constraintVertical_bias="1.0"
             app:tint="@color/medium_gray"
-            tools:ignore="ContentDescription"
-            tools:visibility="visible" />
+            tools:ignore="ContentDescription" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/delete_keep_choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:checkedButton="@id/keep_choice"
             android:layout_marginStart="8dp"
+            app:checkedButton="@id/keep_choice"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivCover"
             app:layout_constraintTop_toBottomOf="@id/ivFavourite"
@@ -168,16 +181,16 @@
                 style="@style/HentoidCheckButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:icon="@drawable/ic_action_delete"
-                android:text="@string/duplicate_delete" />
+                android:text="@string/duplicate_delete"
+                app:icon="@drawable/ic_action_delete" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/keep_choice"
                 style="@style/HentoidCheckButtonOutlinedStyle"
-                app:icon="@drawable/ic_checked"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/duplicate_keep" />
+                android:text="@string/duplicate_keep"
+                app:icon="@drawable/ic_checked" />
 
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
