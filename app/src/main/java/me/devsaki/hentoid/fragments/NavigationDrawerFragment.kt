@@ -121,22 +121,16 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
                     NavItem.FAV_BOOK.ordinal -> launchFavBook()
 
                     NavItem.BROWSER.ordinal -> {
-                        if (origin == NavItem.BROWSER) {
-                            val code = item.itemId % MENU_FACTOR
-                            val site = Site.searchByCode(code)
-                            if (!site.isVisible) {
-                                launchActivity(WelcomeActivity::class.java)
-                            } else {
-                                Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
-                                launchActivity(
-                                    Content.getWebActivityClass(site),
-                                    reorderToFront = this@NavigationDrawerFragment.site.isVisible
-                                )
-                            }
+                        val code = item.itemId % MENU_FACTOR
+                        val site = Site.searchByCode(code)
+                        if (!site.isVisible) {
+                            launchActivity(WelcomeActivity::class.java)
                         } else {
-                            SelectSiteDialogFragment.invoke(
-                                this@NavigationDrawerFragment, "",
-                                Settings.activeSites.map { it.code })
+                            Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
+                            launchActivity(
+                                Content.getWebActivityClass(site),
+                                reorderToFront = this@NavigationDrawerFragment.site.isVisible
+                            )
                         }
                     }
 
