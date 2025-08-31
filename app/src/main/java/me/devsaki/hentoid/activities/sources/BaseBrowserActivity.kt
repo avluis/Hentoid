@@ -155,7 +155,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     }
 
 
-    // === NUTS AND BOLTS
+    // === COMMUNICATION
     private lateinit var webClient: CustomWebViewClient
 
     private var callback: OnBackPressedCallback? = null

@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
@@ -65,6 +66,11 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
 
     // === COMMUNICATION
     private lateinit var libraryViewModel: LibraryViewModel
+
+    private val listener =
+        OnSharedPreferenceChangeListener { _, key: String? ->
+            onSharedPreferenceChanged(key ?: "")
+        }
 
     // === UI
     private var binding: FragmentNavigationDrawerBinding? = null
@@ -141,9 +147,15 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
                 true
             }
         }
-        Settings.registerPrefsChangedListener { _, key -> onSharedPreferenceChanged(key) }
+        Settings.registerPrefsChangedListener(listener)
 
         return binding?.root
+    }
+
+    override fun onDestroyView() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        Settings.unregisterPrefsChangedListener(listener)
+        super.onDestroyView()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -194,11 +206,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
         }
         updateItems()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-    }
-
-    override fun onDestroyView() {
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        super.onDestroyView()
     }
 
     override fun onResume() {
@@ -331,7 +338,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
                 isSelected = origin == NavItem.QUEUE
             )
 
-            if (origin == NavItem.BROWSER) {
+            if (origin == NavItem.BROWSER || Settings.navigationNostalgiaMode) {
                 // All sites
                 Settings.activeSites.forEach { site ->
                     val sb = SpannableStringBuilder.valueOf(site.name)
@@ -366,6 +373,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
         if (Settings.Key.ACTIVE_SITES == key) updateItems()
+        if (Settings.Key.NOSTALGIA_MODE == key) updateItems()
     }
 
     fun formatAlertBadge(context: Context, text: String, color: Int): SpannableString {

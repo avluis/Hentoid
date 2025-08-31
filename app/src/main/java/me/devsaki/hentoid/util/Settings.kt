@@ -150,6 +150,7 @@ object Settings {
     fun getGroupingDisplayG(): Grouping {
         return Grouping.Companion.searchById(groupingDisplay)
     }
+    val navigationNostalgiaMode: Boolean by BoolSetting(Key.NOSTALGIA_MODE, false)
 
     var artistGroupVisibility: Int by IntSettingStr(
         "artist_group_visibility",
@@ -684,6 +685,7 @@ object Settings {
         const val ENDLESS_SCROLL = "pref_endless_scroll"
         const val TOP_FAB = "pref_top_fab"
         const val GROUPING_DISPLAY = "grouping_display"
+        const val NOSTALGIA_MODE = "navigation_nostalgia_mode"
         const val APP_PREVIEW = "pref_app_preview"
         const val PRIMARY_STORAGE_URI = "pref_sd_storage_uri"
         const val PRIMARY_STORAGE_URI_2 = "pref_sd_storage_uri_2"

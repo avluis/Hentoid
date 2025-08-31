@@ -24,6 +24,17 @@
         <PreferenceCategory
             android:title="@string/pref_cat_library"
             app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_navigation_nostalgia_mode_default"
+                android:key="navigation_nostalgia_mode"
+                android:summaryOff="@string/pref_nostalgia_summary_off"
+                android:summaryOn="@string/pref_nostalgia_summary_on"
+                android:title="@string/pref_navigation_nostalgia_mode"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_library"
+            app:iconSpaceReserved="false">
             <ListPreference
                 android:defaultValue="@string/pref_library_display_default"
                 android:entries="@array/pref_library_display_entries"
