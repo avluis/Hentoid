@@ -53,7 +53,7 @@ fun Activity.initDrawerLayout(drawer: DrawerLayout, toolbar: Toolbar) {
         }
     })
 
-    // Hack DrawerLayout to make the drag zone larger
+    // Hack DrawerLayout to make the drag zone larger for the left drawer
     // Source : https://stackoverflow.com/a/36157701/8374722
     try {
         // get dragger responsible for the dragging of the left drawer

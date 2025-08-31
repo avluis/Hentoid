@@ -237,6 +237,7 @@ object Settings {
     var isBrowserForceLightMode: Boolean by BoolSetting(Key.WEB_FORCE_LIGHTMODE, false)
     var isBrowserLanguageFilter: Boolean by BoolSetting("pref_browser_language_filter", false)
     var browserLanguageFilterValue: String by StringSetting("pref_language_filter_value", "english")
+    val isBrowserLockFavPanel: Boolean by BoolSetting(Key.WEB_LOCK_FAVS_PANEL, false)
     var blockedTags: List<String> by ListStringSetting(Key.DL_BLOCKED_TAGS)
     val isBrowserResumeLast: Boolean by BoolSetting("pref_browser_resume_last", false)
     val isBrowserMarkDownloaded: Boolean by BoolSetting(Key.BROWSER_MARK_DOWNLOADED, false)
@@ -254,15 +255,15 @@ object Settings {
         Key.BROWSER_QUICK_DL_THRESHOLD,
         1500 // 1.5s
     )
-    val dnsOverHttps: Int by IntSettingStr(
-        Key.BROWSER_DNS_OVER_HTTPS,
-        Source.NONE.value // No DNS
-    )
     val isBrowserNhentaiInvisibleBlacklist: Boolean by BoolSetting(
         Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST,
         false
     )
     val http429DefaultDelaySecs: Int by IntSettingStr(Key.DL_HTTP_429_DEFAULT_DELAY, 120)
+    val dnsOverHttps: Int by IntSettingStr(
+        Key.BROWSER_DNS_OVER_HTTPS,
+        Source.NONE.value // No DNS
+    )
 
     // QUEUE / DOWNLOADER
     val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
@@ -667,6 +668,7 @@ object Settings {
         const val WEB_AUGMENTED_BROWSER = "pref_browser_augmented"
         const val WEB_ADBLOCKER = "WEB_ADBLOCKER"
         const val WEB_FORCE_LIGHTMODE = "WEB_FORCE_LIGHTMODE"
+        const val WEB_LOCK_FAVS_PANEL = "web_lock_favs_panel"
         const val DL_BLOCKED_TAGS = "pref_dl_blocked_tags"
         const val BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded"
         const val BROWSER_MARK_MERGED = "browser_mark_merged"

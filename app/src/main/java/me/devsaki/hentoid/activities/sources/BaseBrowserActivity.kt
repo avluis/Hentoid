@@ -28,6 +28,7 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -160,7 +161,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
     private var callback: OnBackPressedCallback? = null
 
-    private val listener =
+    private val settingsListener =
         OnSharedPreferenceChangeListener { _, key: String? ->
             onSharedPreferenceChanged(key ?: "")
         }
@@ -245,7 +246,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             return
         }
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-        Settings.registerPrefsChangedListener(listener)
+        Settings.registerPrefsChangedListener(settingsListener)
         if (Settings.isBrowserMarkDownloaded) updateDownloadedBooksUrls()
         if (Settings.isBrowserMarkMerged) updateMergedBooksUrls()
         if (Settings.isBrowserMarkQueued) updateQueuedBooksUrls()
@@ -255,7 +256,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         // Toolbar
         // Top toolbar
         val toolbar = binding!!.toolbar
-        initDrawerLayout(binding!!.drawerLayout, toolbar)
+        binding?.drawerLayout?.let { dl ->
+            initDrawerLayout(dl, toolbar)
+            if (Settings.isBrowserLockFavPanel)
+                dl.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED, GravityCompat.END)
+        }
         // Signal current site to navigation drawer for it to check it
         EventBus.getDefault().post(
             CommunicationEvent(
@@ -357,7 +362,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             removeAllViews()
             destroy()
         }
-        Settings.unregisterPrefsChangedListener(listener)
+        Settings.unregisterPrefsChangedListener(settingsListener)
 
         // Cancel any previous extra page load
         EventBus.getDefault().post(
@@ -1837,6 +1842,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             updateAdblockButton(newVal)
             webClient.adBlocker.setActive(newVal)
             reload = true
+        } else if (Settings.Key.WEB_LOCK_FAVS_PANEL == key) {
+            binding?.drawerLayout?.setDrawerLockMode(
+                if (Settings.isBrowserLockFavPanel) DrawerLayout.LOCK_MODE_LOCKED_CLOSED else DrawerLayout.LOCK_MODE_UNLOCKED,
+                GravityCompat.END
+            )
         }
         if (reload && !webClient.isLoading()) webView.reload()
     }

@@ -150,6 +150,9 @@
     <string name="pref_browser_language_filter_on">Language filter button is enabled\nNB: Only works on Hitomi</string>
     <string name="pref_browser_language_filter_setting_title">Language filter setting</string>
     <string name="pref_browser_language_filter_setting_summary">Tip: Enter the language in English</string>
+    <string name="pref_browser_lock_favs_panel_title">Lock favourites panel</string>
+    <string name="pref_browser_lock_favs_panel_off">Favourites right panel can be opened by swiping</string>
+    <string name="pref_browser_lock_favs_panel_on">Favourites right panel cannot be opened by swiping</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>

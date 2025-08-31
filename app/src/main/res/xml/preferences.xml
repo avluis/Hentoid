@@ -287,6 +287,13 @@
                 android:summary="@string/pref_browser_language_filter_setting_summary"
                 android:title="@string/pref_browser_language_filter_setting_title"
                 app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_lock_favs_panel_default"
+                android:key="web_lock_favs_panel"
+                android:summaryOff="@string/pref_browser_lock_favs_panel_off"
+                android:summaryOn="@string/pref_browser_lock_favs_panel_on"
+                android:title="@string/pref_browser_lock_favs_panel_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_browser_duplicate_detector"
