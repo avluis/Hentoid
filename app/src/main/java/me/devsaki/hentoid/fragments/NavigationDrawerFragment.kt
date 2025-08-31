@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Build
 import android.os.Bundle
 import android.text.SpannableString
@@ -13,11 +14,14 @@ import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.text.toSpannable
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import cn.nekocode.badge.BadgeDrawable
+import com.google.android.material.button.MaterialButton
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.AboutActivity
 import me.devsaki.hentoid.activities.LibraryActivity
@@ -29,6 +33,8 @@ import me.devsaki.hentoid.activities.bundles.ToolsBundle
 import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.activities.settings.SettingsSourceSelectActivity
 import me.devsaki.hentoid.activities.sources.WelcomeActivity
+import me.devsaki.hentoid.core.requireById
+import me.devsaki.hentoid.core.runUpdateDownloadWorker
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Grouping
@@ -39,8 +45,10 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.getTextColorForBackground
 import me.devsaki.hentoid.util.getThemedColor
+import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -49,17 +57,24 @@ import kotlin.math.floor
 
 private const val MENU_FACTOR = 1000
 
-class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
+class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
+    SelectSiteDialogFragment.Parent {
 
     enum class NavItem {
-        LIBRARY, FAV_BOOK, BROWSER, EDIT_SOURCES, QUEUE, SETTINGS, TOOLS, ABOUT
+        LIBRARY, FAV_BOOK, BROWSER, EDIT_SOURCES, QUEUE, ABOUT
     }
 
     // === COMMUNICATION
     private lateinit var libraryViewModel: LibraryViewModel
 
+    private val listener =
+        OnSharedPreferenceChangeListener { _, key: String? ->
+            onSharedPreferenceChanged(key ?: "")
+        }
+
     // === UI
     private var binding: FragmentNavigationDrawerBinding? = null
+    private var updateAppBtn: MaterialButton? = null
 
     // === VARS
     // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
@@ -106,37 +121,41 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                     NavItem.FAV_BOOK.ordinal -> launchFavBook()
 
                     NavItem.BROWSER.ordinal -> {
-                        val code = item.itemId % MENU_FACTOR
-                        val site = Site.searchByCode(code)
-                        if (!site.isVisible) {
-                            launchActivity(WelcomeActivity::class.java)
+                        if (origin == NavItem.BROWSER) {
+                            val code = item.itemId % MENU_FACTOR
+                            val site = Site.searchByCode(code)
+                            if (!site.isVisible) {
+                                launchActivity(WelcomeActivity::class.java)
+                            } else {
+                                Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
+                                launchActivity(
+                                    Content.getWebActivityClass(site),
+                                    reorderToFront = this@NavigationDrawerFragment.site.isVisible
+                                )
+                            }
                         } else {
-                            Timber.d("${this@NavigationDrawerFragment.site} ${this@NavigationDrawerFragment.site.isVisible}")
-                            launchActivity(
-                                Content.getWebActivityClass(site),
-                                reorderToFront = this@NavigationDrawerFragment.site.isVisible
-                            )
+                            SelectSiteDialogFragment.invoke(
+                                this@NavigationDrawerFragment, "",
+                                Settings.activeSites.map { it.code })
                         }
                     }
 
                     NavItem.EDIT_SOURCES.ordinal -> launchActivity(SettingsSourceSelectActivity::class.java)
                     NavItem.QUEUE.ordinal -> launchActivity(QueueActivity::class.java)
-                    NavItem.SETTINGS.ordinal -> launchActivity(SettingsActivity::class.java)
-                    NavItem.TOOLS.ordinal -> {
-                        val toolsBuilder = ToolsBundle()
-                        toolsBuilder.contentSearchBundle = contentSearchBundle
-                        launchActivity(ToolsActivity::class.java, toolsBuilder.bundle)
-                    }
-
-                    NavItem.ABOUT.ordinal -> launchActivity(AboutActivity::class.java)
                 }
 
                 true
             }
         }
-        Settings.registerPrefsChangedListener { _, key -> onSharedPreferenceChanged(key) }
+        Settings.registerPrefsChangedListener(listener)
 
         return binding?.root
+    }
+
+    override fun onDestroyView() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
+        Settings.unregisterPrefsChangedListener(listener)
+        super.onDestroyView()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -155,13 +174,38 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
         libraryViewModel.isDynamicGroupingAvailable.observe(viewLifecycleOwner) {
             onDynamicGroupingAvailable(it)
         }
+        binding?.apply {
+            val header = this.navigator.getHeaderView(0)
+            val settingsBtn: MaterialButton = header.requireById(R.id.settings_btn)
+            settingsBtn.setOnClickListener { launchActivity(SettingsActivity::class.java) }
+
+            val toolsBtn: MaterialButton = header.requireById(R.id.tools_btn)
+            toolsBtn.setOnClickListener {
+                val toolsBuilder = ToolsBundle()
+                toolsBuilder.contentSearchBundle = contentSearchBundle
+                launchActivity(ToolsActivity::class.java, toolsBuilder.bundle)
+            }
+
+            val aboutBtn: MaterialButton = header.requireById(R.id.about_btn)
+            aboutBtn.setOnClickListener { launchActivity(AboutActivity::class.java) }
+
+            updateAppBtn = header.requireById(R.id.update_btn)
+        }
+        updateAppBtn?.setOnClickListener {
+            // TODO make it a beautiful "update available" dialog with a download button
+            updateInfo?.let { nfo ->
+                context?.let { ctx ->
+                    // Download the latest update (equivalent to tapping the "Update available" notification)
+                    if (!UpdateDownloadWorker.isRunning(ctx) && nfo.apkUrl.isNotEmpty()) {
+                        Toast.makeText(ctx, R.string.downloading_update, Toast.LENGTH_SHORT)
+                            .show()
+                        ctx.runUpdateDownloadWorker(nfo.apkUrl)
+                    }
+                }
+            }
+        }
         updateItems()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
-    }
-
-    override fun onDestroyView() {
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
-        super.onDestroyView()
     }
 
     override fun onResume() {
@@ -294,7 +338,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                 isSelected = origin == NavItem.QUEUE
             )
 
-            if (origin == NavItem.BROWSER) {
+            if (origin == NavItem.BROWSER || Settings.navigationNostalgiaMode) {
                 // All sites
                 Settings.activeSites.forEach { site ->
                     val sb = SpannableStringBuilder.valueOf(site.name)
@@ -319,35 +363,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
                     NavItem.EDIT_SOURCES
                 )
             }
-
-
-            val submenu3 = navigator.menu.addSubMenu(2, 2, 2, R.string.title_submenu_settings)
-            addMenu(
-                submenu3,
-                R.string.title_activity_settings,
-                R.drawable.ic_settings,
-                NavItem.SETTINGS
-            )
-            addMenu(
-                submenu3,
-                R.string.tools_title,
-                R.drawable.ic_tools,
-                NavItem.TOOLS
-            )
-
-            val title = if (updateInfo?.hasNewVersion ?: false) {
-                val txt =
-                    SpannableStringBuilder.valueOf(resources.getText(R.string.title_activity_about))
-                txt.append("  ").append(formatCountBadge(requireContext(), 1))
-                txt.toSpannable()
-            } else resources.getText(R.string.title_activity_about)
-            addMenu(
-                submenu3,
-                title,
-                R.drawable.ic_info,
-                NavItem.ABOUT
-            )
         }
+        updateAppBtn?.isVisible = (true == updateInfo?.hasNewVersion)
     }
 
     /**
@@ -356,6 +373,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
     private fun onSharedPreferenceChanged(key: String?) {
         if (null == key) return
         if (Settings.Key.ACTIVE_SITES == key) updateItems()
+        if (Settings.Key.NOSTALGIA_MODE == key) updateItems()
     }
 
     fun formatAlertBadge(context: Context, text: String, color: Int): SpannableString {
@@ -459,5 +477,9 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer) {
 
     private fun getMenu(m: Menu, navItem: NavItem, subItem: Int = 0): MenuItem? {
         return m.findItem(menuId(navItem, subItem))
+    }
+
+    override fun onSiteSelected(site: Site, altCode: Int) {
+        launchBrowserFor(requireContext(), site)
     }
 }

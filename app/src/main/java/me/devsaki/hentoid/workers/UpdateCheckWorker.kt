@@ -101,10 +101,12 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         }
 
         // Get the alerts relevant to current version code
-        val sourceAlerts: List<UpdateInfo.SourceAlert> =
-            updateInfoJson.getSourceAlerts(BuildConfig.DEBUG)
-                .filter { it.getFixedByBuild() > BuildConfig.VERSION_CODE }
+        val sourceAlerts = updateInfoJson.getSourceAlerts(BuildConfig.DEBUG)
+            .filter { it.getFixedByBuild() > BuildConfig.VERSION_CODE }
+
+        val apkUrl = updateInfoJson.getUpdateUrl(BuildConfig.DEBUG)
+
         // Send update info through the bus to whom it may concern
-        EventBus.getDefault().postSticky(UpdateEvent(newVersion, sourceAlerts))
+        EventBus.getDefault().postSticky(UpdateEvent(newVersion, apkUrl, sourceAlerts))
     }
 }
