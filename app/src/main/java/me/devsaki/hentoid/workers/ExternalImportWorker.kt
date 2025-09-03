@@ -31,6 +31,7 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.createExceptionLogFile
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.createJsonFileFor
 import me.devsaki.hentoid.util.existsInCollection
@@ -50,7 +51,6 @@ import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.isSupportedArchivePdf
 import me.devsaki.hentoid.util.jsonToContent
-import me.devsaki.hentoid.util.createExceptionLogFile
 import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.scanArchivePdf
@@ -330,6 +330,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         Timber.d("delta* => ${changed.formatDisplayUri(Settings.externalLibraryUri)}")
         try {
             dao.selectContentByStorageUri(changed.uri.toString(), false)?.let {
+                Timber.d("  Update existing Content : ${it.title}")
                 // Existing content => Add new images
                 scanChangedUpdatedContentBH(
                     applicationContext,
@@ -339,6 +340,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     dao
                 )
             } ?: run {
+                Timber.d("  Scan new Content")
                 // New content
                 scanChangedNewContentBH(
                     applicationContext,
@@ -359,7 +361,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         deleted: Long,
         dao: CollectionDAO
     ) {
-        Timber.d("delta- => $deleted")
+        Timber.d("delta- => Content ID $deleted")
         try {
             Content().apply {
                 id = deleted
@@ -411,9 +413,11 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
             // Import new archive
             if (archivePdf != null) {
+                Timber.d("Importing new archive / PDF")
                 importArchivePdf(context, docs, parent, archivePdf, dao)
                     ?.let { onContentFoundBH(context, explorer, dao, parent, it) }
             } else if (folder != null) { // Import new folder
+                Timber.d("Importing new folder")
                 scanFolderRecursive(
                     context,
                     dao,

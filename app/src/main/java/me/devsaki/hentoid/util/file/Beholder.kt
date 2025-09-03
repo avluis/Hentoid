@@ -178,7 +178,7 @@ object Beholder {
                         .filter { isUseful(it.value) }
 
                 // Node if empty or contains at least a subfolder, or contains at least an archive/PDF
-                var isNode = files.isEmpty() || (files.values.any {
+                val isNode = files.isEmpty() || (files.values.any {
                     !it.isFile || (it.isFile && isSupportedArchivePdf(it.name))
                 })
                 if (BuildConfig.DEBUG) Timber.d("  Files found : ${files.size} (${(files.size - usefulFiles.size)} ignored)")
@@ -191,8 +191,10 @@ object Beholder {
 
                 // Select deleted docs
                 val deletedKeys = entry.documents.keys.minus(files.keys)
-                deletedKeys.forEach { onDeleted?.invoke(it) }
-                if (BuildConfig.DEBUG) Timber.d("  Deleted : ${deletedKeys.count()} - ${deletedKeys.size}")
+                val deletedDocs =
+                    entry.documents.filterKeys { it in deletedKeys }.values.filter { it > 0 }
+                deletedDocs.forEach { onDeleted?.invoke(it) }
+                if (BuildConfig.DEBUG) Timber.d("  Deleted : ${deletedKeys.size} documentFiles / ${deletedDocs.size} Content")
 
                 // Select docs with changed number of children
                 if (entry.nbFiles != files.size) {
