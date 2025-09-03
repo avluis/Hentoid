@@ -15,7 +15,6 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.READER_CACHE
-import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.ObjectBoxDAOContainer
@@ -488,20 +487,22 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             contentImgKeys.entries
                 .filter { imageFiles.containsKey(it.key) }
                 .map { it.value })
+        Timber.d("Keeping ${targetImgs.size}")
 
         // Add extra detected images
         val newImageFiles = imageFiles.entries
             .filter { !contentImgKeys.containsKey(it.key) }
             .map { it.value }
+        Timber.d("Adding ${newImageFiles.size}")
 
-        if (newImageFiles.isNotEmpty()) {
+        if (newImageFiles.isNotEmpty())
             targetImgs.addAll(
                 createImageListFromFiles(
                     newImageFiles,
                     StatusContent.EXTERNAL,
-                    targetImgs.maxOf { it.order } + 1)
+                    targetImgs.maxOf { it.order } + 1,
+                    setCover = false)
             )
-        }
 
         // Sort all images (old + new) according to their filename
         targetImgs.sortWith(UriImageFileComparator())
@@ -510,13 +511,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         var idx = 1
         val nbMaxChars = floor(log10(targetImgs.size.toDouble()) + 1).toInt()
         targetImgs.forEach {
-            if (!it.isCover) {
-                it.order = idx++
-                it.computeName(nbMaxChars)
-            } else {
-                it.order = 0
-                it.name = THUMB_FILE_NAME
-            }
+            it.order = if (it.isCover) 0 else idx++
+            it.computeName(nbMaxChars)
         }
 
         content.setImageFiles(targetImgs)

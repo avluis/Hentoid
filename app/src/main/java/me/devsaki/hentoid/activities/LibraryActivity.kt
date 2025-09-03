@@ -430,7 +430,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         // Wait at least X minutes between auto-refreshes to limit resource consumption
         val now = Instant.now().toEpochMilli()
         if (now - Settings.latestBeholderTimestamp < BEHOLDER_DELAY_MS) {
-            Timber.d("External library auto-refresh delay not passed")
+            Timber.d("External library auto-refresh delay not elapsed")
             return
         }
         Settings.latestBeholderTimestamp = now

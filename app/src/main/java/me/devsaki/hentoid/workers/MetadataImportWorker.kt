@@ -293,20 +293,18 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         if (bookfolders != null) {
             // Look for the book ID
             c.populateUniqueSiteId()
-            for (f in bookfolders) if (f.name != null && f.name!!.contains(
-                    formatId(c)
-                )
-            ) {
-                // Cache folder Uri
-                c.setStorageDoc(f)
-                // Cache JSON Uri
-                val json = findFile(context, f, JSON_FILE_NAME_V2)
-                if (json != null) c.jsonUri = json.uri.toString()
-                // Create the images from detected files
-                c.setImageFiles(createImageListFromFolder(context, f))
-                filesFound = true
-                break
-            }
+            for (f in bookfolders)
+                if (f.name?.contains(formatId(c)) ?: false) {
+                    // Cache folder Uri
+                    c.setStorageDoc(f)
+                    // Cache JSON Uri
+                    val json = findFile(context, f, JSON_FILE_NAME_V2)
+                    if (json != null) c.jsonUri = json.uri.toString()
+                    // Create the images from detected files
+                    c.setImageFiles(createImageListFromFolder(context, f))
+                    filesFound = true
+                    break
+                }
         }
         return filesFound
     }

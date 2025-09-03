@@ -57,7 +57,7 @@ fun createImageListFromFolder(
     folder: DocumentFile
 ): List<ImageFile> {
     val imageFiles = listFiles(context, folder, imageNamesFilter)
-    return if (imageFiles.isNotEmpty()) createImageListFromFiles(imageFiles)
+    return if (imageFiles.isNotEmpty()) createImageListFromFiles(imageFiles, false)
     else emptyList()
 }
 
@@ -67,8 +67,8 @@ fun createImageListFromFolder(
  * @param files Files to find images into
  * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
  */
-fun createImageListFromFiles(files: List<DocumentFile>): List<ImageFile> {
-    return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "")
+fun createImageListFromFiles(files: List<DocumentFile>, setCover : Boolean = true): List<ImageFile> {
+    return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "", setCover)
 }
 
 /**
@@ -78,13 +78,15 @@ fun createImageListFromFiles(files: List<DocumentFile>): List<ImageFile> {
  * @param targetStatus  Target status of the ImageFiles to create
  * @param startingOrder Starting order of the ImageFiles to create
  * @param namePrefix    Prefix to add in front of the name of the ImageFiles to create
+ * @param setCover      True to set cover; false not to do anything with the cover
  * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
  */
 fun createImageListFromFiles(
     files: List<DocumentFile>,
     targetStatus: StatusContent,
     startingOrder: Int,
-    namePrefix: String = ""
+    namePrefix: String = "",
+    setCover: Boolean = true
 ): List<ImageFile> {
     assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
@@ -108,7 +110,7 @@ fun createImageListFromFiles(
         result.add(img)
     }
     // If no thumb found, set the 1st image as cover
-    if (!coverFound && result.isNotEmpty()) result[0].isCover = true
+    if (setCover && !coverFound && result.isNotEmpty()) result[0].isCover = true
     return result
 }
 
