@@ -134,6 +134,7 @@ object StorageCache {
     }
 
     fun clear(context: Context, cacheId: String) {
+        if (!sizeLimit.containsKey(cacheId) || !isPermanent.containsKey(cacheId)) return
         init(context, cacheId, sizeLimit[cacheId]!!, isPermanent[cacheId]!!, true)
     }
 
