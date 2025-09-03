@@ -60,6 +60,7 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.net.URLDecoder
+import java.time.Instant
 import kotlin.math.floor
 import kotlin.math.log10
 import kotlin.math.roundToInt
@@ -190,7 +191,8 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
                     STEP_3_BOOKS, itemsOK + itemsKO, itemsOK, itemsKO, null
                 )
 
-                // Update the beholder
+                // Update the beholder; prevent it for triggering right after import
+                Settings.latestBeholderTimestamp = Instant.now().toEpochMilli()
                 Beholder.registerContent(context, addedContent)
             }
         } catch (e: IOException) {
