@@ -282,9 +282,12 @@ data class ImageFile(
             return usableUri.startsWith("http")
         }
 
+    // Defensive programming, as certain crashes report null values there
+    @Suppress("SENSELESS_COMPARISON")
     val needsPageParsing: Boolean
         get() {
-            return pageUrl.isNotEmpty() && (url.isEmpty())
+            if (null == pageUrl) return true
+            return pageUrl.isNotEmpty() && (null == url || url.isEmpty())
         }
 
     // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
