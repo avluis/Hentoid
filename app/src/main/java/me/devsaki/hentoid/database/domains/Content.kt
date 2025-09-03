@@ -651,6 +651,9 @@ data class Content(
     val chaptersList: List<Chapter>
         get() = chapters.safeReach(this)
 
+    val attributeList : List<Attribute>
+        get() = attributes.safeReach(this)
+
     fun setChapters(chapters: List<Chapter?>?) {
         // We do want to compare array references, not content
         if (chapters != null && chapters !== this.chapters) {

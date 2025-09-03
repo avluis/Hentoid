@@ -1283,13 +1283,14 @@ fun launchBrowserFor(
  * Get the blocked tags of the given Content
  * NB : Blocked tags are detected according to the current app Preferences
  *
- * @param content Content to extract blocked tags from
+ * @param id ID of the Content to extract blocked tags from
  * @return List of blocked tags from the given Content
  */
-fun getBlockedTags(content: Content): List<String> {
+fun getBlockedTags(id: Long, dao: CollectionDAO): List<String> {
+    val content = dao.selectContent(id) ?: return emptyList()
     var result: MutableList<String> = ArrayList()
     if (Settings.blockedTags.isNotEmpty()) {
-        val tags = content.attributes
+        val tags = content.attributeList
             .filter { it.type == AttributeType.TAG || it.type == AttributeType.LANGUAGE }
             .map { it.name }
         for (blocked in Settings.blockedTags)

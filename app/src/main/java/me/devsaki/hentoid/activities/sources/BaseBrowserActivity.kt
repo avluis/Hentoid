@@ -1096,7 +1096,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         } // isDownloadPlus
 
         // Check if the tag blocker applies here
-        val blockedTagsLocal = getBlockedTags(theContent)
+        val blockedTagsLocal = getBlockedTags(theContent.id, dao)
         if (blockedTagsLocal.isNotEmpty()) {
             if (Settings.tagBlockingBehaviour == Settings.Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 toast(R.string.blocked_tag, blockedTagsLocal[0])
@@ -1425,7 +1425,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 lifecycleScope.launch { setActionMode(ActionMode.VIEW_QUEUE) }
             }
         }
-        blockedTags = getBlockedTags(content).toMutableList()
+        val dao: CollectionDAO = ObjectBoxDAO()
+        blockedTags = getBlockedTags(content.id, dao).toMutableList()
+        dao.cleanup()
     }
 
     override fun onNoResult() {
