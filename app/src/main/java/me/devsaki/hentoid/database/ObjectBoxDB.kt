@@ -126,7 +126,7 @@ object ObjectBoxDB {
     }
 
     fun insertContentAndAttributes(content: Content): Pair<Long, Set<Attribute>> {
-        val attributes = content.attributes
+        val attributes = content.attributeList.toMutableList() // Work on a clone
         val attrBox = store.boxFor(Attribute::class.java)
         val newAttrs: MutableSet<Attribute> = HashSet()
         try {
@@ -160,6 +160,7 @@ object ObjectBoxDB {
         } catch (e: Exception) {
             Timber.e(e)
         }
+        content.putAttributes(attributes)
         val result = insertContentCore(content)
         return Pair<Long, Set<Attribute>>(result, newAttrs)
     }
