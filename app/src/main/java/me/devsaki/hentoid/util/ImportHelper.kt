@@ -588,7 +588,7 @@ private fun runPrimaryImport(
 fun runExternalImport(
     context: Context,
     behold: Boolean = false,
-    folders: List<String> = emptyList<String>()
+    folders: List<String> = emptyList()
 ): Boolean {
     if (ExternalImportWorker.isRunning(context) || PrimaryImportWorker.isRunning(context)) return false
     me.devsaki.hentoid.notification.import_.init(context)
@@ -1507,8 +1507,8 @@ fun getContentJsonNamesFilter(): NameFilter {
 }
 
 fun patternToRegex(pattern: String): Triple<Pattern, Boolean, Boolean> {
-    var hasTitle = pattern.contains("%t")
-    var hasArtist = pattern.contains("%a")
+    val hasTitle = pattern.contains("%t")
+    val hasArtist = pattern.contains("%a")
 
     var regexp =
         pattern.replace("\\", "\\\\")
@@ -1539,9 +1539,9 @@ fun patternToRegex(pattern: String): Triple<Pattern, Boolean, Boolean> {
 fun parseBookmarks(input: InputStream): List<SiteBookmark> {
     val result: MutableList<SiteBookmark> = ArrayList()
     val streams = duplicateInputStream(input, 2)
-    InputStreamReader(streams[0]).use {
+    InputStreamReader(streams[0]).use { isr ->
         var index = 0
-        it.forEachLine { line ->
+        isr.forEachLine { line ->
             if (0 == index) {
                 // Bookmark export
                 if (line.startsWith("<!DOCTYPE NETSCAPE-Bookmark")) {
