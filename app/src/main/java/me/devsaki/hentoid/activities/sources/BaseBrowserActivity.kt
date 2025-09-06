@@ -10,7 +10,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
-import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -336,14 +335,18 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             override fun handleOnBackPressed() {
                 // Close drawers
                 binding?.apply {
-                    if (fragmentBookmarksDrawer.isVisible || fragmentNavigationDrawer.isVisible) {
+                    if (root.isDrawerOpen(GravityCompat.START) || root.isDrawerOpen(GravityCompat.END)) {
                         EventBus.getDefault()
                             .post(CommunicationEvent(CommunicationEvent.Type.CLOSE_DRAWER))
                         return
                     }
                 }
+
                 // Previous webpage
-                if (webView.canGoBack()) return
+                if (webView.canGoBack()) {
+                    webView.goBack()
+                    return
+                }
 
                 // Other cases
                 callback?.remove()
@@ -1268,24 +1271,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         } else {
             overridePendingTransition(0, 0)
         }
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-            val webBFL = webView.copyBackForwardList()
-            val originalUrl = webView.originalUrl ?: ""
-            var i = webBFL.currentIndex
-            do {
-                i--
-            } while (i >= 0 && originalUrl == webBFL.getItemAtIndex(i).originalUrl)
-            if (webView.canGoBackOrForward(i - webBFL.currentIndex)) {
-                webView.goBackOrForward(i - webBFL.currentIndex)
-            } else {
-                onBackPressedDispatcher.onBackPressed()
-            }
-            return true
-        }
-        return false
     }
 
     /**
