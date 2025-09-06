@@ -6,7 +6,8 @@
     <color name="secondary_light">@color/accent_red</color>
     <color name="secondary_variant_light">@color/light_red</color>
     <color name="on_secondary_light">@color/white_opacity_87</color>
-    <color name="surface_light">@color/white</color>
+    <color name="surface_light">@color/taupe_p1</color>
+    <color name="surface_inverse_light">@color/taupe_p4</color>
     <color name="on_surface_light">@color/white_opacity_87</color>
     <color name="window_background_light">@color/taupe_p1</color>
     <color name="dialog_background_light">@color/taupe</color>

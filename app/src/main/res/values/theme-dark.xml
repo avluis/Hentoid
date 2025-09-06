@@ -11,10 +11,14 @@
         <item name="colorTertiary">@color/primary_dark</item>
         <item name="colorOnTertiary">@color/on_secondary_dark</item>
 
-        <item name="colorSurface">@color/window_background_dark</item>
+        <item name="colorSurface">@color/on_surface_dark</item>
         <item name="colorSurfaceVariant">@color/primary_dark</item>
         <item name="colorOnSurface">@color/on_surface_dark</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_dark</item>
+
+        <item name="colorSurfaceInverse">@color/surface_inverse_dark</item>
+        <item name="colorOnSurfaceInverse">@color/on_surface_dark</item>
+
         <item name="colorContainer">@color/container_dark</item>
         <item name="colorOnContainer">@color/on_surface_dark</item>
         <item name="colorPrimaryContainer">@color/container_dark</item>

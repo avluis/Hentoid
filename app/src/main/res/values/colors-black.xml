@@ -6,7 +6,8 @@
     <color name="secondary_black">@color/accent_red</color>
     <color name="secondary_variant_black">@color/light_red</color>
     <color name="on_secondary_black">@color/white_opacity_87</color>
-    <color name="surface_black">@color/cod_gray</color>
+    <color name="surface_black">@color/black</color>
+    <color name="surface_inverse_black">@color/dark_gray</color>
     <color name="on_surface_black">@color/white_opacity_87</color>
     <color name="window_background_black">@color/black</color>
     <color name="dialog_background_black">@color/cod_gray</color>

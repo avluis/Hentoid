@@ -11,10 +11,14 @@
         <item name="colorTertiary">@color/primary_you</item>
         <item name="colorOnTertiary">@color/on_secondary_you</item>
 
-        <item name="colorSurface">@color/window_background_you</item>
+        <item name="colorSurface">@color/surface_you</item>
         <item name="colorSurfaceVariant">@color/primary_you</item>
         <item name="colorOnSurface">@color/on_surface_you</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_you</item>
+
+        <item name="colorSurfaceInverse">@color/surface_inverse_you</item>
+        <item name="colorOnSurfaceInverse">@color/on_surface_inverse_you</item>
+
         <item name="colorContainer">@color/container_you</item>
         <item name="colorOnContainer">@color/on_surface_you</item>
         <item name="colorPrimaryContainer">@color/container_you</item>

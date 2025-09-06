@@ -6,9 +6,11 @@
     <color name="secondary_you">@android:color/system_accent3_500</color>
     <color name="secondary_variant_you">@android:color/system_accent3_200</color>
     <color name="on_secondary_you">@color/white_opacity_87</color>
-    <color name="surface_you">@color/white</color>
+    <color name="surface_you">@android:color/system_accent1_600</color>
     <color name="on_surface_you">@color/white_opacity_87</color>
-    <color name="window_background_you">@android:color/system_accent1_600</color>
+    <color name="surface_inverse_you">@android:color/system_accent1_300</color>
+    <color name="on_surface_inverse_you">@color/black_opacity_50</color>
+    <color name="window_background_you">@android:color/system_accent1_300</color>
     <color name="dialog_background_you">@android:color/system_accent1_700</color>
     <color name="on_background_you">@color/white_opacity_87</color>
     <color name="container_you">@android:color/system_accent1_800</color>
