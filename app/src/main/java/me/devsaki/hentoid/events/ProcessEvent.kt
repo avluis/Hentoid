@@ -54,8 +54,8 @@ class ProcessEvent {
     constructor(
         eventType: Type,
         @IdRes processId: Int,
-        step: Int,
-        elementName: String?
+        step: Int = 0,
+        elementName: String? = null
     ) {
         this.eventType = eventType
         this.processId = processId

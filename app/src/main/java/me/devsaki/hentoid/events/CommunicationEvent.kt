@@ -14,7 +14,9 @@ class CommunicationEvent(val type: Type, val recipient: Recipient = Recipient.AL
         BROADCAST,
         UPDATE_EDIT_MODE,
         SCROLL_TOP,
-        SIGNAL_SITE
+        SIGNAL_SITE,
+        CANCEL,
+        APK_AVAILABLE
     }
 
     enum class Recipient {
@@ -27,6 +29,7 @@ class CommunicationEvent(val type: Type, val recipient: Recipient = Recipient.AL
         DRAWER,
         DUPLICATE_MAIN,
         DUPLICATE_DETAILS,
-        SETTINGS
+        SETTINGS,
+        UPDATE_WORKER
     }
 }

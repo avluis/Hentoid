@@ -184,18 +184,6 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
         }
         updateAppBtn?.setOnClickListener {
             UpdateDialogFragment.invoke(requireActivity())
-            /*
-            updateInfo?.let { nfo ->
-                context?.let { ctx ->
-                    // Download the latest update (equivalent to tapping the "Update available" notification)
-                    if (!UpdateDownloadWorker.isRunning(ctx) && nfo.apkUrl.isNotEmpty()) {
-                        Toast.makeText(ctx, R.string.downloading_update, Toast.LENGTH_SHORT)
-                            .show()
-                        ctx.runUpdateDownloadWorker(nfo.apkUrl)
-                    }
-                }
-            }
-             */
         }
         updateItems()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
