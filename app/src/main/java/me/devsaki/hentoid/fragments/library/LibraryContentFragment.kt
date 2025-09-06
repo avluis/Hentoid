@@ -1860,7 +1860,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
     override fun getPopupText(view: View, position: Int): CharSequence {
         val adapter = getItemAdapter() ?: return ""
-        val c = adapter.getAdapterItem(position).content ?: return ""
+        val c = adapter.adapterItems.elementAtOrNull(position)?.content ?: return ""
         val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd", Locale.ENGLISH)
         return when (Settings.contentSortField) {
             Settings.Value.ORDER_FIELD_TITLE ->
