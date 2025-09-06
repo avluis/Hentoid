@@ -40,6 +40,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.BaseActivity
+import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.MissingWebViewActivity
 import me.devsaki.hentoid.activities.QueueActivity
 import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
@@ -61,11 +62,11 @@ import me.devsaki.hentoid.enums.AlertStatus
 import me.devsaki.hentoid.enums.ErrorType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.events.AppRepoInfoEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
-import me.devsaki.hentoid.events.AppRepoInfoEvent
 import me.devsaki.hentoid.fragments.browser.BookmarksDrawerFragment
 import me.devsaki.hentoid.fragments.browser.DuplicateDialogFragment
 import me.devsaki.hentoid.fragments.browser.UrlDialogFragment
@@ -284,8 +285,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             bottomNavigation.setOnMenuItemClickListener { item ->
                 this@BaseBrowserActivity.onMenuItemSelected(item)
             }
-            menuSeek.setOnClickListener { onSeekClick() }
+            menuLibrary.setOnClickListener { onLibraryClick() }
             menuBack.setOnClickListener { onBackClick() }
+            menuSeek.setOnClickListener { onSeekClick() }
             menuForward.setOnClickListener { onForwardClick() }
             actionButton.setOnClickListener { onActionClick() }
 
@@ -799,6 +801,23 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         binding?.bottomAlert?.visibility = View.GONE
     }
 
+    /**
+     * Handler for the "Home" navigation button
+     */
+    @Suppress("DEPRECATION")
+    private fun onLibraryClick() {
+        val intent = Intent(this, LibraryActivity::class.java)
+        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
+        // it can interfere with Double-Back (press back twice) to exit
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        startActivity(intent)
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0)
+        } else {
+            overridePendingTransition(0, 0)
+        }
+        finish()
+    }
 
     /**
      * Handler for the "back" navigation button of the browser

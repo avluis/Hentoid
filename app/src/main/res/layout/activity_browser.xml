@@ -209,6 +209,18 @@
                 android:layout_height="match_parent">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/menu_library"
+                    style="?attr/materialIconButtonFilledTonalStyle"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:tooltipText="@string/pref_cat_library"
+                    app:icon="@drawable/ic_menu_home"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/menu_back"
                     style="?attr/materialIconButtonFilledTonalStyle"
                     android:layout_width="48dp"
@@ -217,7 +229,8 @@
                     android:tooltipText="@string/previous_book_help"
                     app:icon="@drawable/ic_action_back"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/menu_seek"
+                    app:layout_constraintStart_toEndOf="@id/menu_library"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="ContentDescription" />
 
@@ -242,6 +255,7 @@
                     style="?attr/materialIconButtonFilledTonalStyle"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
+                    android:layout_marginEnd="64dp"
                     android:enabled="false"
                     android:tooltipText="@string/next_book_help"
                     app:icon="@drawable/ic_action_forward"
