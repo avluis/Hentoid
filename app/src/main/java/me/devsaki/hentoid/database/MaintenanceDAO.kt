@@ -36,6 +36,14 @@ class MaintenanceDAO {
             .`in`(Content_.status, ObjectBoxDB.libraryStatus).safeFind()
     }
 
+    fun selectDownloadedNHBooksIncompleteCover(): List<Content> {
+        return ObjectBoxDB.store.boxFor(Content::class.java).query()
+            .equal(Content_.site, Site.NHENTAI.code.toLong())
+            .`in`(Content_.status, ObjectBoxDB.libraryStatus)
+            .startsWith(Content_.coverImageUrl, "//", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .safeFind()
+    }
+
     fun selecChaptersEmptyName(): List<Chapter> {
         return ObjectBoxDB.store.boxFor(Chapter::class.java).query()
             .equal(Chapter_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).safeFind()

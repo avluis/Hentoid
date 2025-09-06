@@ -186,6 +186,19 @@ object DatabaseMaintenance {
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 Timber.i("Fixing M18 covers : done")
+
+                // Update URLs from incomplete NH image covers
+                Timber.i("Fixing NH covers : start")
+                contents = db.selectDownloadedNHBooksIncompleteCover()
+                Timber.i("Fixing NH covers : %s books detected", contents.size)
+                max = contents.size
+                pos = 1f
+                for (c in contents) {
+                    c.coverImageUrl = "https:" + c.coverImageUrl
+                    db.insertContentCore(c)
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
+                }
+                Timber.i("Fixing NH covers : done")
             } finally {
                 db.cleanup()
             }

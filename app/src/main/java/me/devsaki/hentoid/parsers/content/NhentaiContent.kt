@@ -74,6 +74,8 @@ class NhentaiContent : BaseContentParser() {
         content.setRawUrl(theUrl)
         cover?.let {
             content.coverImageUrl = getImgSrc(it)
+            if (!content.coverImageUrl.startsWith("http"))
+                content.coverImageUrl = "https:" + content.coverImageUrl
         }
         var titleDef = title.trim()
         if (titleDef.isEmpty()) titleDef = titleAlt.trim()
