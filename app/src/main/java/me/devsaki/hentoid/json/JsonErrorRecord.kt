@@ -13,12 +13,13 @@ data class JsonErrorRecord(
     val description: String,
     val timestamp: Long
 ) {
+    @Suppress("SENSELESS_COMPARISON") // Null can happen on old DB records
     constructor(er: ErrorRecord) : this(
         er.type,
         er.url,
         er.contentPart,
         er.description,
-        er.timestamp.toEpochMilli()
+        if (null == er.timestamp) 0 else er.timestamp.toEpochMilli()
     )
 
     fun toEntity(): ErrorRecord {
