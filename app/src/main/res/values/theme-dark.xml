@@ -11,7 +11,7 @@
         <item name="colorTertiary">@color/primary_dark</item>
         <item name="colorOnTertiary">@color/on_secondary_dark</item>
 
-        <item name="colorSurface">@color/on_surface_dark</item>
+        <item name="colorSurface">@color/surface_dark</item>
         <item name="colorSurfaceVariant">@color/primary_dark</item>
         <item name="colorOnSurface">@color/on_surface_dark</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_dark</item>
