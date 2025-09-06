@@ -79,6 +79,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
     private lateinit var site: Site
     private var title = ""
     private var url = ""
+    private val bookmarks = ArrayList<SiteBookmark>()
     private lateinit var bookmarkedSites: List<Site>
 
     // Bookmark ID of the current webpage
@@ -110,13 +111,16 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
             ViewModelFactory(requireActivity().application)
         )[BrowserViewModel::class.java]
 
+        viewModel.pageTitle().observe(viewLifecycleOwner) { title = it }
         viewModel.getBrowserSite().observe(viewLifecycleOwner) { onSiteChanged(browserSite = it) }
         viewModel.getBookmarksSite().observe(viewLifecycleOwner) { onSiteChanged(site = it) }
-        viewModel.pageUrl().observe(viewLifecycleOwner) { url = it }
-        viewModel.pageTitle().observe(viewLifecycleOwner) { title = it }
+        viewModel.pageUrl().observe(viewLifecycleOwner) {
+            url = it
+            updateBookmarkButton()
+        }
         viewModel.bookmarks().observe(viewLifecycleOwner) {
             onBookmarksChanged(it)
-            updateBookmarkButton(it)
+            updateBookmarkButton()
         }
         viewModel.bookmarkedSites().observe(viewLifecycleOwner) { bookmarkedSites = it }
 
@@ -196,6 +200,9 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
     }
 
     private fun onBookmarksChanged(bookmarks: List<SiteBookmark>) {
+        this.bookmarks.clear()
+        this.bookmarks.addAll(bookmarks)
+
         // Add site home as 1st bookmark
         val siteHome =
             SiteBookmark(site = site, title = getString(R.string.bookmark_homepage), url = site.url)
@@ -245,7 +252,7 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
         }
     }
 
-    private fun updateBookmarkButton(bookmarks: List<SiteBookmark>) {
+    private fun updateBookmarkButton() {
         val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
         bookmarkId =
             if (currentBookmark != null && currentBookmark.id > 0) currentBookmark.id else -1

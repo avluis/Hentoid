@@ -55,6 +55,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.database.domains.urlsAreSame
 import me.devsaki.hentoid.databinding.ActivityBrowserBinding
 import me.devsaki.hentoid.enums.AlertStatus
@@ -184,6 +185,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     private var downloadIcon = 0
     protected var languageFilterButton: FloatingActionButton? = null
 
+
     // === CURRENTLY VIEWED CONTENT-RELATED VARIABLES
     private var currentContent: Content? = null
 
@@ -213,6 +215,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
     // List of tags of Preference-browser-blocked tags
     private var internalPrefBlockedTags: MutableList<String> = ArrayList()
+
+    // === CACHE FOR OTHER ELEMENTS
+
+    private val bookmarks = ArrayList<SiteBookmark>()
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -326,7 +332,14 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 ViewModelFactory(application)
             )[BrowserViewModel::class.java]
 
+        viewModel.bookmarks().observe(this)
+        {
+            bookmarks.clear()
+            bookmarks.addAll(it)
+        }
+
         viewModel.setBrowserSite(getStartSite())
+        viewModel.loadBookmarks()
     }
 
     private fun addCustomBackControl() {
@@ -708,16 +721,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             R.string.help_web_download,
             false
         )
+
         // Update bookmark button
         if (isBookmarkable) {
-            val dao: CollectionDAO = ObjectBoxDAO()
-            try {
-                val bookmarks = dao.selectBookmarks(getStartSite())
-                val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
-                updateBookmarkButton(currentBookmark != null)
-            } finally {
-                dao.cleanup()
-            }
+            val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
+            updateBookmarkButton(currentBookmark != null)
         }
     }
 
