@@ -16,9 +16,10 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.waynejo.androidndkgif.GifEncoder
+import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
@@ -35,6 +36,8 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
@@ -366,23 +369,30 @@ fun assembleGif(
         height = b.height
     }
     val path = File(folder, "tmp.gif").absolutePath
-    val gifEncoder = GifEncoder()
+    val gifEncoderBuilder = GifEncoder.builder(Path(path))
+    gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
+
+    val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
+       Timber.d("frame callback $framesWritten $writtenDuration")
+    }
     try {
-        gifEncoder.init(
-            width,
-            height,
-            path,
-            GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY
-        )
+        val buffer = IntArray(width * height)
         val options = BitmapFactory.Options()
         options.inPreferredConfig = Bitmap.Config.ARGB_8888
-        for (frame in frames) {
+        frames.forEachIndexed { idx, frame ->
+            Timber.d("encoding frame $idx [${frame.second}]")
             getInputStream(context, frame.first).use { input ->
                 BitmapFactory.decodeStream(input, null, options)?.let { b ->
+                    b.getPixels(buffer, 0, width, 0, 0, width, height)
                     try {
-                        // Warning : if frame.second is <= 10, GIFs will be read slower on most readers
-                        // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
-                        gifEncoder.encodeFrame(b, frame.second)
+                        gifEncoder.writeFrame(
+                            buffer,
+                            width,
+                            height,
+                            // Warning : if frame.second is <= 1ms, GIFs will be read slower on most readers
+                            // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
+                            frame.second.toDuration(DurationUnit.MILLISECONDS)
+                        )
                     } finally {
                         b.recycle()
                     }

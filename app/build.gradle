@@ -87,6 +87,11 @@ android {
         }
     }
     packagingOptions {
+        resources {
+            // Added there to resolve a conflict between library dependencies
+            pickFirsts.add('LICENSE-EDL-1.0.txt')
+            pickFirsts.add('LICENSE-EPL-1.0.txt')
+        }
         jniLibs {
             useLegacyPackaging = true
         }
@@ -179,8 +184,11 @@ dependencies {
     implementation "com.github.penfeizhou.android.animation:avif:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
-    implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2'
+    //implementation 'com.github.DonMarv00:android-ndk-gif-16kb:v1.0.2'
     //implementation 'io.github.waynejo:androidndkgif:1.0.1'
+
+    // Animated GIF creator -> https://github.com/shaksternano/gif.kt
+    implementation("com.shakster:gifkt:0.1.1")
 
     // PDF creator/extractor
     implementation 'com.itextpdf:itext7-core:8.0.5'
