@@ -14,7 +14,6 @@ import android.view.MenuItem
 import android.view.SubMenu
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.text.toSpannable
 import androidx.core.view.children
 import androidx.core.view.isVisible
@@ -34,13 +33,12 @@ import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.activities.settings.SettingsSourceSelectActivity
 import me.devsaki.hentoid.activities.sources.WelcomeActivity
 import me.devsaki.hentoid.core.requireById
-import me.devsaki.hentoid.core.runUpdateDownloadWorker
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.FragmentNavigationDrawerBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
-import me.devsaki.hentoid.events.UpdateEvent
+import me.devsaki.hentoid.events.AppRepoInfoEvent
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.getTextColorForBackground
@@ -48,7 +46,6 @@ import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.launchBrowserFor
 import me.devsaki.hentoid.viewmodels.LibraryViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -79,7 +76,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
     // === VARS
     // Content search and filtering criteria in the form of a Bundle (see ContentSearchManager.ContentSearchBundle)
     private var contentSearchBundle: Bundle? = null
-    private var updateInfo: UpdateEvent? = null
+    private var updateInfo: AppRepoInfoEvent? = null
 
     private var site: Site = Site.NONE
     private lateinit var origin: NavItem
@@ -186,7 +183,8 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
             updateAppBtn = header.requireById(R.id.update_btn)
         }
         updateAppBtn?.setOnClickListener {
-            // TODO make it a beautiful "update available" dialog with a download button
+            UpdateDialogFragment.invoke(requireActivity())
+            /*
             updateInfo?.let { nfo ->
                 context?.let { ctx ->
                     // Download the latest update (equivalent to tapping the "Update available" notification)
@@ -197,6 +195,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
                     }
                 }
             }
+             */
         }
         updateItems()
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
@@ -229,7 +228,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onUpdateEvent(event: UpdateEvent) {
+    fun onUpdateEvent(event: AppRepoInfoEvent) {
         updateInfo = event
         updateItems()
     }

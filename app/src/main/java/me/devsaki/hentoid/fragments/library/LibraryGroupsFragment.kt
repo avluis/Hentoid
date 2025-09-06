@@ -646,13 +646,6 @@ class LibraryGroupsFragment : Fragment(),
         fastAdapter.withSavedInstanceState(savedInstanceState)
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onAppUpdated(event: AppUpdatedEvent) {
-        EventBus.getDefault().removeStickyEvent(event)
-        // Display the "update success" dialog when an update is detected on a release version
-        if (!BuildConfig.DEBUG) invoke(this)
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onCommunicationEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.GROUPS && event.recipient != CommunicationEvent.Recipient.ALL) return

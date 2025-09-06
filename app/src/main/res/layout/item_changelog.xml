@@ -27,7 +27,6 @@
         android:layout_gravity="start"
         android:layout_marginBottom="16dp"
         android:text="@string/changelog"
-        android:textColor="?colorOnBackground"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold" />
 
@@ -37,7 +36,6 @@
         android:layout_height="wrap_content"
         android:background="?colorSurface"
         android:orientation="vertical"
-        android:padding="8dp"
         android:scrollbars="none"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:listitem="@layout/item_text" />

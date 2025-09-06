@@ -15,7 +15,7 @@ import me.devsaki.hentoid.core.URL_GITHUB
 import me.devsaki.hentoid.core.URL_GITHUB_WIKI
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.databinding.FragmentAboutBinding
-import me.devsaki.hentoid.events.UpdateEvent
+import me.devsaki.hentoid.events.AppRepoInfoEvent
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.getChromeVersion
 import org.greenrobot.eventbus.EventBus
@@ -82,7 +82,7 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onUpdateEvent(event: UpdateEvent) {
+    fun onUpdateEvent(event: AppRepoInfoEvent) {
         if (event.hasNewVersion) binding?.changelogButton?.setText(R.string.view_changelog_flagged)
     }
 }

@@ -1,9 +1,10 @@
-package me.devsaki.hentoid.fragments.library
+package me.devsaki.hentoid.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
@@ -12,39 +13,46 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import me.devsaki.hentoid.databinding.DialogLibraryUpdateSuccessBinding
-import me.devsaki.hentoid.fragments.BaseDialogFragment
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.runUpdateDownloadWorker
+import me.devsaki.hentoid.databinding.DialogUpdateBinding
 import me.devsaki.hentoid.json.GithubRelease
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
+import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import timber.log.Timber
 
 /**
  * "update success" dialog
  */
-class UpdateSuccessDialogFragment : BaseDialogFragment<Nothing>() {
+class UpdateDialogFragment : BaseDialogFragment<Nothing>() {
 
     companion object {
         fun invoke(parent: Fragment) {
-            invoke(parent, UpdateSuccessDialogFragment())
+            invoke(parent, UpdateDialogFragment())
         }
 
         fun invoke(parent: FragmentActivity) {
-            invoke(parent, UpdateSuccessDialogFragment())
+            invoke(parent, UpdateDialogFragment())
         }
     }
 
     // UI
-    private var binding: DialogLibraryUpdateSuccessBinding? = null
+    private var binding: DialogUpdateBinding? = null
 
     // === VARIABLES
     private val itemAdapter: ItemAdapter<GitHubReleaseItem> = ItemAdapter()
+
+    // 0 = default; 1 = downloading; 2 = downloaded
+    private var status = 0
+
+    private var apkUrl = ""
 
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View? {
-        binding = DialogLibraryUpdateSuccessBinding.inflate(inflater, container, false)
+        binding = DialogUpdateBinding.inflate(inflater, container, false)
 
         val releaseItemAdapter = FastAdapter.with(itemAdapter)
         binding?.recyclerView?.adapter = releaseItemAdapter
@@ -60,6 +68,34 @@ class UpdateSuccessDialogFragment : BaseDialogFragment<Nothing>() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
         getReleases()
+
+        binding?.apply {
+            actionBtn.setOnClickListener { onActionClick() }
+        }
+    }
+
+    private fun onActionClick() {
+        when (status) {
+            0 -> downloadUpdate()
+            2 -> askInstall()
+        }
+    }
+
+    private fun downloadUpdate() {
+        if (apkUrl.isEmpty()) return
+        context?.let { ctx ->
+            // Download the latest update (equivalent to tapping the "Update available" notification)
+            if (!UpdateDownloadWorker.isRunning(ctx) && apkUrl.isNotEmpty()) {
+                Toast.makeText(ctx, R.string.downloading_update, Toast.LENGTH_SHORT).show()
+                ctx.runUpdateDownloadWorker(apkUrl)
+            }
+            // TODO turn pause to cancel
+            status = 1
+        }
+    }
+
+    private fun askInstall() {
+        // TODO
     }
 
     private fun getReleases() {
@@ -81,6 +117,7 @@ class UpdateSuccessDialogFragment : BaseDialogFragment<Nothing>() {
 
     private fun onCheckSuccess(latestReleaseInfo: GithubRelease) {
         itemAdapter.add(GitHubReleaseItem(latestReleaseInfo))
+        apkUrl = latestReleaseInfo.getApkAssetUrl()
     }
 
     private fun onCheckError(t: Throwable) {

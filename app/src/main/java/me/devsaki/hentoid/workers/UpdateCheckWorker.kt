@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.events.CommunicationEvent
-import me.devsaki.hentoid.events.UpdateEvent
+import me.devsaki.hentoid.events.AppRepoInfoEvent
 import me.devsaki.hentoid.json.core.UpdateInfo
 import me.devsaki.hentoid.notification.appUpdate.UpdateAvailableNotification
 import me.devsaki.hentoid.notification.appUpdate.UpdateCheckNotification
@@ -107,6 +107,6 @@ class UpdateCheckWorker(context: Context, parameters: WorkerParameters) :
         val apkUrl = updateInfoJson.getUpdateUrl(BuildConfig.DEBUG)
 
         // Send update info through the bus to whom it may concern
-        EventBus.getDefault().postSticky(UpdateEvent(newVersion, apkUrl, sourceAlerts))
+        EventBus.getDefault().postSticky(AppRepoInfoEvent(newVersion, apkUrl, sourceAlerts))
     }
 }

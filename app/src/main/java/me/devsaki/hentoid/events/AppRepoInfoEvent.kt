@@ -3,7 +3,7 @@ package me.devsaki.hentoid.events
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.json.core.UpdateInfo
 
-class UpdateEvent(
+class AppRepoInfoEvent(
     val hasNewVersion: Boolean,
     val apkUrl: String,
     sourceAlerts: List<UpdateInfo.SourceAlert>

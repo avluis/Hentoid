@@ -65,7 +65,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
-import me.devsaki.hentoid.events.UpdateEvent
+import me.devsaki.hentoid.events.AppRepoInfoEvent
 import me.devsaki.hentoid.fragments.browser.BookmarksDrawerFragment
 import me.devsaki.hentoid.fragments.browser.DuplicateDialogFragment
 import me.devsaki.hentoid.fragments.browser.UrlDialogFragment
@@ -496,7 +496,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     @Suppress("unused")
-    fun onUpdateEvent(event: UpdateEvent) {
+    fun onUpdateEvent(event: AppRepoInfoEvent) {
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts[getStartSite()]
             displayTopAlertBanner()
