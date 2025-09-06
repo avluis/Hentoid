@@ -11,7 +11,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.images.HitomiParser
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.createExceptionLogFile
 import me.devsaki.hentoid.util.network.parseParameters
 import me.devsaki.hentoid.util.pause
 import org.jsoup.nodes.Document
@@ -98,10 +97,10 @@ class HitomiActivity : BaseBrowserActivity() {
         url: String,
         isGalleryPage: Boolean,
         isHtmlLoaded: Boolean,
-        isBookmarkable: Boolean
+        isBrowsable: Boolean
     ) {
         languageFilterButton?.visibility = View.INVISIBLE
-        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable)
+        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBrowsable)
     }
 
     override fun onPageFinished(url: String, isResultsPage: Boolean, isGalleryPage: Boolean) {

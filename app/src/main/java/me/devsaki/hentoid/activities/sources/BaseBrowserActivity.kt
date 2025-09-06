@@ -692,7 +692,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         url: String,
         isGalleryPage: Boolean,
         isHtmlLoaded: Boolean,
-        isBookmarkable: Boolean
+        isBrowsable: Boolean
     ) {
         refreshStopMenu?.setIcon(R.drawable.ic_close)
         binding?.progressBar?.visibility = View.GONE
@@ -714,16 +714,16 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             webView.loadUrl(jsInterceptorScript!!)
         }
 
-        viewModel.setPageUrl(url)
+        if (isBrowsable) {
+            viewModel.setPageUrl(url)
 
-        // Display download button tooltip if a book page has been reached
-        if (isGalleryPage && !Settings.isBrowserMode) tooltip(
-            R.string.help_web_download,
-            false
-        )
+            // Display download button tooltip if a book page has been reached
+            if (isGalleryPage && !Settings.isBrowserMode) tooltip(
+                R.string.help_web_download,
+                false
+            )
 
-        // Update bookmark button
-        if (isBookmarkable) {
+            // Update bookmark button
             val currentBookmark = bookmarks.firstOrNull { urlsAreSame(it.url, url) }
             updateBookmarkButton(currentBookmark != null)
         }

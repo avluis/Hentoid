@@ -57,9 +57,9 @@ class PixivActivity : BaseBrowserActivity() {
         url: String,
         isGalleryPage: Boolean,
         isHtmlLoaded: Boolean,
-        isBookmarkable: Boolean
+        isBrowsable: Boolean
     ) {
-        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBookmarkable)
+        super.onPageStarted(url, isGalleryPage, isHtmlLoaded, isBrowsable)
         binding?.swipeContainer?.isEnabled = true
     }
 
@@ -111,7 +111,7 @@ class PixivActivity : BaseBrowserActivity() {
                         url,
                         isGalleryPage(url),
                         isHtmlLoaded = false,
-                        isBookmarkable = false
+                        isBrowsable = false
                     )
                 }
             }

@@ -1048,7 +1048,7 @@ open class CustomWebViewClient : WebViewClient {
             url: String,
             isGalleryPage: Boolean,
             isHtmlLoaded: Boolean,
-            isBookmarkable: Boolean
+            isBrowsable: Boolean // False if machine to machine call (e.g. XHR, Fetch)
         )
 
         fun onPageFinished(
