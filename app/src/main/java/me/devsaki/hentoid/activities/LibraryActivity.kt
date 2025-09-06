@@ -523,18 +523,18 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         // Remind user that the app is in browser mode
         if (Settings.isBrowserMode)
             doUpdateTopAlert(R.string.alert_browser_mode, false)
+        else if (isLowDatabaseStorage())
+        // Display low database storage alert
+            doUpdateTopAlert(R.string.alert_low_memory_db)
         else if (!this@LibraryActivity.checkExternalStorageReadWritePermission())
         // Warn about permissions being lost
             doUpdateTopAlert(R.string.alert_permissions_lost) { fixPermissions() }
         else if (!this@LibraryActivity.checkNotificationPermission())
-        // Warn about notiftications not being enabled
+        // Warn about notifications not being enabled
             doUpdateTopAlert(R.string.alert_notifications) { fixNotifications() }
         else if (this@LibraryActivity.isLowDeviceStorage())
         // Display low device storage alert
             doUpdateTopAlert(R.string.alert_low_memory)
-        else if (isLowDatabaseStorage())
-        // Display low database storage alert
-            doUpdateTopAlert(R.string.alert_low_memory_db)
         else
             closeTopAlert()
     }
@@ -550,7 +550,6 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             alertTxt.setText(textId)
             alertFixBtn.isVisible = (fixHandler != null)
             alertFixBtn.setOnClickListener { fixHandler }
-            alertCloseBtn.isVisible = null == fixHandler
         }
     }
 
