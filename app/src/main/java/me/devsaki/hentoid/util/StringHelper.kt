@@ -197,13 +197,13 @@ fun locateDigits(s: String): List<Triple<Int, Int, Int>> {
             startIndex = i
             inDigit = true
         } else if (!Character.isDigit(c) && inDigit) {
-            val value = s.substring(startIndex, i).toInt()
+            val value = min(s.substring(startIndex, i).toLong(), Int.MAX_VALUE.toLong()).toInt()
             result.add(Triple(startIndex, i - 1, value))
             inDigit = false
         }
     }
     if (inDigit) {
-        val value = s.substring(startIndex).toInt()
+        val value = min(s.substring(startIndex).toLong(), Int.MAX_VALUE.toLong()).toInt()
         result.add(Triple(startIndex, s.length - 1, value))
     }
     return result
