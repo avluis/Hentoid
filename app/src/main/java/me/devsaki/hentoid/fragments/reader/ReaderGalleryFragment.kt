@@ -397,7 +397,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                             if (isSelected) IntRange(
                                 start,
                                 end
-                            ).forEach { selectExtension.select(it, false, true) }
+                            ).forEach { selectExtension.select(it,
+                                fireEvent = false,
+                                considerSelectableFlag = true
+                            ) }
                             else selectExtension.deselect(IntRange(start, end).toMutableList())
                         }
                     }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -569,12 +572,12 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
 
             R.id.action_set_group_cover -> if (selectedItems.isNotEmpty()) {
                 val selectedImages =
-                    selectedItems.firstNotNullOfOrNull { obj: ImageFileItem -> obj.getImage() }
+                    selectedItems.firstNotNullOfOrNull { it.getImage() }
                 if (selectedImages != null) askSetSelectedCover(selectedImages)
             }
 
             R.id.action_toggle_favorite_pages -> if (selectedItems.isNotEmpty()) {
-                val selectedImages = selectedItems.map { obj: ImageFileItem -> obj.getImage() }
+                val selectedImages = selectedItems.map { it.getImage() }
                 viewModel.toggleImageFavourite(selectedImages) { onFavouriteSuccess() }
             }
 
@@ -585,14 +588,14 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     selectExtension.apply {
                         while (selections.size < itemAdapter.adapterItemCount && ++count < 5)
                             IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
-                                select(it, false, true)
+                                select(it, fireEvent = false, considerSelectableFlag = true)
                             }
                     }
                 } else if (EditMode.EDIT_CHAPTERS == editMode) {
                     expandableSelectExtension.apply {
                         while (selections.size < expandableItemAdapter.adapterItemCount && ++count < 5)
                             IntRange(0, itemAdapter.adapterItemCount - 1).forEach {
-                                select(it, false, true)
+                                select(it, fireEvent = false, considerSelectableFlag = true)
                             }
                     }
                 }
