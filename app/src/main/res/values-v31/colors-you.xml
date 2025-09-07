@@ -3,7 +3,7 @@
     <color name="primary_you">@android:color/system_accent1_800</color>
     <color name="primary_variant_you">@android:color/system_accent1_900</color>
     <color name="on_primary_you">@color/white_opacity_87</color>
-    <color name="secondary_you">@android:color/system_accent3_500</color>
+    <color name="secondary_you">@android:color/system_accent3_700</color>
     <color name="secondary_variant_you">@android:color/system_accent3_200</color>
     <color name="on_secondary_you">@color/white_opacity_87</color>
     <color name="surface_you">@android:color/system_accent1_600</color>
