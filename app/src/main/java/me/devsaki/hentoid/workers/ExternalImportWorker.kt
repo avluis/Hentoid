@@ -518,6 +518,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         content.setImageFiles(targetImgs)
         content.qtyPages = content.getNbDownloadedPages()
         content.computeSize()
+        content.downloadCompletionDate = Instant.now().toEpochMilli()
 
         dao.replaceImageList(content.id, targetImgs)
         dao.insertContentCore(content)
