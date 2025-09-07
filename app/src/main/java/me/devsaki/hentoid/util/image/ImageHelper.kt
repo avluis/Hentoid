@@ -371,6 +371,7 @@ fun assembleGif(
     val path = File(folder, "tmp.gif").absolutePath
     val gifEncoderBuilder = GifEncoder.builder(Path(path))
     gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
+    gifEncoderBuilder.colorDifferenceTolerance = -1.0
 
     val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
        Timber.d("frame callback $framesWritten $writtenDuration")
