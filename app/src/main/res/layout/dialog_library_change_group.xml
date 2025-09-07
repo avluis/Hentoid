@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     android:clipToPadding="false"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:theme="@style/Theme.Light.DialogFragment">
 
     <RadioButton
         android:id="@+id/existing_radio"
