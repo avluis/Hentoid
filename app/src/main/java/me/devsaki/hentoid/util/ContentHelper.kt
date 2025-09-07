@@ -895,16 +895,19 @@ suspend fun setAndSaveContentCover(context: Context, newCover: ImageFile, dao: C
     withContext(Dispatchers.IO) {
         try {
             // Get all images from the DB
-            val content = dao.selectContent(newCover.content.targetId) ?: return@withContext
+            val content = dao.selectContent(newCover.contentId)
+                ?: throw IllegalArgumentException("Couldn't find content ${newCover.contentId}")
             val images = content.imageList.toMutableList()
 
             // Remove current cover from the set
-            if (!setContentCover(context, content, images, newCover)) return@withContext
+            if (!setContentCover(context, content, images, newCover))
+                throw IllegalArgumentException("Couldn't set cover for content ${newCover.contentId}")
 
             // Update images directly
             dao.insertImageFiles(images)
 
             // Update the whole list
+            content.setImageFiles(images)
             dao.insertContentCore(content)
 
             // Update content JSON if it exists (i.e. if book is not queued)

@@ -397,10 +397,13 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                             if (isSelected) IntRange(
                                 start,
                                 end
-                            ).forEach { selectExtension.select(it,
-                                fireEvent = false,
-                                considerSelectableFlag = true
-                            ) }
+                            ).forEach {
+                                selectExtension.select(
+                                    it,
+                                    fireEvent = false,
+                                    considerSelectableFlag = true
+                                )
+                            }
                             else selectExtension.deselect(IntRange(start, end).toMutableList())
                         }
                     }).withMode(DragSelectionProcessor.Mode.Simple)
@@ -571,9 +574,9 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             }
 
             R.id.action_set_group_cover -> if (selectedItems.isNotEmpty()) {
-                val selectedImages =
-                    selectedItems.firstNotNullOfOrNull { it.getImage() }
-                if (selectedImages != null) askSetSelectedCover(selectedImages)
+                selectedItems.firstNotNullOfOrNull { it.getImage() }?.let {
+                    askSetSelectedCover(it)
+                }
             }
 
             R.id.action_toggle_favorite_pages -> if (selectedItems.isNotEmpty()) {
