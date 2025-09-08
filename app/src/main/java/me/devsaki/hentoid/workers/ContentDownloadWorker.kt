@@ -446,8 +446,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (0 == content.qtyPages) content.qtyPages = images.count { it.isReadable }
         content.status = StatusContent.DOWNLOADING
         // Mark the cover for downloading when saving a streamed book
-        if (downloadMode == DownloadMode.STREAM)
-            content.cover.status = StatusContent.SAVED
+        if (downloadMode == DownloadMode.STREAM) content.cover.status = StatusContent.SAVED
         dao.insertContent(content)
         Timber.i("Downloading '%s' [%s]", content.title, content.id)
 
@@ -492,10 +491,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Streamed download => just get the cover
         if (downloadMode == DownloadMode.STREAM) {
-            images.firstOrNull { it.isCover }?.let { coverOptional ->
-                enrichImageDownloadParams(coverOptional, content)
+            content.cover.let { cover ->
+                enrichImageDownloadParams(cover, content)
                 requestQueueManager.queueRequest(
-                    buildImageDownloadRequest(coverOptional, targetFolder, content)
+                    buildImageDownloadRequest(cover, targetFolder, content)
                 )
             }
         } else { // Regular download
