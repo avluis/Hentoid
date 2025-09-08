@@ -49,6 +49,7 @@
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
-	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"162" }
+	  {"sourceName":"FAKKU2", "status":"RED", "fixedByBuild":"162" },
+	  {"sourceName":"IMHENTAI", "status":"GREY"}
   ]
 }
