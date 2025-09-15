@@ -518,7 +518,8 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun updateTopAlert() {
-        if (hasClosedTopAlert) return
+        //if (hasClosedTopAlert) return
+
 
         // Remind user that the app is in browser mode
         if (Settings.isBrowserMode)
@@ -536,7 +537,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         // Display low device storage alert
             doUpdateTopAlert(R.string.alert_low_memory)
         else
-            closeTopAlert()
+            doUpdateTopAlert(R.string.alert_browser_mode, false)
     }
 
     private fun doUpdateTopAlert(
@@ -549,7 +550,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             alertIcon.isVisible = hasIcon
             alertTxt.setText(textId)
             alertFixBtn.isVisible = (fixHandler != null)
-            alertFixBtn.setOnClickListener { fixHandler }
+            alertFixBtn.setOnClickListener { fixHandler?.invoke() }
         }
     }
 
