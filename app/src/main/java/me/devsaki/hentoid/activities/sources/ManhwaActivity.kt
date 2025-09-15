@@ -10,7 +10,12 @@ class ManhwaActivity : BaseBrowserActivity() {
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+/$")
         private val REMOVABLE_ELEMENTS =
-            arrayOf(".c-ads", "iframe", "\$x//a[contains(@href,\"ourdream.ai\")]/..")
+            arrayOf(
+                ".hide-sticky-menu",
+                ".c-ads",
+                "iframe",
+                "\$x//a[contains(@href,\"ourdream.ai\")]/.."
+            )
         private val JS_CONTENT_BLACKLIST = arrayOf("adprovider")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }
