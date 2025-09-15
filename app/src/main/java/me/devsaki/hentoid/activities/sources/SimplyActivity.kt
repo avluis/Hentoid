@@ -20,7 +20,8 @@ class SimplyActivity : BaseBrowserActivity() {
         private const val DOMAIN_FILTER = "simply-hentai.com"
         val GALLERY_FILTER = arrayOf(
             "simply-hentai.com/[%\\w\\-]+/[%\\w\\-]+$",
-            "api.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$"
+            "api.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$",
+            "api-v3.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$"
         )
     }
 
@@ -65,7 +66,7 @@ class SimplyActivity : BaseBrowserActivity() {
             quickDownload: Boolean
         ): WebResourceResponse? {
             if (!url.endsWith("/status") && !url.endsWith("/home") && !url.endsWith("/starting")) {
-                if (url.contains("api.simply-hentai.com") && (analyzeForDownload || quickDownload)) {
+                if (url.contains("api-v3.simply-hentai.com") && (analyzeForDownload || quickDownload)) {
                     activity?.onGalleryPageStarted()
                     val contentParser: ContentParser = SimplyApiContent()
 
