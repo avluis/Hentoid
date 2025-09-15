@@ -1290,6 +1290,7 @@ fun launchBrowserFor(
  * @return List of blocked tags from the given Content
  */
 fun getBlockedTags(id: Long, dao: CollectionDAO): List<String> {
+    if (id < 1) return emptyList()
     val content = dao.selectContent(id) ?: return emptyList()
     var result: MutableList<String> = ArrayList()
     if (Settings.blockedTags.isNotEmpty()) {
