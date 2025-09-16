@@ -16,9 +16,10 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.waynejo.androidndkgif.GifEncoder
+import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.Path
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
@@ -35,6 +36,8 @@ import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
@@ -351,6 +354,14 @@ fun decodeSampledBitmapFromStream(
     }
 }
 
+/**
+ * Create GIF file by assembling the given files into frames
+ *
+ * @param folder Temp folder where the GIF file is assembled
+ * @param frames Frames : first = Frame file Uri; second = Frame duration (ms)
+ *
+ * @return Uri of generated GIF file
+ */
 @Throws(IOException::class, IllegalArgumentException::class)
 fun assembleGif(
     context: Context,
@@ -358,39 +369,43 @@ fun assembleGif(
     frames: List<Pair<Uri, Int>>
 ): Uri? {
     require(frames.isNotEmpty()) { "No frames given" }
-    var width: Int
-    var height: Int
-    getInputStream(context, frames[0].first).use { input ->
-        val b = BitmapFactory.decodeStream(input)
-        width = b.width
-        height = b.height
+    val dims = getInputStream(context, frames[0].first).let { input ->
+        BitmapFactory.decodeStream(input).let {
+            Point(it.width, it.height)
+        }
     }
+    val buffer = IntArray(dims.x * dims.y)
+    val options = BitmapFactory.Options()
+    options.inPreferredConfig = Bitmap.Config.ARGB_8888
+
     val path = File(folder, "tmp.gif").absolutePath
-    val gifEncoder = GifEncoder()
-    try {
-        gifEncoder.init(
-            width,
-            height,
-            path,
-            GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY
-        )
-        val options = BitmapFactory.Options()
-        options.inPreferredConfig = Bitmap.Config.ARGB_8888
-        for (frame in frames) {
+    val gifEncoderBuilder = GifEncoder.builder(Path(path))
+    gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
+
+    val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
+        Timber.d("framesWritten=$framesWritten writtenDuration=$writtenDuration")
+    }
+    gifEncoder.use {
+        frames.forEachIndexed { idx, frame ->
+            Timber.d("encoding frame $idx [duration ${frame.second} ms]")
             getInputStream(context, frame.first).use { input ->
-                BitmapFactory.decodeStream(input, null, options)?.let { b ->
+                BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
+                    bmp.getPixels(buffer, 0, dims.x, 0, 0, dims.x, dims.y)
                     try {
-                        // Warning : if frame.second is <= 10, GIFs will be read slower on most readers
-                        // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
-                        gifEncoder.encodeFrame(b, frame.second)
+                        gifEncoder.writeFrame(
+                            buffer,
+                            dims.x,
+                            dims.y,
+                            // Warning : if frame.second is <= 1ms, GIFs will be read slower on most readers
+                            // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
+                            frame.second.toDuration(DurationUnit.MILLISECONDS)
+                        )
                     } finally {
-                        b.recycle()
+                        bmp.recycle()
                     }
                 }
             }
         }
-    } finally {
-        gifEncoder.close()
     }
     return Uri.fromFile(File(path))
 }
