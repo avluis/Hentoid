@@ -11,7 +11,7 @@ enum class Grouping(
     val canReorderBooks: Boolean
 ) {
     FLAT(0, R.string.groups_flat, false, false, false),
-    ARTIST(1, R.string.groups_by_artist, false, true, true),
+    ARTIST(1, R.string.groups_by_artist, false, false, true),
     DL_DATE(2, R.string.groups_by_dl_date, false, false, false),
     DYNAMIC(3, R.string.groups_dynamic, true, true, false),
     FOLDERS(97, R.string.groups_folders, false, true, false),

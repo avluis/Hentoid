@@ -847,12 +847,10 @@ object ObjectBoxDB {
         statuses: IntArray
     ): QueryCondition<Content> {
         var qc: QueryCondition<Content> = Content_.status.oneOf(statuses)
-        if (searchBundle.filterBookFavourites) qc =
-            qc.and(Content_.favourite.equal(true)) else if (searchBundle.filterBookNonFavourites) qc =
-            qc.and(Content_.favourite.equal(false))
-        if (searchBundle.filterBookCompleted) qc =
-            qc.and(Content_.completed.equal(true)) else if (searchBundle.filterBookNotCompleted) qc =
-            qc.and(Content_.completed.equal(false))
+        if (searchBundle.filterBookFavourites) qc = qc.and(Content_.favourite.equal(true))
+        else if (searchBundle.filterBookNonFavourites) qc = qc.and(Content_.favourite.equal(false))
+        if (searchBundle.filterBookCompleted) qc = qc.and(Content_.completed.equal(true))
+        else if (searchBundle.filterBookNotCompleted) qc = qc.and(Content_.completed.equal(false))
         if (searchBundle.filterRating > -1) qc =
             qc.and(Content_.rating.equal(searchBundle.filterRating))
         if (searchBundle.groupId > 0) qc =
@@ -1943,8 +1941,8 @@ object ObjectBoxDB {
             QueryBuilder.StringOrder.CASE_INSENSITIVE
         )
 
-        // Subtype filtering for artists groups
         if (subType > -1) {
+            // Subtype filtering for artists groups
             if (grouping == Grouping.ARTIST.id && subType != Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS) {
                 qb.equal(Group_.subtype, subType.toLong())
             }
@@ -1962,6 +1960,33 @@ object ObjectBoxDB {
             if (Settings.Value.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) Group_.order else Group_.name
         // Order by number of children / download date is done by the DAO
         if (orderDesc) qb.orderDesc(property) else qb.order(property)
+        return qb.build()
+    }
+
+    fun selectArtistsQ(
+        query: String?,
+        orderField: Int,
+        orderDesc: Boolean,
+        artistGroupVisibility: Int,
+    ): Query<Attribute> {
+        val qcArtist = Attribute_.type.equal(AttributeType.ARTIST.code)
+        val qcCircle = Attribute_.type.equal(AttributeType.CIRCLE.code)
+        val qcType =
+            when (artistGroupVisibility) {
+                Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS -> qcArtist.or(qcCircle)
+                Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> qcCircle
+                else -> qcArtist
+            }
+        val qcContent =
+            Attribute_.name.contains(query ?: "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+        val qcFinal = if (null == query) qcType else qcType.and(qcContent)
+
+        val qb = store.boxFor(Attribute::class.java).query(qcFinal)
+
+        val property = Attribute_.name
+        // Order by number of children is done by the DAO
+        if (orderDesc) qb.orderDesc(property) else qb.order(property)
+
         return qb.build()
     }
 

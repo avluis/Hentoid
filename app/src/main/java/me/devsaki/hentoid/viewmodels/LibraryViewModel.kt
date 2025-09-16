@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.SEED_CONTENT
@@ -38,7 +39,6 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.SearchRecord
-import me.devsaki.hentoid.database.domains.SiteHistory
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Location
@@ -517,7 +517,12 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField && (!group.grouping.canReorderBooks || group.isUngroupedGroup))
             Settings.contentSortField = Settings.Value.ORDER_FIELD_TITLE
         this.group.postValue(group)
-        contentSearchManager.setGroup(group)
+
+        if (Grouping.DYNAMIC == group.grouping) {
+            val searchUri = SearchActivityBundle.parseSearchUri(group.searchUri)
+            contentSearchManager.setTags(searchUri.attributes)
+        } else contentSearchManager.setGroup(group)
+
         newContentSearch.value = true
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?

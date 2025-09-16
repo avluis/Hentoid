@@ -17,7 +17,6 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.core.requireById
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
@@ -115,9 +114,8 @@ class GroupDisplayItem(
             }
 
             if (ivCover != null) {
-                var coverContent: Content? = null
-                if (!item.group.coverContent.isNull) coverContent = item.group.coverContent.target
-                else if (item.group.getItems().isNotEmpty()) {
+                var coverContent = item.group.linkedCoverContent
+                if (null == coverContent && item.group.getItems().isNotEmpty()) {
                     item.group.getItems()[0].let {
                         val c = it.linkedContent
                         if (c != null) coverContent = c

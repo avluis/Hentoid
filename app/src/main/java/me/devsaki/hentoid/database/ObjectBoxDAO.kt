@@ -524,6 +524,17 @@ class ObjectBoxDAO : CollectionDAO {
         filterRating: Int,
         displaySize: Boolean
     ): LiveData<List<Group>> {
+        if (grouping == Grouping.ARTIST.id) return selectArtistGroupsLive(
+            query,
+            orderField,
+            orderDesc,
+            artistGroupVisibility,
+            groupFavouritesOnly,
+            groupNonFavouritesOnly,
+            filterRating,
+            displaySize
+        )
+
         // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
         val subType = if (grouping == Grouping.ARTIST.id) artistGroupVisibility else -1
         val livedata: LiveData<List<Group>> = ObjectBoxLiveData(
@@ -682,6 +693,82 @@ class ObjectBoxDAO : CollectionDAO {
         // Manually select all content as g.getContents won't work (unresolved items)
         val contents = ObjectBoxDB.selectContentById(g.contentIds)
         return contents.maxOfOrNull { it.downloadDate } ?: 0
+    }
+
+    private fun selectArtistGroupsLive(
+        query: String?,
+        orderField: Int,
+        orderDesc: Boolean,
+        artistGroupVisibility: Int,
+        groupFavouritesOnly: Boolean,
+        groupNonFavouritesOnly: Boolean,
+        filterRating: Int,
+        displaySize: Boolean
+    ): LiveData<List<Group>> {
+        // Step 1 : Select as many groups as there are non-empty artist/circle master data
+        val livedata: LiveData<List<Attribute>> = ObjectBoxLiveData(
+            ObjectBoxDB.selectArtistsQ(query, orderField, orderDesc, artistGroupVisibility)
+        )
+        // TODO "no artist" group
+
+        val livedata2 = MediatorLiveData<List<Group>>()
+        livedata2.addSource(livedata) { attrs ->
+            val groupsLive = attrs.mapIndexed { idx, attr ->
+                val group = Group(Grouping.DYNAMIC, attr.name, idx)
+                group.searchUri = buildSearchUri(setOf(attr)).toString()
+                val items = attr.contents.mapIndexed { idx2, c ->
+                    if (0 == idx2) group.coverContent.target = c
+                    // TODO custom cover
+                    GroupItem(c.id, group, idx2)
+                }
+                group.setItems(items)
+                group
+            }
+            livedata2.value = groupsLive
+        }
+        var workingData = livedata2
+
+        // Step 2 : Filter favourites and ratings by joining with saved Groups
+        // TODO
+
+        // === SIZE
+        if (displaySize) {
+            val livedata3 = MediatorLiveData<List<Group>>()
+            livedata3.addSource(workingData) { groups ->
+                val enrichedWithSize = groups.map { enrichGroupWithSize(it) }
+                livedata3.value = enrichedWithSize
+            }
+            workingData = livedata3
+        }
+
+
+        // === ORDERING
+
+        // Order by number of children (ObjectBox can't do that natively)
+        if (Settings.Value.ORDER_FIELD_CHILDREN == orderField) {
+            val result = MediatorLiveData<List<Group>>()
+            result.addSource(workingData) { groups ->
+                val sortOrder = if (orderDesc) -1 else 1
+                val orderedByNbChildren = groups.sortedBy { it.getItems().size * sortOrder }
+                result.value = orderedByNbChildren
+            }
+            return result
+        }
+
+        // Order by latest download date of children (ObjectBox can't do that natively)
+        if (Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE == orderField) {
+            val result = MediatorLiveData<List<Group>>()
+            result.addSource(workingData) { groups ->
+                val sortOrder = if (orderDesc) -1 else 1
+                val orderedByDlDate = groups.sortedBy {
+                    getLatestDlDate(it) * sortOrder
+                }
+                result.value = orderedByDlDate
+            }
+            return result
+        }
+
+        return workingData
     }
 
     override fun selectGroup(groupId: Long): Group? {
@@ -981,10 +1068,10 @@ class ObjectBoxDAO : CollectionDAO {
 
     private fun getDynamicGroupContent(groupId: Long): LongArray {
         var result = emptyList<Long>()
-        if (groupId > -1) {
+        if (groupId > 0) {
             val g = selectGroup(groupId)
             if (g != null && g.grouping == Grouping.DYNAMIC) {
-                result = selectGroupItemsByQuery(g).map { obj: GroupItem -> obj.contentId }
+                result = selectGroupItemsByQuery(g).map { it.contentId }
             }
         }
         return result.toLongArray()

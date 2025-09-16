@@ -8,6 +8,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.converter.PropertyConverter
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Grouping.Companion.searchById
 import me.devsaki.hentoid.util.hash64
@@ -69,6 +70,9 @@ data class Group(
 
     val isUngroupedGroup: Boolean
         get() = Grouping.CUSTOM == grouping && 1 == subtype
+
+    val linkedCoverContent: Content?
+        get() = coverContent.safeReach(this)
 
 
     override fun equals(other: Any?): Boolean {
