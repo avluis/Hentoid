@@ -33,7 +33,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
-import me.devsaki.hentoid.util.MergerLiveData.Two
+import me.devsaki.hentoid.util.MergerLiveData
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
@@ -748,27 +748,26 @@ class ObjectBoxDAO : CollectionDAO {
         noArtistGroup.setItems(items)
         noArtistLive.postValue(listOf(noArtistGroup))
 
-        // Merge actual groups with the "no artist / circle" forged group
+        // Flagged groups
+        val flaggedLive: LiveData<List<Group>> = ObjectBoxLiveData(
+            ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, true)
+        )
+
+        // Merge actual groups with the "no artist / circle" forged group and the flagged groups
         val combined =
-            Two(noArtistLive, livedata2, false) { data1, data2 ->
+            MergerLiveData.Three(
+                noArtistLive,
+                livedata2,
+                flaggedLive,
+                false
+            ) { noArtistGrp, dynamicGrps, flaggedGrps ->
                 val result = ArrayList<Group>()
-                result.addAll(data1)
-                result.addAll(data2)
+                result.addAll(noArtistGrp)
+                val flaggedMap = flaggedGrps.groupBy { it.name }.mapValues { it.value.first() }
+                result.addAll(dynamicGrps.map { enrichGroupWithFlags(it, flaggedMap) })
                 result.toList()
             }
         var workingData: LiveData<List<Group>> = combined
-
-        // Step 2 : Enrich with favourites, ratings and custom covers by joining with saved Groups
-        val flaggedArtistGroups =
-            ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, true).safeFind()
-                .groupBy { it.name }.mapValues { it.value.first() }
-        val livedata3 = MediatorLiveData<List<Group>>()
-        livedata3.addSource(workingData) { groups ->
-            val enrichedWithFlags =
-                groups.map { enrichGroupWithFlags(it, flaggedArtistGroups) }
-            livedata3.value = enrichedWithFlags
-        }
-        workingData = livedata3
 
         // Step 3 : Filter if needed
 
@@ -778,11 +777,16 @@ class ObjectBoxDAO : CollectionDAO {
 
     private fun enrichGroupWithFlags(g: Group, flaggedGroups: Map<String, Group>): Group {
         flaggedGroups[g.name]?.let {
-            g.id = it.id
-            g.rating = it.rating
-            g.favourite = it.favourite
+            // Create new instance to avoid modifiying the values inside the former reference
+            val newG =
+                Group(id = it.id, name = g.name, rating = it.rating, favourite = it.favourite)
+            ObjectBoxDB.attachGroup(newG)
             if (it.coverContent.targetId > 0 && it.coverContent.targetId != g.coverContent.targetId)
-                g.coverContent.target = it.coverContent.target
+                newG.coverContent.target = it.coverContent.target
+            else
+                newG.coverContent.target = g.coverContent.target
+            newG.setItems(g.getItems())
+            return newG
         }
         return g
     }

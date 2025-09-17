@@ -2045,6 +2045,10 @@ object ObjectBoxDB {
         return store.boxFor(Group::class.java).query(qc).safeFind()
     }
 
+    fun attachGroup(entity : Group) {
+        store.boxFor(Group::class.java).attach(entity)
+    }
+
     fun selectGroup(groupId: Long): Group? {
         return store.boxFor(Group::class.java)[groupId]
     }

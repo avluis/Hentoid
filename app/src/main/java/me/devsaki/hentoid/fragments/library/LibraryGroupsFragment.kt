@@ -147,6 +147,7 @@ class LibraryGroupsFragment : Fragment(),
                 oldItem: GroupDisplayItem,
                 newItem: GroupDisplayItem
             ): Boolean {
+                if (oldItem === newItem) return true
                 return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId
                         && oldItem.group.favourite == newItem.group.favourite
                         && oldItem.group.rating == newItem.group.rating

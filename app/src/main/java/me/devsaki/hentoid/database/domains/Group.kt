@@ -53,7 +53,7 @@ data class Group(
 
 
     fun getItems(): List<GroupItem> {
-        return items
+        return items.safeReach(this)
     }
 
     fun setItems(items: List<GroupItem>?): Group {
