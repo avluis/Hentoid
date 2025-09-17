@@ -160,6 +160,7 @@ class SearchActivity : BaseActivity() {
             val builder = SearchActivityBundle()
             builder.uri = buildSearchUri(
                 selectedAttributeAdapter.currentList.toSet(),
+                null,
                 "",
                 locationPicker.index,
                 typePicker.index
@@ -173,16 +174,17 @@ class SearchActivity : BaseActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         excludeClicked = savedInstanceState.getBoolean("exclude")
         val searchUri = SearchActivityBundle(savedInstanceState).uri.toUri()
-        val (_, attributes, location, contentType) = parseSearchUri(searchUri)
-        if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes.toList())
-        binding?.apply {
-            if (location.value > 0) {
-                viewModel.setLocation(location)
-                locationPicker.index = location.value
-            }
-            if (contentType.value > 0) {
-                viewModel.setContentType(contentType)
-                typePicker.index = contentType.value
+        parseSearchUri(searchUri).apply {
+            if (attributes.isNotEmpty()) viewModel.setSelectedAttributes(attributes.toList())
+            binding?.apply {
+                if (location.value > 0) {
+                    viewModel.setLocation(location)
+                    locationPicker.index = location.value
+                }
+                if (contentType.value > 0) {
+                    viewModel.setContentType(contentType)
+                    typePicker.index = contentType.value
+                }
             }
         }
     }
@@ -302,6 +304,7 @@ class SearchActivity : BaseActivity() {
         binding?.apply {
             val searchUri = buildSearchUri(
                 selectedAttributeAdapter.currentList.toSet(),
+                null,
                 "",
                 locationPicker.index,
                 typePicker.index

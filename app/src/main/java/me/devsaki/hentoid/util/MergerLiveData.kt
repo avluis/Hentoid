@@ -1,3 +1,5 @@
+package me.devsaki.hentoid.util
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 

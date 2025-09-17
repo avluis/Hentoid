@@ -485,7 +485,7 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
 
     fun buildSearchQuery(): String {
         val attrs = sourceFilter?.let { setOf(Attribute(it)) } ?: emptySet()
-        return SearchActivityBundle.buildSearchUri(attrs, query).toString()
+        return SearchActivityBundle.buildSearchUri(attrs, query = query).toString()
     }
 
     override fun onSiteSelected(site: Site, altCode: Int) {

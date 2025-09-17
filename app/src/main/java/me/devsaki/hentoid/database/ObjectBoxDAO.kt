@@ -4,12 +4,12 @@ import android.util.SparseIntArray
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.objectbox.android.ObjectBoxDataSource
 import io.objectbox.android.ObjectBoxLiveData
-import io.objectbox.query.Query
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.core.Consumer
@@ -33,6 +33,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
+import me.devsaki.hentoid.util.MergerLiveData.Two
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
@@ -165,7 +166,7 @@ class ObjectBoxDAO : CollectionDAO {
         bundle.query = query ?: ""
         val sourceAttr: MutableSet<Attribute> = HashSet()
         if (source != null) sourceAttr.add(Attribute(source))
-        bundle.attributes = buildSearchUri(sourceAttr, "", 0, 0).toString()
+        bundle.attributes = buildSearchUri(sourceAttr, null, "", 0, 0).toString()
         bundle.sortField = Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE
         return ObjectBoxLiveData(
             ObjectBoxDB.selectContentUniversalQ(
@@ -243,15 +244,12 @@ class ObjectBoxDAO : CollectionDAO {
     private fun getPagedContent(
         isUniversal: Boolean,
         searchBundle: ContentSearchBundle,
-        metadata: Set<Attribute>
+        metadata: Set<Attribute>,
     ): LiveData<PagedList<Content>> {
         val isCustomOrder = searchBundle.sortField == Settings.Value.ORDER_FIELD_CUSTOM
         val contentRetrieval: Pair<Long, DataSource.Factory<Int, Content>> =
-            if (isCustomOrder) getPagedContentByList(
-                isUniversal,
-                searchBundle,
-                metadata
-            ) else getPagedContentByQuery(isUniversal, searchBundle, metadata)
+            if (isCustomOrder) getPagedContentByList(isUniversal, searchBundle, metadata)
+            else getPagedContentByQuery(isUniversal, searchBundle, metadata)
         val nbPages = Settings.contentPageQuantity
         var initialLoad = nbPages * 3
         if (searchBundle.loadAll) {
@@ -270,10 +268,16 @@ class ObjectBoxDAO : CollectionDAO {
         metadata: Set<Attribute>
     ): Pair<Long, DataSource.Factory<Int, Content>> {
         val isRandom = searchBundle.sortField == Settings.Value.ORDER_FIELD_RANDOM
-        val query: Query<Content> = if (isUniversal) {
+        val isExclusionSearch = searchBundle.excludedAttributeTypes?.isNotEmpty() ?: false
+        val query = if (isUniversal) {
             ObjectBoxDB.selectContentUniversalQ(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId)
+            )
+        } else if (isExclusionSearch) {
+            val excludedAttrs = searchBundle.excludedAttributeTypes!!
+            ObjectBoxDB.selectContentIdsWithoutAttributesQ(
+                excludedAttrs.map { AttributeType.searchByCode(it) }.filterNotNull()
             )
         } else {
             ObjectBoxDB.selectContentSearchContentQ(
@@ -294,10 +298,16 @@ class ObjectBoxDAO : CollectionDAO {
         searchBundle: ContentSearchBundle,
         metadata: Set<Attribute>
     ): Pair<Long, DataSource.Factory<Int, Content>> {
-        val ids: LongArray = if (isUniversal) {
+        val isExclusionSearch = searchBundle.excludedAttributeTypes?.isNotEmpty() ?: false
+        val ids = if (isUniversal) {
             ObjectBoxDB.selectContentUniversalByGroupItem(
                 searchBundle,
                 getDynamicGroupContent(searchBundle.groupId)
+            )
+        } else if (isExclusionSearch) {
+            val excludedAttrs = searchBundle.excludedAttributeTypes!!
+            ObjectBoxDB.selectContentIdsWithoutAttributes(
+                excludedAttrs.map { AttributeType.searchByCode(it) }.filterNotNull()
             )
         } else {
             ObjectBoxDB.selectContentSearchContentByGroupItem(
@@ -524,31 +534,26 @@ class ObjectBoxDAO : CollectionDAO {
         filterRating: Int,
         displaySize: Boolean
     ): LiveData<List<Group>> {
-        if (grouping == Grouping.ARTIST.id) return selectArtistGroupsLive(
-            query,
-            orderField,
-            orderDesc,
-            artistGroupVisibility,
-            groupFavouritesOnly,
-            groupNonFavouritesOnly,
-            filterRating,
-            displaySize
-        )
-
-        // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
-        val subType = if (grouping == Grouping.ARTIST.id) artistGroupVisibility else -1
-        val livedata: LiveData<List<Group>> = ObjectBoxLiveData(
-            ObjectBoxDB.selectGroupsQ(
-                grouping,
+        val livedata: LiveData<List<Group>> =
+            if (grouping == Grouping.ARTIST.id) selectArtistGroupsLive(
                 query,
-                orderField,
                 orderDesc,
-                subType,
+                artistGroupVisibility,
                 groupFavouritesOnly,
                 groupNonFavouritesOnly,
                 filterRating
+            ) else ObjectBoxLiveData(
+                ObjectBoxDB.selectGroupsQ(
+                    grouping,
+                    query,
+                    orderField,
+                    orderDesc,
+                    -1,
+                    groupFavouritesOnly,
+                    groupNonFavouritesOnly,
+                    filterRating
+                )
             )
-        )
         var workingData = livedata
 
 
@@ -697,28 +702,24 @@ class ObjectBoxDAO : CollectionDAO {
 
     private fun selectArtistGroupsLive(
         query: String?,
-        orderField: Int,
         orderDesc: Boolean,
         artistGroupVisibility: Int,
         groupFavouritesOnly: Boolean,
         groupNonFavouritesOnly: Boolean,
         filterRating: Int,
-        displaySize: Boolean
     ): LiveData<List<Group>> {
         // Step 1 : Select as many groups as there are non-empty artist/circle master data
-        val livedata: LiveData<List<Attribute>> = ObjectBoxLiveData(
-            ObjectBoxDB.selectArtistsQ(query, orderField, orderDesc, artistGroupVisibility)
+        val attrsLive: LiveData<List<Attribute>> = ObjectBoxLiveData(
+            ObjectBoxDB.selectArtistsQ(query, orderDesc, artistGroupVisibility)
         )
-        // TODO "no artist" group
 
         val livedata2 = MediatorLiveData<List<Group>>()
-        livedata2.addSource(livedata) { attrs ->
+        livedata2.addSource(attrsLive) { attrs ->
             val groupsLive = attrs.mapIndexed { idx, attr ->
-                val group = Group(Grouping.DYNAMIC, attr.name, idx)
+                val group = Group(Grouping.DYNAMIC, attr.name, idx + 1)
                 group.searchUri = buildSearchUri(setOf(attr)).toString()
                 val items = attr.contents.mapIndexed { idx2, c ->
                     if (0 == idx2) group.coverContent.target = c
-                    // TODO custom cover
                     GroupItem(c.id, group, idx2)
                 }
                 group.setItems(items)
@@ -726,49 +727,64 @@ class ObjectBoxDAO : CollectionDAO {
             }
             livedata2.value = groupsLive
         }
-        var workingData = livedata2
 
-        // Step 2 : Filter favourites and ratings by joining with saved Groups
-        // TODO
+        // Forge the "no artist / circle" group
+        val noArtistLive: MutableLiveData<List<Group>> = MutableLiveData<List<Group>>()
+        val noArtistGroup = Group(Grouping.DYNAMIC, "No artist", 0) // TODO adapt & translate label
+        val excludedTypes: Set<AttributeType> = when (artistGroupVisibility) {
+            Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS ->
+                setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
 
-        // === SIZE
-        if (displaySize) {
-            val livedata3 = MediatorLiveData<List<Group>>()
-            livedata3.addSource(workingData) { groups ->
-                val enrichedWithSize = groups.map { enrichGroupWithSize(it) }
-                livedata3.value = enrichedWithSize
-            }
-            workingData = livedata3
+            Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> setOf(AttributeType.CIRCLE)
+            else -> setOf(AttributeType.ARTIST)
         }
-
-
-        // === ORDERING
-
-        // Order by number of children (ObjectBox can't do that natively)
-        if (Settings.Value.ORDER_FIELD_CHILDREN == orderField) {
-            val result = MediatorLiveData<List<Group>>()
-            result.addSource(workingData) { groups ->
-                val sortOrder = if (orderDesc) -1 else 1
-                val orderedByNbChildren = groups.sortedBy { it.getItems().size * sortOrder }
-                result.value = orderedByNbChildren
-            }
-            return result
+        noArtistGroup.searchUri = buildSearchUri(null, excludedTypes).toString()
+        // Populate with Content
+        val content = ObjectBoxDB.selectContentIdsWithoutAttributesQ(excludedTypes).safeFind()
+        val items = content.mapIndexed { idx2, c ->
+            if (0 == idx2) noArtistGroup.coverContent.target = c
+            GroupItem(c.id, noArtistGroup, idx2)
         }
+        noArtistGroup.setItems(items)
+        noArtistLive.postValue(listOf(noArtistGroup))
 
-        // Order by latest download date of children (ObjectBox can't do that natively)
-        if (Settings.Value.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE == orderField) {
-            val result = MediatorLiveData<List<Group>>()
-            result.addSource(workingData) { groups ->
-                val sortOrder = if (orderDesc) -1 else 1
-                val orderedByDlDate = groups.sortedBy {
-                    getLatestDlDate(it) * sortOrder
-                }
-                result.value = orderedByDlDate
+        // Merge actual groups with the "no artist / circle" forged group
+        val combined =
+            Two(noArtistLive, livedata2, false) { data1, data2 ->
+                val result = ArrayList<Group>()
+                result.addAll(data1)
+                result.addAll(data2)
+                result.toList()
             }
-            return result
+        var workingData: LiveData<List<Group>> = combined
+
+        // Step 2 : Enrich with favourites, ratings and custom covers by joining with saved Groups
+        val flaggedArtistGroups =
+            ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, true).safeFind()
+                .groupBy { it.name }.mapValues { it.value.first() }
+        val livedata3 = MediatorLiveData<List<Group>>()
+        livedata3.addSource(workingData) { groups ->
+            val enrichedWithFlags =
+                groups.map { enrichGroupWithFlags(it, flaggedArtistGroups) }
+            livedata3.value = enrichedWithFlags
         }
+        workingData = livedata3
+
+        // Step 3 : Filter if needed
+
 
         return workingData
+    }
+
+    private fun enrichGroupWithFlags(g: Group, flaggedGroups: Map<String, Group>): Group {
+        flaggedGroups[g.name]?.let {
+            g.id = it.id
+            g.rating = it.rating
+            g.favourite = it.favourite
+            if (it.coverContent.targetId > 0 && it.coverContent.targetId != g.coverContent.targetId)
+                g.coverContent.target = it.coverContent.target
+        }
+        return g
     }
 
     override fun selectGroup(groupId: Long): Group? {
@@ -845,14 +861,14 @@ class ObjectBoxDAO : CollectionDAO {
         maxDays: Int
     ): List<GroupItem> {
         val contentResult = ObjectBoxDB.selectContentByDlDate(minDays, maxDays)
-        return contentResult.map { c -> GroupItem(c, group, -1) }
+        return contentResult.map { GroupItem(it, group, -1) }
     }
 
     private fun selectGroupItemsByQuery(group: Group): List<GroupItem> {
         val criteria = parseSearchUri(group.searchUri.toUri())
         val bundle = fromSearchCriteria(criteria)
         val contentResult = searchContentIds(bundle, this)
-        return contentResult.map { c -> GroupItem(c, group, -1) }
+        return contentResult.map { GroupItem(it, group, -1) }
     }
 
     override fun deleteGroupItems(groupItemIds: List<Long>) {
