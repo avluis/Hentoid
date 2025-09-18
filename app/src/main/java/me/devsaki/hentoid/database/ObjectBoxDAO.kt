@@ -10,9 +10,11 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.objectbox.android.ObjectBoxDataSource
 import io.objectbox.android.ObjectBoxLiveData
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxPredeterminedDataSource.PredeterminedDataSourceFactory
 import me.devsaki.hentoid.database.ObjectBoxRandomDataSource.RandomDataSourceFactory
 import me.devsaki.hentoid.database.domains.Attribute
@@ -708,7 +710,7 @@ class ObjectBoxDAO : CollectionDAO {
         groupNonFavouritesOnly: Boolean,
         filterRating: Int,
     ): LiveData<List<Group>> {
-        // Step 1 : Select as many groups as there are non-empty artist/circle master data
+        // Select as many groups as there are non-empty artist/circle master data
         val attrsLive: LiveData<List<Attribute>> = ObjectBoxLiveData(
             ObjectBoxDB.selectArtistsQ(query, orderDesc, artistGroupVisibility)
         )
@@ -730,7 +732,13 @@ class ObjectBoxDAO : CollectionDAO {
 
         // Forge the "no artist / circle" group
         val noArtistLive: MutableLiveData<List<Group>> = MutableLiveData<List<Group>>()
-        val noArtistGroup = Group(Grouping.DYNAMIC, "No artist", 0) // TODO adapt & translate label
+        val exludedGrpRes = when (artistGroupVisibility) {
+            Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS -> R.string.no_artist_circle_group_name
+            Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> R.string.no_circle_group_name
+            else -> R.string.no_artist_group_name
+        }
+        val exludedGrpLbl = HentoidApp.getInstance().resources.getString(exludedGrpRes)
+        val noArtistGroup = Group(Grouping.DYNAMIC, exludedGrpLbl, 0)
         val excludedTypes: Set<AttributeType> = when (artistGroupVisibility) {
             Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS ->
                 setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
@@ -753,7 +761,7 @@ class ObjectBoxDAO : CollectionDAO {
             ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, true)
         )
 
-        // Merge actual groups with the "no artist / circle" forged group and the flagged groups
+        // Merge actual groups with the "no artist / circle" forged group and enrich with flagged groups
         val combined =
             MergerLiveData.Three(
                 noArtistLive,
@@ -764,15 +772,32 @@ class ObjectBoxDAO : CollectionDAO {
                 val result = ArrayList<Group>()
                 result.addAll(noArtistGrp)
                 val flaggedMap = flaggedGrps.groupBy { it.name }.mapValues { it.value.first() }
-                result.addAll(dynamicGrps.map { enrichGroupWithFlags(it, flaggedMap) })
+                result.addAll(
+                    dynamicGrps.map { enrichGroupWithFlags(it, flaggedMap) }
+                        .filter {
+                            filterGroup(
+                                it,
+                                groupFavouritesOnly,
+                                groupNonFavouritesOnly,
+                                filterRating
+                            )
+                        }
+                )
                 result.toList()
             }
-        var workingData: LiveData<List<Group>> = combined
+        return combined
+    }
 
-        // Step 3 : Filter if needed
-
-
-        return workingData
+    private fun filterGroup(
+        g: Group,
+        groupFavouritesOnly: Boolean,
+        groupNonFavouritesOnly: Boolean,
+        filterRating: Int
+    ): Boolean {
+        if (!groupFavouritesOnly && !groupNonFavouritesOnly && -1 == filterRating) return true
+        return (groupFavouritesOnly && g.favourite)
+                || (groupNonFavouritesOnly && !g.favourite)
+                || (filterRating > -1 && g.rating == filterRating)
     }
 
     private fun enrichGroupWithFlags(g: Group, flaggedGroups: Map<String, Group>): Group {
