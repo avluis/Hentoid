@@ -9,6 +9,7 @@ import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.database.isReachable
 import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.AttributeType
@@ -127,7 +128,7 @@ data class Attribute(
             for (loc in this.locations) {
                 if (sourceLocation.site == loc.site) {
                     foundSite = true
-                    if (sourceLocation.url != loc.url) Timber.w(
+                    if (BuildConfig.DEBUG && sourceLocation.url != loc.url) Timber.d(
                         "'%s' Attribute location mismatch : current '%s' vs. add's target '%s'",
                         this.name, loc.url, sourceLocation.url
                     )
