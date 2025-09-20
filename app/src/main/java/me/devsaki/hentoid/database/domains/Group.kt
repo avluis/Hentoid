@@ -56,6 +56,10 @@ data class Group(
         return items.safeReach(this)
     }
 
+    fun getItemsCount(): Int {
+        return items.count()
+    }
+
     fun setItems(items: List<GroupItem>?): Group {
         // We do want to compare array references, not content
         if (items != null && items !== this.items) {
@@ -88,7 +92,7 @@ data class Group(
     }
 
     fun uniqueHash(): Long {
-        return hash64((grouping.name + "." + name + "." + subtype).toByteArray())
+        return hash64(("${grouping.name}.$name.$subtype").toByteArray())
     }
 
     class GroupingConverter : PropertyConverter<Grouping?, Int?> {

@@ -14,6 +14,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.parseSearchUri
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.database.ObjectBoxPredeterminedDataSource.PredeterminedDataSourceFactory
 import me.devsaki.hentoid.database.ObjectBoxRandomDataSource.RandomDataSourceFactory
 import me.devsaki.hentoid.database.domains.Attribute
@@ -752,10 +753,10 @@ class ObjectBoxDAO : CollectionDAO {
 
         val livedata2 = MediatorLiveData<List<Group>>()
         livedata2.addSource(attrsLive) { attrs ->
-            // WARNING : This is the place where things get slow
             val groups = attrs.mapIndexed { idx, attr ->
                 val group = Group(Grouping.DYNAMIC, attr.name, idx + 1)
                 group.searchUri = buildSearchUri(setOf(attr)).toString()
+                // WARNING : This is the place where things get slow
                 val items = attr.contents.mapIndexed { idx2, c ->
                     if (0 == idx2) group.coverContent.target = c
                     GroupItem(c.id, group, idx2)
@@ -773,8 +774,8 @@ class ObjectBoxDAO : CollectionDAO {
             Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> R.string.no_circle_group_name
             else -> R.string.no_artist_group_name
         }
-        //val exludedGrpLbl = HentoidApp.getInstance().resources.getString(exludedGrpRes) TODO
-        val noArtistGroup = Group(Grouping.DYNAMIC, exludedGrpRes.toString(), 0)
+        val exludedGrpLbl = HentoidApp.getInstance().resources.getString(exludedGrpRes)
+        val noArtistGroup = Group(Grouping.DYNAMIC, exludedGrpLbl, 0)
         val excludedTypes: Set<AttributeType> = when (artistGroupVisibility) {
             Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS ->
                 setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
