@@ -11,6 +11,7 @@ import io.objectbox.relation.ToOne
 import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Grouping.Companion.searchById
+import me.devsaki.hentoid.util.SEPARATOR_CHAR
 import me.devsaki.hentoid.util.hash64
 import java.util.Objects
 
@@ -94,8 +95,14 @@ data class Group(
         return Objects.hash(grouping.name, name, subtype)
     }
 
+    val uniqueStr
+        get() = "${grouping.name}$SEPARATOR_CHAR$name$SEPARATOR_CHAR$subtype"
+
+    val reducedStr
+        get() = "$name$SEPARATOR_CHAR$subtype"
+
     fun uniqueHash(): Long {
-        return hash64(("${grouping.name}.$name.$subtype").toByteArray())
+        return hash64(uniqueStr.toByteArray())
     }
 
     class GroupingConverter : PropertyConverter<Grouping?, Int?> {

@@ -756,6 +756,7 @@ class ObjectBoxDAO : CollectionDAO {
             val groups = attrs.mapIndexed { idx, attr ->
                 val group = Group(Grouping.DYNAMIC, attr.name, idx + 1)
                 group.searchUri = buildSearchUri(setOf(attr)).toString()
+                group.subtype = if (AttributeType.CIRCLE == attr.type) 1 else 0
                 // WARNING : This is the place where things get slow
                 val items = attr.contents.mapIndexed { idx2, c ->
                     if (0 == idx2) group.coverContent.target = c
@@ -796,7 +797,7 @@ class ObjectBoxDAO : CollectionDAO {
 
         // Flagged groups
         val flaggedLive: LiveData<List<Group>> = ObjectBoxLiveData(
-            ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, true)
+            ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, false)
         )
 
         // Merge actual groups with the "no artist / circle" forged group and enrich with flagged groups
@@ -809,8 +810,8 @@ class ObjectBoxDAO : CollectionDAO {
             ) { noArtistGrp, dynamicGrps, flaggedGrps ->
                 val result = ArrayList<Group>()
                 result.addAll(noArtistGrp)
-                val flaggedMap = flaggedGrps.groupBy { it.name }.mapValues { it.value.first() }
-                // TODO it's pointless to create groupItems and to discard them on the 2nd pass -> filter on the go
+                val flaggedMap = flaggedGrps.groupBy { it.reducedStr }.mapValues { it.value.first() }
+                // TODO it's pointless to create groupItems and to discard them on the 2nd pass -> should filter on the go instead
                 val enrichedGrps = dynamicGrps.map { enrichGroupWithFlags(it, flaggedMap) }
                 if (groupFavouritesOnly || groupNonFavouritesOnly || filterRating > -1) {
                     result.addAll(enrichedGrps.filter {
@@ -841,13 +842,16 @@ class ObjectBoxDAO : CollectionDAO {
     }
 
     private fun enrichGroupWithFlags(g: Group, flaggedGroups: Map<String, Group>): Group {
-        flaggedGroups[g.name]?.let {
+        flaggedGroups[g.reducedStr]?.let {
+            if (it.coverContent.targetId < 1) it.coverContent = g.coverContent
+            it.setItems(g.getItems())
             return it
         }
         return g
     }
 
     override fun selectGroup(groupId: Long): Group? {
+        if (groupId < 1) return null
         return ObjectBoxDB.selectGroup(groupId)
     }
 

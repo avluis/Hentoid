@@ -48,7 +48,6 @@ import com.mikepenz.fastadapter.swipe.SimpleSwipeDrawerCallback
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDrawerDragCallback
 import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import com.skydoves.powermenu.PowerMenuItem
-import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.MetadataEditActivity
@@ -68,7 +67,6 @@ import me.devsaki.hentoid.databinding.FragmentLibraryContentBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.SelectSiteDialogFragment
@@ -76,7 +74,6 @@ import me.devsaki.hentoid.fragments.library.LibraryTransformDialogFragment.Compa
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
 import me.devsaki.hentoid.fragments.library.SplitDialogFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.QueuePosition
@@ -615,10 +612,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
      */
     private fun onMassRateClick() {
         selectExtension?.selectedItems?.let { selectedItems ->
-            val selectedIds = selectedItems.mapNotNull { ci -> ci.content }.map { c -> c.id }
-            if (selectedIds.isNotEmpty()) {
-                invoke(this, selectedIds.toLongArray(), 0)
-            }
+            val selectedIds = selectedItems.mapNotNull { it.content }.map { it.id.toString() }
+            if (selectedIds.isNotEmpty()) invoke(this, selectedIds, 0)
         }
     }
 
@@ -889,7 +884,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 R.string.yes
             ) { dialog1, _ ->
                 dialog1.dismiss()
-                viewModel.setGroupCoverContent(group!!.id, content)
+                viewModel.setGroupCoverContent(group!!, content)
                 leaveSelectionMode()
             }
             .setNegativeButton(
@@ -1536,19 +1531,19 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     /**
-     * Callback for the rating dialog
-     */
-    override fun rateItems(itemIds: LongArray, newRating: Int) {
-        viewModel.rateContents(itemIds.asList(), newRating) { refreshIfNeeded() }
-    }
-
-    /**
      * Callback for the "rating" button of the book holder
      *
      * @param content Content whose "rating" button has been clicked on
      */
     private fun onBookRatingClick(content: Content) {
-        invoke(this, longArrayOf(content.id), content.rating)
+        invoke(this, listOf(content.id.toString()), content.rating)
+    }
+
+    /**
+     * Callback for the rating dialog
+     */
+    override fun rateItems(itemIds: List<String>, newRating: Int) {
+        viewModel.rateContents(itemIds.map { it.toLong() }, newRating) { refreshIfNeeded() }
     }
 
     private fun redownloadFromScratch(contentList: List<Content>) {

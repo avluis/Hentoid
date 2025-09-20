@@ -22,10 +22,10 @@ class RatingDialogFragment : BaseDialogFragment<RatingDialogFragment.Parent>() {
         private const val RATING = "RATING"
         private const val ITEM_IDS = "ITEM_IDS"
 
-        operator fun invoke(parent: Fragment, itemIds: LongArray, initialRating: Int) {
+        operator fun invoke(parent: Fragment, itemIds: List<String>, initialRating: Int) {
             val args = Bundle()
             args.putInt(RATING, initialRating)
-            args.putLongArray(ITEM_IDS, itemIds)
+            args.putStringArrayList(ITEM_IDS, ArrayList(itemIds))
             invoke(parent, RatingDialogFragment(), args)
         }
     }
@@ -35,13 +35,13 @@ class RatingDialogFragment : BaseDialogFragment<RatingDialogFragment.Parent>() {
 
     // === VARIABLES
     private var initialRating = 0
-    private var itemIds: LongArray? = null
+    private var itemIds: List<String>? = null
     private var closeDebouncer: Debouncer<Int>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         initialRating = requireArguments().getInt(RATING)
-        itemIds = requireArguments().getLongArray(ITEM_IDS)
+        itemIds = requireArguments().getStringArrayList(ITEM_IDS)
     }
 
     override fun onCreateView(
@@ -99,7 +99,7 @@ class RatingDialogFragment : BaseDialogFragment<RatingDialogFragment.Parent>() {
     }
 
     interface Parent {
-        fun rateItems(itemIds: LongArray, newRating: Int)
+        fun rateItems(itemIds: List<String>, newRating: Int)
         fun leaveSelectionMode()
     }
 }

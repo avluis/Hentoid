@@ -365,7 +365,14 @@ class LibraryGroupsFragment : Fragment(),
      * @param group Group whose "rating" button has been clicked on
      */
     private fun onGroupRatingClick(group: Group) {
-        invoke(this, longArrayOf(group.id), group.rating)
+        invoke(this, listOf(group.uniqueStr), group.rating)
+    }
+
+    /**
+     * Callback for the rating dialog
+     */
+    override fun rateItems(itemIds: List<String>, newRating: Int) {
+        viewModel.rateGroups(itemIds, newRating)
     }
 
     /**
@@ -599,8 +606,8 @@ class LibraryGroupsFragment : Fragment(),
      */
     private fun onMassRateClick() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
-        val selectedIds = selectedItems.map { it.group }.map { it.id }
-        if (selectedIds.isNotEmpty()) invoke(this, selectedIds.toLongArray(), 0)
+        val selectedIds = selectedItems.map { it.group }.map { it.uniqueStr }
+        if (selectedIds.isNotEmpty()) invoke(this, selectedIds, 0)
     }
 
     /**
@@ -1002,13 +1009,6 @@ class LibraryGroupsFragment : Fragment(),
 
     override fun itemTouchStopDrag(viewHolder: RecyclerView.ViewHolder) {
         // Nothing
-    }
-
-    /**
-     * Callback for the rating dialog
-     */
-    override fun rateItems(itemIds: LongArray, newRating: Int) {
-        viewModel.rateGroups(itemIds.asList(), newRating)
     }
 
     override fun leaveSelectionMode() {

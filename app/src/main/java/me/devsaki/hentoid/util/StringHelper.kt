@@ -11,6 +11,7 @@ private val NUMERIC_PATTERN by lazy { Pattern.compile("-?\\d+(\\.\\d+)?") }
 private val STRING_CLEANUP_INVALID_CHARS_PATTERN by lazy { Pattern.compile("[(\\[\\-+?!_~/,:;|.#\"'’=&)\\]]") }
 private val SEPARATOR_PATTERN by lazy { "\\W".toRegex() }
 val LATIN_1: Charset by lazy { Charset.forName("ISO-8859-1") }
+const val SEPARATOR_CHAR = "\u09BA"
 
 /**
  * Return the given string formatted with a capital letter as its first letter

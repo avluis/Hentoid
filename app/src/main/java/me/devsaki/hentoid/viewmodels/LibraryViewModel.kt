@@ -61,6 +61,7 @@ import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.reparseFromScratch
+import me.devsaki.hentoid.util.splitUniqueStr
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
@@ -723,7 +724,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
                                 // Reparse content itself
-                                res = reparseFromScratch(c, dao)
+                                res = reparseFromScratch(c)
                             }
 
                             // Reparse chapters from scratch if images are KO
@@ -750,7 +751,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 if (!isDownloadable) msg += " (pages unreachable)"
                                 Timber.d(msg)
                                 // Reparse content itself
-                                res = reparseFromScratch(c, dao, reparseImages)
+                                res = reparseFromScratch(c, reparseImages)
                             }
                         }
 
@@ -925,9 +926,20 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
     }
 
-    fun setGroupCoverContent(groupId: Long, coverContent: Content) {
-        val localGroup = dao.selectGroup(groupId) ?: return
-        localGroup.coverContent.setAndPutTarget(coverContent)
+    fun setGroupCoverContent(group: Group, coverContent: Content) {
+        // Check if given group still exists in DB
+        var theGroup = dao.selectGroup(group.id)
+        if (null == theGroup && Settings.groupingDisplay == Grouping.ARTIST.id) {
+            // Create flagged group
+            theGroup = Group(Grouping.ARTIST, group.name, -1)
+            theGroup.subtype = group.subtype
+
+            // Persist in it DB
+            theGroup.id = dao.insertGroup(theGroup)
+        }
+        theGroup ?: throw InvalidParameterException("Invalid GroupId : ${group.id}")
+
+        theGroup.coverContent.setAndPutTarget(coverContent)
         dao.cleanup()
     }
 
@@ -1076,7 +1088,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (group.isBeingProcessed) return
         viewModelScope.launch {
             try {
-                doToggleGroupFavourite(group.id, group.name)
+                doToggleGroupFavourite(group.id, group.name, group.subtype)
             } catch (t: Throwable) {
                 Timber.e(t)
             }
@@ -1089,13 +1101,14 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param groupId ID of the group whose favourite state to toggle
      * @return Resulting group
      */
-    private suspend fun doToggleGroupFavourite(groupId: Long, name: String) =
+    private suspend fun doToggleGroupFavourite(groupId: Long, name: String, subtype: Int) =
         withContext(Dispatchers.IO) {
             // Check if given group still exists in DB
             var theGroup = dao.selectGroup(groupId)
             if (null == theGroup && Settings.groupingDisplay == Grouping.ARTIST.id) {
                 // Create flagged group
                 theGroup = Group(Grouping.ARTIST, name, -1)
+                theGroup.subtype = subtype
             }
             theGroup ?: throw InvalidParameterException("Invalid GroupId : $groupId")
 
@@ -1112,10 +1125,10 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Set the rating to the given value for the given group IDs
      *
-     * @param groupIds     Group IDs to set the rating for
+     * @param groupIds     Groups IDs to set the rating for
      * @param targetRating Rating to set
      */
-    fun rateGroups(groupIds: List<Long>, targetRating: Int) {
+    fun rateGroups(groupIds: List<String>, targetRating: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             groupIds.forEach {
                 try {
@@ -1132,13 +1145,20 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Set the rating to the given value for the given group ID
      *
-     * @param groupId      Group ID to set the rating for
+     * @param uniqueStr    Group unique String to set the rating for
      * @param targetRating Rating to set
      */
-    private suspend fun doRateGroup(groupId: Long, targetRating: Int): Group {
-        // Check if given content still exists in DB
-        val theGroup = dao.selectGroup(groupId)
-            ?: throw InvalidParameterException("Invalid GroupId : $groupId")
+    private suspend fun doRateGroup(uniqueStr: String, targetRating: Int): Group {
+        // Check if given group still exists in DB
+        val parts = splitUniqueStr(uniqueStr)
+        val grouping = Grouping.searchByName(parts.first)
+        var theGroup = dao.selectGroupByName(grouping.id, parts.second)
+        if (null == theGroup && Settings.groupingDisplay == Grouping.ARTIST.id) {
+            // Create flagged group
+            theGroup = Group(Grouping.ARTIST, parts.second, -1)
+            theGroup.subtype = parts.third
+        }
+        theGroup ?: throw InvalidParameterException("Invalid uniqueStr : $uniqueStr")
 
         if (!theGroup.isBeingProcessed) {
             theGroup.rating = targetRating
