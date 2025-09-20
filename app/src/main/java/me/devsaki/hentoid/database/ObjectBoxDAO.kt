@@ -776,6 +776,7 @@ class ObjectBoxDAO : CollectionDAO {
         }
         val exludedGrpLbl = HentoidApp.getInstance().resources.getString(exludedGrpRes)
         val noArtistGroup = Group(Grouping.DYNAMIC, exludedGrpLbl, 0)
+        noArtistGroup.subtype = 2
         val excludedTypes: Set<AttributeType> = when (artistGroupVisibility) {
             Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS ->
                 setOf(AttributeType.ARTIST, AttributeType.CIRCLE)

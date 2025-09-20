@@ -141,7 +141,9 @@ class GroupDisplayItem(
 
             ivFavourite?.let {
                 it.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-                if (item.group.favourite) {
+                if (item.group.isUngroupedGroup) it.isVisible = false
+
+                if (it.isVisible && item.group.favourite) {
                     it.setIconResource(R.drawable.ic_fav_full)
                 } else {
                     it.setIconResource(R.drawable.ic_fav_empty)
@@ -150,7 +152,9 @@ class GroupDisplayItem(
 
             ivRating?.let {
                 it.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-                it.setIconResource(getRatingResourceId(item.group.rating))
+                if (item.group.isUngroupedGroup) it.isVisible = false
+
+                if (it.isVisible) it.setIconResource(getRatingResourceId(item.group.rating))
             }
 
             topButton?.isVisible = true

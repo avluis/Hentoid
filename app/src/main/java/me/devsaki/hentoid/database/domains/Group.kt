@@ -22,8 +22,9 @@ data class Group(
     @Convert(converter = GroupingConverter::class, dbType = Int::class)
     var grouping: Grouping = Grouping.NONE,
     var name: String = "",
-    // in Grouping.ARTIST : 0 = Artist; 1 = Group
+    // in Grouping.ARTIST : 0 = Artist; 1 = Group; 2 = Ungrouped
     // in Grouping.CUSTOM : 0 = Custom; 1 = Ungrouped
+    // in Grouping.DYNAMIC : 2 = Ungrouped
     var subtype: Int = 0,
     var order: Int = 0,
     var hasCustomBookOrder: Boolean = false,
@@ -73,7 +74,9 @@ data class Group(
         get() = items.sortedBy { it.order }.map(GroupItem::contentId)
 
     val isUngroupedGroup: Boolean
-        get() = Grouping.CUSTOM == grouping && 1 == subtype
+        get() = (Grouping.CUSTOM == grouping && 1 == subtype)
+                || (Grouping.ARTIST == grouping && 2 == subtype)
+                || (Grouping.DYNAMIC == grouping && 2 == subtype)
 
     val linkedCoverContent: Content?
         get() = coverContent.safeReach(this)
