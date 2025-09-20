@@ -1991,36 +1991,6 @@ object ObjectBoxDB {
         return qb.build()
     }
 
-    fun selectContentArtistsQ(
-        query: String?,
-        artistGroupVisibility: Int,
-    ): Query<Content> {
-        val qcArtist = Attribute_.type.equal(AttributeType.ARTIST.code)
-        val qcCircle = Attribute_.type.equal(AttributeType.CIRCLE.code)
-        val qcType =
-            when (artistGroupVisibility) {
-                Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS -> qcArtist.or(qcCircle)
-                Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> qcCircle
-                else -> qcArtist
-            }
-        val qcName =
-            Attribute_.name.contains(query ?: "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-        val qcFinal = if (null == query) qcType else qcType.and(qcName)
-
-        store.boxFor(Attribute::class.java).query(qcFinal).safeFindIds()
-
-        val contentQuery = store.boxFor(Content::class.java).query()
-        contentQuery.link(Content_.attributes).apply(qcFinal)
-        return contentQuery.build()
-
-        /*
-        contentFromAttributeTypesSearchQ.setParameter(
-            Attribute_.type,
-            it.code.toLong()
-        )
-         */
-    }
-
     fun selectContentIdsWithoutAttributes(
         types: List<AttributeType>
     ): LongArray {
@@ -2054,14 +2024,12 @@ object ObjectBoxDB {
                 ).findIds().toSet()
             )
         }
-        Timber.d(">>ccc-01")
 
         // Select all eligible content
         val allContentQ =
             store.boxFor(Content::class.java).query()
                 .inValues(Content_.status, libraryStatus)
                 .notIn(Content_.id, excludedIds.toLongArray())
-        Timber.d(">>ccc-02")
 
         return allContentQ.build()
     }
@@ -2071,10 +2039,6 @@ object ObjectBoxDB {
         val qcRating: QueryCondition<Group> = Group_.rating.greater(0)
         val qc = Group_.grouping.equal(grouping).and(qcFavs.or(qcRating))
         return store.boxFor(Group::class.java).query(qc).safeFind()
-    }
-
-    fun attachGroup(entity: Group) {
-        store.boxFor(Group::class.java).attach(entity)
     }
 
     fun selectGroup(groupId: Long): Group? {

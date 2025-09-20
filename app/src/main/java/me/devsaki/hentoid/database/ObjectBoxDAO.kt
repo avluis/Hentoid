@@ -626,7 +626,6 @@ class ObjectBoxDAO : CollectionDAO {
         }
 
         // === SIZE
-        Timber.d(">>fff")
         if (displaySize) {
             val livedata3 = MediatorLiveData<List<Group>>()
             livedata3.addSource(workingData) { groups ->
@@ -662,7 +661,6 @@ class ObjectBoxDAO : CollectionDAO {
             }
             return result
         }
-        Timber.d(">>zzz")
         return workingData
     }
 
@@ -735,21 +733,6 @@ class ObjectBoxDAO : CollectionDAO {
         countAll: Boolean
     ): LiveData<List<Group>> {
         // Select as many groups as there are non-empty artist/circle master data
-        Timber.d(">>aaa")
-
-        /*
-        val contentAttrsLive = ObjectBoxLiveData(
-            ObjectBoxDB.selectContentArtistsQ(query, artistGroupVisibility)
-        )
-
-        val livedata2 = MediatorLiveData<List<Group>>()
-        livedata2.addSource(contentAttrsLive) { content ->
-
-            livedata2.value = groupsLive
-        }
-
-         */
-
         val attrsLive: LiveData<List<Attribute>> = ObjectBoxLiveData(
             ObjectBoxDB.selectArtistsQ(query, orderDesc, artistGroupVisibility)
         )
@@ -757,13 +740,11 @@ class ObjectBoxDAO : CollectionDAO {
         if (countAll) {
             val countLive = MediatorLiveData<List<Group>>()
             countLive.addSource(attrsLive) { attrs ->
-                Timber.d(">>c01")
                 // We're just counting, we don't need to instanciate multiple groups
                 // NB : +1 is for the "no artist" group
                 val bogusGroup = Group()
                 val groups: MutableList<Group> = ArrayList(attrs.size + 1)
                 repeat(attrs.size + 1) { groups.add(bogusGroup) }
-                Timber.d(">>c02")
                 countLive.value = groups
             }
             return countLive
@@ -771,7 +752,7 @@ class ObjectBoxDAO : CollectionDAO {
 
         val livedata2 = MediatorLiveData<List<Group>>()
         livedata2.addSource(attrsLive) { attrs ->
-            Timber.d(">>01")
+            // WARNING : This is the place where things get slow
             val groups = attrs.mapIndexed { idx, attr ->
                 val group = Group(Grouping.DYNAMIC, attr.name, idx + 1)
                 group.searchUri = buildSearchUri(setOf(attr)).toString()
@@ -780,22 +761,18 @@ class ObjectBoxDAO : CollectionDAO {
                     GroupItem(c.id, group, idx2)
                 }
                 group.setItems(items)
-//                  group.setItems(attr.contents.mapIndexed { idx, c -> GroupItem(c.id, group, idx) })
                 group
             }
-            Timber.d(">>02")
             livedata2.value = groups
         }
 
         // Forge the "no artist / circle" group
-        Timber.d(">>bbb")
         val noArtistLive: MutableLiveData<List<Group>> = MutableLiveData<List<Group>>()
         val exludedGrpRes = when (artistGroupVisibility) {
             Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS -> R.string.no_artist_circle_group_name
             Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> R.string.no_circle_group_name
             else -> R.string.no_artist_group_name
         }
-        Timber.d(">>ccc")
         //val exludedGrpLbl = HentoidApp.getInstance().resources.getString(exludedGrpRes) TODO
         val noArtistGroup = Group(Grouping.DYNAMIC, exludedGrpRes.toString(), 0)
         val excludedTypes: Set<AttributeType> = when (artistGroupVisibility) {
@@ -812,7 +789,6 @@ class ObjectBoxDAO : CollectionDAO {
             if (0 == idx2) noArtistGroup.coverContent.target = c
             GroupItem(c.id, noArtistGroup, idx2)
         }
-        Timber.d(">>ddd")
         noArtistGroup.setItems(items)
         noArtistLive.postValue(listOf(noArtistGroup))
 
@@ -820,7 +796,6 @@ class ObjectBoxDAO : CollectionDAO {
         val flaggedLive: LiveData<List<Group>> = ObjectBoxLiveData(
             ObjectBoxDB.selectGroupsByGroupingQ(Grouping.ARTIST.id, true)
         )
-        Timber.d(">>eee")
 
         // Merge actual groups with the "no artist / circle" forged group and enrich with flagged groups
         val combined =
@@ -831,15 +806,11 @@ class ObjectBoxDAO : CollectionDAO {
                 false
             ) { noArtistGrp, dynamicGrps, flaggedGrps ->
                 val result = ArrayList<Group>()
-                Timber.d(">>03")
                 result.addAll(noArtistGrp)
-                Timber.d(">>04")
                 val flaggedMap = flaggedGrps.groupBy { it.name }.mapValues { it.value.first() }
-                Timber.d(">>05")
                 // TODO it's pointless to create groupItems and to discard them on the 2nd pass -> filter on the go
                 val enrichedGrps = dynamicGrps.map { enrichGroupWithFlags(it, flaggedMap) }
                 if (groupFavouritesOnly || groupNonFavouritesOnly || filterRating > -1) {
-                    Timber.d(">>06")
                     result.addAll(enrichedGrps.filter {
                         filterGroup(
                             it,
@@ -849,10 +820,8 @@ class ObjectBoxDAO : CollectionDAO {
                         )
                     })
                 } else {
-                    Timber.d(">>06")
                     result.addAll(enrichedGrps)
                 }
-                Timber.d(">>07")
                 result.toList()
             }
         return combined
@@ -872,21 +841,6 @@ class ObjectBoxDAO : CollectionDAO {
     private fun enrichGroupWithFlags(g: Group, flaggedGroups: Map<String, Group>): Group {
         flaggedGroups[g.name]?.let {
             return it
-            /*
-            // Create new instance to avoid modifiying the values inside the former reference
-            val newG =
-                Group(id = it.id, name = g.name, rating = it.rating, favourite = it.favourite)
-            ObjectBoxDB.attachGroup(newG)
-            g.getItems().let { items ->
-                if (items.isEmpty()) return@let
-                if (it.coverContent.targetId > 0/* && it.coverContent.targetId != g.coverContent.targetId*/)
-                    newG.coverContent.target = it.coverContent.target
-                else
-                    newG.coverContent.target = items.first().linkedContent
-                newG.setItems(items)
-            }
-            return newG
-             */
         }
         return g
     }
