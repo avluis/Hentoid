@@ -253,7 +253,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 // Send results and total count with the same LiveData
                 val combined =
                     MergerLiveData.Two(newSource, newTotalSource, false) { data1, data2 ->
-                        Pair(data1, data2.size)
+                        Pair(data1, data2)
                     }
 
                 withContext(Dispatchers.Main) {
@@ -471,6 +471,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val currentGrouping = Settings.groupingDisplay
         if (groupingId != currentGrouping) {
             Settings.groupingDisplay = groupingId
+            // Already handled by LibraryActivity.onSharedPreferenceChanged
+            if (currentGrouping == Grouping.FLAT.id) return
+
             when (groupingId) {
                 Grouping.FLAT.id -> viewModelScope.launch { doSearchContent() }
                 Grouping.FOLDERS.id -> viewModelScope.launch { doSearchFolders() }

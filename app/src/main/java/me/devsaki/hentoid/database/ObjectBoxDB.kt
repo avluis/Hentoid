@@ -116,12 +116,10 @@ object ObjectBoxDB {
     }
 
     private fun buildContentFromAttributeTypesSearchQ(): Query<Content> {
-        val contentFromAttributesQueryBuilder = store.boxFor(
-            Content::class.java
-        ).query()
-        contentFromAttributesQueryBuilder.`in`(Content_.status, libraryStatus)
-        contentFromAttributesQueryBuilder.link(Content_.attributes).equal(Attribute_.type, 0)
-        return contentFromAttributesQueryBuilder.build()
+        val qb = store.boxFor(Content::class.java).query()
+        qb.`in`(Content_.status, libraryStatus)
+        qb.link(Content_.attributes).equal(Attribute_.type, 0)
+        return qb.build()
     }
 
     private fun buildContentFromSourceSearchQ(): Query<Content> {
@@ -1957,10 +1955,8 @@ object ObjectBoxDB {
                 qb.equal(Group_.subtype, subType.toLong())
             }
         }
-        if (groupFavouritesOnly) qb.equal(
-            Group_.favourite,
-            true
-        ) else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false)
+        if (groupFavouritesOnly) qb.equal(Group_.favourite, true)
+        else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false)
         if (filterRating > -1) qb.equal(Group_.rating, filterRating.toLong())
         val property =
             if (Settings.Value.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) Group_.order else Group_.name
@@ -1982,9 +1978,9 @@ object ObjectBoxDB {
                 Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> qcCircle
                 else -> qcArtist
             }
-        val qcContent =
+        val qcName =
             Attribute_.name.contains(query ?: "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-        val qcFinal = if (null == query) qcType else qcType.and(qcContent)
+        val qcFinal = if (null == query) qcType else qcType.and(qcName)
 
         val qb = store.boxFor(Attribute::class.java).query(qcFinal)
 
@@ -1993,6 +1989,36 @@ object ObjectBoxDB {
         if (orderDesc) qb.orderDesc(property) else qb.order(property)
 
         return qb.build()
+    }
+
+    fun selectContentArtistsQ(
+        query: String?,
+        artistGroupVisibility: Int,
+    ): Query<Content> {
+        val qcArtist = Attribute_.type.equal(AttributeType.ARTIST.code)
+        val qcCircle = Attribute_.type.equal(AttributeType.CIRCLE.code)
+        val qcType =
+            when (artistGroupVisibility) {
+                Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS -> qcArtist.or(qcCircle)
+                Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> qcCircle
+                else -> qcArtist
+            }
+        val qcName =
+            Attribute_.name.contains(query ?: "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+        val qcFinal = if (null == query) qcType else qcType.and(qcName)
+
+        store.boxFor(Attribute::class.java).query(qcFinal).safeFindIds()
+
+        val contentQuery = store.boxFor(Content::class.java).query()
+        contentQuery.link(Content_.attributes).apply(qcFinal)
+        return contentQuery.build()
+
+        /*
+        contentFromAttributeTypesSearchQ.setParameter(
+            Attribute_.type,
+            it.code.toLong()
+        )
+         */
     }
 
     fun selectContentIdsWithoutAttributes(
@@ -2028,12 +2054,14 @@ object ObjectBoxDB {
                 ).findIds().toSet()
             )
         }
+        Timber.d(">>ccc-01")
 
         // Select all eligible content
         val allContentQ =
             store.boxFor(Content::class.java).query()
                 .inValues(Content_.status, libraryStatus)
                 .notIn(Content_.id, excludedIds.toLongArray())
+        Timber.d(">>ccc-02")
 
         return allContentQ.build()
     }
@@ -2045,7 +2073,7 @@ object ObjectBoxDB {
         return store.boxFor(Group::class.java).query(qc).safeFind()
     }
 
-    fun attachGroup(entity : Group) {
+    fun attachGroup(entity: Group) {
         store.boxFor(Group::class.java).attach(entity)
     }
 

@@ -40,7 +40,12 @@ interface CollectionDAO {
 
     fun selectContentByStorageRootUri(rootUri: String): List<Content>
 
-    fun selectContentByUrlOrCover(site: Site, contentUrl: String, coverUrl: String?, searchChapters: Boolean = true): Content?
+    fun selectContentByUrlOrCover(
+        site: Site,
+        contentUrl: String,
+        coverUrl: String?,
+        searchChapters: Boolean = true
+    ): Content?
 
     fun selectContentsByUrl(site: Site, contentUrl: String): Set<Content>
 
@@ -121,8 +126,11 @@ interface CollectionDAO {
         groupFavouritesOnly: Boolean,
         groupNonFavouritesOnly: Boolean,
         filterRating: Int,
-        displaySize : Boolean
+        displaySize: Boolean,
+        countAll: Boolean = false
     ): LiveData<List<Group>>
+
+    fun countAllGroupsLive(grouping: Int): LiveData<Int>
 
     fun selectGroups(grouping: Int): List<Group>
 
@@ -227,7 +235,7 @@ interface CollectionDAO {
 
     fun selectChapterImageFiles(ids: LongArray): List<ImageFile>
 
-    fun flagImagesForDeletion(ids : LongArray, value : Boolean)
+    fun flagImagesForDeletion(ids: LongArray, value: Boolean)
 
     fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>>
 
@@ -319,7 +327,7 @@ interface CollectionDAO {
 
     fun selectHistory(): List<SiteHistory>
 
-    fun insertSiteHistory(site: Site, url: String, timestamp : Long)
+    fun insertSiteHistory(site: Site, url: String, timestamp: Long)
 
 
     // BOOKMARKS

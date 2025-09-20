@@ -84,18 +84,8 @@ class GroupSearchManager() {
         )
     }
 
-    fun getAllGroups(dao: CollectionDAO): LiveData<List<Group>> {
-        return dao.selectGroupsLive(
-            values.groupingId,
-            "",
-            values.sortField,
-            values.sortDesc,
-            Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
-            groupFavouritesOnly = false,
-            groupNonFavouritesOnly = false,
-            filterRating = -1,
-            displaySize = Settings.libraryDisplayGroupFigure == LIBRARY_DISPLAY_GROUP_SIZE
-        )
+    fun getAllGroups(dao: CollectionDAO): LiveData<Int> {
+        return dao.countAllGroupsLive(values.groupingId)
     }
 
     class GroupSearchBundle(val bundle: Bundle = Bundle()) {

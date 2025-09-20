@@ -65,9 +65,9 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
 
             if (query.isNotEmpty()) searchUri.path(query)
 
-            if (attributes != null) addAttrs(attributes, searchUri)
+            if (!attributes.isNullOrEmpty()) addAttrs(attributes, searchUri)
 
-            if (excludedTypes != null) addAttrTypeExclusion(excludedTypes, searchUri)
+            if (!excludedTypes.isNullOrEmpty()) addAttrTypeExclusion(excludedTypes, searchUri)
 
             if (location > 0) searchUri.appendQueryParameter(ATTR_LOCATION, location.toString())
             if (contentType > 0) searchUri.appendQueryParameter(
@@ -91,7 +91,11 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
             }
         }
 
-        private fun addAttrTypeExclusion(excludedTypes: Collection<AttributeType>, uri: Uri.Builder) {
+        private fun addAttrTypeExclusion(
+            excludedTypes: Collection<AttributeType>,
+            uri: Uri.Builder
+        ) {
+            if (excludedTypes.isEmpty()) return
             uri.appendQueryParameter(
                 ATTR_EXCLUDED_TYPES,
                 TextUtils.join(";", excludedTypes.map { it.code })
@@ -129,6 +133,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                     if (ATTR_EXCLUDED_TYPES == typeStr)
                         excludedTypes.addAll(
                             uri.getQueryParameters(typeStr)[0].split(";")
+                                .filterNot { it.isEmpty() }
                                 .mapNotNull { AttributeType.searchByCode(it.toInt()) }
                         )
                     if (ATTR_LOCATION == typeStr)

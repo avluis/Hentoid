@@ -66,7 +66,7 @@ data class Group(
     }
 
     val contentIds: List<Long>
-        get() = items.toList().sortedBy { it.order }.map(GroupItem::contentId)
+        get() = items.sortedBy { it.order }.map(GroupItem::contentId)
 
     val isUngroupedGroup: Boolean
         get() = Grouping.CUSTOM == grouping && 1 == subtype

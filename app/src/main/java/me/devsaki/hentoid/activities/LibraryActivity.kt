@@ -903,8 +903,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun onGroupingChanged(targetGroupingId: Int) {
-        val targetGrouping = Grouping.searchById(targetGroupingId)
         if (grouping.id != targetGroupingId) {
+            val targetGrouping = Grouping.searchById(targetGroupingId)
+
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
             if (!targetGrouping.canReorderBooks && Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField) {
                 Settings.contentSortField = Settings.Default.ORDER_CONTENT_FIELD
