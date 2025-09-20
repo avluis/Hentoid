@@ -385,12 +385,20 @@ object ObjectBoxDB {
      */
     fun cleanupOrphanAttributes() {
         val attributeBox = store.boxFor(Attribute::class.java)
-        val locationBox = store.boxFor(AttributeLocation::class.java)
-        // Get the attributes to clean
-        val attrsToClean = attributeBox.query().filter { it.contents.isEmpty() }.safeFind()
+        // NB : QueryContent.relationCount doesn't work for many-to-many relations
+        val allAttrs = attributeBox.query().safeFindIds().toMutableSet()
 
+        val linkedAttrsQb = attributeBox.query()
+        linkedAttrsQb.link(Attribute_.contents)
+        val linkedAttrs = linkedAttrsQb.build().safeFindIds().toSet()
+
+        allAttrs.removeAll(linkedAttrs)
+        if (allAttrs.isEmpty()) return
+
+        val locationBox = store.boxFor(AttributeLocation::class.java)
         // Clean the attributes
-        for (attr in attrsToClean) {
+        val toRemove = attributeBox.get(allAttrs.toLongArray())
+        for (attr in toRemove) {
             Timber.v(">> Found empty attr : %s", attr.name)
             locationBox.remove(attr.locations)
             attr.locations.clear() // Clear location links
