@@ -40,6 +40,7 @@ import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.LIBRARY_DISPLAY_GROUP_SIZE
 import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle.Companion.fromSearchCriteria
@@ -758,10 +759,12 @@ class ObjectBoxDAO : CollectionDAO {
                 group.searchUri = buildSearchUri(setOf(attr)).toString()
                 group.subtype = if (AttributeType.CIRCLE == attr.type) 1 else 0
                 // WARNING : This is the place where things get slow
-                val items = attr.contents.mapIndexed { idx2, c ->
-                    if (0 == idx2) group.coverContent.target = c
-                    GroupItem(c.id, group, idx2)
-                }
+                val items = attr.contents
+                    .filter { isInLibrary(it.status) }
+                    .mapIndexed { idx2, c ->
+                        if (0 == idx2) group.coverContent.target = c
+                        GroupItem(c.id, group, idx2)
+                    }
                 group.setItems(items)
                 group
             }
@@ -810,7 +813,8 @@ class ObjectBoxDAO : CollectionDAO {
             ) { noArtistGrp, dynamicGrps, flaggedGrps ->
                 val result = ArrayList<Group>()
                 result.addAll(noArtistGrp)
-                val flaggedMap = flaggedGrps.groupBy { it.reducedStr }.mapValues { it.value.first() }
+                val flaggedMap =
+                    flaggedGrps.groupBy { it.reducedStr }.mapValues { it.value.first() }
                 // TODO it's pointless to create groupItems and to discard them on the 2nd pass -> should filter on the go instead
                 val enrichedGrps = dynamicGrps.map { enrichGroupWithFlags(it, flaggedMap) }
                 if (groupFavouritesOnly || groupNonFavouritesOnly || filterRating > -1) {
