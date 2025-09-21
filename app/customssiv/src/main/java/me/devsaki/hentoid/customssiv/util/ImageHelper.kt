@@ -1,5 +1,14 @@
 package me.devsaki.hentoid.customssiv.util
 
+import android.content.Context
+import android.graphics.BitmapFactory
+import android.graphics.Point
+import android.net.Uri
+import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import timber.log.Timber
+import java.io.IOException
 import java.nio.charset.StandardCharsets
 import kotlin.math.min
 
@@ -132,3 +141,33 @@ internal fun isImageAnimated(data: ByteArray): Boolean {
         else -> false
     }
 }
+
+/**
+ * Return the given image's dimensions
+ *
+ * @param context Context to be used
+ * @param uri     Uri of the image to be read
+ * @return Dimensions (x,y) of the given image
+ */
+internal suspend fun getImageDimensions(context: Context, uri: Uri): Point =
+    withContext(Dispatchers.IO) {
+        if (!fileExists(context, uri)) return@withContext Point(0, 0)
+
+        val ext = getExtensionFromUri(uri.toString())
+        if (ext == "jxl" || ext == "avif") {
+            return@withContext Point(0, 0) // Not supported by SSIV
+        } else { // Natively supported by Android
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            return@withContext try {
+                BitmapFactory.decodeStream(getInputStream(context, uri), null, options)
+                Point(options.outWidth, options.outHeight)
+            } catch (e: IOException) {
+                Timber.w(e)
+                Point(0, 0)
+            } catch (e: IllegalArgumentException) {
+                Timber.w(e)
+                Point(0, 0)
+            }
+        }
+    }

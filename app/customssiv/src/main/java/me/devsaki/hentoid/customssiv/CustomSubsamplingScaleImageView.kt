@@ -37,6 +37,7 @@ import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder
 import me.devsaki.hentoid.customssiv.util.Debouncer
+import me.devsaki.hentoid.customssiv.util.getImageDimensions
 import me.devsaki.hentoid.customssiv.util.getScreenDimensionsPx
 import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
@@ -552,7 +553,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 }
             } else {
                 // Load the bitmap as a single image
-                loadBitmapToImage(context, uri!!, targetScale = 1f)
+                uri?.let { loadBitmapToImage(context, it) }
             }
         }
     }
@@ -1400,14 +1401,21 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         }
     }
 
-    private fun loadBitmapToImage(context: Context, uri: Uri, targetScale: Float) {
+    private fun loadBitmapToImage(context: Context, uri: Uri, inTargetScale: Float? = null) {
         // Don't load when previous loading is still happening
         if (singleImage.loading) return
-        // Don't load something that's already loaded
-        if (singleImage.location == uri.toString() && abs(singleImage.targetScale - targetScale) < 0.01) return
 
         lifecycleScope?.launch {
             try {
+                val targetScale = if (null == inTargetScale) {
+                    val dims = getImageDimensions(context, uri)
+                    val sat = ScaleAndTranslate(0f, PointF(0f, 0f))
+                    fitToBounds(true, dims, sat).scale
+                } else inTargetScale
+
+                // Don't load something that's already loaded
+                if (singleImage.location == uri.toString() && abs(singleImage.targetScale - targetScale) < 0.01) return@launch
+
                 val bmp = loadBitmap(context, uri)
                 // Remove invalid results
                 val res = processBitmap(
@@ -1698,13 +1706,17 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * @param center Whether the image should be centered in the dimension it's too small to fill. While animating this can be false to avoid changes in direction as bounds are reached.
      * @param sat    The scale we want and the translation we're aiming for. The values are adjusted to be valid.
      */
-    private fun fitToBounds(center: Boolean, sSize: Point, sat: ScaleAndTranslate) {
+    private fun fitToBounds(
+        center: Boolean,
+        sSize: Point,
+        sat: ScaleAndTranslate
+    ): ScaleAndTranslate {
         var doCenter = center
         if (panLimit == PanLimit.OUTSIDE && isReady()) doCenter = false
 
         val targetvTranslate = sat.vTranslate
 
-        val targetScale = limitedScale(sat.scale)
+        val targetScale = limitedScale(sat.scale, sSize)
         val scaleWidth = targetScale * sSize.x
         val scaleHeight = targetScale * sSize.y
 
@@ -1741,6 +1753,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         targetvTranslate.y = min(targetvTranslate.y, maxTy)
 
         sat.scale = targetScale
+        return sat
     }
 
     /**
@@ -2413,42 +2426,43 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     /**
      * Returns the minimum allowed scale.
      */
-    private fun minScale(): Float {
+    private fun minScale(inDims: Point? = null): Float {
         val viewHeight = getHeightInternal() - paddingBottom + paddingTop
         val viewWidth = getWidthInternal() - paddingLeft + paddingRight
+        val dims = inDims ?: Point(sWidth(), sHeight())
 
         when (minimumScaleType) {
             ScaleType.CENTER_CROP, ScaleType.START -> return max(
-                viewWidth / sWidth().toFloat(),
-                viewHeight / sHeight().toFloat()
+                viewWidth / dims.x.toFloat(),
+                viewHeight / dims.y.toFloat()
             )
 
-            ScaleType.FIT_WIDTH -> return viewWidth / sWidth().toFloat()
-            ScaleType.FIT_HEIGHT -> return viewHeight / sHeight().toFloat()
+            ScaleType.FIT_WIDTH -> return viewWidth / dims.x.toFloat()
+            ScaleType.FIT_HEIGHT -> return viewHeight / dims.y.toFloat()
             ScaleType.ORIGINAL_SIZE -> return 1f
-            ScaleType.SMART_FIT -> return if (sHeight() > sWidth()) {
+            ScaleType.SMART_FIT -> return if (sHeight() > dims.x) {
                 // Fit to width
-                viewWidth / sWidth().toFloat()
+                viewWidth / dims.x.toFloat()
             } else {
                 // Fit to height
-                viewHeight / sHeight().toFloat()
+                viewHeight / dims.y.toFloat()
             }
 
             ScaleType.SMART_FILL -> {
-                val scale1 = viewHeight / sHeight().toFloat()
-                val scale2 = viewWidth / sWidth().toFloat()
+                val scale1 = viewHeight / dims.y.toFloat()
+                val scale2 = viewWidth / dims.x.toFloat()
                 return max(scale1, scale2)
             }
 
             ScaleType.CUSTOM -> return if (minScale > 0) minScale
             else min(
-                viewWidth / sWidth().toFloat(),
-                viewHeight / sHeight().toFloat()
+                viewWidth / dims.x.toFloat(),
+                viewHeight / dims.y.toFloat()
             )
 
             ScaleType.CENTER_INSIDE -> return min(
-                viewWidth / sWidth().toFloat(),
-                viewHeight / sHeight().toFloat()
+                viewWidth / dims.x.toFloat(),
+                viewHeight / dims.y.toFloat()
             )
 
             ScaleType.STRETCH_SCREEN -> return 1f
@@ -2458,8 +2472,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     /**
      * Adjust a requested scale to be within the allowed limits.
      */
-    private fun limitedScale(targetScale: Float): Float {
-        val min = minScale()
+    private fun limitedScale(targetScale: Float, sSize: Point? = null): Float {
+        val min = minScale(sSize)
         // Sometimes minScale gets higher than maxScale => align both
         val max = if (min < maxScale) maxScale else min
         return if (max > 0) targetScale.coerceIn(min, max) else max(targetScale, min)
