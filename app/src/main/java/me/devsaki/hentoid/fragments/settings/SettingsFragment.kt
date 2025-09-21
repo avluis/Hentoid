@@ -65,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: SettingsViewModel
-    var root: View? = null
+    lateinit var root: View
     var site = Site.NONE
 
     companion object {
@@ -101,6 +101,10 @@ class SettingsFragment : PreferenceFragmentCompat(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.fitsSystemWindows = true
+
+        // Get a view to display snackbars against
+        root = view
+
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel =
             ViewModelProvider(requireActivity(), vmFactory)[SettingsViewModel::class.java]
@@ -108,13 +112,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onResume() {
         super.onResume()
-
-        // Get a child view to display snackbars against
-        view?.let {
-            val viewList = it.allViews.toList()
-            if (viewList.size > 1) root = viewList[1]
-        }
-
         preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
@@ -217,6 +214,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
             replace(android.R.id.content, preferenceFragment)
             addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
         }
+
         return preferenceFragment
     }
 
@@ -253,10 +251,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
     private fun onPrefColorThemeChanged() {
         // Material You doesn't exist before API31
         if (Build.VERSION.SDK_INT < 31 && Settings.colorTheme == Theme.YOU.id) {
-            Settings.colorTheme = Theme.LIGHT.id
             showSnackbar(R.string.material_you_warning)
-        }
-        (requireActivity() as AppCompatActivity).applyTheme()
+            Settings.colorTheme = Theme.LIGHT.id
+        } else (requireActivity() as AppCompatActivity).applyTheme()
     }
 
     private fun onDoHChanged() {
@@ -276,16 +273,21 @@ class SettingsFragment : PreferenceFragmentCompat(),
     }
 
     private fun showSnackbar(strRes: Int) {
-        root?.apply {
-            val snack = Snackbar.make(
-                this,
-                strRes,
-                BaseTransientBottomBar.LENGTH_INDEFINITE
-            )
-            snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
-                5
-            snack.setAction(R.string.ok) { snack.dismiss() }
-            snack.show()
+        root.apply {
+            val viewList = allViews.toList()
+            val anchor = if (viewList.size > 1) viewList[1] else null
+
+            anchor?.let {
+                val snack = Snackbar.make(
+                    it,
+                    strRes,
+                    BaseTransientBottomBar.LENGTH_INDEFINITE
+                )
+                snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
+                    5
+                snack.setAction(R.string.ok) { snack.dismiss() }
+                snack.show()
+            }
         }
     }
 
