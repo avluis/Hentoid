@@ -168,6 +168,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     private lateinit var navigator: ReaderNavigation
     private lateinit var slideshowMgr: ReaderSlideshow
 
+    val systemUiColor by lazy { requireContext().getColor(R.color.black_opacity_50) }
+
     // Pager implementation
     override val currentImg: ImageFile?
         get() {
@@ -249,22 +251,29 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             shuffleMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_shuffle)
             reverseMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_reverse)
 
-            ViewCompat.setOnApplyWindowInsetsListener(it.root) { _, insets: WindowInsetsCompat ->
+
+            ViewCompat.setOnApplyWindowInsetsListener(it.root) { insetView, insets: WindowInsetsCompat ->
                 val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
                 // Covers all landscape cases
                 val navBarHeight = nav.left + nav.right + nav.top + nav.bottom
                 val status = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+                insetView.setBackgroundColor(systemUiColor)
 
                 // Move the overlay not to be covered by navigation shapes
                 val isLandscape =
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
-                binding?.controlsOverlay?.root?.setPadding(
+                // TODO detect landscape with navbar on left vs. landscape with navbar on right
+                insetView.setPadding(
                     0,
                     status.top,
                     if (isLandscape) navBarHeight else 0,
                     if (isLandscape) 0 else navBarHeight
                 )
                 WindowInsetsCompat.CONSUMED
+            }
+            WindowCompat.getInsetsController(requireActivity().window, it.root).apply {
+                isAppearanceLightStatusBars = false
+                isAppearanceLightNavigationBars = false
             }
         }
         return binding?.root
@@ -509,6 +518,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
                 // Fullscreen switch
                 ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+                    v.setBackgroundColor(systemUiColor)
                     v.updatePadding(bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom)
                     v.updatePadding(top = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top)
                     insets
@@ -1430,26 +1440,30 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val activity = activity ?: return
         val window = activity.window
         val params = window.attributes
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+//        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (visible) {
             binding?.apply {
                 WindowInsetsControllerCompat(
                     window, controlsOverlay.root
-                ).show(WindowInsetsCompat.Type.systemBars())
+                ).apply {
+                    show(WindowInsetsCompat.Type.systemBars())
+//                    isAppearanceLightNavigationBars = false
+//                    isAppearanceLightStatusBars = false
+                }
             }
             // Revert to default regarding notch area display
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 params.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
             }
-            window.navigationBarColor =
-                ContextCompat.getColor(requireContext(), R.color.black_opacity_50)
         } else {
             binding?.apply {
-                WindowInsetsControllerCompat(window, controlsOverlay.root).let { controller ->
-                    controller.systemBarsBehavior =
+                WindowInsetsControllerCompat(window, controlsOverlay.root).apply {
+                    systemBarsBehavior =
                         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                    controller.hide(WindowInsetsCompat.Type.systemBars())
+                    hide(WindowInsetsCompat.Type.systemBars())
+                    //                  isAppearanceLightNavigationBars = false
+//                    isAppearanceLightStatusBars = false
                 }
             }
             // Display around the notch area
@@ -1457,8 +1471,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 params.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             }
-            window.navigationBarColor =
-                ContextCompat.getColor(requireContext(), R.color.transparent)
         }
 
         window.attributes = params

@@ -69,8 +69,12 @@ open class ReaderActivity : BaseActivity() {
         }
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
-        window.statusBarColor = ContextCompat.getColor(this, R.color.black)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        @Suppress("DEPRECATION")
+        if (Build.VERSION.SDK_INT < 35) {
+            window.statusBarColor = ContextCompat.getColor(this, R.color.black_opacity_50)
+            window.navigationBarColor = ContextCompat.getColor(this, R.color.black_opacity_50)
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+        }
 
         if (null == savedInstanceState) {
             val fragment: Fragment =
