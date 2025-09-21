@@ -4,7 +4,7 @@
     <style name="Theme.You" parent="Theme.Material3.Dark.NoActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary_you</item>
-        <item name="colorPrimaryInverse">@color/secondary_you</item>
+        <item name="colorPrimaryInverse">@color/primary_you</item>
         <item name="colorOnPrimary">@color/on_primary_you</item>
         <item name="colorSecondary">@color/secondary_you</item>
         <item name="colorOnSecondary">@color/on_secondary_you</item>
