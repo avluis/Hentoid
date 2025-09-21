@@ -167,7 +167,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
-        if (Settings.getGroupingDisplayG() == Grouping.FLAT) contentSearchManager.setGroup(null)
+        if (Settings.getGroupingDisplayG() == Grouping.FLAT) {
+            contentSearchManager.setGroup(null)
+            contentSearchManager.clearTags()
+            contentSearchManager.clearExcludedAttrs()
+        }
         val newSource = withContext(Dispatchers.IO) {
             try {
                 contentSearchManager.getLibrary(dao)
@@ -190,7 +194,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun searchContentUniversal(query: String) {
         // If user searches in main toolbar, universal search takes over advanced search
-        contentSearchManager.clearSelectedSearchTags()
+        contentSearchManager.clearTags()
         contentSearchManager.setLocation(Location.ANY.value)
         contentSearchManager.setContentType(Type.ANY.value)
         contentSearchManager.setQuery(query)

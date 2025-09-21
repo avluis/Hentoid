@@ -18,7 +18,6 @@ import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.intArray
 import me.devsaki.hentoid.util.long
 import me.devsaki.hentoid.util.string
-import java.util.Collections
 
 class ContentSearchManager() {
 
@@ -99,13 +98,17 @@ class ContentSearchManager() {
         values.excludedAttributeTypes = types.map { it.code }.toIntArray()
     }
 
-    fun clearSelectedSearchTags() {
-        values.attributes = SearchActivityBundle.buildSearchUri(Collections.emptySet()).toString()
+    fun clearTags() {
+        setTags(emptySet())
+    }
+
+    fun clearExcludedAttrs() {
+        setExcludedAttrs(emptySet())
     }
 
     fun clearFilters() {
-        clearSelectedSearchTags()
-        setExcludedAttrs(emptySet())
+        clearTags()
+        clearExcludedAttrs()
         setQuery("")
         setFilterBookFavourites(false)
         setFilterBookNonFavourites(false)
