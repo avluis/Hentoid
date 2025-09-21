@@ -273,21 +273,19 @@ class SettingsFragment : PreferenceFragmentCompat(),
     }
 
     private fun showSnackbar(strRes: Int) {
-        root.apply {
-            val viewList = allViews.toList()
-            val anchor = if (viewList.size > 1) viewList[1] else null
+        val viewList = root.allViews.toList()
+        val anchor = if (viewList.size > 1) viewList[1] else null
 
-            anchor?.let {
-                val snack = Snackbar.make(
-                    it,
-                    strRes,
-                    BaseTransientBottomBar.LENGTH_INDEFINITE
-                )
-                snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
-                    5
-                snack.setAction(R.string.ok) { snack.dismiss() }
-                snack.show()
-            }
+        anchor?.let {
+            val snack = Snackbar.make(
+                it,
+                strRes,
+                BaseTransientBottomBar.LENGTH_INDEFINITE
+            )
+            snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
+                5
+            snack.setAction(R.string.ok) { snack.dismiss() }
+            snack.show()
         }
     }
 
