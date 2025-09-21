@@ -848,6 +848,8 @@ class ObjectBoxDAO : CollectionDAO {
     private fun enrichGroupWithFlags(g: Group, flaggedGroups: Map<String, Group>): Group {
         flaggedGroups[g.reducedStr]?.let {
             if (it.coverContent.targetId < 1) it.coverContent = g.coverContent
+            it.searchUri = g.searchUri
+            it.subtype = g.subtype
             it.grouping = Grouping.DYNAMIC
             it.setItems(g.getItems())
             return it
