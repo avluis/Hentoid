@@ -270,6 +270,7 @@
     <string name="pref_viewer_slideshow_delay_vertical">Scrolling speed (vertical display)</string>
     <string name="pref_viewer_slideshow_loop">Loop</string>
     <string name="doh_warning">Some websites won\'t work well with DNS over HTTPS. Use an external DNS app if you experience issues during navigation (e.g. blank pages, unresponsive login forms)</string>
+    <string name="material_you_warning">Your device doesn\'t support Material You; switching back to Light theme</string>
 
     <!-- Misc -->
     <string name="pref_text_select_menu_title">Text select menu</string>

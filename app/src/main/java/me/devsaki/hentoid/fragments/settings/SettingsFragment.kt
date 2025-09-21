@@ -2,12 +2,14 @@ package me.devsaki.hentoid.fragments.settings
 
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.core.view.allViews
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -34,6 +36,7 @@ import me.devsaki.hentoid.activities.settings.SettingsStorageActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
@@ -44,11 +47,11 @@ import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.getFullPathFromUri
-import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.viewmodels.SettingsViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
+
 
 // Value of key elements on the preferences tree
 private const val CHECK_UPDATE_MANUAL = "pref_check_updates_manual"
@@ -62,6 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: SettingsViewModel
+    var root: View? = null
     var site = Site.NONE
 
     companion object {
@@ -104,6 +108,13 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onResume() {
         super.onResume()
+
+        // Get a child view to display snackbars against
+        view?.let {
+            val viewList = it.allViews.toList()
+            if (viewList.size > 1) root = viewList[1]
+        }
+
         preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
@@ -140,7 +151,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
             Settings.Key.APP_PREVIEW,
             Settings.Key.FORCE_ENGLISH,
             Settings.Key.TEXT_SELECT_MENU,
-            Settings.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
+            Settings.Key.ANALYTICS_PREFERENCE -> showSnackbar(R.string.restart_needed)
 
             Settings.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Settings.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
@@ -225,10 +236,6 @@ class SettingsFragment : PreferenceFragmentCompat(),
         }
     }
 
-    private fun onPrefRequiringRestartChanged() {
-        toast(R.string.restart_needed)
-    }
-
     private fun onExternalFolderChanged() {
         val storageFolderPref: Preference? =
             findPreference(EXTERNAL_LIBRARY) as Preference?
@@ -244,21 +251,16 @@ class SettingsFragment : PreferenceFragmentCompat(),
     }
 
     private fun onPrefColorThemeChanged() {
+        // Material You doesn't exist before API31
+        if (Build.VERSION.SDK_INT < 31 && Settings.colorTheme == Theme.YOU.id) {
+            Settings.colorTheme = Theme.LIGHT.id
+            showSnackbar(R.string.material_you_warning)
+        }
         (requireActivity() as AppCompatActivity).applyTheme()
     }
 
     private fun onDoHChanged() {
-        if (Settings.dnsOverHttps > -1 && listView != null) {
-            val snack = Snackbar.make(
-                listView,
-                R.string.doh_warning,
-                BaseTransientBottomBar.LENGTH_INDEFINITE
-            )
-            snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
-                5
-            snack.setAction(R.string.ok) { snack.dismiss() }
-            snack.show()
-        }
+        if (Settings.dnsOverHttps > -1) showSnackbar(R.string.doh_warning)
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 // Reset connection pool used by the downloader (includes an OkHttp instance reset)
@@ -270,6 +272,20 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 PixivServer.init()
                 DeviantArtServer.init()
             }
+        }
+    }
+
+    private fun showSnackbar(strRes: Int) {
+        root?.apply {
+            val snack = Snackbar.make(
+                this,
+                strRes,
+                BaseTransientBottomBar.LENGTH_INDEFINITE
+            )
+            snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
+                5
+            snack.setAction(R.string.ok) { snack.dismiss() }
+            snack.show()
         }
     }
 
