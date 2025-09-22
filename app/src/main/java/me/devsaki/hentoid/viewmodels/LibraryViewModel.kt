@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.viewmodels
 
-import MergerLiveData
 import android.app.Application
 import android.content.Context
 import android.net.Uri
@@ -28,6 +27,7 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.SEED_CONTENT
@@ -38,10 +38,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.SearchRecord
-import me.devsaki.hentoid.database.domains.SiteHistory
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.util.Location
+import me.devsaki.hentoid.util.MergerLiveData
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.RandomSeed
 import me.devsaki.hentoid.util.SearchCriteria
@@ -61,6 +61,7 @@ import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
 import me.devsaki.hentoid.util.reparseFromScratch
+import me.devsaki.hentoid.util.splitUniqueStr
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
@@ -166,7 +167,11 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
-        if (Settings.getGroupingDisplayG() == Grouping.FLAT) contentSearchManager.setGroup(null)
+        if (Settings.getGroupingDisplayG() == Grouping.FLAT) {
+            contentSearchManager.setGroup(null)
+            contentSearchManager.clearTags()
+            contentSearchManager.clearExcludedAttrs()
+        }
         val newSource = withContext(Dispatchers.IO) {
             try {
                 contentSearchManager.getLibrary(dao)
@@ -189,14 +194,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun searchContentUniversal(query: String) {
         // If user searches in main toolbar, universal search takes over advanced search
-        contentSearchManager.clearSelectedSearchTags()
+        contentSearchManager.clearTags()
         contentSearchManager.setLocation(Location.ANY.value)
         contentSearchManager.setContentType(Type.ANY.value)
         contentSearchManager.setQuery(query)
         newContentSearch.value = true
         if (query.isNotEmpty()) {
-            val searchUri =
-                buildSearchUri(null, query, Location.ANY.value, Type.ANY.value)
+            val searchUri = buildSearchUri(null, query = query)
             dao.insertSearchRecord(SearchRecord.contentSearch(searchUri), 10)
             dao.cleanup()
         }
@@ -207,19 +211,20 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * Perform a new content search using the given query and metadata
      *
      * @param query    Query to use for the search
-     * @param metadata Metadata to use for the search
+     * @param criteria Metadata to use for the search
      */
-    fun searchContent(query: String, metadata: SearchCriteria, searchUri: Uri) {
+    fun searchContent(query: String, criteria: SearchCriteria, searchUri: Uri) {
         contentSearchManager.setQuery(query)
-        contentSearchManager.setTags(metadata.attributes)
-        contentSearchManager.setLocation(metadata.location.value)
-        contentSearchManager.setContentType(metadata.contentType.value)
+        contentSearchManager.setExcludedAttrs(criteria.excludedAttributeTypes)
+        contentSearchManager.setTags(criteria.attributes)
+        contentSearchManager.setLocation(criteria.location.value)
+        contentSearchManager.setContentType(criteria.contentType.value)
         newContentSearch.value = true
-        if (!metadata.isEmpty()) {
+        if (!criteria.isEmpty()) {
             dao.insertSearchRecord(
                 SearchRecord.contentSearch(
                     searchUri,
-                    metadata.toString(getApplication())
+                    criteria.toString(getApplication())
                 ), 10
             )
             dao.cleanup()
@@ -253,7 +258,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 // Send results and total count with the same LiveData
                 val combined =
                     MergerLiveData.Two(newSource, newTotalSource, false) { data1, data2 ->
-                        Pair(data1, data2.size)
+                        Pair(data1, data2)
                     }
 
                 withContext(Dispatchers.Main) {
@@ -432,8 +437,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     fun setGroupQuery(value: String) {
         if (value.isNotEmpty()) {
-            val searchUri =
-                buildSearchUri(null, value, Location.ANY.value, Type.ANY.value)
+            val searchUri = buildSearchUri(null, query = value)
             dao.insertSearchRecord(SearchRecord.groupSearch(searchUri), 10)
             dao.cleanup()
         }
@@ -472,6 +476,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         val currentGrouping = Settings.groupingDisplay
         if (groupingId != currentGrouping) {
             Settings.groupingDisplay = groupingId
+            // Already handled by LibraryActivity.onSharedPreferenceChanged
+            if (currentGrouping == Grouping.FLAT.id) return
+
             when (groupingId) {
                 Grouping.FLAT.id -> viewModelScope.launch { doSearchContent() }
                 Grouping.FOLDERS.id -> viewModelScope.launch { doSearchFolders() }
@@ -517,7 +524,13 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         if (Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField && (!group.grouping.canReorderBooks || group.isUngroupedGroup))
             Settings.contentSortField = Settings.Value.ORDER_FIELD_TITLE
         this.group.postValue(group)
-        contentSearchManager.setGroup(group)
+
+        if (Grouping.DYNAMIC == group.grouping) {
+            val searchUri = SearchActivityBundle.parseSearchUri(group.searchUri)
+            contentSearchManager.setTags(searchUri.attributes)
+            contentSearchManager.setExcludedAttrs(searchUri.excludedAttributeTypes)
+        } else contentSearchManager.setGroup(group)
+
         newContentSearch.value = true
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
@@ -715,7 +728,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             if (reparseContent || !isDownloadable(c)) {
                                 if (!reparseContent) Timber.d("Pages unreachable; reparsing content")
                                 // Reparse content itself
-                                res = reparseFromScratch(c, dao)
+                                res = reparseFromScratch(c)
                             }
 
                             // Reparse chapters from scratch if images are KO
@@ -742,7 +755,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 if (!isDownloadable) msg += " (pages unreachable)"
                                 Timber.d(msg)
                                 // Reparse content itself
-                                res = reparseFromScratch(c, dao, reparseImages)
+                                res = reparseFromScratch(c, reparseImages)
                             }
                         }
 
@@ -917,9 +930,20 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         }
     }
 
-    fun setGroupCoverContent(groupId: Long, coverContent: Content) {
-        val localGroup = dao.selectGroup(groupId) ?: return
-        localGroup.coverContent.setAndPutTarget(coverContent)
+    fun setGroupCoverContent(group: Group, coverContent: Content) {
+        // Check if given group still exists in DB
+        var theGroup = dao.selectGroup(group.id)
+        if (null == theGroup && Settings.groupingDisplay == Grouping.ARTIST.id) {
+            // Create flagged group
+            theGroup = Group(Grouping.ARTIST, group.name, -1)
+            theGroup.subtype = group.subtype
+
+            // Persist in it DB
+            theGroup.id = dao.insertGroup(theGroup)
+        }
+        theGroup ?: throw InvalidParameterException("Invalid GroupId : ${group.id}")
+
+        theGroup.coverContent.setAndPutTarget(coverContent)
         dao.cleanup()
     }
 
@@ -1066,10 +1090,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     fun toggleGroupFavourite(group: Group) {
         if (group.isBeingProcessed) return
-
         viewModelScope.launch {
             try {
-                doToggleGroupFavourite(group.id)
+                doToggleGroupFavourite(group.id, group.name, group.subtype)
             } catch (t: Throwable) {
                 Timber.e(t)
             }
@@ -1082,28 +1105,34 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      * @param groupId ID of the group whose favourite state to toggle
      * @return Resulting group
      */
-    private suspend fun doToggleGroupFavourite(groupId: Long) = withContext(Dispatchers.IO) {
-        // Check if given group still exists in DB
-        val theGroup = dao.selectGroup(groupId)
-            ?: throw InvalidParameterException("Invalid GroupId : $groupId")
+    private suspend fun doToggleGroupFavourite(groupId: Long, name: String, subtype: Int) =
+        withContext(Dispatchers.IO) {
+            // Check if given group still exists in DB
+            var theGroup = dao.selectGroup(groupId)
+            if (null == theGroup && Settings.groupingDisplay == Grouping.ARTIST.id) {
+                // Create flagged group
+                theGroup = Group(Grouping.ARTIST, name, -1)
+                theGroup.subtype = subtype
+            }
+            theGroup ?: throw InvalidParameterException("Invalid GroupId : $groupId")
 
-        theGroup.favourite = !theGroup.favourite
+            theGroup.favourite = !theGroup.favourite
 
-        // Persist in it DB
-        dao.insertGroup(theGroup)
+            // Persist in it DB
+            dao.insertGroup(theGroup)
 
-        // Persist in it JSON
-        updateGroupsJson(getApplication(), dao)
-        dao.cleanup()
-    }
+            // Persist in it JSON
+            updateGroupsJson(getApplication(), dao)
+            dao.cleanup()
+        }
 
     /**
      * Set the rating to the given value for the given group IDs
      *
-     * @param groupIds     Group IDs to set the rating for
+     * @param groupIds     Groups IDs to set the rating for
      * @param targetRating Rating to set
      */
-    fun rateGroups(groupIds: List<Long>, targetRating: Int) {
+    fun rateGroups(groupIds: List<String>, targetRating: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             groupIds.forEach {
                 try {
@@ -1120,13 +1149,20 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Set the rating to the given value for the given group ID
      *
-     * @param groupId      Group ID to set the rating for
+     * @param uniqueStr    Group unique String to set the rating for
      * @param targetRating Rating to set
      */
-    private suspend fun doRateGroup(groupId: Long, targetRating: Int): Group {
-        // Check if given content still exists in DB
-        val theGroup = dao.selectGroup(groupId)
-            ?: throw InvalidParameterException("Invalid GroupId : $groupId")
+    private suspend fun doRateGroup(uniqueStr: String, targetRating: Int): Group {
+        // Check if given group still exists in DB
+        val parts = splitUniqueStr(uniqueStr)
+        val grouping = Grouping.searchByName(parts.first)
+        var theGroup = dao.selectGroupByName(grouping.id, parts.second)
+        if (null == theGroup && Settings.groupingDisplay == Grouping.ARTIST.id) {
+            // Create flagged group
+            theGroup = Group(Grouping.ARTIST, parts.second, -1)
+            theGroup.subtype = parts.third
+        }
+        theGroup ?: throw InvalidParameterException("Invalid uniqueStr : $uniqueStr")
 
         if (!theGroup.isBeingProcessed) {
             theGroup.rating = targetRating

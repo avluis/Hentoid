@@ -673,6 +673,8 @@
     <string name="groups_custom">Custom groups</string>
     <string name="groups_folders">Folders</string>
     <string name="no_artist_group_name">[no artist]</string>
+    <string name="no_circle_group_name">[no circle]</string>
+    <string name="no_artist_circle_group_name">[no artist, no circle]</string>
 
     <!-- Sort / filter bottom panel -->
     <string name="sort_ascending">Ascending</string>

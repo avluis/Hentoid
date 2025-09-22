@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities.bundles
 
 import android.net.Uri
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.core.net.toUri
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
@@ -13,6 +14,10 @@ import me.devsaki.hentoid.util.boolean
 import me.devsaki.hentoid.util.intArrayList
 import me.devsaki.hentoid.util.long
 import me.devsaki.hentoid.util.string
+
+private const val ATTR_EXCLUDED_TYPES = "excludedTypes"
+private const val ATTR_LOCATION = "location"
+private const val ATTR_CONTENT_TYPE = "contentType"
 
 /**
  * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.SearchActivity]
@@ -40,6 +45,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
         ): Uri {
             return buildSearchUri(
                 searchCriteria.attributes,
+                searchCriteria.excludedAttributeTypes,
                 query ?: searchCriteria.query,
                 searchCriteria.location.value,
                 searchCriteria.contentType.value
@@ -48,6 +54,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
 
         fun buildSearchUri(
             attributes: Set<Attribute>?,
+            excludedTypes: Collection<AttributeType>? = null,
             query: String = "",
             location: Int = 0,
             contentType: Int = 0
@@ -58,27 +65,41 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
 
             if (query.isNotEmpty()) searchUri.path(query)
 
-            if (attributes != null) enrichAttrs(attributes, searchUri)
+            if (!attributes.isNullOrEmpty()) addAttrs(attributes, searchUri)
 
-            if (location > 0) searchUri.appendQueryParameter("location", location.toString())
+            if (!excludedTypes.isNullOrEmpty()) addAttrTypeExclusion(excludedTypes, searchUri)
+
+            if (location > 0) searchUri.appendQueryParameter(ATTR_LOCATION, location.toString())
             if (contentType > 0) searchUri.appendQueryParameter(
-                "contentType",
+                ATTR_CONTENT_TYPE,
                 contentType.toString()
             )
 
             return searchUri.build()
         }
 
-        private fun enrichAttrs(attributes: Set<Attribute>, uri: Uri.Builder) {
+        private fun addAttrs(attributes: Set<Attribute>, uri: Uri.Builder) {
             val metadataMap = AttributeMap()
             metadataMap.addAll(attributes)
 
             for ((attrType, attrs) in metadataMap) {
-                for (attr in attrs) uri.appendQueryParameter(
-                    attrType.name,
-                    attr.id.toString() + ";" + attr.name + ";" + attr.isExcluded
-                )
+                for (attr in attrs)
+                    uri.appendQueryParameter(
+                        attrType.name,
+                        "${attr.id};${attr.name};${attr.isExcluded}"
+                    )
             }
+        }
+
+        private fun addAttrTypeExclusion(
+            excludedTypes: Collection<AttributeType>,
+            uri: Uri.Builder
+        ) {
+            if (excludedTypes.isEmpty()) return
+            uri.appendQueryParameter(
+                ATTR_EXCLUDED_TYPES,
+                TextUtils.join(";", excludedTypes.map { it.code })
+            )
         }
 
         fun parseSearchUri(uri: String): SearchCriteria {
@@ -87,6 +108,7 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
 
         fun parseSearchUri(uri: Uri): SearchCriteria {
             val attrs: MutableSet<Attribute> = HashSet()
+            val excludedTypes: MutableSet<AttributeType> = HashSet()
             var location = 0
             var contentType = 0
             var query = uri.path ?: ""
@@ -108,15 +130,22 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                         }
                     }
                 } else {
-                    if ("location" == typeStr) location =
-                        uri.getQueryParameters(typeStr)[0].toInt()
-                    if ("contentType" == typeStr) contentType =
-                        uri.getQueryParameters(typeStr)[0].toInt()
+                    if (ATTR_EXCLUDED_TYPES == typeStr)
+                        excludedTypes.addAll(
+                            uri.getQueryParameters(typeStr)[0].split(";")
+                                .filterNot { it.isEmpty() }
+                                .mapNotNull { AttributeType.searchByCode(it.toInt()) }
+                        )
+                    if (ATTR_LOCATION == typeStr)
+                        location = uri.getQueryParameters(typeStr)[0].toInt()
+                    if (ATTR_CONTENT_TYPE == typeStr)
+                        contentType = uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
             return SearchCriteria(
                 query,
                 attrs,
+                excludedTypes,
                 Location.fromValue(location),
                 Type.fromValue(contentType)
             )

@@ -17,7 +17,6 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.bindDragHandle
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
 import me.devsaki.hentoid.core.requireById
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Settings
@@ -115,9 +114,8 @@ class GroupDisplayItem(
             }
 
             if (ivCover != null) {
-                var coverContent: Content? = null
-                if (!item.group.coverContent.isNull) coverContent = item.group.coverContent.target
-                else if (item.group.getItems().isNotEmpty()) {
+                var coverContent = item.group.linkedCoverContent
+                if (null == coverContent && item.group.getItems().isNotEmpty()) {
                     item.group.getItems()[0].let {
                         val c = it.linkedContent
                         if (c != null) coverContent = c
@@ -143,7 +141,9 @@ class GroupDisplayItem(
 
             ivFavourite?.let {
                 it.isVisible = (!isGrid || Settings.libraryDisplayGridFav)
-                if (item.group.favourite) {
+                if (item.group.isUngroupedGroup) it.isVisible = false
+
+                if (it.isVisible && item.group.favourite) {
                     it.setIconResource(R.drawable.ic_fav_full)
                 } else {
                     it.setIconResource(R.drawable.ic_fav_empty)
@@ -152,7 +152,9 @@ class GroupDisplayItem(
 
             ivRating?.let {
                 it.isVisible = (!isGrid || Settings.libraryDisplayGridRating)
-                it.setIconResource(getRatingResourceId(item.group.rating))
+                if (item.group.isUngroupedGroup) it.isVisible = false
+
+                if (it.isVisible) it.setIconResource(getRatingResourceId(item.group.rating))
             }
 
             topButton?.isVisible = true

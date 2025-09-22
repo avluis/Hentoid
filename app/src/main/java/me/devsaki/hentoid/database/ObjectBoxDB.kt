@@ -4,6 +4,7 @@ import android.util.SparseIntArray
 import io.objectbox.BoxStore
 import io.objectbox.Property
 import io.objectbox.android.Admin
+import io.objectbox.kotlin.inValues
 import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import io.objectbox.query.QueryCondition
@@ -74,14 +75,10 @@ object ObjectBoxDB {
     private const val DAY_IN_MILLIS = 1000L * 60 * 60 * 24
 
     // Cached queries
-    private val contentFromAttributesSearchQ: Query<Content>
-    private val contentFromSourceSearchQ: Query<Content>
+    private val contentFromAttributesSearchQ: Query<Content> by lazy { buildContentFromAttributesSearchQ() }
+    private val contentFromAttributeTypesSearchQ: Query<Content> by lazy { buildContentFromAttributeTypesSearchQ() }
+    private val contentFromSourceSearchQ: Query<Content> by lazy { buildContentFromSourceSearchQ() }
 
-    init {
-        // Pre-cache intensive search queries
-        contentFromAttributesSearchQ = buildContentFromAttributesSearchQ()
-        contentFromSourceSearchQ = buildContentFromSourceSearchQ()
-    }
 
     private fun initStore(): BoxStore {
         val context = HentoidApp.getInstance().applicationContext
@@ -116,6 +113,13 @@ object ObjectBoxDB {
         contentFromAttributesQueryBuilder.link(Content_.attributes).equal(Attribute_.type, 0)
             .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
         return contentFromAttributesQueryBuilder.build()
+    }
+
+    private fun buildContentFromAttributeTypesSearchQ(): Query<Content> {
+        val qb = store.boxFor(Content::class.java).query()
+        qb.`in`(Content_.status, libraryStatus)
+        qb.link(Content_.attributes).equal(Attribute_.type, 0)
+        return qb.build()
     }
 
     private fun buildContentFromSourceSearchQ(): Query<Content> {
@@ -381,12 +385,20 @@ object ObjectBoxDB {
      */
     fun cleanupOrphanAttributes() {
         val attributeBox = store.boxFor(Attribute::class.java)
-        val locationBox = store.boxFor(AttributeLocation::class.java)
-        // Get the attributes to clean
-        val attrsToClean = attributeBox.query().filter { it.contents.isEmpty() }.safeFind()
+        // NB : QueryContent.relationCount doesn't work for many-to-many relations
+        val allAttrs = attributeBox.query().safeFindIds().toMutableSet()
 
+        val linkedAttrsQb = attributeBox.query()
+        linkedAttrsQb.link(Attribute_.contents)
+        val linkedAttrs = linkedAttrsQb.build().safeFindIds().toSet()
+
+        allAttrs.removeAll(linkedAttrs)
+        if (allAttrs.isEmpty()) return
+
+        val locationBox = store.boxFor(AttributeLocation::class.java)
         // Clean the attributes
-        for (attr in attrsToClean) {
+        val toRemove = attributeBox.get(allAttrs.toLongArray())
+        for (attr in toRemove) {
             Timber.v(">> Found empty attr : %s", attr.name)
             locationBox.remove(attr.locations)
             attr.locations.clear() // Clear location links
@@ -415,7 +427,7 @@ object ObjectBoxDB {
             if (source != null && source != Site.NONE) {
                 val sourceAttr: MutableSet<Attribute> = HashSet()
                 sourceAttr.add(Attribute(source))
-                bundle.attributes = buildSearchUri(sourceAttr, "", 0, 0).toString()
+                bundle.attributes = buildSearchUri(sourceAttr, null, "", 0, 0).toString()
             }
             bundle.sortField = Settings.Value.ORDER_FIELD_NONE
             val contentIds = selectContentHybridSearchId(
@@ -847,12 +859,10 @@ object ObjectBoxDB {
         statuses: IntArray
     ): QueryCondition<Content> {
         var qc: QueryCondition<Content> = Content_.status.oneOf(statuses)
-        if (searchBundle.filterBookFavourites) qc =
-            qc.and(Content_.favourite.equal(true)) else if (searchBundle.filterBookNonFavourites) qc =
-            qc.and(Content_.favourite.equal(false))
-        if (searchBundle.filterBookCompleted) qc =
-            qc.and(Content_.completed.equal(true)) else if (searchBundle.filterBookNotCompleted) qc =
-            qc.and(Content_.completed.equal(false))
+        if (searchBundle.filterBookFavourites) qc = qc.and(Content_.favourite.equal(true))
+        else if (searchBundle.filterBookNonFavourites) qc = qc.and(Content_.favourite.equal(false))
+        if (searchBundle.filterBookCompleted) qc = qc.and(Content_.completed.equal(true))
+        else if (searchBundle.filterBookNotCompleted) qc = qc.and(Content_.completed.equal(false))
         if (searchBundle.filterRating > -1) qc =
             qc.and(Content_.rating.equal(searchBundle.filterRating))
         if (searchBundle.groupId > 0) qc =
@@ -1943,8 +1953,8 @@ object ObjectBoxDB {
             QueryBuilder.StringOrder.CASE_INSENSITIVE
         )
 
-        // Subtype filtering for artists groups
         if (subType > -1) {
+            // Subtype filtering for artists groups
             if (grouping == Grouping.ARTIST.id && subType != Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS) {
                 qb.equal(Group_.subtype, subType.toLong())
             }
@@ -1953,16 +1963,83 @@ object ObjectBoxDB {
                 qb.equal(Group_.subtype, subType.toLong())
             }
         }
-        if (groupFavouritesOnly) qb.equal(
-            Group_.favourite,
-            true
-        ) else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false)
+        if (groupFavouritesOnly) qb.equal(Group_.favourite, true)
+        else if (groupNonFavouritesOnly) qb.equal(Group_.favourite, false)
         if (filterRating > -1) qb.equal(Group_.rating, filterRating.toLong())
         val property =
             if (Settings.Value.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.id) Group_.order else Group_.name
         // Order by number of children / download date is done by the DAO
         if (orderDesc) qb.orderDesc(property) else qb.order(property)
         return qb.build()
+    }
+
+    fun selectArtistsQ(
+        query: String?,
+        orderDesc: Boolean,
+        artistGroupVisibility: Int,
+    ): Query<Attribute> {
+        val qcArtist = Attribute_.type.equal(AttributeType.ARTIST.code)
+        val qcCircle = Attribute_.type.equal(AttributeType.CIRCLE.code)
+        val qcType =
+            when (artistGroupVisibility) {
+                Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS -> qcArtist.or(qcCircle)
+                Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS -> qcCircle
+                else -> qcArtist
+            }
+        val qcName =
+            Attribute_.name.contains(query ?: "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+        val qcFinal = if (null == query) qcType else qcType.and(qcName)
+
+        val qb = store.boxFor(Attribute::class.java).query(qcFinal)
+
+        val property = Attribute_.name
+        // Order by number of children is done by the DAO
+        if (orderDesc) qb.orderDesc(property) else qb.order(property)
+
+        return qb.build()
+    }
+
+    fun selectContentIdsWithoutAttributes(
+        types: List<AttributeType>
+    ): LongArray {
+        // Select all eligible content
+        val allContentQ =
+            store.boxFor(Content::class.java).query().`in`(Content_.status, libraryStatus)
+        val allContent = allContentQ.safeFindIds().toMutableSet()
+
+        // Strip all content that have at least one attribute of the given types
+        types.forEach {
+            allContent.removeAll(
+                contentFromAttributeTypesSearchQ.setParameter(
+                    Attribute_.type,
+                    it.code.toLong()
+                ).findIds().toSet()
+            )
+        }
+        return allContent.toLongArray()
+    }
+
+    fun selectContentIdsWithoutAttributesQ(
+        types: Collection<AttributeType>
+    ): Query<Content> {
+        // Build excluded IDs
+        val excludedIds = HashSet<Long>()
+        types.forEach {
+            excludedIds.addAll(
+                contentFromAttributeTypesSearchQ.setParameter(
+                    Attribute_.type,
+                    it.code.toLong()
+                ).findIds().toSet()
+            )
+        }
+
+        // Select all eligible content
+        val allContentQ =
+            store.boxFor(Content::class.java).query()
+                .inValues(Content_.status, libraryStatus)
+                .notIn(Content_.id, excludedIds.toLongArray())
+
+        return allContentQ.build()
     }
 
     fun selectEditedGroups(grouping: Int): List<Group> {
@@ -1996,10 +2073,16 @@ object ObjectBoxDB {
             .relationCount(Group_.items, 0).safeRemove()
     }
 
-    fun selectGroupsByGroupingQ(groupingId: Int): Query<Group> {
-        return store.boxFor(Group::class.java).query()
-            .equal(Group_.grouping, groupingId.toLong())
-            .build()
+    fun selectGroupsByGroupingQ(groupingId: Int, onlyFlagged: Boolean = false): Query<Group> {
+        val baseQc = Group_.grouping.equal(groupingId)
+        var finalQc: QueryCondition<Group> = baseQc
+        if (onlyFlagged) {
+            val customQc = Group_.favourite.equal(true)
+                .or(Group_.rating.greater(0))
+                .or(Group_.coverContentId.greater(0))
+            finalQc = baseQc.and(customQc)
+        }
+        return store.boxFor(Group::class.java).query(finalQc).build()
     }
 
     fun selectFlaggedGroupsQ(): Query<Group> {

@@ -25,7 +25,6 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.DiffCallback
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import com.mikepenz.fastadapter.drag.ItemTouchCallback
 import com.mikepenz.fastadapter.drag.SimpleDragCallback
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories.register
@@ -41,7 +40,6 @@ import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle
@@ -53,11 +51,9 @@ import me.devsaki.hentoid.databinding.FragmentLibraryGroupsBinding
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.library.RatingDialogFragment.Companion.invoke
-import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companion.invoke
 import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.Debouncer
@@ -147,10 +143,11 @@ class LibraryGroupsFragment : Fragment(),
                 oldItem: GroupDisplayItem,
                 newItem: GroupDisplayItem
             ): Boolean {
+                if (oldItem === newItem) return true
                 return oldItem.group.coverContent.targetId == newItem.group.coverContent.targetId
                         && oldItem.group.favourite == newItem.group.favourite
                         && oldItem.group.rating == newItem.group.rating
-                        && oldItem.group.getItems().size == newItem.group.getItems().size
+                        && oldItem.group.getItemsCount() == newItem.group.getItemsCount()
             }
 
             override fun getChangePayload(
@@ -368,7 +365,14 @@ class LibraryGroupsFragment : Fragment(),
      * @param group Group whose "rating" button has been clicked on
      */
     private fun onGroupRatingClick(group: Group) {
-        invoke(this, longArrayOf(group.id), group.rating)
+        invoke(this, listOf(group.uniqueStr), group.rating)
+    }
+
+    /**
+     * Callback for the rating dialog
+     */
+    override fun rateItems(itemIds: List<String>, newRating: Int) {
+        viewModel.rateGroups(itemIds, newRating)
     }
 
     /**
@@ -602,8 +606,8 @@ class LibraryGroupsFragment : Fragment(),
      */
     private fun onMassRateClick() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
-        val selectedIds = selectedItems.map { it.group }.map { it.id }
-        if (selectedIds.isNotEmpty()) invoke(this, selectedIds.toLongArray(), 0)
+        val selectedIds = selectedItems.map { it.group }.map { it.uniqueStr }
+        if (selectedIds.isNotEmpty()) invoke(this, selectedIds, 0)
     }
 
     /**
@@ -884,7 +888,8 @@ class LibraryGroupsFragment : Fragment(),
             setPagingMethod(true)
             previousViewType = viewType.ordinal
         } else {
-            set(itemAdapter, groups, groupItemDiffCallback)
+            // Using set is way too slow when processing massive collections
+            itemAdapter.setNewList(groups, false)
         }
 
         // Update visibility and content of advanced search bar
@@ -1004,13 +1009,6 @@ class LibraryGroupsFragment : Fragment(),
 
     override fun itemTouchStopDrag(viewHolder: RecyclerView.ViewHolder) {
         // Nothing
-    }
-
-    /**
-     * Callback for the rating dialog
-     */
-    override fun rateItems(itemIds: LongArray, newRating: Int) {
-        viewModel.rateGroups(itemIds.asList(), newRating)
     }
 
     override fun leaveSelectionMode() {

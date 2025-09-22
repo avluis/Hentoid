@@ -6,6 +6,7 @@ import android.text.TextUtils
 import androidx.annotation.StringRes
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
+import me.devsaki.hentoid.enums.AttributeType
 
 data class AttributeQueryResult(
     // Ordered list of results
@@ -18,18 +19,20 @@ data class SearchCriteria(
     var query: String = "",
     // From advanced search
     var attributes: MutableSet<Attribute> = HashSet(),
+    var excludedAttributeTypes: MutableSet<AttributeType> = HashSet(),
     var location: Location = Location.ANY,
     var contentType: Type = Type.ANY
 ) {
     fun clear() {
         query = ""
         attributes.clear()
+        excludedAttributeTypes.clear()
         location = Location.ANY
         contentType = Type.ANY
     }
 
     fun isEmpty(): Boolean {
-        return (query.isEmpty() && attributes.isEmpty() && Location.ANY == location && Type.ANY == contentType)
+        return (query.isEmpty() && attributes.isEmpty() && excludedAttributeTypes.isEmpty() && Location.ANY == location && Type.ANY == contentType)
     }
 
     @StringRes
@@ -64,6 +67,7 @@ data class SearchCriteria(
         )
     }
 
+    // For labelling only
     fun toString(context: Context): String {
         // Universal search
         if (query.isNotEmpty()) return query

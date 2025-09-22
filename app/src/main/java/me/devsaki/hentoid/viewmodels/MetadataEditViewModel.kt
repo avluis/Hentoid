@@ -16,7 +16,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.AttributeQueryResult
@@ -24,10 +23,7 @@ import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.addAttribute
-import me.devsaki.hentoid.util.addContentToAttributeGroup
-import me.devsaki.hentoid.util.getOrCreateNoArtistGroup
 import me.devsaki.hentoid.util.persistJson
-import me.devsaki.hentoid.util.removeContentFromGrouping
 import me.devsaki.hentoid.util.setContentCover
 import me.devsaki.hentoid.util.updateGroupsJson
 import me.devsaki.hentoid.util.updateRenamingRulesJson
@@ -274,21 +270,7 @@ class MetadataEditViewModel(
             it.imageFiles.let { imgs -> dao.insertImageFiles(imgs) }
             dao.insertContent(it)
 
-            // Assign Content to each artist/circle group
-            removeContentFromGrouping(me.devsaki.hentoid.enums.Grouping.ARTIST, it, dao)
-            var artistFound = false
-            it.attributes.forEach { attr ->
-                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
-                    addContentToAttributeGroup(attr.group.target, attr, it, dao)
-                    artistFound = true
-                }
-            }
-            if (!artistFound) {
-                // Add to the "no artist" group if no artist has been found
-                val group = getOrCreateNoArtistGroup(getApplication(), dao)
-                val item = GroupItem(it, group, -1)
-                dao.insertGroupItem(item)
-            }
+            // Cleanup
             dao.deleteEmptyArtistGroups()
         }
 

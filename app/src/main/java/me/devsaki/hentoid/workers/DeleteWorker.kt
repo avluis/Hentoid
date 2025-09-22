@@ -295,7 +295,7 @@ abstract class BaseDeleteWorker(
         val res = if (!isDownloadable(content)) {
             trace(Log.INFO, "Pages unreachable; reparsing content %s", content.title)
             // Reparse content itself
-            val newContent = reparseFromScratch(content, dao)
+            val newContent = reparseFromScratch(content)
             if (null == newContent) null
             else {
                 // Reparse pages

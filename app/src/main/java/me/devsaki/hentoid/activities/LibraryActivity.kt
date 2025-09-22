@@ -60,10 +60,8 @@ import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment.Companio
 import me.devsaki.hentoid.ui.invokeInputDialog
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.Debouncer
-import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.file.RQST_NOTIFICATION_PERMISSION
 import me.devsaki.hentoid.util.file.RQST_STORAGE_PERMISSION
@@ -177,9 +175,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
 
     // Current search criteria; one per tab
     private val searchCriteria = mutableListOf(
-        SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
-        SearchCriteria("", HashSet(), Location.ANY, Type.ANY),
-        SearchCriteria("", HashSet(), Location.ANY, Type.ANY)
+        SearchCriteria(),
+        SearchCriteria(),
+        SearchCriteria()
     )
 
     // True if item positioning edit mode is on (only available for specific groupings)
@@ -905,8 +903,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     private fun onGroupingChanged(targetGroupingId: Int) {
-        val targetGrouping = Grouping.searchById(targetGroupingId)
         if (grouping.id != targetGroupingId) {
+            val targetGrouping = Grouping.searchById(targetGroupingId)
+
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
             if (!targetGrouping.canReorderBooks && Settings.Value.ORDER_FIELD_CUSTOM == Settings.contentSortField) {
                 Settings.contentSortField = Settings.Default.ORDER_CONTENT_FIELD

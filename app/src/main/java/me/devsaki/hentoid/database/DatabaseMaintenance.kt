@@ -15,12 +15,9 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SearchRecord
-import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
@@ -372,10 +369,8 @@ object DatabaseMaintenance {
                 // Compute missing downloaded Content size according to underlying ImageFile sizes
                 Timber.i("Create non-existing groupings : start")
                 val groupingsToProcess: MutableList<Grouping> = ArrayList()
-                for (grouping in arrayOf(
-                    Grouping.ARTIST,
-                    Grouping.DL_DATE
-                )) if (0L == ObjectBoxDB.countGroupsFor(grouping)) groupingsToProcess.add(grouping)
+                for (grouping in arrayOf(Grouping.DL_DATE))
+                    if (0L == ObjectBoxDB.countGroupsFor(grouping)) groupingsToProcess.add(grouping)
 
                 // Test the existence of the "Ungrouped" custom group
                 val ungroupedCustomGroup =
@@ -392,56 +387,10 @@ object DatabaseMaintenance {
 
                 if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM)
                 Timber.i("Create non-existing groupings : ${groupingsToProcess.size} groupings to process")
-                var bookInsertCount = 0
                 val toInsert: MutableList<Triple<Group, Attribute?, List<Long>>> = ArrayList()
                 val res = context.resources
                 for (g in groupingsToProcess) {
                     when (g) {
-                        Grouping.ARTIST -> {
-                            val artists = ObjectBoxDB.selectAvailableAttributes(
-                                AttributeType.ARTIST,
-                                -1,
-                                LongArray(0),
-                                null,
-                                Location.ANY,
-                                Type.ANY,
-                                false,
-                                null,
-                                Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
-                                0,
-                                0,
-                                Settings.searchAttributesCount
-                            ).toMutableList()
-                            artists.addAll(
-                                ObjectBoxDB.selectAvailableAttributes(
-                                    AttributeType.CIRCLE,
-                                    -1,
-                                    LongArray(0),
-                                    null,
-                                    Location.ANY,
-                                    Type.ANY,
-                                    false,
-                                    null,
-                                    Settings.Value.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC,
-                                    0,
-                                    0,
-                                    Settings.searchAttributesCount
-                                )
-                            )
-                            var order = 1
-                            for (a in artists) {
-                                val group = Group(Grouping.ARTIST, a.name, order++)
-                                group.subtype =
-                                    if (a.type == AttributeType.ARTIST) Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS else Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS
-                                if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
-                                bookInsertCount += a.contents.size
-                                toInsert.add(
-                                    Triple(group, a, a.contents.map { c -> c.id })
-                                )
-                                Timber.d("Create non-existing groupings : ARTIST added")
-                            }
-                        }
-
                         Grouping.DL_DATE -> {
                             var group =
                                 Group(Grouping.DL_DATE, res.getString(R.string.group_today), 1)
@@ -486,7 +435,7 @@ object DatabaseMaintenance {
                 }
 
                 // Actual insert is inside its dedicated loop to allow displaying a proper progress bar
-                Timber.i("Create non-existing groupings : $bookInsertCount / ${toInsert.size} relations to create")
+                Timber.i("Create non-existing groupings : ${toInsert.size} relations to create")
                 var pos = 1f
                 for (data in toInsert) {
                     ObjectBoxDB.insertGroup(data.first)
@@ -494,7 +443,7 @@ object DatabaseMaintenance {
                     for ((order, contentId) in data.third.withIndex()) {
                         val item = GroupItem(contentId, data.first, order)
                         ObjectBoxDB.insertGroupItem(item)
-                        withContext(Dispatchers.Main) { emitter(pos++ / bookInsertCount) }
+                        withContext(Dispatchers.Main) { emitter(pos++ / toInsert.size) }
                     }
                 }
                 Timber.i("Create non-existing groupings : done")

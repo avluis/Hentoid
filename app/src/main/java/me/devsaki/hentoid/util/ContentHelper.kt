@@ -701,41 +701,6 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     val newContentId = dao.insertContent(content)
     content.id = newContentId
 
-    // Perform group operations only if
-    //   - the book is in the library (i.e. not queued)
-    //   - the book is linked to no group from the given grouping
-    if (libraryStatus.contains(content.status.code)) {
-        val staticGroupings: List<Grouping> = Grouping.entries.filter(Grouping::canReorderBooks)
-        for (g in staticGroupings) if (content.getGroupItems(g).isEmpty()) {
-            if (g == Grouping.ARTIST) {
-                var nbGroups = dao.countGroupsFor(g).toInt()
-                val attrs = content.attributeMap
-                val artists: MutableList<Attribute> = ArrayList()
-                var sublist = attrs[AttributeType.ARTIST]
-                if (sublist != null) artists.addAll(sublist)
-                sublist = attrs[AttributeType.CIRCLE]
-                if (sublist != null) artists.addAll(sublist)
-
-                if (artists.isEmpty()) { // Add to the "no artist" group if no artist has been found
-                    val group = getOrCreateNoArtistGroup(context, dao)
-                    val item = GroupItem(content, group, -1)
-                    dao.insertGroupItem(item)
-                } else {
-                    for (a in artists) { // Add to the artist groups attached to the artists attributes
-                        var group = a.group.target
-                        if (null == group) {
-                            group = Group(Grouping.ARTIST, a.name, ++nbGroups)
-                            group.subtype =
-                                if (a.type == AttributeType.ARTIST) Settings.Value.ARTIST_GROUP_VISIBILITY_ARTISTS else Settings.Value.ARTIST_GROUP_VISIBILITY_GROUPS
-                            if (!a.contents.isEmpty()) group.coverContent.target = a.contents[0]
-                        }
-                        addContentToAttributeGroup(group, a, content, dao)
-                    }
-                }
-            }
-        }
-    }
-
     // Extract the cover to the app's persistent folder if the book is an archive or a PDF
     if (content.isArchive || content.isPdf) {
         val targetFolder = context.filesDir
@@ -874,13 +839,9 @@ fun addAttribute(
     type: AttributeType,
     name: String, dao: CollectionDAO
 ): Attribute {
-    var artistGroup: Group? = null
-    if (type == AttributeType.ARTIST || type == AttributeType.CIRCLE) artistGroup =
-        addArtistToAttributesGroup(name, dao)
     val attr = Attribute(type = type, name = name)
     val newId = dao.insertAttribute(attr)
     attr.id = newId
-    if (artistGroup != null) attr.putGroup(artistGroup)
     return attr
 }
 
@@ -1318,18 +1279,10 @@ fun getBlockedTags(id: Long, dao: CollectionDAO): List<String> {
  */
 suspend fun reparseFromScratch(
     content: Content,
-    dao: CollectionDAO,
     keepUris: Boolean = false
 ): Content? = withContext(Dispatchers.IO) {
     try {
-        val result = reparseFromScratch(content.galleryUrl, content, keepUris)
-
-        // Clear attached artists groups (in case they'd be updated)
-        result?.let {
-            removeContentFromGrouping(Grouping.ARTIST, it, dao)
-        }
-
-        return@withContext result
+        return@withContext reparseFromScratch(content.galleryUrl, content, keepUris)
     } catch (e: IOException) {
         Timber.w(e)
     } catch (e: CloudflareProtectedException) {

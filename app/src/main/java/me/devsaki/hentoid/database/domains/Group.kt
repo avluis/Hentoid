@@ -8,8 +8,10 @@ import io.objectbox.annotation.Index
 import io.objectbox.converter.PropertyConverter
 import io.objectbox.relation.ToMany
 import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.Grouping.Companion.searchById
+import me.devsaki.hentoid.util.SEPARATOR_CHAR
 import me.devsaki.hentoid.util.hash64
 import java.util.Objects
 
@@ -21,8 +23,9 @@ data class Group(
     @Convert(converter = GroupingConverter::class, dbType = Int::class)
     var grouping: Grouping = Grouping.NONE,
     var name: String = "",
-    // in Grouping.ARTIST : 0 = Artist; 1 = Group
+    // in Grouping.ARTIST : 0 = Artist; 1 = Group; 2 = Ungrouped
     // in Grouping.CUSTOM : 0 = Custom; 1 = Ungrouped
+    // in Grouping.DYNAMIC : 2 = Ungrouped
     var subtype: Int = 0,
     var order: Int = 0,
     var hasCustomBookOrder: Boolean = false,
@@ -52,7 +55,11 @@ data class Group(
 
 
     fun getItems(): List<GroupItem> {
-        return items
+        return items.safeReach(this)
+    }
+
+    fun getItemsCount(): Int {
+        return items.count()
     }
 
     fun setItems(items: List<GroupItem>?): Group {
@@ -65,10 +72,15 @@ data class Group(
     }
 
     val contentIds: List<Long>
-        get() = items.toList().sortedBy { it.order }.map(GroupItem::contentId)
+        get() = items.sortedBy { it.order }.map(GroupItem::contentId)
 
     val isUngroupedGroup: Boolean
-        get() = Grouping.CUSTOM == grouping && 1 == subtype
+        get() = (Grouping.CUSTOM == grouping && 1 == subtype)
+                || (Grouping.ARTIST == grouping && 2 == subtype)
+                || (Grouping.DYNAMIC == grouping && 2 == subtype)
+
+    val linkedCoverContent: Content?
+        get() = coverContent.safeReach(this)
 
 
     override fun equals(other: Any?): Boolean {
@@ -83,8 +95,14 @@ data class Group(
         return Objects.hash(grouping.name, name, subtype)
     }
 
+    val uniqueStr
+        get() = "${grouping.name}$SEPARATOR_CHAR$name$SEPARATOR_CHAR$subtype"
+
+    val reducedStr
+        get() = "$name$SEPARATOR_CHAR$subtype"
+
     fun uniqueHash(): Long {
-        return hash64((grouping.name + "." + name + "." + subtype).toByteArray())
+        return hash64(uniqueStr.toByteArray())
     }
 
     class GroupingConverter : PropertyConverter<Grouping?, Int?> {

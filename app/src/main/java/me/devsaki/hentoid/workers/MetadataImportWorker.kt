@@ -12,6 +12,7 @@ import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.SuspendRunnable
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
+import me.devsaki.hentoid.database.ObjectBoxDAOContainer
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
@@ -122,7 +123,8 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
             trace(Log.ERROR, "Couldn't deserialize JSON file")
             return@withContext
         }
-        val dao = ObjectBoxDAO()
+        val daoC = ObjectBoxDAOContainer()
+        val dao = daoC.dao
         try {
             if (!add) {
                 if (importLibrary) dao.deleteAllInternalContents("", false)
@@ -150,16 +152,16 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
                 runImportItems(
                     context,
                     customGroups,
-                    dao,
+                    daoC,
                     true,
                     emptyBooksOption
                 ) {
                     runImportItems(
-                        context, contentToImport, dao, false, emptyBooksOption
+                        context, contentToImport, daoC, false, emptyBooksOption
                     ) { finish() }
                 }
             } else  // Run content import alone
-                runImportItems(context, contentToImport, dao, false, emptyBooksOption) { finish() }
+                runImportItems(context, contentToImport, daoC, false, emptyBooksOption) { finish() }
         } finally {
             dao.cleanup()
         }
@@ -168,7 +170,7 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
     private suspend fun runImportItems(
         context: Context,
         items: List<Any>,
-        dao: CollectionDAO,
+        dao: ObjectBoxDAOContainer,
         isGroup: Boolean,
         emptyBooksOption: Int,
         onFinish: SuspendRunnable
@@ -176,14 +178,17 @@ class MetadataImportWorker(val context: Context, val params: WorkerParameters) :
         for (c in items) {
             if (isStopped) break
             try {
-                importItem(context, c, emptyBooksOption, dao)
-                if (isGroup) updateGroupsJson(context, dao)
+                importItem(context, c, emptyBooksOption, dao.dao)
+                if (isGroup) updateGroupsJson(context, dao.dao)
+
+                // Clear the DAO every 1000 iterations to optimize memory
+                if (0 == nbOK % 1000) dao.reset()
                 nextOK()
             } catch (e: Exception) {
                 nextKO(e)
             }
         }
-        updateQueueJson(context, dao)
+        updateQueueJson(context, dao.dao)
         if (!isStopped) onFinish.invoke()
     }
 

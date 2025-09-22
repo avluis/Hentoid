@@ -302,7 +302,7 @@ class QueueViewModel(
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 contentList.forEach {
-                    val res = if (reparseContent) reparseFromScratch(it, dao)
+                    val res = if (reparseContent) reparseFromScratch(it)
                     else it
 
                     if (res != null) {
