@@ -25,7 +25,7 @@
     <color name="subbar_2_you">@android:color/system_accent1_900</color>
 
     <!-- Content cards -->
-    <color name="card_title_you">@android:color/system_accent2_400</color>
+    <color name="card_title_you">@android:color/system_accent2_200</color>
     <color name="card_surface_you">@android:color/system_accent1_600</color>
     <color name="card_selected_you">@android:color/system_accent1_500</color>
     <color name="card_pressed_you">@android:color/system_accent1_400</color>
