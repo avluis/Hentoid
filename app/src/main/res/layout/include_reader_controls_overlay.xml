@@ -120,7 +120,7 @@
         app:layout_constraintStart_toEndOf="@id/pager_left_txt"
         app:thumbColor="?colorSecondary"
         app:tickVisible="false"
-        app:trackColorActive="@color/accent_red"
+        app:trackColorActive="?colorSecondary"
         app:trackColorInactive="@color/white_opacity_25" />
 
     <TextView
