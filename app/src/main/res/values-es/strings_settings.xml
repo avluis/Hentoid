@@ -54,6 +54,9 @@
     <string name="pref_browser_language_filter_setting_summary">Consejo: Introduce el idioma en inglés</string>
     <string name="pref_browser_language_filter_setting_title">Configuración de filtro de idioma</string>
     <string name="pref_browser_language_filter_title">Botón de filtro de idioma</string>
+    <string name="pref_browser_lock_favs_panel_off">El panel derecho de favoritos se puede abrir deslizando</string>
+    <string name="pref_browser_lock_favs_panel_on">El panel derecho de favoritos no se puede abrir deslizando</string>
+    <string name="pref_browser_lock_favs_panel_title">Cierro el panel de favoritos</string>
     <string name="pref_browser_mark_blocked_off">Los libros con etiquetas bloqueadas no tienen presentación especial</string>
     <string name="pref_browser_mark_blocked_on">Los libros con etiquetas bloqueadas están marcados\nNB: no funciona en todos los sitios</string>
     <string name="pref_browser_mark_blocked_title">Marcar libros con etiquetas bloqueadas</string>
@@ -86,6 +89,7 @@
     <string name="pref_cat_language">Lenguaje de la interfaz</string>
     <string name="pref_cat_library">Biblioteca</string>
     <string name="pref_cat_library_grid">Personalizar vista de Biblioteca / Cuadrícula</string>
+    <string name="pref_cat_navigation">Panel de navegación</string>
     <string name="pref_cat_search">Búsqueda avanzada</string>
     <string name="pref_cat_theme">Tema de la aplicación</string>
     <string name="pref_check_updates_manual_checking">Buscando actualizaciones…</string>
@@ -154,6 +158,9 @@
     <string name="pref_memory_usage_summary">Espacio libre: %.2f%% (toca para ver los detalles)</string>
     <string name="pref_memory_usage_title">Uso del almacenamiento</string>
     <string name="pref_misc">Varios</string>
+    <string name="pref_navigation_nostalgia_mode">Modo nostalgia</string>
+    <string name="pref_nostalgia_summary_off">El cajón de navegación no muestra los sitios activos</string>
+    <string name="pref_nostalgia_summary_on">El cajón de navegación muestra los sitios activos</string>
     <string name="pref_plug_reactions">Conectar reacciones</string>
     <string name="pref_quantity_per_page_summary">Número de elementos en la lista de descargas\nActualmente: %s elementos</string>
     <string name="pref_quantity_per_page_title">Cantidad Por Página</string>

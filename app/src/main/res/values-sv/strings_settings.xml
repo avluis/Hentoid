@@ -54,6 +54,9 @@
     <string name="pref_browser_language_filter_setting_summary">Tips: Mata in språket på engelska</string>
     <string name="pref_browser_language_filter_setting_title">Språkfiltreringsinställning</string>
     <string name="pref_browser_language_filter_title">Språkfiltreringsknapp</string>
+    <string name="pref_browser_lock_favs_panel_off">Favoritpanelen kan öppnas via svep</string>
+    <string name="pref_browser_lock_favs_panel_on">Favoritpanelen kan inte öppnas via svep</string>
+    <string name="pref_browser_lock_favs_panel_title">Lås favoritpanel</string>
     <string name="pref_browser_mark_blocked_off">Böcker med blockerade etiketter visas inte på något utmärkande sätt</string>
     <string name="pref_browser_mark_blocked_on">Böcker med blockerade etiketter markeras\nNotera: fungerar ej på alla sidor</string>
     <string name="pref_browser_mark_blocked_title">Markera böcker med blockerade etiketter</string>
@@ -85,6 +88,7 @@
     <string name="pref_cat_language">Gränssnittsspråk</string>
     <string name="pref_cat_library">Bibliotek</string>
     <string name="pref_cat_library_grid">Bibliotek / Rutnätsvysanpassning</string>
+    <string name="pref_cat_navigation">Navigationspanel</string>
     <string name="pref_cat_search">Avancerad sök</string>
     <string name="pref_cat_theme">Apptema</string>
     <string name="pref_check_updates_manual_checking">Kontrollerar uppdateringar…</string>
@@ -153,6 +157,9 @@
     <string name="pref_memory_usage_summary">Nuvarande tillgänglig lagringskapacitet: %.2f%% (tryck för detaljer)</string>
     <string name="pref_memory_usage_title">Lagringsmängd</string>
     <string name="pref_misc">Diverse</string>
+    <string name="pref_navigation_nostalgia_mode">Nostalgiläge</string>
+    <string name="pref_nostalgia_summary_off">Navigationslådan visar inte aktiva sidor</string>
+    <string name="pref_nostalgia_summary_on">Navigationslådan visar aktiva sidor</string>
     <string name="pref_plug_reactions">Pluggreaktioner</string>
     <string name="pref_quantity_per_page_summary">Antalet föremål per sida i nedladdningslistan\nNuvarande: %s föremål</string>
     <string name="pref_quantity_per_page_title">Kvantitet per sida</string>
@@ -230,7 +237,7 @@
     <string name="pref_viewer_smart_crop">Smart beskärning</string>
     <string name="pref_viewer_smart_crop_summary_off">Bilder visas som de är</string>
     <string name="pref_viewer_smart_crop_summary_on">Fasta kanter tas bort automatiskt</string>
-    <string name="pref_viewer_swipe_to_fling">Bläddra genom kast</string>
+    <string name="pref_viewer_swipe_to_fling">Bläddra genom svep</string>
     <string name="pref_viewer_tap_transitions">Sätt på sidvändaranimation</string>
     <string name="pref_viewer_vertical_reader">Vertikal läsare</string>
     <string name="pref_viewer_visuals">Visuellt</string>

@@ -1000,6 +1000,7 @@
     <string name="theme_dark">Oscuro</string>
     <string name="theme_deep_red">Borgoña</string>
     <string name="theme_light">Claro</string>
+    <string name="theme_you">Por color del sistema</string>
     <string name="title_activity_about">Acerca de</string>
     <string name="title_activity_app_lock">Bloqueo de la aplicación</string>
     <string name="title_activity_browser">Navigador</string>

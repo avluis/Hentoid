@@ -1003,6 +1003,7 @@
     <string name="theme_dark">Nero</string>
     <string name="theme_deep_red">Rosso scuro</string>
     <string name="theme_light">Bianco</string>
+    <string name="theme_you">Material You</string>
     <string name="title_activity_about">Informazioni</string>
     <string name="title_activity_app_lock">Blocco app</string>
     <string name="title_activity_browser">Browser</string>

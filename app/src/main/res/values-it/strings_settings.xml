@@ -54,6 +54,9 @@
     <string name="pref_browser_language_filter_setting_summary">Consiglio: Inserisci la lingua in Inglese</string>
     <string name="pref_browser_language_filter_setting_title">Impostazioni filtro lingua</string>
     <string name="pref_browser_language_filter_title">Pulsante filtro lingua</string>
+    <string name="pref_browser_lock_favs_panel_off">Il pannello dei preferiti a destra si apre trascinando</string>
+    <string name="pref_browser_lock_favs_panel_on">Il pannello dei preferiti a destra NON si apre trascinando</string>
+    <string name="pref_browser_lock_favs_panel_title">Blocca il pannello dei preferiti</string>
     <string name="pref_browser_mark_blocked_off">I libri con tag bloccati non hanno una visualizzazione specifica</string>
     <string name="pref_browser_mark_blocked_on">I libri con tag bloccati sono segnati\nNota: non funziona su tutti i siti</string>
     <string name="pref_browser_mark_blocked_title">Segna i libri con tag bloccati</string>
@@ -85,6 +88,7 @@
     <string name="pref_cat_language">Lingua interfaccia</string>
     <string name="pref_cat_library">Libreria</string>
     <string name="pref_cat_library_grid">Personalizzazione visuale Libreria / Griglia</string>
+    <string name="pref_cat_navigation">Pannello di navigazione</string>
     <string name="pref_cat_search">Ricerca avanzata</string>
     <string name="pref_cat_theme">Tema dell’app</string>
     <string name="pref_check_updates_manual_checking">Controllo aggiornamenti…</string>
@@ -153,6 +157,9 @@
     <string name="pref_memory_usage_summary">Spazio libero attuale: %2f%% (tocca per dettagli)</string>
     <string name="pref_memory_usage_title">Utilizzo della memoria</string>
     <string name="pref_misc">Varie</string>
+    <string name="pref_navigation_nostalgia_mode">Modalità nostalgia</string>
+    <string name="pref_nostalgia_summary_off">Il pannello di navigazione NON mostra le fonti attive</string>
+    <string name="pref_nostalgia_summary_on">Il pannello di navigazione mostra le fonti attive</string>
     <string name="pref_plug_reactions">Reazioni agli inserimenti cavi</string>
     <string name="pref_quantity_per_page_summary">Numero di elementi per pagina nella lista download\nAttualmente: %s elementi</string>
     <string name="pref_quantity_per_page_title">Quantità per pagina</string>
@@ -241,12 +248,12 @@
     <string name="prefs_ask_detach_external_library">Staccare la libreria esterna\?</string>
     <string name="prefs_external_library_detached">Libreria esterna staccata</string>
     <string name="searchpreference_clear">Cancella</string>
-    <string name="searchpreference_clear_history">Rimozione cronologia</string>
+    <string name="searchpreference_clear_history">Camcella cronologia</string>
     <string name="searchpreference_more">Altro</string>
     <string name="searchpreference_no_results">Nessun risultato</string>
     <string name="searchpreference_search">Cerca…</string>
     <string name="tag_blocking_screen_title">Blocco dei tag</string>
     <string name="title_activity_source_specifics">Impostazione fonti specifiche</string>
     <string name="use_app_prefs">Impostazioni app (%s)</string>
-    <string name="use_source_prefs">Impostazione fonte (%s)</string>
+    <string name="use_source_prefs">Impostazioni fonte (%s)</string>
 </resources>

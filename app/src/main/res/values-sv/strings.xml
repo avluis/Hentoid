@@ -955,6 +955,7 @@
     <string name="theme_dark">Mörkt</string>
     <string name="theme_deep_red">Vinrött</string>
     <string name="theme_light">Ljust</string>
+    <string name="theme_you">Efter systemfärg</string>
     <string name="title_activity_about">Om</string>
     <string name="title_activity_app_lock">Applås</string>
     <string name="title_activity_browser">Webbläsare</string>
