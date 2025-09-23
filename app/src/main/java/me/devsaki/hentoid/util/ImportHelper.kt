@@ -995,6 +995,10 @@ private fun scanFolderImages(
     return results
 }
 
+/**
+ * Map metadata from reference images to recipient images, based on their name
+ * NB : No element will be added nor removed from 'recipient'
+ */
 private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
     // Clear chapters contained in ref images (their content will be replaced by images from 'recipient')
     ref.mapNotNull { it.linkedChapter }.distinct().forEach { it.clearImageFiles() }
@@ -1182,7 +1186,7 @@ fun scanForArchivesPdf(
  * NB : any returned Content with the IGNORED status shouldn't be taken into account by the caller
  *
  * @param context       Context to use
- * @param parent  Parent folder where the archive is located
+ * @param parent        Parent folder where the archive is located
  * @param doc           Archive file to scan
  * @param parentNames   Names of parent folders, for formatting purposes; last of the list is the immediate parent of parentFolder
  * @param targetStatus  Target status of the Content to create
@@ -1249,7 +1253,8 @@ fun scanArchivePdf(
         if (0L == downloadDate) downloadDate = now
         downloadCompletionDate = now
         lastEditDate = now
-        setImageFiles(images)
+        if (null == content) setImageFiles(images)
+        else mapMetadata(images, content.imageList)
         if (0 == qtyPages) {
             val countUnreadable = images.filterNot { it.isReadable }.count()
             qtyPages = images.size - countUnreadable // Minus unreadable pages (cover thumb)
