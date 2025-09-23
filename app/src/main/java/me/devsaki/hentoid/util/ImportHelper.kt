@@ -675,6 +675,7 @@ fun scanFolderRecursive(
     }
 
     // If at least 2 subfolders and all of them ends with a number, we've got a multi-chapter book
+    var hasScannedChapters = false
     if (subFolders.size >= 2) {
         val allSubfoldersEndWithNumber =
             subFolders.mapNotNull { it.name }.all { ENDS_WITH_NUMBER.matcher(it).matches() }
@@ -683,6 +684,7 @@ fun scanFolderRecursive(
             val nbPicturesInside = explorer.countFiles(subFolders[0], imageNamesFilter)
             if (nbPicturesInside > 1) {
                 val json = getFileWithName(jsons, JSON_FILE_NAME_V2)
+                hasScannedChapters = true
                 onContentFound(
                     scanChapterFolders(
                         context, toScan, subFolders, explorer, parentNames, dao, json
@@ -753,6 +755,9 @@ fun scanFolderRecursive(
             progress?.setProgress(rootName, 1f)
         }
     }
+
+    // Stop here if subfolders have already been scanned as chapters
+    if (hasScannedChapters) return
 
     // Go down one level
     val newParentNames: MutableList<String> = ArrayList(parentNames)
@@ -834,15 +839,17 @@ fun scanBookFolder(
     val images: MutableList<ImageFile> = ArrayList()
     val theExplorer = explorer ?: FileExplorer(context, bookFolder)
     try {
-        scanFolderImages(
-            context,
-            bookFolder,
-            theExplorer,
-            targetStatus,
-            false,
-            images,
-            result.imageList,
-            files
+        images.addAll(
+            scanFolderImages(
+                context,
+                bookFolder,
+                theExplorer,
+                targetStatus,
+                false,
+                result.imageList,
+                images.maxOfOrNull { it.order } ?: 0,
+                files
+            )
         )
     } finally {
         // Free local FileExplorer
@@ -906,11 +913,10 @@ fun scanChapterFolders(
     var result: Content? = null
     if (jsonFile != null) {
         try {
-            val content = jsonToObject(
+            jsonToObject(
                 context, jsonFile,
                 JsonContent::class.java
-            )
-            if (content != null) {
+            )?.let { content ->
                 result = content.toEntity(dao)
                 result.jsonUri = jsonFile.uri.toString()
             }
@@ -931,17 +937,23 @@ fun scanChapterFolders(
     result.downloadCompletionDate = now
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
-    // Scan pages across all subfolders
-    for (chapterFolder in chapterFolders) scanFolderImages(
-        context,
-        chapterFolder,
-        explorer,
-        StatusContent.EXTERNAL,
-        true,
-        images,
-        result.imageList,
-        null
-    )
+    // Scan pages across all subfolders; create a chapter for each
+    chapterFolders.forEachIndexed { idx, chapterFolder ->
+        val imgs = scanFolderImages(
+            context,
+            chapterFolder,
+            explorer,
+            StatusContent.EXTERNAL,
+            true,
+            result.imageList,
+            images.maxOfOrNull { it.order } ?: 0
+        )
+        val chp = Chapter(idx, "", chapterFolder.name ?: "")
+        chp.setContent(result)
+        chp.setImageFiles(imgs)
+        imgs.forEach { it.setChapter(chp) }
+        images.addAll(imgs)
+    }
     val coverExists = images.any { it.isCover }
     if (!coverExists) createCover(images)
     result.setImageFiles(images)
@@ -961,7 +973,8 @@ fun scanChapterFolders(
  * @param explorer               FileExplorer to use
  * @param targetStatus           Target status of the detected images
  * @param addFolderNametoImgName True if the parent folder name has to be added to detected images name
- * @param images                 Image list to populate or enrich
+ * @param contentImages          Image of currently processed Content
+ * @param startingOrder          Order to start numbering detected images from
  * @param imgs                   Image file list, if already listed upstream; null if it needs to be listed
  */
 private fun scanFolderImages(
@@ -970,17 +983,16 @@ private fun scanFolderImages(
     explorer: FileExplorer,
     targetStatus: StatusContent,
     addFolderNametoImgName: Boolean,
-    images: MutableList<ImageFile>,
     contentImages: List<ImageFile>,
-    imgs: List<DocumentFile>?
-) {
+    startingOrder: Int,
+    imgs: List<DocumentFile>? = null
+): List<ImageFile> {
     val imageFiles = imgs ?: explorer.listFiles(context, bookFolder, imageNamesFilter)
-    val order = images.maxOfOrNull { it.order } ?: 0
     val folderName = bookFolder.name ?: ""
     val namePrefix = if (addFolderNametoImgName) "$folderName-" else ""
-    val results = createImageListFromFiles(imageFiles, targetStatus, order, namePrefix)
+    val results = createImageListFromFiles(imageFiles, targetStatus, startingOrder, namePrefix)
     mapMetadata(results, contentImages)
-    images.addAll(results)
+    return results
 }
 
 private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
