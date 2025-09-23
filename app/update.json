@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.23/hentoid12023-840.apk",
-  "versionCode": "840",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.24/hentoid12024-846.apk",
+  "versionCode": "846",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -37,8 +37,8 @@
 	  {"sourceName":"MRM", "status":"ORANGE", "fixedByBuild":"832"},
 	  {"sourceName":"HIPERDEX", "status":"RED", "fixedByBuild":"832"},
 	  {"sourceName":"HIPERDEX", "status":"RED", "fixedByBuild":"838"},
-	  {"sourceName":"SIMPLY", "status":"RED"},
-	  {"sourceName":"MUSES", "status":"RED"},
+	  {"sourceName":"SIMPLY", "status":"RED", "fixedByBuild":"846"},
+	  {"sourceName":"MUSES", "status":"RED", "fixedByBuild":"846"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
