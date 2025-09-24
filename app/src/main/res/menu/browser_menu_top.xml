@@ -40,5 +40,11 @@
             android:title="@string/web_url"
             android:tooltipText="@string/web_url"
             app:showAsAction="never" />
+        <item
+            android:id="@+id/help"
+            android:icon="@drawable/ic_help_outline"
+            android:title="@string/help_generic"
+            android:tooltipText="@string/help_generic"
+            app:showAsAction="never" />
     </group>
 </menu>

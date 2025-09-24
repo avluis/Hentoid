@@ -25,7 +25,7 @@
                 android:elevation="@dimen/toolbar_layout_elevation"
                 android:gravity="center_vertical"
                 app:layout_scrollFlags="scroll|enterAlways"
-                app:menu="@menu/web_menu_top"
+                app:menu="@menu/browser_menu_top"
                 app:navigationIcon="@drawable/ic_drawer" />
 
         </com.google.android.material.appbar.AppBarLayout>

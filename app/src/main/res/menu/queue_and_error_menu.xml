@@ -55,4 +55,10 @@
         android:title="@string/cancel_all_errors"
         android:tooltipText="@string/cancel_all_errors"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/help"
+        android:icon="@drawable/ic_help_outline"
+        android:title="@string/help_generic"
+        android:tooltipText="@string/help_generic"
+        app:showAsAction="never" />
 </menu>

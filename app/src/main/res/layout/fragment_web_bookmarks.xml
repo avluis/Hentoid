@@ -16,7 +16,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         android:gravity="center_vertical"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/web_bookmarks_menu" />
+        app:menu="@menu/browser_bookmarks_menu" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview"
@@ -55,7 +55,7 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_scrollFlags="scroll|enterAlways"
-        app:menu="@menu/web_bookmarks_selection_menu"
+        app:menu="@menu/browser_bookmarks_selection_menu"
         tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

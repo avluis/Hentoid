@@ -57,4 +57,5 @@ const val URL_GITHUB_WIKI = "https://github.com/AVnetWS/Hentoid/wiki"
 const val URL_GITHUB_WIKI_TRANSFER =
     "https://github.com/avluis/Hentoid/wiki/Transferring-your-collection-between-devices"
 const val URL_GITHUB_WIKI_STORAGE = "https://github.com/avluis/Hentoid/wiki/Storage-management"
+const val URL_GITHUB_WIKI_DOWNLOAD = "https://github.com/avluis/Hentoid/wiki/Downloading"
 const val URL_DISCORD = "https://discord.gg/TNCwwUw"
