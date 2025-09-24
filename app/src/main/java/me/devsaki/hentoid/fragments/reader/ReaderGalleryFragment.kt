@@ -192,12 +192,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             itemSetCoverMenu = selectionToolbar.menu.findItem(R.id.action_set_group_cover)
             editChapterNameMenu = selectionToolbar.menu.findItem(R.id.action_edit_chapter_name)
             toggleFavouriteMenu = selectionToolbar.menu.findItem(R.id.action_toggle_favorite_pages)
-            selectionToolbar.setNavigationOnClickListener {
-                selectExtension.deselect(selectExtension.selections.toMutableSet())
-                expandableSelectExtension.deselect(expandableSelectExtension.selections.toMutableSet())
-                selectionToolbar.visibility = View.GONE
-                toolbar.visibility = View.VISIBLE
-            }
+            selectionToolbar.setNavigationOnClickListener { leaveSelection() }
             selectionToolbar.setOnMenuItemClickListener { menuItem: MenuItem ->
                 onSelectionMenuItemClicked(menuItem)
             }
@@ -232,17 +227,6 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         )
     }
 
-    private fun onBackClick() {
-        when (editMode) {
-            EditMode.EDIT_CHAPTERS -> setChapterEditMode(EditMode.NONE)
-            EditMode.ADD_CHAPTER -> setChapterEditMode(
-                EditMode.EDIT_CHAPTERS
-            )
-
-            else -> requireActivity().onBackPressedDispatcher.onBackPressed()
-        }
-    }
-
     override fun onStop() {
         (requireActivity() as ReaderActivity).unregisterKeyListener()
         super.onStop()
@@ -256,6 +240,16 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         fastAdapter.withSavedInstanceState(savedInstanceState, "gallery")
+    }
+
+    private fun onBackClick() {
+        if (leaveSelection()) return
+        when (editMode) {
+            EditMode.EDIT_CHAPTERS -> setChapterEditMode(EditMode.NONE)
+            EditMode.ADD_CHAPTER -> setChapterEditMode(EditMode.EDIT_CHAPTERS)
+
+            else -> requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
     }
 
     private fun updateListAdapter(isChapterEditMode: Boolean) {
@@ -611,18 +605,12 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             }
 
             else -> {
-                binding?.apply {
-                    selectionToolbar.visibility = View.GONE
-                    toolbar.visibility = View.VISIBLE
-                }
+                leaveSelection()
                 return false
             }
         }
 
-        binding?.apply {
-            selectionToolbar.visibility = View.GONE
-            toolbar.visibility = View.VISIBLE
-        }
+        leaveSelection()
         return true
     }
 
@@ -740,9 +728,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         val selectedCount = selectExtension.selections.size
         binding?.apply {
             if (0 == selectedCount) {
-                selectionToolbar.visibility = View.GONE
-                toolbar.visibility = View.VISIBLE
-                selectExtension.selectOnLongClick = true
+                leaveSelection()
             } else {
                 updateSelectionToolbar(selectedCount.toLong())
                 selectionToolbar.visibility = View.VISIBLE
@@ -755,9 +741,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         val selectedCount = expandableSelectExtension.selections.size
         binding?.apply {
             if (0 == selectedCount) {
-                selectionToolbar.visibility = View.GONE
-                toolbar.visibility = View.VISIBLE
-                expandableSelectExtension.selectOnLongClick = true
+                leaveSelection()
             } else {
                 if (1 == selectedCount) expandableExtension.collapse()
                 updateSelectionToolbar(selectedCount.toLong())
@@ -946,5 +930,27 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         viewModel.repostImages()
         isReorderingChapters = false
         updateToolbar()
+    }
+
+    private fun leaveSelection(): Boolean {
+        var result = false
+
+        var sel = selectExtension.selections.toMutableSet()
+        if (sel.isNotEmpty()) result = true
+        selectExtension.deselect(sel)
+
+        sel = expandableSelectExtension.selections.toMutableSet()
+        if (sel.isNotEmpty()) result = true
+        expandableSelectExtension.deselect(sel)
+
+        selectExtension.selectOnLongClick = true
+        expandableSelectExtension.selectOnLongClick = true
+
+        binding?.apply {
+            if (selectionToolbar.isVisible) result = true
+            selectionToolbar.visibility = View.GONE
+            toolbar.visibility = View.VISIBLE
+        }
+        return result
     }
 }
