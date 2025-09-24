@@ -1409,6 +1409,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             try {
                 val targetScale = if (null == inTargetScale) {
                     val dims = getImageDimensions(context, uri)
+                    Timber.d("dims $dims")
                     val sat = ScaleAndTranslate(0f, PointF(0f, 0f))
                     fitToBounds(true, dims, sat).scale
                 } else inTargetScale
@@ -2427,10 +2428,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      * Returns the minimum allowed scale.
      */
     private fun minScale(inDims: Point? = null): Float {
-        val viewHeight = getHeightInternal() - paddingBottom + paddingTop
-        val viewWidth = getWidthInternal() - paddingLeft + paddingRight
         val dims = inDims ?: Point(sWidth(), sHeight())
+        var viewWidth = getWidthInternal() - paddingLeft + paddingRight
+        if (0 == viewWidth) viewWidth = dims.x
+        var viewHeight = getHeightInternal() - paddingBottom + paddingTop
+        if (0 == viewHeight) viewHeight = dims.y
 
+        Timber.d(">>mst $viewWidth $viewHeight $minimumScaleType [$$preloadDimensions]")
         when (minimumScaleType) {
             ScaleType.CENTER_CROP, ScaleType.START -> return max(
                 viewWidth / dims.x.toFloat(),
@@ -2474,8 +2478,10 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
      */
     private fun limitedScale(targetScale: Float, sSize: Point? = null): Float {
         val min = minScale(sSize)
+        Timber.d(">>min $min")
         // Sometimes minScale gets higher than maxScale => align both
         val max = if (min < maxScale) maxScale else min
+        Timber.d(">>max $max")
         return if (max > 0) targetScale.coerceIn(min, max) else max(targetScale, min)
     }
 
