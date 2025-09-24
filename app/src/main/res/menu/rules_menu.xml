@@ -17,4 +17,10 @@
         android:title="@string/menu_sort_filter"
         android:tooltipText="@string/menu_sort_filter"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/help"
+        android:icon="@drawable/ic_help_outline"
+        android:title="@string/help_generic"
+        android:tooltipText="@string/help_generic"
+        app:showAsAction="ifRoom" />
 </menu>

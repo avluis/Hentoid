@@ -37,6 +37,8 @@ import com.mikepenz.fastadapter.utils.DragDropUtil.onMove
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ReaderActivity
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle
+import me.devsaki.hentoid.core.URL_GITHUB_WIKI_EDIT_CHAPTER
+import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
@@ -89,6 +91,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private lateinit var resetChaptersMenu: MenuItem
     private lateinit var confirmReorderMenu: MenuItem
     private lateinit var cancelReorderMenu: MenuItem
+    private lateinit var helpMenu: MenuItem
 
     private val itemAdapter = ItemAdapter<ImageFileItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
@@ -185,6 +188,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             addChapterMenu = toolbar.menu.findItem(R.id.action_add_remove_chapters)
             confirmReorderMenu = toolbar.menu.findItem(R.id.action_edit_confirm)
             cancelReorderMenu = toolbar.menu.findItem(R.id.action_edit_cancel)
+            helpMenu = toolbar.menu.findItem(R.id.help)
             itemSetCoverMenu = selectionToolbar.menu.findItem(R.id.action_set_group_cover)
             editChapterNameMenu = selectionToolbar.menu.findItem(R.id.action_edit_chapter_name)
             toggleFavouriteMenu = selectionToolbar.menu.findItem(R.id.action_toggle_favorite_pages)
@@ -542,6 +546,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                     .setNegativeButton(R.string.no) { _, _ -> }
                     .create().show()
             }
+
+            R.id.help -> context?.startBrowserActivity(URL_GITHUB_WIKI_EDIT_CHAPTER)
         }
     }
 
@@ -629,6 +635,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         resetChaptersMenu.isVisible = editMode == EditMode.ADD_CHAPTER
         confirmReorderMenu.isVisible = isReorderingChapters
         cancelReorderMenu.isVisible = isReorderingChapters
+        helpMenu.isVisible = editMode != EditMode.NONE
         binding?.apply {
             if (chapterSelector.index > -1) chapterSelector.isVisible =
                 editMode == EditMode.NONE

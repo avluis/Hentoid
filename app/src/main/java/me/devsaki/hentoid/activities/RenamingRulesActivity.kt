@@ -17,6 +17,8 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
 import com.mikepenz.fastadapter.select.SelectExtension
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.RenamingRuleBundle
+import me.devsaki.hentoid.core.URL_GITHUB_WIKI_EDIT_METADATA
+import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.databinding.ActivityRulesBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -210,6 +212,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_sort_filter -> showSortFilterPanel()
+            R.id.help -> startBrowserActivity(URL_GITHUB_WIKI_EDIT_METADATA)
             else -> return true
         }
         return true

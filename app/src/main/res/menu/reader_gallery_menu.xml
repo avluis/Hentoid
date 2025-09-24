@@ -43,4 +43,11 @@
         android:tooltipText="@string/menu_edit_cancel"
         android:visible="false"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/help"
+        android:icon="@drawable/ic_help_outline"
+        android:title="@string/help_generic"
+        android:tooltipText="@string/help_generic"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 </menu>
