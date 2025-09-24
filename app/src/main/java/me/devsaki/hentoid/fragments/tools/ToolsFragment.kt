@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.tools
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -172,7 +171,6 @@ class ToolsFragment : PreferenceFragmentCompat(),
                 val materialDialog: AlertDialog = MaterialAlertDialogBuilder(requireContext())
                     .setMessage(msg)
                     .setCancelable(true)
-                    .setNeutralButton(android.R.string.ok) { i: DialogInterface, _: Int -> i.dismiss() }
                     .create()
 
                 materialDialog.setIcon(R.drawable.ic_memory)
