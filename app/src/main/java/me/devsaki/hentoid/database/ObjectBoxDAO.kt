@@ -754,22 +754,23 @@ class ObjectBoxDAO : CollectionDAO {
 
         val livedata2 = MediatorLiveData<List<Group>>()
         livedata2.addSource(attrsLive) { attrs ->
-            val groups = attrs.mapIndexedNotNull { idx, attr ->
+            val groups = attrs
                 // Don't display empty groups
-                if (attr.contents.isEmpty()) null
-                val group = Group(Grouping.DYNAMIC, attr.name, idx + 1)
-                group.searchUri = buildSearchUri(setOf(attr)).toString()
-                group.subtype = if (AttributeType.CIRCLE == attr.type) 1 else 0
-                // WARNING : This is the place where things get slow
-                val items = attr.contents
-                    .filter { isInLibrary(it.status) }
-                    .mapIndexed { idx2, c ->
-                        if (0 == idx2) group.coverContent.target = c
-                        GroupItem(c.id, group, idx2)
-                    }
-                group.setItems(items)
-                group
-            }
+                .filterNot { it.contents.isEmpty() }
+                .mapIndexed { idx, attr ->
+                    val group = Group(Grouping.DYNAMIC, attr.name, idx + 1)
+                    group.searchUri = buildSearchUri(setOf(attr)).toString()
+                    group.subtype = if (AttributeType.CIRCLE == attr.type) 1 else 0
+                    // WARNING : This is the place where things get slow
+                    val items = attr.contents
+                        .filter { isInLibrary(it.status) }
+                        .mapIndexed { idx2, c ->
+                            if (0 == idx2) group.coverContent.target = c
+                            GroupItem(c.id, group, idx2)
+                        }
+                    group.setItems(items)
+                    group
+                }
             livedata2.value = groups
         }
 
