@@ -35,8 +35,6 @@ import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.DuplicateEntry
-import me.devsaki.hentoid.database.domains.Group
-import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.database.domains.SiteBookmark
 import me.devsaki.hentoid.database.safeReach
@@ -1542,10 +1540,8 @@ fun formatArtistForDisplay(
 ): String {
     val attributes: MutableList<Attribute> = ArrayList()
 
-    val artistAttributes = content.attributeMap[AttributeType.ARTIST]
-    if (artistAttributes != null) attributes.addAll(artistAttributes)
-    val circleAttributes = content.attributeMap[AttributeType.CIRCLE]
-    if (circleAttributes != null) attributes.addAll(circleAttributes)
+    content.attributeMap[AttributeType.ARTIST]?.let { attributes.addAll(it) }
+    content.attributeMap[AttributeType.CIRCLE]?.let { attributes.addAll(it) }
 
     if (attributes.isEmpty()) {
         return context.getString(
