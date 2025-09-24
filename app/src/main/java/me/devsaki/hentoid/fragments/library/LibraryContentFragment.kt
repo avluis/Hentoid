@@ -204,7 +204,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     // Launches the search activity according to the returned result
     private val advancedSearchReturnLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) {  advancedSearchReturnResult(it) }
+    ) { advancedSearchReturnResult(it) }
 
     /**
      * Diff calculation rules for contents
@@ -499,7 +499,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 selectExtension?.apply {
                     while (selections.size < getItemAdapter()!!.adapterItemCount && ++count < 5)
                         IntRange(0, getItemAdapter()!!.adapterItemCount - 1).forEach {
-                            select(it, false, true)
+                            select(it, fireEvent = false, considerSelectableFlag = true)
                         }
                 }
                 keepToolbar = true
@@ -517,10 +517,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             R.id.action_split -> {
                 selectedContent = selectExtension!!.selectedItems.firstOrNull()
-                selectedContent?.let {
-                    val c = it.content
-                    if (c != null) invoke(this, c)
-                }
+                selectedContent?.content?.let { invoke(this, it) }
                 keepToolbar = true
             }
 
@@ -540,8 +537,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
             R.id.action_edit -> {
                 val selectedIds = selectExtension!!.selectedItems
-                    .mapNotNull { ci -> ci.content }
-                    .map { c -> c.id }
+                    .mapNotNull { it.content }.map { it.id }
                 if (selectedIds.isNotEmpty()) {
                     val editMetaIntent = Intent(this.context, MetadataEditActivity::class.java)
                     val builder = MetaEditActivityBundle()
