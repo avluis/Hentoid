@@ -204,7 +204,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     // Launches the search activity according to the returned result
     private val advancedSearchReturnLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult -> advancedSearchReturnResult(result) }
+    ) {  advancedSearchReturnResult(it) }
 
     /**
      * Diff calculation rules for contents
@@ -1056,8 +1056,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val parser = SearchActivityBundle(result.data!!.extras!!)
             val searchUri = parser.uri.toUri()
             excludeClicked = parser.excludeMode
-            setMetadata(parseSearchUri(searchUri))
-            viewModel.searchContent(getQuery(), getMetadata(), searchUri)
+            val criteria = parseSearchUri(searchUri)
+            setMetadata(criteria)
+            viewModel.searchContent(getQuery(), criteria, searchUri)
         }
     }
 

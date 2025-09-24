@@ -163,14 +163,16 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     /**
      * Perform a new library search
      */
-    private suspend fun doSearchContent() {
+    private suspend fun doSearchContent(resetTags: Boolean = false) {
         // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Settings.contentSortField)
         contentSearchManager.setContentSortDesc(Settings.isContentSortDesc)
         if (Settings.getGroupingDisplayG() == Grouping.FLAT) {
             contentSearchManager.setGroup(null)
-            contentSearchManager.clearTags()
-            contentSearchManager.clearExcludedAttrs()
+            if (resetTags) {
+                contentSearchManager.clearTags()
+                contentSearchManager.clearExcludedAttrs()
+            }
         }
         val newSource = withContext(Dispatchers.IO) {
             try {
@@ -480,7 +482,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             if (currentGrouping == Grouping.FLAT.id) return
 
             when (groupingId) {
-                Grouping.FLAT.id -> viewModelScope.launch { doSearchContent() }
+                Grouping.FLAT.id -> viewModelScope.launch { doSearchContent(true) }
                 Grouping.FOLDERS.id -> viewModelScope.launch { doSearchFolders() }
                 else -> viewModelScope.launch { doSearchGroup() }
             }
@@ -534,7 +536,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         newContentSearch.value = true
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
-        viewModelScope.launch { doSearchContent() }
+        viewModelScope.launch { doSearchContent(Settings.getGroupingDisplayG() == Grouping.FLAT) }
     }
 
     // =========================
