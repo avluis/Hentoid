@@ -381,7 +381,6 @@
     <string name="group_60">Ultimi 60 giorni</string>
     <string name="group_7">Ultimi 7 giorni</string>
     <string name="group_change">Passa al gruppo personalizzato</string>
-    <string name="group_delete_nothing">Niente da eliminare - seleziona Consenti l\'eleminazione di contenuti esterni per cambiarlo</string>
     <plurals name="group_delete_selected_book">
         <item quantity="many">Cancella %d libri</item>
         <item quantity="one">Cancella %d libro</item>

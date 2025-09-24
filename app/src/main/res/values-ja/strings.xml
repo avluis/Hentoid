@@ -394,7 +394,6 @@
     <string name="group_delete_selected_group">グループのみを削除</string>
     <string name="group_delete_selected_book">%d本を削除</string>
     <string name="group_delete_selected_group_books">グループと本を削除する</string>
-    <string name="group_delete_nothing">削除するものはありません - 「外部コンテンツの削除を許可する」を確認してそれを変更します</string>
     <string name="clear_rating">明確な評価</string>
     <string name="clear_search_history_confirm">検索履歴をクリアしますか？</string>
     <string name="fav_pages">お気に入りのページ</string>

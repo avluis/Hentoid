@@ -639,7 +639,7 @@
         <item quantity="one">Delete group + books</item>
         <item quantity="other">Delete groups + books</item>
     </plurals>
-    <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
+    <string name="group_delete_nothing">Selected groups can\'t be deleted manually</string>
     <string name="clear_rating">Clear rating</string>
     <string name="clear_search_history_confirm">Clear search history?</string>
     <string name="fav_pages">Favourite pages</string>

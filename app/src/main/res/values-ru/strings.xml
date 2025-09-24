@@ -565,7 +565,6 @@
         <item quantity="few">Удалить группы и книги</item>
         <item quantity="many">Удалить группы и книги</item>
     </plurals>
-    <string name="group_delete_nothing">Нечего удалять — включите опцию \"Разрешить удалять внешний контент\"</string>
     <string name="clear_rating">Очистить рейтинг</string>
     <string name="clear_search_history_confirm">Удалить историю поиска?</string>
     <string name="fav_pages">Избранные страницы</string>

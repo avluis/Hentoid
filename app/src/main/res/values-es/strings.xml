@@ -377,7 +377,6 @@
     <string name="group_60">Últimos 60 días</string>
     <string name="group_7">Últimos 7 días</string>
     <string name="group_change">Mover a grupo personalizado</string>
-    <string name="group_delete_nothing">Nada que borrar - verificar \"Permitir borrar contenido externo\" para solucionarlo</string>
     <plurals name="group_delete_selected_book">
         <item quantity="many">Eliminar %d libros</item>
         <item quantity="one">Eliminar %d libro</item>

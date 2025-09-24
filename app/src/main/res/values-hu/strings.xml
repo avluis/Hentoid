@@ -487,7 +487,6 @@
         <item quantity="one">Csoport és könyvek törlése</item>
         <item quantity="other">Csoportok és könyvek törlése</item>
     </plurals>
-    <string name="group_delete_nothing">Nincs mit törölni - ellenőrizze a \"Külső tartalom törlésének engedélyezése\" lehetőséget, hogy ez törölhető lehessen</string>
     <string name="clear_rating">Értékelés törlése</string>
     <string name="clear_search_history_confirm">Keresési előzmény törlése?</string>
 <string name="merge_merge">Egyesítés</string>

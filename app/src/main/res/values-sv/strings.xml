@@ -352,7 +352,6 @@
     <string name="group_60">Senaste 60 dagarna</string>
     <string name="group_7">Senaste 7 dagarna</string>
     <string name="group_change">Flytta till anpassad grupp</string>
-    <string name="group_delete_nothing">Inget att ta bort - kolla "Tillåt borttagning av externt innehåll" för att ändra på det</string>
     <plurals name="group_delete_selected_book">
         <item quantity="one">Ta bort %d bok</item>
         <item quantity="other">Ta bort %d böcker</item>

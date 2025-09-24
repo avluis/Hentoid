@@ -537,7 +537,6 @@
         <item quantity="few">Видалити групи та книги</item>
         <item quantity="many">Видалити групи та книги</item>
     </plurals>
-    <string name="group_delete_nothing">Нема чого видаляти — увімкніть опцію \"Дозволити видаляти зовнішній контент\"</string>
 	<string name="clear_rating">Очистити рейтинг</string>
 
     <!-- Merge & split -->

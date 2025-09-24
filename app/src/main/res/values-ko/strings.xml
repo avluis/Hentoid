@@ -394,7 +394,6 @@
     <string name="group_delete_selected_group">그룹만 삭제</string>
     <string name="group_delete_selected_book">작품 %d개 삭제</string>
     <string name="group_delete_selected_group_books">그룹 + 작품 삭제</string>
-    <string name="group_delete_nothing">삭제할 항목이 없습니다 - 변경하려면 \"외부 컨텐츠 삭제 허용\"을 선택하십시오.</string>
     <string name="clear_rating">평점 삭제</string>
     <string name="clear_search_history_confirm">검색 기록 삭제?</string>
     <string name="fav_pages">즐겨찾기 페이지</string>
