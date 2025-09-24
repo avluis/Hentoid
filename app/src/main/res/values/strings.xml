@@ -234,6 +234,7 @@
     <string name="import_current_site">Only import %s bookmarks</string>
 
     <!-- TextViews -->
+    <string name="work_untitled">[No data]</string>
     <string name="work_series">Series: <x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">Artist: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
     <plurals name="work_pages_missing">
