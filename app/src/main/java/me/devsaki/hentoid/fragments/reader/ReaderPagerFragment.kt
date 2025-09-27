@@ -26,6 +26,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -251,7 +252,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             shuffleMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_shuffle)
             reverseMenu = it.controlsOverlay.toolbar.menu.findItem(R.id.action_reverse)
 
-
             ViewCompat.setOnApplyWindowInsetsListener(it.root) { insetView, insets: WindowInsetsCompat ->
                 val nav = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
                 // Covers all landscape cases
@@ -263,7 +263,9 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val isLandscape =
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
                 // TODO detect landscape with navbar on left vs. landscape with navbar on right
-                insetView.setPadding(
+                Timber.d(">> aa $navBarHeight ${status.top}")
+                // Necessary to keep the displayed image still while system bars appear and apply padding
+                binding?.controlsOverlay?.root?.setPadding(
                     0,
                     status.top,
                     if (isLandscape) navBarHeight else 0,
@@ -1440,15 +1442,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         val activity = activity ?: return
         val window = activity.window
         val params = window.attributes
-//        WindowCompat.setDecorFitsSystemWindows(window, false)
+        // Necessary to keep the displayed image still while system bars appear and apply padding
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (visible) {
             binding?.apply {
-                WindowInsetsControllerCompat(
-                    window, controlsOverlay.root
-                ).apply {
+                WindowInsetsControllerCompat(window, controlsOverlay.root).apply {
                     show(WindowInsetsCompat.Type.systemBars())
-//                    isAppearanceLightNavigationBars = false
-//                    isAppearanceLightStatusBars = false
                 }
             }
             // Revert to default regarding notch area display
@@ -1462,8 +1461,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     systemBarsBehavior =
                         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                     hide(WindowInsetsCompat.Type.systemBars())
-                    //                  isAppearanceLightNavigationBars = false
-//                    isAppearanceLightStatusBars = false
                 }
             }
             // Display around the notch area
