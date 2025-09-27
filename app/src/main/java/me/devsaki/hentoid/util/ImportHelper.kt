@@ -951,7 +951,7 @@ fun scanChapterFolders(
             result.imageList,
             images.maxOfOrNull { it.order } ?: 0
         )
-        val chp = Chapter(idx, "", chapterFolder.name ?: "")
+        val chp = Chapter(idx, chapterFolder.uri.toString(), chapterFolder.name ?: "")
         chp.setContent(result)
         chp.setImageFiles(imgs)
         imgs.forEach { it.setChapter(chp) }

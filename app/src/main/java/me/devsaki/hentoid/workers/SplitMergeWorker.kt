@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.workers
 
+import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -30,17 +31,17 @@ import me.devsaki.hentoid.util.createJson
 import me.devsaki.hentoid.util.deleteChapters
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.file.Beholder
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.copyFiles
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
-import me.devsaki.hentoid.util.file.PdfManager
-import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.image.clearCoilCache
 import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.util.moveContentToCustomGroup
@@ -181,7 +182,11 @@ abstract class BaseSplitMergeWorker(
                             Triple(
                                 it.url.replace(content.storageUri + File.separator, ""),
                                 it.order.toLong(),
-                                String.format(Locale.ENGLISH, "%0${nbMaxDigits}d", it.order) + "." + getExtension(it.url)
+                                String.format(
+                                    Locale.ENGLISH,
+                                    "%0${nbMaxDigits}d",
+                                    it.order
+                                ) + "." + getExtension(it.url)
                             )
                         }
 
@@ -386,7 +391,7 @@ abstract class BaseSplitMergeWorker(
 
         // Renumber all readable images
         val orderedImages =
-            chapters.map { it.imageFiles }.flatMap { it.toList() }.filter { it.isReadable }
+            chapters.flatMap { it.imageList }.filter { it.isReadable }
         require(orderedImages.isNotEmpty()) { "No images found" }
 
         // Keep existing formatting
@@ -410,12 +415,22 @@ abstract class BaseSplitMergeWorker(
         Timber.d("Recap")
         operations.forEach { Timber.d("${it.value.targetName} <- ${it.value.sourceUri}") }
 
+        // Case where chapters have been imported from distinct folders
+        // => No need to swap anything
+        if (chapters.all { it.url.startsWith(SCHEME_CONTENT) } && chapters.distinctBy { it.url }.size == chapters.size) {
+            dao.insertImageFiles(orderedImages)
+            val finalContent = dao.selectContent(contentId)
+            if (finalContent != null) persistJson(applicationContext, finalContent)
+            progressDone(nbMax)
+            return
+        }
+
         // Groups swaps into permutation groups
-        val parentFolder = getDocumentFromTreeUriString(
+        val root = getDocumentFromTreeUriString(
             applicationContext, chapters[0].content.target.storageUri
         ) ?: throw IOException("Parent folder not found")
 
-        buildPermutationGroups(applicationContext, operations, parentFolder)
+        buildPermutationGroups(applicationContext, operations, root)
         val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
         val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
 
