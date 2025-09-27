@@ -41,6 +41,7 @@ import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.FileExplorer
+import me.devsaki.hentoid.util.file.InnerNameNumberFileComparator
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.createNoMedia
@@ -937,8 +938,10 @@ fun scanChapterFolders(
     result.downloadCompletionDate = now
     result.lastEditDate = Instant.now().toEpochMilli()
     val images: MutableList<ImageFile> = ArrayList()
+    // Order subfolders by name, using natural ordering
+    val sortedChapterFolders = chapterFolders.sortedWith(InnerNameNumberFileComparator())
     // Scan pages across all subfolders; create a chapter for each
-    chapterFolders.forEachIndexed { idx, chapterFolder ->
+    sortedChapterFolders.forEachIndexed { idx, chapterFolder ->
         val imgs = scanFolderImages(
             context,
             chapterFolder,
