@@ -263,7 +263,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val isLandscape =
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
                 // TODO detect landscape with navbar on left vs. landscape with navbar on right
-                Timber.d(">> aa $navBarHeight ${status.top}")
                 // Necessary to keep the displayed image still while system bars appear and apply padding
                 binding?.controlsOverlay?.root?.setPadding(
                     0,
