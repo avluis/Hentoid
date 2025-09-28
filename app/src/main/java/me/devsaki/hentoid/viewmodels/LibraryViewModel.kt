@@ -172,6 +172,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             if (resetTags) {
                 contentSearchManager.clearTags()
                 contentSearchManager.clearExcludedAttrs()
+                contentSearchManager.setLocation(Location.ANY.value)
+                contentSearchManager.setContentType(Type.ANY.value)
             }
         }
         val newSource = withContext(Dispatchers.IO) {
@@ -531,6 +533,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             val searchUri = SearchActivityBundle.parseSearchUri(group.searchUri)
             contentSearchManager.setTags(searchUri.attributes)
             contentSearchManager.setExcludedAttrs(searchUri.excludedAttributeTypes)
+            contentSearchManager.setLocation(searchUri.location.value)
+            contentSearchManager.setContentType(searchUri.contentType.value)
         } else contentSearchManager.setGroup(group)
 
         newContentSearch.value = true
