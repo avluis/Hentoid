@@ -2442,7 +2442,7 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             ScaleType.FIT_WIDTH -> return viewWidth / dims.x.toFloat()
             ScaleType.FIT_HEIGHT -> return viewHeight / dims.y.toFloat()
             ScaleType.ORIGINAL_SIZE -> return 1f
-            ScaleType.SMART_FIT -> return if (sHeight() > dims.x) {
+            ScaleType.SMART_FIT -> return if (dims.y > dims.x) {
                 // Fit to width
                 viewWidth / dims.x.toFloat()
             } else {

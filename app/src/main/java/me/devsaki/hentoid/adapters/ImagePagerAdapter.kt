@@ -570,6 +570,7 @@ class ImagePagerAdapter(context: Context) :
         private val ssivScaleType: ScaleType
             get() = if (VIEWER_DISPLAY_FILL == displayMode) ScaleType.SMART_FILL
             else if (VIEWER_DISPLAY_STRETCH == displayMode) ScaleType.STRETCH_SCREEN
+            else if (VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ScaleType.FIT_WIDTH
             else ScaleType.CENTER_INSIDE
 
         private val scaleType: ImageView.ScaleType
