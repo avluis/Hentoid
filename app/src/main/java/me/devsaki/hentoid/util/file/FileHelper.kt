@@ -1444,11 +1444,9 @@ fun legacyFileFromUri(fileUri: Uri): File? {
  */
 fun fileSizeFromUri(context: Context, fileUri: Uri): Long {
     if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
-        val path = fileUri.path
-        if (path != null) return File(path).length()
+        fileUri.path?.let { return File(it).length() }
     } else {
-        val doc = getFileFromSingleUri(context, fileUri)
-        if (doc != null) return doc.length()
+        getFileFromSingleUri(context, fileUri)?.let { return it.length() }
     }
     return -1
 }
