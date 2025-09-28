@@ -1769,61 +1769,60 @@ class ReaderViewModel(
      * @param contentId      ID of the corresponding content
      * @param selectedPageId ID of the page to remove or create a chapter at
      */
-    private suspend fun doCreateRemoveChapter(contentId: Long, selectedPageId: Long) =
-        withContext(Dispatchers.IO) {
-            // Work on a fresh content
-            val theContent: Content =
-                dao.selectContent(contentId) ?: throw IllegalArgumentException("No content found")
+    private suspend fun doCreateRemoveChapter(contentId: Long, selectedPageId: Long) {
+        // Work on a fresh content
+        val theContent: Content =
+            dao.selectContent(contentId) ?: throw IllegalArgumentException("No content found")
 
-            val selectedPage =
-                dao.selectImageFile(selectedPageId)
-                    ?: throw IllegalArgumentException("No page found")
-            var selectedChapter = selectedPage.linkedChapter
-            // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
-            if (null == selectedChapter) {
-                selectedChapter = Chapter(1, "", "$chapterStr 1")
-                theContent.imageFiles.let { workingList ->
-                    selectedChapter.setImageFiles(workingList)
-                    // Link images the other way around so that what follows works properly
-                    for (img in workingList) img.setChapter(selectedChapter)
-                }
-                selectedChapter.setContent(theContent)
+        val selectedPage = dao.selectImageFile(selectedPageId)
+            ?: throw IllegalArgumentException("No page found")
+        var selectedChapter = selectedPage.linkedChapter
+        // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
+        if (null == selectedChapter) {
+            selectedChapter = Chapter(1, "", "$chapterStr 1")
+            theContent.imageFiles.let { workingList ->
+                selectedChapter.setImageFiles(workingList)
+                // Link images the other way around so that what follows works properly
+                for (img in workingList) img.setChapter(selectedChapter)
             }
-            val chapterImages = selectedChapter.imageList
-            require(chapterImages.isNotEmpty()) { "No images found for selection" }
-            require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
-
-            // If we tap the 1st page of an existing chapter, it means we're removing it
-            val firstChapterPic = chapterImages.filter { it.isReadable }.minByOrNull { it.order }
-            val isRemoving =
-                if (firstChapterPic != null) firstChapterPic.order == selectedPage.order else false
-
-            if (isRemoving) doRemoveChapter(theContent, selectedChapter, chapterImages)
-            else doCreateChapter(theContent, selectedPage, selectedChapter, chapterImages)
-
-            // Rearrange all chapters
-
-            // Work on a clean image set directly from the DAO
-            // (we don't want to depend on LiveData being on time here)
-            val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
-            // Rely on the order of pictures to get chapter in the right order
-            val allChapters =
-                theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()
-                    .filter { it.order > -1 }
-
-            // Renumber all chapters to reflect changes
-            renumberChapters(allChapters)
-
-            // Map them to the proper content
-            allChapters.forEach { it.setContent(theContent) }
-            val updatedChapters = allChapters.toList()
-
-            // Save chapters
-            dao.insertChapters(updatedChapters)
-            val finalContent = dao.selectContent(contentId)
-            if (finalContent != null) persistJson(getApplication(), finalContent)
-            dao.cleanup()
+            selectedChapter.setContent(theContent)
         }
+        val chapterImages = selectedChapter.imageList
+        require(chapterImages.isNotEmpty()) { "No images found for selection" }
+        require(selectedPage.order >= 2) { "Can't create or remove chapter on first page" }
+
+        // If we tap the 1st page of an existing chapter, it means we're removing it
+        val firstChapterPic = chapterImages.filter { it.isReadable }.minByOrNull { it.order }
+        val isRemoving =
+            if (firstChapterPic != null) firstChapterPic.order == selectedPage.order else false
+
+        if (isRemoving) doRemoveChapter(theContent, selectedChapter)
+        else doCreateChapter(theContent, selectedPage, selectedChapter, chapterImages)
+
+        // Rearrange all chapters
+
+        // Work on a clean image set directly from the DAO
+        // (we don't want to depend on LiveData being on time here)
+        val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
+        // Rely on the order of pictures to get chapter in the right order
+        val allChapters =
+            theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()
+                .filter { it.order > -1 }
+                .toList()
+
+        // Renumber all chapters to reflect changes
+        renumberChapters(allChapters)
+
+        // Map them to the proper content
+        allChapters.forEach { it.setContent(theContent) }
+        val updatedChapters = allChapters.toList()
+
+        // Save chapters
+        dao.insertChapters(updatedChapters)
+        val finalContent = dao.selectContent(contentId)
+        if (finalContent != null) persistJson(getApplication(), finalContent)
+        dao.cleanup()
+    }
 
     /**
      * Create a chapter at the given position, which will become the 1st page of the new chapter
@@ -1869,18 +1868,39 @@ class ReaderViewModel(
         dao.cleanup()
     }
 
+    fun mergeChapters(toMerge: Collection<Chapter>) {
+        val theContent = content.value ?: return
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    // Remove starting from the highest order = merge
+                    val inverted = toMerge.sortedBy { it.order * -1 }
+                    inverted.forEachIndexed { idx, ch ->
+                        if (idx == inverted.size - 1) return@forEachIndexed
+                        doRemoveChapter(theContent, ch)
+                    }
+                    dao.cleanup()
+                }
+                // Force reload images
+                loadDatabaseImages(theContent, -1)
+            } catch (t: Throwable) {
+                Timber.e(t)
+            }
+        }
+    }
+
     /**
      * Remove the given chapter
      * All pages from this chapter will be affected to the preceding chapter
      *
      * @param content       Corresponding Content
      * @param toRemove      Chapter to remove
-     * @param chapterImages Images of the chapter to remove
      */
     private fun doRemoveChapter(
-        content: Content, toRemove: Chapter, chapterImages: List<ImageFile>
+        content: Content, toRemove: Chapter
     ) {
         val contentChapters = content.chaptersList.sortedBy { it.order }
+        val chapterImages = toRemove.imageList
         val removeOrder = toRemove.order
 
         // Identify preceding chapter
@@ -1889,12 +1909,14 @@ class ReaderViewModel(
             if (c.order == removeOrder) break
             precedingChapter = c
         }
+        if (null == precedingChapter) return
 
         // Pages of selected chapter will join the preceding chapter
-        for (img in chapterImages) img.setChapter(precedingChapter)
+        chapterImages.forEach { it.setChapter(precedingChapter) }
         dao.insertImageFiles(chapterImages)
+
+        toRemove.clearImageFiles()
         dao.deleteChapter(toRemove)
-        dao.cleanup()
     }
 
     fun renameChapter(chapterId: Long, newName: String) {

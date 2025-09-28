@@ -2116,7 +2116,7 @@ suspend fun deleteChapters(context: Context, dao: CollectionDAO, chapterIds: Lis
                 // Delete chapter
                 dao.deleteChapter(chp)
             }
-            renumberChapters(chapters.asSequence())
+            renumberChapters(chapters)
             dao.insertChapters(chapters)
             dao.flagImagesForDeletion(imageIdsToDelete.toLongArray(), true)
         } finally {
@@ -2135,7 +2135,7 @@ suspend fun deleteChapters(context: Context, dao: CollectionDAO, chapterIds: Lis
     )
 }
 
-fun renumberChapters(chaps: Sequence<Chapter>) {
+fun renumberChapters(chaps: Collection<Chapter>) {
     chaps.forEachIndexed { index, c ->
         // Update names with the default "Chapter x" naming
         if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.name).matches())

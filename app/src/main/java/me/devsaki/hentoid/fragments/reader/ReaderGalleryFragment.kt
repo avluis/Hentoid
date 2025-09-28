@@ -63,6 +63,7 @@ import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import kotlin.math.abs
 
 
 class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTouchCallback {
@@ -70,7 +71,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     enum class EditMode {
         NONE,  // Plain gallery
         EDIT_CHAPTERS, // Screen with foldable and draggable chapters
-        ADD_CHAPTER // Screen with tappable images to add and remove chapters
+        CREATE_CHAPTERS // Screen with tappable images to add and remove chapters
     }
 
     // ======== COMMUNICATION
@@ -83,6 +84,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     // === UI
     private var binding: FragmentReaderGalleryBinding? = null
     private lateinit var itemSetCoverMenu: MenuItem
+    private lateinit var mergeMenu: MenuItem
     private lateinit var showFavouritePagesMenu: MenuItem
     private lateinit var toggleFavouriteMenu: MenuItem
     private lateinit var editChaptersMenu: MenuItem
@@ -190,6 +192,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             cancelReorderMenu = toolbar.menu.findItem(R.id.action_edit_cancel)
             helpMenu = toolbar.menu.findItem(R.id.help)
             itemSetCoverMenu = selectionToolbar.menu.findItem(R.id.action_set_group_cover)
+            mergeMenu = selectionToolbar.menu.findItem(R.id.action_merge)
             editChapterNameMenu = selectionToolbar.menu.findItem(R.id.action_edit_chapter_name)
             toggleFavouriteMenu = selectionToolbar.menu.findItem(R.id.action_toggle_favorite_pages)
             selectionToolbar.setNavigationOnClickListener { leaveSelection() }
@@ -246,7 +249,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         if (leaveSelection()) return
         when (editMode) {
             EditMode.EDIT_CHAPTERS -> setChapterEditMode(EditMode.NONE)
-            EditMode.ADD_CHAPTER -> setChapterEditMode(EditMode.EDIT_CHAPTERS)
+            EditMode.CREATE_CHAPTERS -> setChapterEditMode(EditMode.EDIT_CHAPTERS)
 
             else -> requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -476,7 +479,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             }
 
             // One last category for chapterless images
-            val chapterlessImages = images.filter { i: ImageFile -> null == i.linkedChapter }
+            val chapterlessImages = images.filter { null == it.linkedChapter }
             if (chapterlessImages.isNotEmpty()) {
                 val expandableItem = SubExpandableItem(
                     touchHelper!!,
@@ -496,7 +499,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         } else { // Classic gallery
             var imgs: MutableList<ImageFileItem> = ArrayList()
             for (img in images) {
-                val holder = ImageFileItem(img, editMode == EditMode.ADD_CHAPTER)
+                val holder = ImageFileItem(img, editMode == EditMode.CREATE_CHAPTERS)
                 if (startIndex == img.displayOrder) holder.setCurrent(true)
                 imgs.add(holder)
             }
@@ -526,7 +529,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         when (item.itemId) {
             R.id.action_show_favorite_pages -> viewModel.filterFavouriteImages(!filterFavouritesState)
             R.id.action_edit_chapters -> setChapterEditMode(EditMode.EDIT_CHAPTERS)
-            R.id.action_add_remove_chapters -> setChapterEditMode(EditMode.ADD_CHAPTER)
+            R.id.action_add_remove_chapters -> setChapterEditMode(EditMode.CREATE_CHAPTERS)
             R.id.action_edit_confirm -> onConfirmChapterReordering()
             R.id.action_edit_cancel -> onCancelChapterReordering()
             R.id.action_reset_chapters -> {
@@ -584,6 +587,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                 viewModel.toggleImageFavourite(selectedImages) { onFavouriteSuccess() }
             }
 
+            R.id.action_merge -> if (selectedChapters.isNotEmpty()) {
+                viewModel.mergeChapters(selectedChapters)
+            }
+
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
@@ -620,7 +627,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         editChaptersMenu.isVisible =
             editMode == EditMode.NONE && !shuffledState && !isContentDynamic
         addChapterMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && !isReorderingChapters
-        resetChaptersMenu.isVisible = editMode == EditMode.ADD_CHAPTER
+        resetChaptersMenu.isVisible = editMode == EditMode.CREATE_CHAPTERS
         confirmReorderMenu.isVisible = isReorderingChapters
         cancelReorderMenu.isVisible = isReorderingChapters
         helpMenu.isVisible = editMode != EditMode.NONE
@@ -630,16 +637,17 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
             val titleRes = when (editMode) {
                 EditMode.NONE -> R.string.gallery_title
                 EditMode.EDIT_CHAPTERS -> R.string.gallery_title_edit
-                EditMode.ADD_CHAPTER -> R.string.gallery_title_add
+                EditMode.CREATE_CHAPTERS -> R.string.gallery_title_add
             }
             toolbar.title = resources.getString(titleRes)
         }
     }
 
-    private fun updateSelectionToolbar(selectedCount: Long) {
+    private fun updateSelectionToolbar(selectedCount: Int, selectedContiguous: Boolean) {
         toggleFavouriteMenu.isVisible = editMode == EditMode.NONE
-        itemSetCoverMenu.isVisible = editMode == EditMode.NONE && 1L == selectedCount
-        editChapterNameMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && 1L == selectedCount
+        itemSetCoverMenu.isVisible = editMode == EditMode.NONE && 1 == selectedCount
+        editChapterNameMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && 1 == selectedCount
+        mergeMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && selectedContiguous
         binding?.apply {
             selectionToolbar.title = resources.getQuantityString(
                 R.plurals.items_selected,
@@ -725,12 +733,14 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
      * Callback for any selection change (item added to or removed from selection)
      */
     private fun onSelectionChanged2() {
-        val selectedCount = selectExtension.selections.size
+        val selections = selectExtension.selections
         binding?.apply {
-            if (0 == selectedCount) {
+            if (selections.isEmpty()) {
                 leaveSelection()
             } else {
-                updateSelectionToolbar(selectedCount.toLong())
+                val isContiguous =
+                    abs(selections.first() - selections.last()) == selections.size - 1
+                updateSelectionToolbar(selections.size, isContiguous)
                 selectionToolbar.visibility = View.VISIBLE
                 toolbar.visibility = View.GONE
             }
@@ -738,13 +748,15 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     }
 
     private fun onSelectionChangedExpandable() {
-        val selectedCount = expandableSelectExtension.selections.size
+        val selections = expandableSelectExtension.selections
         binding?.apply {
-            if (0 == selectedCount) {
+            if (selections.isEmpty()) {
                 leaveSelection()
             } else {
-                if (1 == selectedCount) expandableExtension.collapse()
-                updateSelectionToolbar(selectedCount.toLong())
+                if (1 == selections.size) expandableExtension.collapse()
+                val isContiguous =
+                    abs(selections.first() - selections.last()) == selections.size - 1
+                updateSelectionToolbar(selections.size, isContiguous)
                 selectionToolbar.visibility = View.VISIBLE
                 toolbar.visibility = View.GONE
             }
@@ -862,7 +874,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         updateToolbar()
         binding?.apply {
             chapterEditHelpBanner.visibility =
-                if (editMode == EditMode.ADD_CHAPTER) View.VISIBLE else View.GONE
+                if (editMode == EditMode.CREATE_CHAPTERS) View.VISIBLE else View.GONE
             updateListAdapter(editMode == EditMode.EDIT_CHAPTERS)
         }
         // Don't filter favs when editing chapters

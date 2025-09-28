@@ -84,6 +84,10 @@ data class Chapter(
         imageFiles.add(img)
     }
 
+    fun addImageFiles(img: Collection<ImageFile>) {
+        imageFiles.addAll(img)
+    }
+
     fun clearImageFiles() {
         imageFiles.clear()
     }

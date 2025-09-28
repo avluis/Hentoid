@@ -386,7 +386,7 @@ abstract class BaseSplitMergeWorker(
         chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
 
         // Renumber all chapters and update the DB
-        renumberChapters(chapters.asSequence())
+        renumberChapters(chapters)
         dao.insertChapters(chapters)
 
         // Renumber all readable images
