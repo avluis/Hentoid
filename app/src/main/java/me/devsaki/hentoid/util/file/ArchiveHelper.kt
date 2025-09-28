@@ -219,8 +219,9 @@ fun Context.extractArchiveEntries(
  * @param archive           Uri of the archive file to extract from
  * @param targetFolder      Folder to extract files to
  * @param entriesToExtract  List of entries to extract; null to extract everything
- *      left = relative paths to the archive root
- *      right = resource identifier set by the caller (for remapping purposes)
+ *      first = relative paths to the archive root
+ *      second = resource identifier set by the caller (for remapping purposes)
+ *      third = target file name (with extension)
  * @returns Uris of extracted files
  * @throws IOException If something horrible happens during I/O
  */
@@ -291,8 +292,9 @@ fun Context.extractArchiveEntriesBlocking(
  * @param fileCreator      Method to call to create a new file to extract to
  * @param fileFinder       Method to call to find a file in the extraction location
  * @param entriesToExtract List of entries to extract; null to extract everything
- *      left = relative paths to the archive root
- *      right = resource identifier set by the caller (for remapping purposes)
+ *      first = relative paths to the archive root
+ *      second = resource identifier set by the caller (for remapping purposes)
+ *      third = target file name, with extension
  * @param interrupt        Kill switch
  * @param onExtract        Extraction callback
  *      Long : Resource identifier set by the caller
@@ -542,7 +544,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
  * @property fileFinder             Delegate method that checks if the target file exists in the target folder
  * @property fileCreator            Delegate method that creates the given file in the target folder
  * @property outputStreamCreator    Delegate method that creates an OutputStream for the given Uri
- * @property targetFileNames        Target file names, indexed on archive absolute file index
+ * @property targetFileNames        Target file names (with extension), indexed on archive absolute file index
  * @property identifiers            Target file identifiers given by the caller, indexed on archive absolute file index
  * @property interrupt              Kill switch
  * @property onExtract              Extraction callback
