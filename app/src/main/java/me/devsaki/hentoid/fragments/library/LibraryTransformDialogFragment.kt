@@ -361,6 +361,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         content?.apply {
             // Get bitmap for display
             val pages = imageList.filter { it.isReadable }
+            if (pages.isEmpty()) return null
             maxPages = pages.size
             val page = pages[pageIndex]
             try {
