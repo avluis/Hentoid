@@ -1233,6 +1233,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         contentList: List<Content>,
         newTitle: String,
         useBookAsChapter: Boolean,
+        keepFirstBookChaps: Boolean,
         deleteAfterMerging: Boolean
     ) {
         if (contentList.isEmpty()) return
@@ -1241,6 +1242,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         builder.setContentIds(contentList.map { it.id })
         builder.setNewTitle(newTitle)
         builder.setUseBooksAsChapters(useBookAsChapter)
+        builder.setKeepFirstBookChaps(keepFirstBookChaps)
         builder.setDeleteAfterOps(deleteAfterMerging)
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(

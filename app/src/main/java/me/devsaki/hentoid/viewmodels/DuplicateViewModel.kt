@@ -21,7 +21,6 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
-import me.devsaki.hentoid.util.mergeContents
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
@@ -159,7 +158,7 @@ class DuplicateViewModel(
     fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
-        appendBookTitle: Boolean,
+        useBookAsChapter: Boolean,
         deleteAfterMerging: Boolean,
         onSuccess: Runnable
     ) {
@@ -171,11 +170,12 @@ class DuplicateViewModel(
             val result = withContext(Dispatchers.IO) {
                 try {
                     // Create merged book
-                    mergeContents(
+                    me.devsaki.hentoid.util.mergeContents(
                         context,
                         contentList,
                         newTitle,
-                        appendBookTitle,
+                        useBookAsChapter,
+                        false,
                         dao,
                         { false },
                         this@DuplicateViewModel::onMergeProgress,

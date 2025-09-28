@@ -10,6 +10,7 @@ private const val KEY_DELETE_AFTER_OPS = "deletAfter"
 private const val KEY_NEW_TITLE = "newTitle"
 private const val KEY_USE_BOOKS_AS_CHAPTERS = "useBooksAsChapters"
 private const val KEY_CHAPTER_IDS_FOR_SPLIT = "chapterIdsForSplit"
+private const val KEY_KEEP_FIRST_BOOK_CHAPS = "keepFirstBookChaps"
 
 class SplitMergeData {
     class Builder {
@@ -43,6 +44,10 @@ class SplitMergeData {
             builder.putBoolean(KEY_USE_BOOKS_AS_CHAPTERS, value)
         }
 
+        fun setKeepFirstBookChaps(value: Boolean) {
+            builder.putBoolean(KEY_KEEP_FIRST_BOOK_CHAPS, value)
+        }
+
         val data: Data
             get() = builder.build()
     }
@@ -64,5 +69,7 @@ class SplitMergeData {
             get() = data.getString(KEY_NEW_TITLE) ?: ""
         val useBooksAsChapters: Boolean
             get() = data.getBoolean(KEY_USE_BOOKS_AS_CHAPTERS, false)
+        val keepFirstBookChaps: Boolean
+            get() = data.getBoolean(KEY_KEEP_FIRST_BOOK_CHAPS, false)
     }
 }

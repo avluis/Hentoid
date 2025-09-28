@@ -278,13 +278,14 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
     override fun mergeContents(
         contentList: List<Content>,
         newTitle: String,
-        appendBookTitle: Boolean,
+        useBookAsChapter: Boolean, // Ignored on duplicate detector
+        keepFirstBookChaps: Boolean,
         deleteAfterMerging: Boolean
     ) {
         viewModel.mergeContents(
             contentList,
             newTitle,
-            appendBookTitle,
+            useBookAsChapter,
             deleteAfterMerging,
         ) {
             toast(R.string.merge_success)

@@ -82,6 +82,7 @@ abstract class BaseSplitMergeWorker(
     // Merge params
     private val newTitle: String
     private val useBookAsChapter: Boolean
+    private val keepFirstBookChaps: Boolean
 
     // Split params
     private val chapterSplitIds: LongArray
@@ -102,6 +103,7 @@ abstract class BaseSplitMergeWorker(
         chapterIds = inputData.chapterIds
         deleteAfterOperation = inputData.deleteAfterOps
         newTitle = inputData.newTitle
+        keepFirstBookChaps = inputData.keepFirstBookChaps
         useBookAsChapter = inputData.useBooksAsChapters
         chapterSplitIds = inputData.chapterIdsForSplit
 
@@ -285,14 +287,14 @@ abstract class BaseSplitMergeWorker(
                 contentList,
                 newTitle,
                 useBookAsChapter,
+                keepFirstBookChaps,
                 dao,
                 this::isStopped,
                 { _, _, s ->
                     bookTitle = s
                     launchProgressNotification()
-                },
-                { progressDone(contentList.size) }
-            )
+                }
+            ) { progressDone(contentList.size) }
             // If we're here, no exception has been triggered -> cleanup if asked
             if (deleteAfterOperation && !isStopped) {
                 contentList.forEach { c ->

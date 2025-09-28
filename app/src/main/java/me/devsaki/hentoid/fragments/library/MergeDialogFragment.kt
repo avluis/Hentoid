@@ -39,7 +39,7 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
             val args = Bundle()
             args.putLongArray(
                 KEY_CONTENTS,
-                contentList.map { obj: Content -> obj.id }.toLongArray()
+                contentList.map { it.id }.toLongArray()
             )
             args.putBoolean(KEY_DELETE_DEFAULT, deleteDefault)
             invoke(parent, MergeDialogFragment(), args)
@@ -119,6 +119,11 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
             )
             list.adapter = fastAdapter
 
+            // Controls
+            mergeOneChapterPerBookSwitch.setOnCheckedChangeListener { _, isChecked ->
+                mergeKeepFirstBookChaptersSwitch.isEnabled = isChecked
+            }
+
             if (isExternal) {
                 mergeDeleteSwitch.isEnabled = Settings.isDeleteExternalLibrary
                 mergeDeleteSwitch.isChecked = Settings.isDeleteExternalLibrary && deleteDefault
@@ -173,6 +178,7 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
                 contents,
                 newTitleStr,
                 mergeOneChapterPerBookSwitch.isChecked,
+                mergeKeepFirstBookChaptersSwitch.isChecked && mergeKeepFirstBookChaptersSwitch.isEnabled,
                 mergeDeleteSwitch.isChecked
             )
         }
@@ -221,7 +227,8 @@ class MergeDialogFragment : BaseDialogFragment<MergeDialogFragment.Parent>(), It
         fun mergeContents(
             contentList: List<Content>,
             newTitle: String,
-            appendBookTitle: Boolean,
+            useBookAsChapter: Boolean,
+            keepFirstBookChaps: Boolean,
             deleteAfterMerging: Boolean
         )
 

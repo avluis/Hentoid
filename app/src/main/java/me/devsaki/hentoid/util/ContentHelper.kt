@@ -1804,11 +1804,12 @@ fun isDownloadable(chapter: Chapter): Boolean {
  * Merge the given list of Content into one single new Content with the given title
  * NB : The Content's of the given list are _not_ removed
  *
- * @param context          Context to use
- * @param contentList      List of Content to merge together
- * @param newTitle         Title of the new merged Content
- * @param useBookAsChapter True to ignore existing chapters of the merged books and create one chapter per book instead
- * @param dao              DAO to use
+ * @param context            Context to use
+ * @param contentList        List of Content to merge together
+ * @param newTitle           Title of the new merged Content
+ * @param useBookAsChapter   True to ignore existing chapters of the merged books and create one chapter per book instead
+ * @param keepFirstBookChaps True to keep chapters of the 1st book when using books as chapters
+ * @param dao                DAO to use
  * @throws ContentNotProcessedException If something terrible happens
  */
 @Throws(ContentNotProcessedException::class)
@@ -1817,6 +1818,7 @@ suspend fun mergeContents(
     contentList: List<Content>,
     newTitle: String,
     useBookAsChapter: Boolean,
+    keepFirstBookChaps: Boolean,
     dao: CollectionDAO,
     isCanceled: () -> Boolean,
     onProgress: (Int, Int, String) -> Unit,
@@ -1899,6 +1901,7 @@ suspend fun mergeContents(
 
         try {
             // Merge images and chapters
+            var contentIdx = -1
             var chapterOrder = 0
             var pictureOrder = 1
             var nbProcessedPics = 1
@@ -1906,6 +1909,7 @@ suspend fun mergeContents(
 
             for (c in contentList) {
                 if (isCanceled.invoke()) break
+                contentIdx++;
                 var newChapter: Chapter? = null
                 // Create a default "content chapter" that represents the original book before merging
                 val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
@@ -2001,9 +2005,10 @@ suspend fun mergeContents(
                     if (newImg.isReadable) {
                         val chapLink = img.linkedChapter
                         // No chapter -> set content chapter
-                        if (null == chapLink || useBookAsChapter) {
+                        val keepFirst = keepFirstBookChaps && 0 == contentIdx
+                        if (null == chapLink || (useBookAsChapter && !keepFirst)) {
                             newChapter = contentChapter
-                        } else {
+                        } else { // Keep original book chapters
                             if (chapLink.uniqueId.isEmpty()) chapLink.populateUniqueId()
                             if (null == newChapter || chapLink.uniqueId != newChapter.uniqueId) {
                                 newChapter = Chapter(chapLink)
@@ -2011,8 +2016,7 @@ suspend fun mergeContents(
                                 newChapter.order = chapterOrder++
                             }
                         }
-                        if (!mergedChapters.contains(newChapter))
-                            mergedChapters.add(newChapter)
+                        if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter)
                         newImg.setChapter(newChapter)
                     }
 
