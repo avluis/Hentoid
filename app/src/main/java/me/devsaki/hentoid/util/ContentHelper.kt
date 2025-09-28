@@ -68,6 +68,7 @@ import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
+import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findFolder
 import me.devsaki.hentoid.util.file.getArchiveEntries
@@ -1932,13 +1933,16 @@ suspend fun mergeContents(
                             idx++
                             if (idx + imgIndex >= imgs.size) break
                             val picToUnarchive = imgs[imgIndex + idx]
-                            if (!picToUnarchive.fileUri.startsWith(c.storageUri)) continue // thumb
+                            if (picToUnarchive.fileUri.isNotEmpty() && !picToUnarchive.fileUri.startsWith(
+                                    c.storageUri
+                                )
+                            ) continue // thumb
                             picsToUnarchive.add(picToUnarchive)
                             unarchivedBytes += picToUnarchive.size
                         }
                         val toExtract = picsToUnarchive.map {
                             Triple(
-                                it.fileUri.replace(c.storageUri + File.separator, ""),
+                                it.url.replace(c.storageUri + File.separator, ""),
                                 it.id,
                                 it.id.toString()
                             )
@@ -1977,7 +1981,7 @@ suspend fun mergeContents(
                             )
                             imageFile.fileUri = unarchivedFiles[index].toString()
                         }
-                    }
+                    } // Archives and PDFs
 
                     if (!img.isReadable && coverFound) continue // Skip thumbs from 2+ rank merged books
                     val newImg = ImageFile(img, populateContent = false, populateChapter = false)
@@ -2018,12 +2022,14 @@ suspend fun mergeContents(
                             context,
                             img.fileUri.toUri(),
                             targetFolder,
-                            getMimeTypeFromFileUri(img.fileUri),
-                            newImg.name + "." + getExtensionFromUri(img.fileUri),
+                            getMimeTypeFromFileUri(img.url),
+                            newImg.name + "." + getExtensionFromUri(img.url),
                             true
                         )
-                        if (newUri != null) newImg.fileUri = newUri.toString()
-                        else Timber.w("Could not move file %s", img.fileUri)
+                        if (newUri != null) {
+                            newImg.fileUri = newUri.toString()
+                            newImg.size = fileSizeFromUri(context, newUri)
+                        } else Timber.w("Could not move file %s", img.fileUri)
                         onProgress.invoke(nbProcessedPics++, nbImages, c.title)
                     }
                     mergedImages.add(newImg)
