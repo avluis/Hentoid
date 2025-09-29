@@ -139,6 +139,10 @@ data class Attribute(
         }
     }
 
+    fun getLocation(site: Site): String? {
+        return locations.firstOrNull { it.site == site }?.url
+    }
+
     override fun toString(): String {
         return type.name.lowercase() + ":" + name
     }

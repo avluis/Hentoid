@@ -18,6 +18,8 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.retrofit.JikanServer
 import me.devsaki.hentoid.util.AttributeQueryResult
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.Settings
@@ -191,7 +193,7 @@ class MetadataEditViewModel(
     }
 
     /**
-     * Add and remove the given attributes from the selected books
+     * Add and remove the given attributes (and related ones if relevant) from the selected books
      *
      * @param toAdd Attribute to add to current selection
      * @param toRemove Attribute to remove to current selection
@@ -199,50 +201,121 @@ class MetadataEditViewModel(
      */
     private fun setAttr(toAdd: Attribute?, toRemove: Attribute?, replaceMode: Boolean = false) {
         // Update displayed attributes
-        val newAttrs = ArrayList<Attribute>()
-        if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
+        val updatedContentAttrs = ArrayList<Attribute>()
+        // Create new instance to make ListAdapter.submitList happy
+        contentAttributes.value?.let { updatedContentAttrs.addAll(it) }
 
-        val toAddNew: Attribute?
-        if (toAdd != null) {
-            if (newAttrs.contains(toAdd)) newAttrs.remove(toAdd)
-            // Create new instance for list differs to detect changes (if not, attributes are changed both on the old and the updated object)
-            toAddNew = Attribute(toAdd)
-            newAttrs.add(toAddNew)
-            dao.insertAttribute(toAdd) // Add new attribute to DB for it to appear on the attribute search
-        } else toAddNew = null
-        if (toRemove != null) newAttrs.remove(toRemove)
+        val toAddNew = ArrayList<Attribute>()
 
-        // Update Contents
-        var newCount = 0
-        val contents = ArrayList<Content>()
-        if (contentList.value != null) {
-            contents.addAll(contentList.value!!)
-            contents.forEach {
-                val attrs = it.attributes
-                if (toAddNew != null) {
-                    if (attrs.contains(toAddNew)) attrs.remove(toAddNew)
-                    if (!replaceMode || (toRemove != null && attrs.contains(toRemove))) {
-                        attrs.add(toAddNew)
-                        newCount++
+        viewModelScope.launch {
+            if (toAdd != null) {
+                if (updatedContentAttrs.contains(toAdd)) updatedContentAttrs.remove(toAdd)
+                toAddNew.add(toAdd)
+
+                // If a character from MAL is selected, add the corresponding series using MAL
+                if (toAdd.type == AttributeType.CHARACTER && toAdd.getLocation(Site.MAL) != null) {
+                    val malParts = (toAdd.getLocation(Site.MAL) ?: "").split("/")
+                    val malId = malParts[malParts.size - 2]
+                    // Prefer manga over anime
+                    withContext(Dispatchers.IO) {
+                        var series = JikanServer.API.searchCharacterManga(malId).execute().body()
+                            ?.toAttributes()
+                            ?: emptyList()
+                        if (series.isEmpty()) {
+                            series = JikanServer.API.searchCharacterAnime(malId).execute().body()
+                                ?.toAttributes()
+                                ?: emptyList()
+                        }
+                        // Add series if found
+                        series.firstOrNull()?.let { toAddNew.add(it) }
                     }
                 }
-                if (toRemove != null) attrs.remove(toRemove)
-                it.putAttributes(attrs)
-            }
-            if (newCount > 0) toAddNew?.count = newCount
-            contentList.postValue(contents)
-        }
 
-        contentAttributes.value = newAttrs
+                updatedContentAttrs.addAll(toAddNew)
+                // Add new attributes to DB for it to appear on the attribute search
+                toAddNew.forEach { dao.insertAttribute(it) }
+            }
+            if (toRemove != null) updatedContentAttrs.remove(toRemove)
+
+            // Update Contents
+            var newCount = 0
+            val contents = ArrayList<Content>()
+            if (contentList.value != null) {
+                contents.addAll(contentList.value!!)
+                contents.forEach { c ->
+                    val attrs = c.attributes
+                    toAddNew.forEach {
+                        if (attrs.contains(it)) attrs.remove(it)
+                        if (!replaceMode || (toRemove != null && attrs.contains(toRemove))) {
+                            attrs.add(it)
+                            newCount++
+                        }
+                    }
+                    if (toRemove != null) attrs.remove(toRemove)
+                    c.putAttributes(attrs)
+                }
+                if (newCount > 0) toAddNew.forEach { it.count = newCount }
+                contentList.postValue(contents)
+            }
+            contentAttributes.postValue(updatedContentAttrs)
+        }
     }
 
     fun setTitle(value: String) {
         // Update Contents
         val contents = ArrayList<Content>()
-        if (contentList.value != null) {
-            contents.addAll(contentList.value!!)
-            contents.forEach { c -> c.title = value }
+        contentList.value?.let { cl ->
+            contents.addAll(cl)
+            contents.forEach { it.title = value }
             contentList.postValue(contents)
+        }
+    }
+
+    fun searchMalMasterData(filter: String) {
+        if (filter.length < 3) libraryAttributes.postValue(AttributeQueryResult(emptyList(), 0))
+        val mainAttr = attributeTypes.value?.firstOrNull() ?: return
+
+        if (AttributeType.CHARACTER == mainAttr) {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    try {
+                        JikanServer.API.searchCharacters(filter).execute().body()?.let {
+                            val attrs = it.toAttributes()
+                            libraryAttributes.postValue(
+                                AttributeQueryResult(
+                                    attrs, attrs.size.toLong()
+                                )
+                            )
+                        }
+                    } catch (e: Exception) {
+                        Timber.w(e)
+                    }
+                }
+            }
+        } else if (AttributeType.SERIE == mainAttr) {
+            viewModelScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val animeList = JikanServer.API.searchAnime(filter).execute().body()
+                            ?.toAttributes()
+                            ?: emptyList()
+                        val mangaList = JikanServer.API.searchManga(filter).execute().body()
+                            ?.toAttributes()
+                            ?: emptyList()
+                        val attrs = ArrayList<Attribute>()
+                        attrs.addAll(animeList)
+                        attrs.addAll(mangaList)
+
+                        libraryAttributes.postValue(
+                            AttributeQueryResult(
+                                attrs, attrs.size.toLong()
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    Timber.w(e)
+                }
+            }
         }
     }
 
@@ -317,7 +390,8 @@ class MetadataEditViewModel(
                     sourceName = attr.name,
                     targetName = newName
                 )
-                val existingRules = HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
+                val existingRules =
+                    HashSet(dao.selectRenamingRules(AttributeType.UNDEFINED, null))
                 if (!existingRules.contains(newRule)) {
                     dao.insertRenamingRule(newRule)
                     updateRenamingRulesJson(getApplication(), dao)

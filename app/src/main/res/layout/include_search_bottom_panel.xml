@@ -43,13 +43,45 @@
             app:layout_constraintTop_toBottomOf="@+id/tag_wait_title"
             tools:text="@string/downloads_loading" />
 
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/source"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:checkedButton="@id/source_hentoid"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tag_wait_image"
+            android:visibility="gone"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/source_hentoid"
+                style="@style/HentoidCheckButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".5"
+                android:text="@string/app_name"
+                app:icon="@drawable/ic_hentoid_shape" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/source_mal"
+                style="@style/HentoidCheckButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight=".5"
+                android:text="@string/mal_name"
+                app:icon="@drawable/ic_myanimelist" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
         <me.devsaki.hentoid.views.MaxHeightRecyclerView
             android:id="@+id/tag_suggestion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textIsSelectable="false"
             app:layout_constraintBottom_toTopOf="@+id/tag_filter"
-            app:layout_constraintTop_toBottomOf="@+id/tag_wait_description"
+            app:layout_constraintTop_toBottomOf="@+id/source"
             app:maxHeight="200dp" />
 
         <androidx.appcompat.widget.SearchView
