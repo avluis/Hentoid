@@ -272,7 +272,10 @@ class MetadataEditViewModel(
     }
 
     fun searchMalMasterData(filter: String) {
-        if (filter.length < 3) libraryAttributes.postValue(AttributeQueryResult(emptyList(), 0))
+        if (filter.length < 3) {
+            libraryAttributes.postValue(AttributeQueryResult(emptyList(), 0))
+            return
+        }
         val mainAttr = attributeTypes.value?.firstOrNull() ?: return
 
         if (AttributeType.CHARACTER == mainAttr) {
