@@ -21,6 +21,7 @@ private val INVISIBLE_SITES = setOf(
     Site.FAKKU2,  // Dropped after Fakku decided to flag downloading accounts and IPs
     Site.ASMHENTAI_COMICS,  // Does not work directly
     Site.PANDA,  // Dropped; kept for retrocompatibility
+    Site.MAL,  // Specific to myAnimeList attributes retrieval
     Site.ANY, // Technical fallback
     Site.NONE // Technical fallback
 )
@@ -81,6 +82,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     NOVELCROW(35, "Novelcrow", "https://novelcrow.com/", R.drawable.ic_site_novelcrow),
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
     KEMONO(37, "Kemono.cr", "https://kemono.cr/", R.drawable.ic_site_kemono),
+
+    MAL(96, "MyAnimeList", "", R.drawable.ic_hentoid_shape),
 
     // Used for associating attributes to sites in Preferences
     ANY(97, "any", "", R.drawable.ic_hentoid_shape),

@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -34,6 +35,8 @@ import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 
+private const val ATTRS_PER_PAGE = 40
+
 class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
     // Communication
@@ -41,15 +44,15 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
 
     // UI
-    private var _binding: IncludeSearchBottomPanelBinding? = null
-    private val binding get() = _binding!!
+    private var binding: IncludeSearchBottomPanelBinding? = null
     private lateinit var searchMasterDataDebouncer: Debouncer<String>
 
     // Container where all suggested attributes are loaded
     private lateinit var attributeAdapter: AvailableAttributeAdapter
 
 
-    // Vars
+    // VARS
+
     // Flag to indicate is the fragment has been initialized, to avoid a double LiveData notification
     // See https://stackoverflow.com/a/50474911
     private var isInitialized: Boolean = false
@@ -71,6 +74,31 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
     private var excludeAttr = false
     private var idToReplace: Long = -1
 
+    // 0 = App; 1 = MAL
+    private var source = 0
+
+
+    companion object {
+        fun invoke(
+            context: Context,
+            fragmentManager: FragmentManager,
+            excludeSelected: Boolean,
+            idToReplace: Long = -1
+        ) {
+            val builder = MetaEditActivityBundle()
+            builder.excludeMode = excludeSelected
+            builder.idToReplace = idToReplace
+
+            val bottomSheetFragment = MetaEditBottomSheetFragment()
+            bottomSheetFragment.arguments = builder.bundle
+            context.setStyle(
+                bottomSheetFragment,
+                STYLE_NORMAL,
+                R.style.Theme_Light_BottomSheetDialog
+            )
+            bottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -88,7 +116,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
                 ViewModelProvider(requireActivity(), vmFactory)[MetadataEditViewModel::class.java]
         }
         searchMasterDataDebouncer = Debouncer(this.lifecycleScope, 1000) { filter: String ->
-            this.searchMasterData(filter)
+            this.searchMasterData(filter, source)
         }
     }
 
@@ -96,14 +124,14 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        _binding = IncludeSearchBottomPanelBinding.inflate(inflater, container, false)
-        return binding.root
+    ): View? {
+        binding = IncludeSearchBottomPanelBinding.inflate(inflater, container, false)
+        return binding?.root
     }
 
     override fun onDestroyView() {
         searchMasterDataDebouncer.clear()
-        _binding = null
+        binding = null
         super.onDestroyView()
     }
 
@@ -118,25 +146,33 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         val layoutManager = FlexboxLayoutManager(this.context)
         layoutManager.alignItems = AlignItems.STRETCH
         layoutManager.flexWrap = FlexWrap.WRAP
-        binding.tagSuggestion.layoutManager = layoutManager
         attributeAdapter = AvailableAttributeAdapter()
         attributeAdapter.setOnScrollToEndListener { this.loadMore() }
         attributeAdapter.setOnClickListener { this.onAttributeClicked(it) }
-        binding.tagSuggestion.adapter = attributeAdapter
-        binding.tagFilter.setSearchableInfo(getSearchableInfo(requireActivity())) // Associate searchable configuration with the SearchView
+        binding?.apply {
+            tagSuggestion.layoutManager = layoutManager
+            tagSuggestion.adapter = attributeAdapter
+            tagFilter.setSearchableInfo(getSearchableInfo(requireActivity())) // Associate searchable configuration with the SearchView
 
-        binding.tagFilter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(s: String): Boolean {
-                if (s.isNotEmpty()) searchMasterData(s)
-                binding.tagFilter.clearFocus()
-                return true
-            }
+            tagFilter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(s: String): Boolean {
+                    if (s.isNotEmpty()) searchMasterData(s)
+                    tagFilter.clearFocus()
+                    return true
+                }
 
-            override fun onQueryTextChange(s: String): Boolean {
-                searchMasterDataDebouncer.submit(s)
-                return true
+                override fun onQueryTextChange(s: String): Boolean {
+                    searchMasterDataDebouncer.submit(s)
+                    return true
+                }
+            })
+
+            source.addOnButtonCheckedListener { _, i, b ->
+                if (!b) return@addOnButtonCheckedListener
+                this@MetaEditBottomSheetFragment.source = i
+                searchMasterDataDebouncer.submit(tagFilter.query.toString())
             }
-        })
+        }
 
         viewModel.getAttributeTypes()
             .observe(viewLifecycleOwner) { onSelectedAttributeTypesReady(it) }
@@ -145,7 +181,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         viewModel.getLibraryAttributes()
             .observe(viewLifecycleOwner) { onLibraryAttributesReady(it) }
         viewModel.getResetSelectionFilter()
-            .observe(viewLifecycleOwner) { binding.tagFilter.setQuery("", true) }
+            .observe(viewLifecycleOwner) { binding?.tagFilter?.setQuery("", true) }
         searchMasterData("")
     }
 
@@ -153,34 +189,39 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
      * Load the attributes corresponding to the given AttributeType, filtered with the given
      * string (applying "contains" filter)
      *
-     * @param filter Filter to apply to the attributes name (only retrieve attributes with name like
-     * %s%)
+     * @param filter Filter to apply to the attributes name (only retrieve attributes with name like %s%)
+     * @param source Source to search from
+     *      0: App
+     *      1: MyAnimeList
      */
-    private fun searchMasterData(filter: String) {
+    private fun searchMasterData(filter: String, source: Int = 0) {
         currentPage = 1
-        searchMasterData(filter, displayLoadingImage = true, clearOnSuccess = true)
+        clearOnSuccess = true
+        displayLoadingImage()
+        if (0 == source) {
+            viewModel.setAttributeQuery(filter, currentPage, ATTRS_PER_PAGE)
+        } else {
+            viewModel.searchMalMasterData(filter)
+        }
     }
 
     /**
      * Search the attributes master data according to the given parameters
      *
      * @param filter              Filter to apply to the attributes name (only retrieve attributes with name like %s%)
-     * @param displayLoadingImage True if a "loading..." image has to be displayed
-     * @param clearOnSuccess      True if the currently displayed list should be clear when this call succeeds
-     * (should be true for new searches; false for "load more" queries)
      */
-    private fun searchMasterData(
-        filter: String,
-        displayLoadingImage: Boolean,
-        clearOnSuccess: Boolean
-    ) {
-        if (displayLoadingImage) {
-            binding.tagWaitDescription.startAnimation(BlinkAnimation(750, 20))
-            binding.tagWaitDescription.setText(R.string.downloads_loading)
-            binding.tagWaitPanel.visibility = View.VISIBLE
+    private fun searchMoreMasterData(filter: String) {
+        this.clearOnSuccess = false
+        if (0 == source)
+            viewModel.setAttributeQuery(filter, currentPage, ATTRS_PER_PAGE)
+    }
+
+    private fun displayLoadingImage() {
+        binding?.apply {
+            tagWaitDescription.startAnimation(BlinkAnimation(750, 20))
+            tagWaitDescription.setText(R.string.downloads_loading)
+            tagWaitPanel.visibility = View.VISIBLE
         }
-        this.clearOnSuccess = clearOnSuccess
-        viewModel.setAttributeQuery(filter, currentPage, ATTRS_PER_PAGE)
     }
 
     /**
@@ -190,17 +231,18 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun onLibraryAttributesReady(results: AttributeQueryResult) {
         if (!isInitialized) return  // Hack to avoid double calls from LiveData
-        binding.tagWaitDescription.clearAnimation()
+        binding?.tagWaitDescription?.clearAnimation()
 
         // Remove selected attributes from the result set
         val attrs = ArrayList<Attribute>()
         attrs.removeAll(
             contentAttributes
-            .filter { a -> selectedAttributeTypes.contains(a.type) }
-            .toSet())
+                .filter { selectedAttributeTypes.contains(it.type) }
+                .toSet()
+        )
 
         var isQueryPresent = false
-        val query = binding.tagFilter.query.toString()
+        val query = binding?.tagFilter?.query?.toString() ?: ""
         val filteredContentAttr =
             contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }.toSet()
         for (attr in results.attributes) {
@@ -227,7 +269,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
         mTotalSelectedCount = results.totalSelectedAttributes.toInt()
         if (clearOnSuccess) attributeAdapter.clear()
-        binding.tagWaitPanel.visibility = View.GONE
+        binding?.tagWaitPanel?.visibility = View.GONE
 
         attributeAdapter.add(attrs)
     }
@@ -238,31 +280,36 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun onSelectedAttributeTypesReady(data: List<AttributeType>) {
-        selectedAttributeTypes = ArrayList(data)
-        if (selectedAttributeTypes.count() < 3) {
-            val mainAttr = selectedAttributeTypes[0]
+        binding?.apply {
+            selectedAttributeTypes = ArrayList(data)
+            if (selectedAttributeTypes.count() < 3) {
+                val mainAttr = selectedAttributeTypes[0]
 
-            // Image that displays current metadata type icon (e.g. face icon for character)
-            binding.tagWaitImage.visibility = View.VISIBLE
-            binding.tagWaitImage.setImageResource(mainAttr.icon)
+                // Image that displays current metadata type icon (e.g. face icon for character)
+                tagWaitImage.visibility = View.VISIBLE
+                tagWaitImage.setImageResource(mainAttr.icon)
 
-            // Image that displays current metadata type title (e.g. "Character search")
-            binding.tagWaitTitle.text = getString(
-                R.string.search_category,
-                capitalizeString(getString(mainAttr.accusativeName))
+                // Image that displays current metadata type title (e.g. "Character search")
+                tagWaitTitle.text = getString(
+                    R.string.search_category,
+                    capitalizeString(getString(mainAttr.accusativeName))
+                )
+
+                source.isVisible =
+                    (mainAttr == AttributeType.CHARACTER || mainAttr == AttributeType.SERIE)
+            } else {
+                tagWaitImage.visibility = View.INVISIBLE
+                tagWaitTitle.text = getString(R.string.searching_generic)
+            }
+
+            val attrTypesNames =
+                selectedAttributeTypes.map { resources.getString(it.accusativeName) }
+
+            tagFilter.queryHint = resources.getString(
+                R.string.search_prompt,
+                TextUtils.join(", ", attrTypesNames)
             )
-        } else {
-            binding.tagWaitImage.visibility = View.INVISIBLE
-            binding.tagWaitTitle.text = getString(R.string.searching_generic)
         }
-
-        val attrTypesNames =
-            selectedAttributeTypes.map { a -> resources.getString(a.accusativeName) }
-
-        binding.tagFilter.queryHint = resources.getString(
-            R.string.search_prompt,
-            TextUtils.join(", ", attrTypesNames)
-        )
     }
 
     /**
@@ -283,7 +330,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             if (idToReplace > -1) viewModel.replaceContentAttribute(idToReplace, attr)
             else viewModel.addContentAttribute(attr)
             // Empty query and display all attributes again
-            binding.tagFilter.setQuery("", false)
+            binding?.tagFilter?.setQuery("", false)
             attributeAdapter.remove(attr)
         }
     }
@@ -313,11 +360,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         if (!isLastPage()) { // NB : A "page" is a group of loaded attributes. Last page is reached when scrolling reaches the very end of the list
             Timber.d("Load more data now~")
             currentPage++
-            searchMasterData(
-                binding.tagFilter.query.toString(),
-                displayLoadingImage = false,
-                clearOnSuccess = false
-            )
+            searchMoreMasterData(binding?.tagFilter?.query?.toString() ?: "")
         }
     }
 
@@ -325,29 +368,5 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         val attr = viewModel.createAssignNewAttribute(name, type)
         attributeAdapter.remove(attr)
         searchMasterData(name)
-    }
-
-    companion object {
-        const val ATTRS_PER_PAGE = 40
-
-        fun invoke(
-            context: Context,
-            fragmentManager: FragmentManager,
-            excludeSelected: Boolean,
-            idToReplace: Long = -1
-        ) {
-            val builder = MetaEditActivityBundle()
-            builder.excludeMode = excludeSelected
-            builder.idToReplace = idToReplace
-
-            val bottomSheetFragment = MetaEditBottomSheetFragment()
-            bottomSheetFragment.arguments = builder.bundle
-            context.setStyle(
-                bottomSheetFragment,
-                STYLE_NORMAL,
-                R.style.Theme_Light_BottomSheetDialog
-            )
-            bottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")
-        }
     }
 }

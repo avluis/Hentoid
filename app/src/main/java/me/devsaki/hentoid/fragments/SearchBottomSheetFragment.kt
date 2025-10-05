@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments
 
 import android.app.Activity
-import android.app.Dialog
 import android.app.SearchManager
 import android.app.SearchableInfo
 import android.content.Context
@@ -10,7 +9,6 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -18,8 +16,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
@@ -107,21 +103,6 @@ class SearchBottomSheetFragment : BottomSheetDialogFragment() {
         searchMasterDataDebouncer = Debouncer(this.lifecycleScope, 1000) { filter: String ->
             this.searchMasterData(filter)
         }
-    }
-
-    // https://stackoverflow.com/questions/46861306/how-to-disable-bottomsheetdialogfragment-dragging
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val bottomSheetDialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
-        bottomSheetDialog.setOnShowListener {
-            val bottomSheet = bottomSheetDialog
-                .findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
-
-            if (bottomSheet != null) {
-                val behavior: BottomSheetBehavior<*> = BottomSheetBehavior.from(bottomSheet)
-                behavior.isDraggable = false
-            }
-        }
-        return bottomSheetDialog
     }
 
     override fun onCreateView(
