@@ -39,6 +39,7 @@
 	  {"sourceName":"HIPERDEX", "status":"RED", "fixedByBuild":"838"},
 	  {"sourceName":"SIMPLY", "status":"RED", "fixedByBuild":"846"},
 	  {"sourceName":"MUSES", "status":"RED", "fixedByBuild":"846"},
+	  {"sourceName":"LUSCIOUS", "status":"ORANGE"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
