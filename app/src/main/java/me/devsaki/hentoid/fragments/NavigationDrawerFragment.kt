@@ -309,6 +309,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
                 R.string.title_activity_browser,
                 R.drawable.ic_browser,
                 NavItem.BROWSER,
+                Site.NONE.code,
                 isSelected = origin == NavItem.BROWSER && this@NavigationDrawerFragment.site == Site.NONE
             )
             addMenu(
@@ -322,6 +323,7 @@ class NavigationDrawerFragment : Fragment(R.layout.fragment_navigation_drawer),
             if (origin == NavItem.BROWSER || Settings.navigationNostalgiaMode) {
                 // All sites
                 Settings.activeSites.forEach { site ->
+                    if (!site.isVisible) return@forEach
                     val sb = SpannableStringBuilder.valueOf(site.name)
                     updateInfo?.sourceAlerts[site]?.let { siteAlert ->
                         sb.append("  ")
