@@ -35,7 +35,21 @@ data class LusciousGalleryMetadata(
     @JsonClass(generateAdapter = true)
     data class PictureMetadata(
         @Json(name = "url_to_original")
-        val urlToOriginal: String
+        val urlToOriginal: String,
+        val thumbnails: List<PictureThumbnail>
+    ) {
+        val bestPic: String
+            get() {
+                val thumb = thumbnails.maxByOrNull { it.width }?.url ?: ""
+                return thumb.ifEmpty { urlToOriginal }
+            }
+    }
+
+    @JsonClass(generateAdapter = true)
+    data class PictureThumbnail(
+        val width: Int,
+        val height: Int,
+        val url: String
     )
 
     fun getNbPages(): Int {
@@ -50,7 +64,7 @@ data class LusciousGalleryMetadata(
             result.add(
                 ImageFile.fromImageUrl(
                     ++order,
-                    it.urlToOriginal,
+                    it.bestPic,
                     StatusContent.SAVED,
                     imageList.size
                 )
