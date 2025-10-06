@@ -575,7 +575,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             }
         }
 
-        if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
+        /*if (BuildConfig.DEBUG)*/ WebView.setWebContentsDebuggingEnabled(true)
         webClient = createWebClient()
         webView.webViewClient = webClient
 
