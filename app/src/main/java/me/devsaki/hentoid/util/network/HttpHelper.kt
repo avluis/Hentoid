@@ -352,14 +352,16 @@ private fun okHttpHeadersToWebResourceHeaders(okHttpHeaders: Map<String, List<St
  * @return HTTP request Headers structured according to the convention used by OkHttp
  */
 fun webkitRequestHeadersToOkHttpHeaders(
-    webkitRequestHeaders: Map<String, String>?,
-    url: String?
+    webkitRequestHeaders: Map<String, String>,
+    url: String
 ): List<Pair<String, String>> {
-    val result: MutableList<Pair<String, String>> = ArrayList()
-    if (webkitRequestHeaders != null) for ((key, value) in webkitRequestHeaders) result.add(
-        Pair(key, value)
-    )
-    url?.let { addCurrentCookiesToHeader(it, result) }
+    if (webkitRequestHeaders.isEmpty()) return emptyList()
+
+    val result = webkitRequestHeaders
+        .filterNot { it.value.startsWith("me.devsaki.hentoid") }
+        .map { Pair(it.key, it.value) }
+        .toMutableList()
+    addCurrentCookiesToHeader(url, result)
     return result
 }
 

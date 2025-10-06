@@ -370,7 +370,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     private fun shouldOverrideUrlLoadingInternal(
-        view: WebView, url: String, headers: Map<String, String>?, isMainPage: Boolean
+        view: WebView, url: String, headers: Map<String, String>, isMainPage: Boolean
     ): Boolean {
         if (Settings.isBrowserAugmented(site)
             && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
@@ -408,7 +408,7 @@ open class CustomWebViewClient : WebViewClient {
      */
     @Throws(IOException::class)
     private fun downloadFile(
-        context: Context, url: String, requestHeaders: Map<String, String>?
+        context: Context, url: String, requestHeaders: Map<String, String>
     ): File {
         val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         getOnlineResource(
@@ -486,8 +486,12 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldInterceptRequestInternal(
         url: String, headers: Map<String, String>?, isMainPage: Boolean
     ): WebResourceResponse? {
-        return if (Settings.isBrowserAugmented(site)
-            && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
+        return if (
+            Settings.isBrowserAugmented(site)
+            && (!isMainPage && adBlocker.isBlocked(
+                url,
+                headers ?: emptyMap()
+            )) // Don't block the main page
             || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
@@ -603,7 +607,8 @@ open class CustomWebViewClient : WebViewClient {
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null
         if (analyzeForDownload) activity?.onGalleryPageStarted(url)
-        val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
+        val requestHeadersList = if (null == requestHeaders) emptyList() else
+            webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         var response: Response? = null
         try {
             // Query resource here, using OkHttp
