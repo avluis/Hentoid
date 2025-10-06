@@ -106,6 +106,10 @@
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 2
     },
+    "NOVELCROW": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false
+    },
     "KEMONO": {
       "useHentoidAgent": false,
       "useWebviewAgent": false,
