@@ -304,7 +304,7 @@ fun okHttpResponseToWebkitResponse(
     val result: WebResourceResponse
     val responseHeaders = okHttpHeadersToWebResourceHeaders(resp.headers.toMultimap())
     var message = resp.message
-    if (message.trim { it <= ' ' }.isEmpty()) message = "None"
+    if (message.trim().isEmpty()) message = "None"
     result = if (contentTypeValue != null) {
         val details = cleanContentType(contentTypeValue)
         WebResourceResponse(

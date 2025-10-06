@@ -557,8 +557,10 @@ open class CustomWebViewClient : WebViewClient {
                 ).use { response ->
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
-                    val body = response.body
-                    return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    response.body.byteStream().use {
+                        val streams = duplicateInputStream(it, 1)
+                        return okHttpResponseToWebkitResponse(response, streams[0])
+                    }
                 }
             } catch (e: IOException) {
                 Timber.i(e)
