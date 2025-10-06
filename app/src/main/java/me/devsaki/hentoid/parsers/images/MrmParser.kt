@@ -94,7 +94,7 @@ class MrmParser : BaseChapteredImageListParser() {
             headers ?: fetchHeaders(chapterUrl),
             Site.MRM.useHentoidAgent, Site.MRM.useWebviewAgent
         )?.let { doc ->
-            val images = doc.select(".entry-content img[decoding=async]").filterNotNull()
+            val images = doc.select(".entry-content img[decoding=async][src*='https://i']").filterNotNull()
             return images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
         }
         return emptyList()
