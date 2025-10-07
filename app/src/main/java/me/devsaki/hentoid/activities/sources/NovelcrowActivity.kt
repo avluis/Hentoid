@@ -9,7 +9,7 @@ class NovelcrowActivity : BaseBrowserActivity() {
         private const val DOMAIN_FILTER = "novelcrow.com"
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "[%\\w\\-]+/$")
-        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads",".c-top-second-sidebar")
+        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads", ".c-top-second-sidebar")
         private val JS_CONTENT_BLACKLIST = arrayOf("'iframe'", "'plu_slider_frame'")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }
@@ -25,6 +25,8 @@ class NovelcrowActivity : BaseBrowserActivity() {
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
+
+        xhrHandler = { url: String, body: String -> client.onXhrRecord(url, body) }
         return client
     }
 }
