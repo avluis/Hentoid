@@ -558,7 +558,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun sendRequest(request: WebResourceRequest, postBody: String = ""): WebResourceResponse? {
-        if (dnsOverHttpsEnabled.get()) {
+        if (dnsOverHttpsEnabled.get() || site.useManagedRequests) {
             // Query resource using OkHttp
             val urlStr = request.url.toString()
             val requestHeadersList =
