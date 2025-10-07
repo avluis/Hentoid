@@ -477,10 +477,9 @@ open class CustomWebViewClient : WebViewClient {
         if (!request.method.equals("get", ignoreCase = true)) {
             Timber.v("[$url] ignored by interceptor; method = ${request.method}")
             var postBody = ""
+            // Try to retrieve POST body from previously intercepted XHR
             postQueue[url]?.let { queue ->
-                Timber.d("Entry found for POST $url")
                 queue.poll()?.let { body ->
-                    Timber.d("Body found for POST $url : $body")
                     postBody = body
                 }
             }
@@ -599,7 +598,6 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun onXhrRecord(url: String, body: String) {
-        Timber.d("XHR intercepted $url $body")
         val queue = if (postQueue.contains(url)) postQueue[url]
         else {
             val q = ConcurrentLinkedQueue<String>()

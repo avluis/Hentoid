@@ -575,9 +575,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             }
         }
 
-        /*if (BuildConfig.DEBUG)*/ WebView.setWebContentsDebuggingEnabled(true)
+        if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
         webClient = createWebClient()
         webView.webViewClient = webClient
+        if (getStartSite().useManagedRequests) xhrHandler = { url, body -> webClient.onXhrRecord(url, body) }
 
         // Download immediately on long click on a link / image link
         if (Settings.isBrowserQuickDl) {

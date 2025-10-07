@@ -25,8 +25,6 @@ class NovelcrowActivity : BaseBrowserActivity() {
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-
-        xhrHandler = { url: String, body: String -> client.onXhrRecord(url, body) }
         return client
     }
 }

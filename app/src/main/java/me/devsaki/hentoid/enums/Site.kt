@@ -104,6 +104,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         private set
     var useWebviewAgent = true
         private set
+    var useManagedRequests = false
+        private set
 
     // Download behaviour control
     var hasBackupURLs = false
@@ -156,6 +158,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         if (jsonSite.useMobileAgent != null) useMobileAgent = jsonSite.useMobileAgent
         if (jsonSite.useHentoidAgent != null) useHentoidAgent = jsonSite.useHentoidAgent
         if (jsonSite.useWebviewAgent != null) useWebviewAgent = jsonSite.useWebviewAgent
+        if (jsonSite.useManagedRequests != null) useManagedRequests = jsonSite.useManagedRequests
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs
         if (jsonSite.hasCoverBasedPageUpdates != null)
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates
