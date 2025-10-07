@@ -358,7 +358,6 @@ fun webkitRequestHeadersToOkHttpHeaders(
     if (webkitRequestHeaders.isEmpty()) return emptyList()
 
     val result = webkitRequestHeaders
-        .filterNot { it.value.startsWith("me.devsaki.hentoid") }
         .map { Pair(it.key, it.value) }
         .toMutableList()
     addCurrentCookiesToHeader(url, result)
