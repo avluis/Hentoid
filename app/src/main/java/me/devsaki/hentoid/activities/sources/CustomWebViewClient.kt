@@ -504,10 +504,8 @@ open class CustomWebViewClient : WebViewClient {
     ): WebResourceResponse? {
         return if (
             Settings.isBrowserAugmented(site)
-            && (!isMainPage && adBlocker.isBlocked(
-                url,
-                headers ?: emptyMap()
-            )) // Don't block the main page
+            // Don't block the main page
+            && (!isMainPage && adBlocker.isBlocked(url, headers ?: emptyMap()))
             || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
