@@ -23,10 +23,6 @@
       "useHentoidAgent": true,
       "hasUniqueBookId": true
     },
-    "ASMHENTAI_COMICS": {
-      "useHentoidAgent": true,
-      "hasUniqueBookId": true
-    },
     "EHENTAI": {
       "useHentoidAgent": true,
       "hasBackupURLs": true,
@@ -84,12 +80,6 @@
       "galleryHeight": 2,
       "hasUniqueBookId": true
     },
-    "ANCHIRA": {
-      "useWebviewAgent": false,
-      "requestsCapPerSecond": 2,
-      "parallelDownloadCap": 2,
-      "hasBackupURLs": true
-    },
     "DEVIANTART": {
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2,
@@ -106,11 +96,22 @@
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 2
     },
+    "NOVELCROW": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false,
+      "useManagedRequests": true
+    },
     "KEMONO": {
       "useHentoidAgent": false,
       "useWebviewAgent": false,
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 1
+    },
+    "PORNCOMIX": {
+      "useHentoidAgent": false,
+      "useWebviewAgent": false,
+      "requestsCapPerSecond": 2,
+      "parallelDownloadCap": 2
     }
   }
 }

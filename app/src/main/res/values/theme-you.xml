@@ -143,11 +143,13 @@
         <item name="android:windowSoftInputMode">adjustResize</item>
         <item name="colorPrimary">@color/primary_you</item>
         <item name="colorSecondary">@color/secondary_you</item>
-        <item name="bottomSheetStyle">@style/Theme.You.ModalBottomSheetDialog</item>
+        <item name="bottomSheetStyle">@style/Theme.You.BottomSheetStyle</item>
     </style>
 
-    <style name="Theme.You.ModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
+    <style name="Theme.You.BottomSheetStyle" parent="Widget.Material3.BottomSheet.Modal">
         <item name="backgroundTint">@color/drawer_background_you</item>
+        <item name="behavior_draggable">false</item>
+        <item name="behavior_draggableOnNestedScroll">false</item>
     </style>
 
     <!-- PIN screens -->

@@ -82,6 +82,23 @@ data class KemonoGallery(
                     )
                 )
             }
+        } else {
+            // Add file as the sole attached image
+            post.file?.let {
+                content.coverImageUrl =
+                    "https://img.$DOMAIN_FILTER/thumbnail/data/${it.path}"
+
+                if (updateImages) {
+                    content.qtyPages = 1
+                    content.setImageFiles(
+                        urlsToImageFiles(
+                            listOf(content.coverImageUrl),
+                            content.coverImageUrl,
+                            StatusContent.SAVED
+                        )
+                    )
+                }
+            }
         }
 
         return content

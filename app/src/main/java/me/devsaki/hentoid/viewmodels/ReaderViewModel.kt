@@ -1869,20 +1869,27 @@ class ReaderViewModel(
     }
 
     fun mergeChapters(toMerge: Collection<Chapter>) {
-        val theContent = content.value ?: return
+        val contentId = content.value?.id ?: return
+        var theContent: Content? = null
+
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
                     // Remove starting from the highest order = merge
-                    val inverted = toMerge.sortedBy { it.order * -1 }
+                    val inverted = toMerge.sortedByDescending { it.order }
                     inverted.forEachIndexed { idx, ch ->
                         if (idx == inverted.size - 1) return@forEachIndexed
-                        doRemoveChapter(theContent, ch)
+                        // Work on fresh ojbects updated with previous operation
+                        val theChapter = dao.selectChapter(ch.id)
+                            ?: throw IllegalArgumentException("No chapter found")
+                        theContent = dao.selectContent(contentId)
+                            ?: throw IllegalArgumentException("No content found")
+                        doRemoveChapter(theContent, theChapter)
                     }
                     dao.cleanup()
                 }
                 // Force reload images
-                loadDatabaseImages(theContent, -1)
+                theContent?.let { loadDatabaseImages(it, -1) }
             } catch (t: Throwable) {
                 Timber.e(t)
             }
@@ -1901,12 +1908,11 @@ class ReaderViewModel(
     ) {
         val contentChapters = content.chaptersList.sortedBy { it.order }
         val chapterImages = toRemove.imageList
-        val removeOrder = toRemove.order
 
         // Identify preceding chapter
         var precedingChapter: Chapter? = null
         for (c in contentChapters) {
-            if (c.order == removeOrder) break
+            if (c.id == toRemove.id) break
             precedingChapter = c
         }
         if (null == precedingChapter) return

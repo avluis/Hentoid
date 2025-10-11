@@ -21,6 +21,7 @@ private val INVISIBLE_SITES = setOf(
     Site.FAKKU2,  // Dropped after Fakku decided to flag downloading accounts and IPs
     Site.ASMHENTAI_COMICS,  // Does not work directly
     Site.PANDA,  // Dropped; kept for retrocompatibility
+    Site.MAL,  // Specific to myAnimeList attributes retrieval
     Site.ANY, // Technical fallback
     Site.NONE // Technical fallback
 )
@@ -82,6 +83,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
     KEMONO(37, "Kemono.cr", "https://kemono.cr/", R.drawable.ic_site_kemono),
 
+    MAL(96, "MyAnimeList", "", R.drawable.ic_hentoid_shape),
+
     // Used for associating attributes to sites in Preferences
     ANY(97, "any", "", R.drawable.ic_hentoid_shape),
 
@@ -100,6 +103,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     var useHentoidAgent = false
         private set
     var useWebviewAgent = true
+        private set
+    var useManagedRequests = false
         private set
 
     // Download behaviour control
@@ -153,6 +158,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         if (jsonSite.useMobileAgent != null) useMobileAgent = jsonSite.useMobileAgent
         if (jsonSite.useHentoidAgent != null) useHentoidAgent = jsonSite.useHentoidAgent
         if (jsonSite.useWebviewAgent != null) useWebviewAgent = jsonSite.useWebviewAgent
+        if (jsonSite.useManagedRequests != null) useManagedRequests = jsonSite.useManagedRequests
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs
         if (jsonSite.hasCoverBasedPageUpdates != null)
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates

@@ -7,7 +7,8 @@ class MrmActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "myreadingmanga.info"
         private val GALLERY_FILTER = arrayOf("myreadingmanga.info/[%\\w\\-]+/$")
-        private val REMOVABLE_ELEMENTS = arrayOf("center.imgtop", "a[rel^='nofollow noopener']")
+        private val REMOVABLE_ELEMENTS =
+            arrayOf("center.imgtop", "a[rel^='nofollow noopener']", ".widget_custom_html")
     }
 
     override fun getStartSite(): Site {

@@ -1096,7 +1096,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         if (isGroupDisplayed()) {
             editMenu?.isVisible = !hasProcessed && !isMultipleSelection
                     && Settings.getGroupingDisplayG().canReorderGroups
-            deleteMenu?.isVisible = !hasProcessed && Settings.getGroupingDisplayG().canDeleteGroups
+            deleteMenu?.isVisible = !hasProcessed
             detachMenu?.isVisible = false
             refreshMenu?.isVisible = false
             shareMenu?.isVisible = false

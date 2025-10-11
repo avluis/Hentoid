@@ -482,6 +482,7 @@
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
+    <string name="mal_name" translatable="false">MyAnimeList</string>
     <string name="error" translatable="false">Error</string>
     <string name="percent_no_digits" translatable="false">%.0f%%</string>
     <string name="what" translatable="false">\???</string>

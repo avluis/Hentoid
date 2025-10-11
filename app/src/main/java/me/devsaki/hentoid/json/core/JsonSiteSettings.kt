@@ -7,6 +7,7 @@ data class JsonSiteSettings(
         val useMobileAgent: Boolean?,
         val useHentoidAgent: Boolean?,
         val useWebviewAgent: Boolean?,
+        val useManagedRequests : Boolean?,
         val hasBackupURLs: Boolean?,
         val hasCoverBasedPageUpdates: Boolean?,
         val useCloudflare: Boolean?,
