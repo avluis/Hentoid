@@ -204,6 +204,14 @@
         app:layout_constraintStart_toEndOf="@id/image_preview_center"
         tools:ignore="ContentDescription" />
 
+    <View
+        android:id="@+id/system_bar_background"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:paddingTop="20dp"
+        android:background="?colorPrimaryVariant"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -211,7 +219,7 @@
         android:background="?colorPrimaryVariant"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:longClickable="true"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/system_bar_background"
         app:menu="@menu/reader_pager_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 

@@ -26,7 +26,6 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -264,12 +263,19 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
                 // TODO detect landscape with navbar on left vs. landscape with navbar on right
                 // Necessary to keep the displayed image still while system bars appear and apply padding
-                binding?.controlsOverlay?.root?.setPadding(
-                    0,
-                    status.top,
-                    if (isLandscape) navBarHeight else 0,
-                    if (isLandscape) 0 else navBarHeight
-                )
+                binding?.controlsOverlay?.systemBarBackground?.apply {
+                    minimumHeight = status.top
+                    setPadding(0, status.top, 0, 0)
+                }
+                /*
+            binding?.controlsOverlay?.root?.setPadding(
+                0,
+                status.top,
+                if (isLandscape) navBarHeight else 0,
+                if (isLandscape) 0 else navBarHeight
+            )
+
+                 */
                 WindowInsetsCompat.CONSUMED
             }
             WindowCompat.getInsetsController(requireActivity().window, it.root).apply {
