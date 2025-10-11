@@ -60,12 +60,20 @@ class PorncomixParser : BaseChapteredImageListParser() {
             Site.PORNCOMIX.useWebviewAgent
         ) ?: throw ParseException("Document unreachable : " + content.galleryUrl)
 
-        var result = parseComixImages(content, doc, fireProgressEvents)
+        var result = parseBestPornComixImages(doc)
+        if (result.isEmpty()) result = parseComixImages(content, doc, fireProgressEvents)
         if (result.isEmpty()) result = parseXxxToonImages(doc)
         if (result.isEmpty()) result = parseGedeComixImages(doc)
         if (result.isEmpty()) result = parseAllPornComixImages(doc)
 
         return urlsToImageFiles(result, targetOrder, StatusContent.SAVED, 1000, chp)
+    }
+
+    private fun parseBestPornComixImages(doc: Document): List<String> {
+        val pages: List<Element> =
+            doc.select("figure[itemtype='http://schema.org/ImageObject'] a").filterNotNull()
+        return if (pages.isEmpty()) emptyList()
+        else pages.map { it.attr("href") }.distinct()
     }
 
     @Throws(Exception::class)
@@ -76,7 +84,7 @@ class PorncomixParser : BaseChapteredImageListParser() {
     ): List<String> {
         val pagesNavigator: List<Element> = doc.select(".select-pagination select option")
         if (pagesNavigator.isEmpty()) return emptyList()
-        val pageUrls = pagesNavigator.mapNotNull { it.attr("data-redirect") }.distinct()
+        val pageUrls = pagesNavigator.map { it.attr("data-redirect") }.distinct()
         val result: MutableList<String> = ArrayList()
         if (fireProgressEvents) progressStart(content)
         pageUrls.forEachIndexed { index, pageUrl ->
@@ -102,7 +110,7 @@ class PorncomixParser : BaseChapteredImageListParser() {
     private fun parseXxxToonImages(doc: Document): List<String> {
         val pages: List<Element> = doc.select("figure.msnry_items a").filterNotNull()
         return if (pages.isEmpty()) emptyList()
-        else pages.mapNotNull { it.attr("href") }.distinct()
+        else pages.map { it.attr("href") }.distinct()
     }
 
     private fun parseGedeComixImages(doc: Document): List<String> {
@@ -114,6 +122,6 @@ class PorncomixParser : BaseChapteredImageListParser() {
     private fun parseAllPornComixImages(doc: Document): List<String> {
         val pages: List<Element> = doc.select("#jig1 a").filterNotNull()
         return if (pages.isEmpty()) emptyList()
-        else pages.mapNotNull { it.attr("href") }.distinct()
+        else pages.map { it.attr("href") }.distinct()
     }
 }
