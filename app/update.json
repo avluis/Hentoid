@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.20.26/hentoid12026-849.apk",
-  "versionCode": "849",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.21.0/hentoid1210-858.apk",
+  "versionCode": "858",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -39,9 +39,9 @@
 	  {"sourceName":"HIPERDEX", "status":"RED", "fixedByBuild":"838"},
 	  {"sourceName":"SIMPLY", "status":"RED", "fixedByBuild":"846"},
 	  {"sourceName":"MUSES", "status":"RED", "fixedByBuild":"846"},
-	  {"sourceName":"NOVELCROW", "status":"RED"},
-	  {"sourceName":"LUSCIOUS", "status":"ORANGE"},
-	  {"sourceName":"PORNCOMIX", "status":"RED"},
+	  {"sourceName":"NOVELCROW", "status":"RED", "fixedByBuild":"858"},
+	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"858"},
+	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"858"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
