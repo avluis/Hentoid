@@ -56,6 +56,7 @@ import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.getOnlineResource
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
 import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
+import me.devsaki.hentoid.util.network.postOnlineResource
 import me.devsaki.hentoid.util.network.setCookies
 import me.devsaki.hentoid.util.network.simplifyUrl
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
@@ -78,6 +79,9 @@ import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.Locale
+import java.util.Queue
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
@@ -146,6 +150,11 @@ open class CustomWebViewClient : WebViewClient {
     // List of JS scripts to load from app resources every time a webpage is started
     private val jsStartupScripts: MutableList<String> by lazy { ArrayList() }
     private val jsReplacements: MutableMap<String, String> by lazy { HashMap() }
+
+    // Communication between XHR intercept and POST rewrite
+    //   Key : URL
+    //   Value : POST Body
+    private val postQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
 
 
     companion object {
@@ -370,7 +379,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     private fun shouldOverrideUrlLoadingInternal(
-        view: WebView, url: String, headers: Map<String, String>?, isMainPage: Boolean
+        view: WebView, url: String, headers: Map<String, String>, isMainPage: Boolean
     ): Boolean {
         if (Settings.isBrowserAugmented(site)
             && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
@@ -408,7 +417,7 @@ open class CustomWebViewClient : WebViewClient {
      */
     @Throws(IOException::class)
     private fun downloadFile(
-        context: Context, url: String, requestHeaders: Map<String, String>?
+        context: Context, url: String, requestHeaders: Map<String, String>
     ): File {
         val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         getOnlineResource(
@@ -466,8 +475,15 @@ open class CustomWebViewClient : WebViewClient {
 
         // Data fetched with POST is out of scope of analysis and adblock
         if (!request.method.equals("get", ignoreCase = true)) {
-            Timber.v("[%s] ignored by interceptor; method = %s", url, request.method)
-            return sendRequest(request)
+            Timber.v("[$url] ignored by interceptor; method = ${request.method}")
+            var postBody = ""
+            // Try to retrieve POST body from previously intercepted XHR
+            postQueue[url]?.let { queue ->
+                queue.poll()?.let { body ->
+                    postBody = body
+                }
+            }
+            return sendRequest(request, postBody)
         }
         if (request.isForMainFrame) mainPageUrl = url
         val result =
@@ -486,8 +502,10 @@ open class CustomWebViewClient : WebViewClient {
     private fun shouldInterceptRequestInternal(
         url: String, headers: Map<String, String>?, isMainPage: Boolean
     ): WebResourceResponse? {
-        return if (Settings.isBrowserAugmented(site)
-            && (!isMainPage && adBlocker.isBlocked(url, headers)) // Don't block the main page
+        return if (
+            Settings.isBrowserAugmented(site)
+            // Don't block the main page
+            && (!isMainPage && adBlocker.isBlocked(url, headers ?: emptyMap()))
             || !url.startsWith("http")
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
@@ -537,24 +555,36 @@ open class CustomWebViewClient : WebViewClient {
         }
     }
 
-    fun sendRequest(request: WebResourceRequest): WebResourceResponse? {
-        if (dnsOverHttpsEnabled.get()) {
+    fun sendRequest(request: WebResourceRequest, postBody: String = ""): WebResourceResponse? {
+        if (dnsOverHttpsEnabled.get() || site.useManagedRequests) {
             // Query resource using OkHttp
             val urlStr = request.url.toString()
             val requestHeadersList =
                 webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
             try {
-                getOnlineResource(
+                val res = if (request.method.equals("get", true))
+                    getOnlineResource(
+                        urlStr,
+                        requestHeadersList,
+                        site.useMobileAgent,
+                        site.useHentoidAgent,
+                        site.useWebviewAgent
+                    ) else postOnlineResource(
                     urlStr,
                     requestHeadersList,
                     site.useMobileAgent,
                     site.useHentoidAgent,
-                    site.useWebviewAgent
-                ).use { response ->
+                    site.useWebviewAgent,
+                    postBody,
+                    "text/plain"
+                )
+                res.use { response ->
                     // Scram if the response is a redirection or an error
                     if (response.code >= 300) return null
-                    val body = response.body
-                    return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    response.body.byteStream().use {
+                        val streams = duplicateInputStream(it, 1)
+                        return okHttpResponseToWebkitResponse(response, streams[0])
+                    }
                 }
             } catch (e: IOException) {
                 Timber.i(e)
@@ -563,6 +593,16 @@ open class CustomWebViewClient : WebViewClient {
             }
         }
         return null
+    }
+
+    fun onXhrRecord(url: String, body: String) {
+        val queue = if (postQueue.contains(url)) postQueue[url]
+        else {
+            val q = ConcurrentLinkedQueue<String>()
+            postQueue[url] = q
+            q
+        }
+        queue?.add(body)
     }
 
     /**
@@ -603,7 +643,8 @@ open class CustomWebViewClient : WebViewClient {
         // If we're here for remove elements only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null
         if (analyzeForDownload) activity?.onGalleryPageStarted(url)
-        val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
+        val requestHeadersList = if (null == requestHeaders) emptyList() else
+            webkitRequestHeadersToOkHttpHeaders(requestHeaders, url)
         var response: Response? = null
         try {
             // Query resource here, using OkHttp

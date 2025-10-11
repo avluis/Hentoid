@@ -207,7 +207,7 @@ class AdBlocker(val site: Site) {
      * @param headers HTTP request headers to use
      * @return True if the resource is blocked; false if not
      */
-    fun isBlocked(url: String, headers: Map<String, String>?): Boolean {
+    fun isBlocked(url: String, headers: Map<String, String>): Boolean {
         if (!isActive.get()) return false
 
         val cleanUrl = url.lowercase(Locale.getDefault())

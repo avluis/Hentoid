@@ -9,7 +9,7 @@ class NovelcrowActivity : BaseBrowserActivity() {
         private const val DOMAIN_FILTER = "novelcrow.com"
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "[%\\w\\-]+/$")
-        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads",".c-top-second-sidebar")
+        private val REMOVABLE_ELEMENTS = arrayOf(".c-ads", ".c-top-second-sidebar")
         private val JS_CONTENT_BLACKLIST = arrayOf("'iframe'", "'plu_slider_frame'")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
     }

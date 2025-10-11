@@ -11,6 +11,7 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.YoastGalleryMetadata
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.parsers.urlsToImageFiles
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
@@ -55,6 +56,13 @@ class PorncomixContent : BaseContentParser() {
 
     @Selector(value = ".tags-content a[href*='tag']")
     private var galleryCommonTags: List<Element>? = null
+
+    @Selector(
+        value = "figure[itemtype='http://schema.org/ImageObject'] a",
+        attr = "href",
+        defValue = ""
+    )
+    private lateinit var thumbs: List<String>
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
@@ -110,8 +118,14 @@ class PorncomixContent : BaseContentParser() {
 
         content.putAttributes(attributes)
         if (updateImages) {
-            content.setImageFiles(emptyList())
-            content.qtyPages = 0
+            if (thumbs.isEmpty()) {
+                content.setImageFiles(emptyList())
+                content.qtyPages = 0
+            } else {
+                val imgs = urlsToImageFiles(thumbs, thumbs[0], StatusContent.SAVED)
+                content.setImageFiles(imgs)
+                content.qtyPages = imgs.size - 1
+            }
         }
         return content
     }
