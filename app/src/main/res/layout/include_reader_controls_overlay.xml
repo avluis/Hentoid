@@ -8,169 +8,173 @@
 
     <!-- Bottom background -->
 
-    <View
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/viewer_bottom_bg"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:background="?colorPrimaryVariant"
+        android:duplicateParentState="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/pager_left_txt" />
+        app:layout_constraintStart_toStartOf="parent">
 
-    <!-- Bottom controls -->
+        <!-- Bottom controls -->
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/info_btn"
-        style="?attr/materialIconButtonOutlinedStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:tooltipText="@string/information_help"
-        app:icon="@drawable/ic_info"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="ContentDescription" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/info_btn"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="10dp"
+            android:tooltipText="@string/information_help"
+            app:icon="@drawable/ic_info"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/pager_left_txt"
+            tools:ignore="ContentDescription" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/prev_book_btn"
-        style="?attr/materialIconButtonOutlinedStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:tooltipText="@string/previous_book_help"
-        app:icon="@drawable/ic_action_previous_item"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/favourite_action_btn"
-        app:layout_constraintStart_toEndOf="@id/info_btn"
-        tools:ignore="ContentDescription" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/prev_book_btn"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:tooltipText="@string/previous_book_help"
+            android:visibility="invisible"
+            app:icon="@drawable/ic_action_previous_item"
+            app:layout_constraintEnd_toStartOf="@id/favourite_action_btn"
+            app:layout_constraintStart_toEndOf="@id/info_btn"
+            app:layout_constraintTop_toTopOf="@id/info_btn"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/favourite_action_btn"
-        style="?attr/materialIconButtonOutlinedStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:tooltipText="@string/fav_help"
-        app:icon="@drawable/ic_fav_bottom_half"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/next_book_btn"
-        app:layout_constraintStart_toEndOf="@id/prev_book_btn"
-        tools:ignore="ContentDescription" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/favourite_action_btn"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:tooltipText="@string/fav_help"
+            app:icon="@drawable/ic_fav_bottom_half"
+            app:layout_constraintEnd_toStartOf="@id/next_book_btn"
+            app:layout_constraintStart_toEndOf="@id/prev_book_btn"
+            app:layout_constraintTop_toTopOf="@id/info_btn"
+            tools:ignore="ContentDescription" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/next_book_btn"
-        style="?attr/materialIconButtonOutlinedStyle"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:tooltipText="@string/next_book_help"
-        app:icon="@drawable/ic_action_next_item"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/gallery_btn"
-        app:layout_constraintStart_toEndOf="@id/favourite_action_btn"
-        tools:ignore="ContentDescription" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/next_book_btn"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:tooltipText="@string/next_book_help"
+            android:visibility="invisible"
+            app:icon="@drawable/ic_action_next_item"
+            app:layout_constraintEnd_toStartOf="@id/gallery_btn"
+            app:layout_constraintStart_toEndOf="@id/favourite_action_btn"
+            app:layout_constraintTop_toTopOf="@id/info_btn"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/gallery_btn"
-        style="?attr/materialIconButtonOutlinedStyle"
-        android:layout_marginEnd="8dp"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:tooltipText="@string/gallery_help"
-        app:icon="@drawable/ic_view_gallery"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:ignore="ContentDescription" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/gallery_btn"
+            style="?attr/materialIconButtonOutlinedStyle"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:tooltipText="@string/gallery_help"
+            app:icon="@drawable/ic_view_gallery"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/info_btn"
+            tools:ignore="ContentDescription" />
 
-    <!-- Progress bar -->
+        <!-- Progress bar -->
 
-    <TextView
-        android:id="@+id/pager_left_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:gravity="center"
-        android:minWidth="48dp"
-        android:padding="8dp"
-        android:textAlignment="center"
-        android:textColor="?colorOnPrimary"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintBottom_toTopOf="@id/favourite_action_btn"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:text="28" />
+        <TextView
+            android:id="@+id/pager_left_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:padding="8dp"
+            android:textAlignment="center"
+            android:textColor="?colorOnPrimary"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/viewer_bottom_bg"
+            tools:text="28" />
 
-    <com.google.android.material.slider.Slider
-        android:id="@+id/page_slider"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginBottom="34dp"
-        android:colorControlActivated="?colorSecondary"
-        android:padding="8dp"
-        android:progressBackgroundTint="?colorOnPrimary"
-        android:progressTint="?colorSecondary"
-        android:stepSize="1"
-        android:value="2"
-        android:valueFrom="0"
-        android:valueTo="10"
-        app:labelBehavior="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/pager_right_txt"
-        app:layout_constraintStart_toEndOf="@id/pager_left_txt"
-        app:thumbColor="?colorSecondary"
-        app:tickVisible="false"
-        app:trackColorActive="?colorSecondary"
-        app:trackColorInactive="@color/white_opacity_25" />
+        <com.google.android.material.slider.Slider
+            android:id="@+id/page_slider"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="-8dp"
+            android:layout_marginBottom="34dp"
+            android:colorControlActivated="?colorSecondary"
+            android:padding="8dp"
+            android:progressBackgroundTint="?colorOnPrimary"
+            android:progressTint="?colorSecondary"
+            android:stepSize="1"
+            android:value="2"
+            android:valueFrom="0"
+            android:valueTo="10"
+            app:labelBehavior="gone"
+            app:layout_constraintEnd_toStartOf="@id/pager_right_txt"
+            app:layout_constraintStart_toEndOf="@id/pager_left_txt"
+            app:layout_constraintTop_toTopOf="@id/viewer_bottom_bg"
+            app:thumbColor="?colorSecondary"
+            app:tickVisible="false"
+            app:trackColorActive="?colorSecondary"
+            app:trackColorInactive="@color/white_opacity_25" />
 
-    <TextView
-        android:id="@+id/pager_right_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:minWidth="48dp"
-        android:padding="8dp"
-        android:textAlignment="center"
-        android:textColor="?colorOnPrimary"
-        android:textSize="@dimen/text_body_1"
-        app:layout_constraintBottom_toTopOf="@id/favourite_action_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:text="255" />
+        <TextView
+            android:id="@+id/pager_right_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:gravity="center"
+            android:minWidth="48dp"
+            android:padding="8dp"
+            android:textAlignment="center"
+            android:textColor="?colorOnPrimary"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/viewer_bottom_bg"
+            tools:text="255" />
 
-    <!-- Micro menus -->
 
-    <com.skydoves.submarine.SubmarineView
-        android:id="@+id/information_micro_menu"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:alpha="0.8"
-        app:layout_constraintBottom_toBottomOf="@id/info_btn"
-        app:layout_constraintEnd_toEndOf="@id/info_btn"
-        app:layout_constraintStart_toStartOf="@id/info_btn"
-        app:submarine_animation="scale"
-        app:submarine_circleAnchor="bottom"
-        app:submarine_circleSize="14dp"
-        app:submarine_color="@android:color/black"
-        app:submarine_duration="250"
-        app:submarine_expandSize="170dp"
-        app:submarine_orientation="vertical" />
+        <!-- Micro menus -->
 
-    <com.skydoves.submarine.SubmarineView
-        android:id="@+id/favourite_micro_menu"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:alpha="0.8"
-        app:layout_constraintBottom_toBottomOf="@id/favourite_action_btn"
-        app:layout_constraintEnd_toEndOf="@id/favourite_action_btn"
-        app:layout_constraintStart_toStartOf="@id/favourite_action_btn"
-        app:submarine_animation="scale"
-        app:submarine_circleAnchor="bottom"
-        app:submarine_circleSize="14dp"
-        app:submarine_color="@android:color/black"
-        app:submarine_duration="250"
-        app:submarine_expandSize="170dp"
-        app:submarine_orientation="vertical" />
+        <com.skydoves.submarine.SubmarineView
+            android:id="@+id/information_micro_menu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:alpha="0.8"
+            app:layout_constraintBottom_toBottomOf="@id/info_btn"
+            app:layout_constraintEnd_toEndOf="@id/info_btn"
+            app:layout_constraintStart_toStartOf="@id/info_btn"
+            app:submarine_animation="scale"
+            app:submarine_circleAnchor="bottom"
+            app:submarine_circleSize="14dp"
+            app:submarine_color="@android:color/black"
+            app:submarine_duration="250"
+            app:submarine_expandSize="170dp"
+            app:submarine_orientation="vertical" />
+
+        <com.skydoves.submarine.SubmarineView
+            android:id="@+id/favourite_micro_menu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:alpha="0.8"
+            app:layout_constraintBottom_toBottomOf="@id/favourite_action_btn"
+            app:layout_constraintEnd_toEndOf="@id/favourite_action_btn"
+            app:layout_constraintStart_toStartOf="@id/favourite_action_btn"
+            app:submarine_animation="scale"
+            app:submarine_circleAnchor="bottom"
+            app:submarine_circleSize="14dp"
+            app:submarine_color="@android:color/black"
+            app:submarine_duration="250"
+            app:submarine_expandSize="170dp"
+            app:submarine_orientation="vertical" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Image previews used when tracking -->
 
@@ -207,10 +211,9 @@
     <View
         android:id="@+id/system_bar_background"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:paddingTop="20dp"
+        android:layout_height="1dp"
         android:background="?colorPrimaryVariant"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"

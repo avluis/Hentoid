@@ -263,9 +263,21 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
                 // TODO detect landscape with navbar on left vs. landscape with navbar on right
                 // Necessary to keep the displayed image still while system bars appear and apply padding
-                binding?.controlsOverlay?.systemBarBackground?.apply {
-                    minimumHeight = status.top
-                    setPadding(0, status.top, 0, 0)
+                binding?.controlsOverlay?.apply {
+                    systemBarBackground.minimumHeight = status.top
+                    systemBarBackground.setPadding(0, status.top, 0, 0)
+
+                    /*
+                    viewerBottomBg.minimumHeight =
+                        resources.getDimension(R.dimen.control_ui_bottom_bar_height)
+                            .toInt() + if (isLandscape) 0 else navBarHeight
+                     */
+                    viewerBottomBg.setPadding(
+                        0,
+                        0,
+                        if (isLandscape) navBarHeight else 0,
+                        if (isLandscape) 0 else navBarHeight
+                    )
                 }
                 /*
             binding?.controlsOverlay?.root?.setPadding(

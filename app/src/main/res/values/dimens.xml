@@ -70,6 +70,7 @@
 
     <!-- image viewer -->
     <dimen name="page_min_height">600dp</dimen>
+    <dimen name="control_ui_bottom_bar_height">96dp</dimen>
 
     <!-- fast scroller -->
     <dimen name="afs_min_touch_target_size">24dp</dimen>
