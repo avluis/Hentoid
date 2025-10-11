@@ -139,7 +139,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/viewer_bottom_bg"
             tools:text="255" />
-
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Micro menus -->
 
@@ -148,9 +148,10 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:alpha="0.8"
-            app:layout_constraintBottom_toBottomOf="@id/info_btn"
-            app:layout_constraintEnd_toEndOf="@id/info_btn"
-            app:layout_constraintStart_toStartOf="@id/info_btn"
+            app:layout_constraintBottom_toBottomOf="@id/viewer_bottom_bg"
+            app:layout_constraintStart_toStartOf="@id/viewer_bottom_bg"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="16dp"
             app:submarine_animation="scale"
             app:submarine_circleAnchor="bottom"
             app:submarine_circleSize="14dp"
@@ -164,9 +165,10 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:alpha="0.8"
-            app:layout_constraintBottom_toBottomOf="@id/favourite_action_btn"
-            app:layout_constraintEnd_toEndOf="@id/favourite_action_btn"
-            app:layout_constraintStart_toStartOf="@id/favourite_action_btn"
+            app:layout_constraintBottom_toBottomOf="@id/viewer_bottom_bg"
+            app:layout_constraintEnd_toEndOf="@id/viewer_bottom_bg"
+            app:layout_constraintStart_toStartOf="@id/viewer_bottom_bg"
+            android:layout_marginBottom="16dp"
             app:submarine_animation="scale"
             app:submarine_circleAnchor="bottom"
             app:submarine_circleSize="14dp"
@@ -174,7 +176,6 @@
             app:submarine_duration="250"
             app:submarine_expandSize="170dp"
             app:submarine_orientation="vertical" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Image previews used when tracking -->
 
@@ -208,21 +209,14 @@
         app:layout_constraintStart_toEndOf="@id/image_preview_center"
         tools:ignore="ContentDescription" />
 
-    <View
-        android:id="@+id/system_bar_background"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?colorPrimaryVariant"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:background="?colorPrimaryVariant"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:longClickable="true"
-        app:layout_constraintTop_toBottomOf="@id/system_bar_background"
+        app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/reader_pager_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 

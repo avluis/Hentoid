@@ -261,17 +261,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 // Move the overlay not to be covered by navigation shapes
                 val isLandscape =
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
-                // TODO detect landscape with navbar on left vs. landscape with navbar on right
-                // Necessary to keep the displayed image still while system bars appear and apply padding
                 binding?.controlsOverlay?.apply {
-                    systemBarBackground.minimumHeight = status.top
-                    systemBarBackground.setPadding(0, status.top, 0, 0)
+                    toolbar.setPadding(
+                        0,
+                        status.top,
+                        0,
+                        0
+                    )
 
-                    /*
-                    viewerBottomBg.minimumHeight =
-                        resources.getDimension(R.dimen.control_ui_bottom_bar_height)
-                            .toInt() + if (isLandscape) 0 else navBarHeight
-                     */
+                    // TODO detect landscape with navbar on left vs. landscape with navbar on right
                     viewerBottomBg.setPadding(
                         0,
                         0,
@@ -279,15 +277,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         if (isLandscape) 0 else navBarHeight
                     )
                 }
-                /*
-            binding?.controlsOverlay?.root?.setPadding(
-                0,
-                status.top,
-                if (isLandscape) navBarHeight else 0,
-                if (isLandscape) 0 else navBarHeight
-            )
-
-                 */
                 WindowInsetsCompat.CONSUMED
             }
             WindowCompat.getInsetsController(requireActivity().window, it.root).apply {
