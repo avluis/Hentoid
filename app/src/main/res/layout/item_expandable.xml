@@ -42,7 +42,7 @@
         app:layout_constraintStart_toEndOf="@id/selected_flag"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_hentoid_shape"
+        tools:src="@drawable/ic_app"
         tools:tint="@color/medium_gray" />
 
     <TextView

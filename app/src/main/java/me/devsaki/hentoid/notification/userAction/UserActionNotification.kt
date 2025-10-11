@@ -16,7 +16,7 @@ class UserActionNotification(val site: Site, private val oldCookie: String) : Ba
 
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
+            .setSmallIcon(R.drawable.ic_app)
             .setContentTitle(context.resources.getText(R.string.notification_user_action_needed))
             .setContentText(context.resources.getText(R.string.notification_action_dl_revive))
             .setContentIntent(getDefaultIntent(context))

@@ -24,7 +24,7 @@ class UpdateAvailableNotification(private val downloadUrl: String) : BaseNotific
             PendingIntent.getBroadcast(context, 0, intent, flags)
 
         return NotificationCompat.Builder(context, ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
+            .setSmallIcon(R.drawable.ic_app)
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setVibrate(longArrayOf(1, 1, 1))

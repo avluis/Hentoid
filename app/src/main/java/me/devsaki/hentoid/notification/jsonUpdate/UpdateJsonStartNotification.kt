@@ -9,7 +9,7 @@ class UpdateJsonStartNotification : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
+            .setSmallIcon(R.drawable.ic_app)
             .setProgress(1, 1, true)
             .setContentTitle(context.resources.getString(R.string.notif_json_progress))
             .setContentText(context.resources.getString(R.string.notif_json_progress))

@@ -23,7 +23,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_shape"
+            tools:src="@drawable/ic_app"
             tools:tint="@color/dark_gray" />
 
         <TextView

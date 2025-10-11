@@ -13,7 +13,7 @@ class SplitMergeStartNotification(
 
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
+            .setSmallIcon(R.drawable.ic_app)
             .setProgress(max, 0, 0 == max)
             .setContentTitle(context.getString(if (SplitMergeType.SPLIT == type) R.string.split_progress else R.string.merge_progress))
             .setContentText("")

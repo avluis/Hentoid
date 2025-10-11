@@ -12,7 +12,7 @@ class DownloadWarningNotification(
 
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, ID)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
+            .setSmallIcon(R.drawable.ic_app)
             .setContentTitle(context.getString(R.string.download_notif_failed))
             .setStyle(getBigStyle(context))
             .setLocalOnly(true)

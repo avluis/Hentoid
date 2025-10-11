@@ -10,7 +10,7 @@ class UpdateCheckNotification : BaseNotification() {
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, ID)
             .setDefaults(0)
-            .setSmallIcon(R.drawable.ic_hentoid_shape)
+            .setSmallIcon(R.drawable.ic_app)
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setVibrate(null)
             .setSound(null)

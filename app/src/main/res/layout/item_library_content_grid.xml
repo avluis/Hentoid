@@ -57,7 +57,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_shape"
+            tools:src="@drawable/ic_app"
             tools:tint="@color/lighter_gray" />
 
         <ImageView
@@ -135,7 +135,7 @@
             android:layout_marginStart="8dp"
             app:iconTint="?colorSecondary"
             android:tooltipText="@string/view_source_help"
-            app:icon="@drawable/ic_hentoid_shape"
+            app:icon="@drawable/ic_app"
             app:layout_constraintBottom_toTopOf="@id/tvTitle"
             app:layout_constraintStart_toStartOf="parent"
             tools:ignore="ContentDescription" />

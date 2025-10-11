@@ -28,7 +28,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_shape"
+            tools:src="@drawable/ic_app"
             tools:tint="@color/lighter_gray" />
 
         <ImageView
@@ -128,7 +128,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            android:src="@drawable/ic_hentoid_shape"
+            android:src="@drawable/ic_app"
             android:tooltipText="@string/view_source_help"
             app:layout_constraintEnd_toEndOf="@id/guideline_middle"
             app:layout_constraintTop_toBottomOf="@id/tvPages"

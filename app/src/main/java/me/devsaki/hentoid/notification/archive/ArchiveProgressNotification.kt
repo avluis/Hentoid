@@ -21,7 +21,7 @@ class ArchiveProgressNotification(
 
         if (!this::builder.isInitialized) {
             builder = NotificationCompat.Builder(context, ID)
-                .setSmallIcon(R.drawable.ic_hentoid_shape)
+                .setSmallIcon(R.drawable.ic_app)
                 .setColor(context.getThemedColor(R.color.secondary_light))
                 .addAction(
                     R.drawable.ic_cancel,

@@ -43,7 +43,7 @@
             app:layout_constraintTop_toBottomOf="@id/pbDownload"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_hentoid_shape"
+            tools:src="@drawable/ic_app"
             tools:tint="@color/lighter_gray" />
 
         <ImageView
@@ -179,7 +179,7 @@
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:tooltipText="@string/view_source_help"
-            app:icon="@drawable/ic_hentoid_shape"
+            app:icon="@drawable/ic_app"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/queueTopBtn"
             app:layout_constraintTop_toBottomOf="@id/tvPages"

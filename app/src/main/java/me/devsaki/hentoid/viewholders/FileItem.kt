@@ -15,7 +15,6 @@ import com.mikepenz.fastadapter.items.AbstractItem
 import com.mikepenz.fastadapter.listeners.TouchEventHook
 import com.mikepenz.fastadapter.swipe.IDrawerSwipeableViewHolder
 import com.mikepenz.fastadapter.swipe.ISwipeable
-import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.FileItemBundle
 import me.devsaki.hentoid.core.Consumer
@@ -25,7 +24,6 @@ import me.devsaki.hentoid.util.file.DisplayFile
 import me.devsaki.hentoid.util.file.DisplayFile.SubType
 import me.devsaki.hentoid.util.file.DisplayFile.Type
 import me.devsaki.hentoid.util.image.loadStill
-import timber.log.Timber
 
 class FileItem : AbstractItem<FileItem.ViewHolder>,
     IExtendedDraggable<FileItem.ViewHolder>, ISwipeable {
@@ -142,12 +140,12 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                     Type.SUPPORTED_FILE -> {
                         if (doc.subType == SubType.PDF) R.drawable.ic_pdf_file
                         else if (doc.subType == SubType.ARCHIVE) R.drawable.ic_archive
-                        else R.drawable.ic_hentoid_shape
+                        else R.drawable.ic_app
                     }
 
                     Type.ADD_BUTTON -> R.drawable.ic_add
                     Type.UP_BUTTON -> R.drawable.ic_keyboard_arrow_up
-                    else -> R.drawable.ic_hentoid_shape
+                    else -> R.drawable.ic_app
                 }
                 ivCover.scaleType = ImageView.ScaleType.CENTER_INSIDE
                 ivCover.setImageResource(icon)

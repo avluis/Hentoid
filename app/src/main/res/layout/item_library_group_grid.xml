@@ -24,7 +24,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
         tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_hentoid_shape"
+        tools:src="@drawable/ic_app"
         tools:tint="@color/lighter_gray"
         tools:visibility="visible" />
 
