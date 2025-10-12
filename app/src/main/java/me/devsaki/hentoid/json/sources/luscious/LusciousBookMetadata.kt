@@ -9,6 +9,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
+import me.devsaki.hentoid.util.ongoingStr
 
 private const val RELATIVE_URL_PREFIX = "https://luscious.net"
 
@@ -100,6 +101,8 @@ data class LusciousBookMetadata(
             val attribute = Attribute(type, name, RELATIVE_URL_PREFIX + tag.url, Site.LUSCIOUS)
             attributes.add(attribute)
         }
+
+        // Category
         val attribute = Attribute(
             AttributeType.CATEGORY,
             if (info.isManga == true) "manga" else "picture set",
@@ -107,6 +110,18 @@ data class LusciousBookMetadata(
             Site.LUSCIOUS
         )
         attributes.add(attribute)
+
+        // Ongoing
+        if (content.title.contains("ongoing", true)) {
+            val attribute = Attribute(
+                AttributeType.TAG,
+                ongoingStr,
+                "",
+                Site.LUSCIOUS
+            )
+            attributes.add(attribute)
+        }
+
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

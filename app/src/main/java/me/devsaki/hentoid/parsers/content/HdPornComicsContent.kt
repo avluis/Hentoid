@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -10,6 +11,7 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.HdPornComicsParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -72,6 +74,17 @@ class HdPornComicsContent : BaseContentParser() {
             Site.HDPORNCOMICS
         )
         parseAttributes(attributes, AttributeType.TAG, tags, false, Site.HDPORNCOMICS)
+        // Ongoing
+        if (content.title.contains("ongoing", true)) {
+            attributes.add(
+                Attribute(
+                    AttributeType.TAG,
+                    ongoingStr,
+                    "",
+                    Site.HDPORNCOMICS
+                )
+            )
+        }
         content.putAttributes(attributes)
         if (updateImages) {
             pages?.let {

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -7,6 +8,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDateToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -78,6 +80,17 @@ class SimplyContent : BaseContentParser() {
             Site.SIMPLY
         )
         parseAttributes(attributes, AttributeType.TAG, tags, false, Site.SIMPLY)
+        // Ongoing
+        if (content.title.contains("ongoing", true)) {
+            attributes.add(
+                Attribute(
+                    AttributeType.TAG,
+                    ongoingStr,
+                    "",
+                    Site.SIMPLY
+                )
+            )
+        }
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

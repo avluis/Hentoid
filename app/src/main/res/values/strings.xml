@@ -1123,6 +1123,9 @@
     <!-- Launch text selection -->
     <string name="launch">Launch</string>
 
+    <!-- Tags -->
+    <string name="tag_ongoing">Ongoing</string>
+
     <!-- Group names -->
     <string name="group_today">Today</string>
     <string name="group_7">Last 7 days</string>

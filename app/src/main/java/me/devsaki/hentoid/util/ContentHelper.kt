@@ -256,10 +256,14 @@ private val queueTabStatus = intArrayOf(StatusContent.DOWNLOADING.code, StatusCo
 var chapterStr: String = "Chapter" // Default english value; will be overriden at init
     internal set
 
+var ongoingStr: String = "Ongoing" // Default english value; will be overriden at init
+    internal set
+
 val VANILLA_CHAPTERNAME_PATTERN: Pattern by lazy { Pattern.compile("$chapterStr [0-9]+") }
 
 fun initResources(res: Resources) {
     chapterStr = res.getString(R.string.gallery_chapter_prefix)
+    ongoingStr = res.getString(R.string.tag_ongoing)
 }
 
 fun getLibraryStatuses(): IntArray {

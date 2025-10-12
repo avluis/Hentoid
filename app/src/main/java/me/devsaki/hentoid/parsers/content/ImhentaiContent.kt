@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -8,6 +9,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.removeTextualTags
+import me.devsaki.hentoid.util.ongoingStr
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -73,6 +75,17 @@ class ImhentaiContent : BaseContentParser() {
             false,
             Site.IMHENTAI
         )
+        // Ongoing
+        if (content.title.contains("ongoing", true)) {
+            attributes.add(
+                Attribute(
+                    AttributeType.TAG,
+                    ongoingStr,
+                    "",
+                    Site.IMHENTAI
+                )
+            )
+        }
         content.putAttributes(attributes)
         return content
     }
