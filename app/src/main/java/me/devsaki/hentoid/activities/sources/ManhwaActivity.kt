@@ -14,7 +14,8 @@ class ManhwaActivity : BaseBrowserActivity() {
                 ".hide-sticky-menu",
                 ".c-ads",
                 "iframe",
-                "\$x//a[contains(@href,\"ourdream.ai\")]/.."
+                "\$x//a[contains(@href,\"ourdream.ai\")]/..",
+                "\$x//a[contains(@href,\".ai/\")][@target=\"_blank\"]/.."
             )
         private val JS_CONTENT_BLACKLIST = arrayOf("adprovider")
         private val BLOCKED_CONTENT = arrayOf(".cloudfront.net")
