@@ -596,7 +596,7 @@ open class CustomWebViewClient : WebViewClient {
         return null
     }
 
-    fun onXhrRecord(url: String, body: String) {
+    fun recordDynamicPostRequests(url: String, body: String) {
         val queue = if (postQueue.contains(url)) postQueue[url]
         else {
             val q = ConcurrentLinkedQueue<String>()

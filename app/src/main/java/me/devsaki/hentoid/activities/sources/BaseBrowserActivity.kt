@@ -48,7 +48,6 @@ import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.URL_GITHUB_WIKI_DOWNLOAD
-import me.devsaki.hentoid.core.URL_GITHUB_WIKI_STORAGE
 import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.database.CollectionDAO
@@ -578,7 +577,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true)
         webClient = createWebClient()
         webView.webViewClient = webClient
-        if (getStartSite().useManagedRequests) xhrHandler = { url, body -> webClient.onXhrRecord(url, body) }
+        if (getStartSite().useManagedRequests) {
+            xhrHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
+            fetchHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
+        }
 
         // Download immediately on long click on a link / image link
         if (Settings.isBrowserQuickDl) {
