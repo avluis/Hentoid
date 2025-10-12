@@ -8,6 +8,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
+import me.devsaki.hentoid.parsers.normalizeStatus
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
@@ -31,6 +32,9 @@ class MrmContent : BaseContentParser() {
 
     @Selector(value = ".entry-header .entry-tags a[href*='/tag/']")
     private var tags: List<Element>? = null
+
+    @Selector(value = ".entry-header .entry-terms a[href*='/status/']")
+    private var status: List<Element>? = null
 
     @Selector(value = ".entry-content img")
     private var images: List<Element>? = null
@@ -69,6 +73,8 @@ class MrmContent : BaseContentParser() {
         parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, Site.MRM)
         parseAttributes(attributes, AttributeType.TAG, genres, false, Site.MRM)
         parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM)
+        parseAttributes(attributes, AttributeType.TAG, status, false, Site.MRM)
+        normalizeStatus(attributes)
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

@@ -10,11 +10,13 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.parsers.content.NO_TITLE
 import me.devsaki.hentoid.util.MAP_STRINGS
+import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDateToEpoch
 import me.devsaki.hentoid.util.parseDownloadParams
 import me.devsaki.hentoid.util.removeNonPrintableChars
@@ -529,4 +531,16 @@ fun cleanup(data: String?): String {
     return StringEscapeUtils.unescapeHtml4(
         removeNonPrintableChars(data.trim()).replace('’', '\'')
     )
+}
+
+/**
+ * Update name of completed/ongoing with generic app terms
+ */
+fun normalizeStatus(attrs: AttributeMap) {
+    attrs[AttributeType.TAG]
+        ?.filter { it.name.equals("ongoing", true) }
+        ?.forEach { it.name = ongoingStr }
+    attrs[AttributeType.TAG]
+        ?.filter { it.name.equals("completed", true) }
+        ?.forEach { it.name = completedStr }
 }

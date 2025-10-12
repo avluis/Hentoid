@@ -10,6 +10,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser
 import me.devsaki.hentoid.parsers.images.IMAGE_PATH
+import me.devsaki.hentoid.parsers.normalizeStatus
 import me.devsaki.hentoid.parsers.parseAttribute
 import me.devsaki.hentoid.parsers.urlsToImageFiles
 import org.jsoup.nodes.Element
@@ -96,9 +97,9 @@ class Hentai2ReadContent : BaseContentParser() {
             var currentProperty = ""
             for (e in props) {
                 for (child in e.children()) {
-                    if (child.nodeName() == "b") currentProperty =
-                        child.text().lowercase(Locale.getDefault())
-                            .trim { it <= ' ' } else if (child.nodeName() == "a") {
+                    if (child.nodeName() == "b")
+                        currentProperty = child.text().lowercase(Locale.getDefault()).trim()
+                    else if (child.nodeName() == "a") {
                         when (currentProperty) {
                             "parody" -> parseAttribute(
                                 attributes,
@@ -140,12 +141,23 @@ class Hentai2ReadContent : BaseContentParser() {
                                 Site.HENTAI2READ
                             )
 
+                            "status" -> parseAttribute(
+                                attributes,
+                                AttributeType.TAG,
+                                child,
+                                false,
+                                Site.HENTAI2READ
+                            )
+
                             else -> {}
                         }
                     }
                 }
             }
         }
+
+        normalizeStatus(attributes)
+
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

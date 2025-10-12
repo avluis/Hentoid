@@ -1125,6 +1125,7 @@
 
     <!-- Tags -->
     <string name="tag_ongoing">Ongoing</string>
+    <string name="tag_completed">Completed</string>
 
     <!-- Group names -->
     <string name="group_today">Today</string>

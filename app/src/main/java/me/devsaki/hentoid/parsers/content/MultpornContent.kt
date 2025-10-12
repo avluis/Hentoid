@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -9,6 +10,7 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.images.MultpornParser
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -69,10 +71,24 @@ class MultpornContent : BaseContentParser() {
             false,
             Site.MULTPORN
         )
+        // Remove the "ongoings" series if present and turn it into a specific tag
+        val series2 = ArrayList<Element>()
+        seriesTags2?.forEach {
+            if (it.ownText().contains("ongoings", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG,
+                        ongoingStr,
+                        "",
+                        Site.MULTPORN
+                    )
+                )
+            } else series2.add(it)
+        }
         parseAttributes(
             attributes,
             AttributeType.SERIE,
-            seriesTags2,
+            series2,
             false,
             Site.MULTPORN
         )
