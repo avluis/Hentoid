@@ -68,8 +68,8 @@ import kotlin.math.max
 
 enum class DownloadMode(val value: Int) {
     DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images
-    STREAM(Settings.Value.DL_ACTION_STREAM), // Saves the book for on-demande viewing
-    ASK(Settings.Value.DL_ACTION_ASK); // Saves the book for on-demande viewing)
+    STREAM(Settings.Value.DL_ACTION_STREAM), // Saves the book for on-demand viewing
+    ASK(Settings.Value.DL_ACTION_ASK); // Saves the book for on-demand viewing)
 
     companion object {
         fun fromValue(v: Int): DownloadMode {
