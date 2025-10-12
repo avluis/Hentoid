@@ -85,8 +85,7 @@ fun parseAttributes(
     removeTrailingNumbers: Boolean,
     site: Site
 ) {
-    if (elements != null)
-        for (a in elements) parseAttribute(map, type, a, removeTrailingNumbers, site)
+    elements?.forEach { parseAttribute(map, type, it, removeTrailingNumbers, site) }
 }
 
 /**
@@ -100,9 +99,9 @@ fun parseAttributes(
     childElementClass: String,
     site: Site
 ) {
-    if (elements != null)
-        for (a in elements)
-            parseAttribute(map, type, a, removeTrailingNumbers, childElementClass, site)
+    elements?.forEach {
+        parseAttribute(map, type, it, removeTrailingNumbers, childElementClass, site)
+    }
 }
 
 /**
@@ -158,7 +157,7 @@ private fun parseAttribute(
         element.ownText()
     } else {
         val e = element.selectFirst(".$childElementClass")
-        if (e != null) e.ownText() else ""
+        e?.ownText() ?: ""
     }
     name = cleanup(name)
     name = removeBrackets(name)

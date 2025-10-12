@@ -3,9 +3,7 @@ package me.devsaki.hentoid.database.domains
 import me.devsaki.hentoid.enums.AttributeType
 
 class AttributeMap : HashMap<AttributeType, MutableSet<Attribute>>() {
-    fun add(attributeItem: Attribute?) {
-        if (null == attributeItem) return
-
+    fun add(attributeItem: Attribute) {
         val attrs: MutableSet<Attribute>?
         val type = attributeItem.type
 
@@ -18,8 +16,7 @@ class AttributeMap : HashMap<AttributeType, MutableSet<Attribute>>() {
         attrs?.add(attributeItem)
     }
 
-    fun addAll(attrs: Collection<Attribute>?) {
-        if (null == attrs) return
-        for (item in attrs) add(item)
+    fun addAll(attrs: Collection<Attribute>) {
+        attrs.forEach { add(it) }
     }
 }
