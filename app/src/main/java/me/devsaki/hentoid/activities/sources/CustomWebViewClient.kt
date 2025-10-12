@@ -373,8 +373,9 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+        val headers: Map<String, String>? = request.requestHeaders
         return shouldOverrideUrlLoadingInternal(
-            view, request.url.toString(), request.requestHeaders, request.isForMainFrame
+            view, request.url.toString(), headers ?: emptyMap(), request.isForMainFrame
         )
     }
 
