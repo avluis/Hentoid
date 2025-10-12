@@ -1,12 +1,15 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.parseAttributes
+import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.network.getHttpProtocol
+import me.devsaki.hentoid.util.ongoingStr
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 
@@ -24,6 +27,9 @@ class MangagoContent : BaseContentParser() {
 
     @Selector(value = "#information a[href*='/genre/']")
     private var tags: List<Element>? = null
+
+    @Selector(value = ".uk-list span")
+    private var status: List<Element>? = null
 
     @Selector(value = "title", defValue = "")
     private lateinit var chapterTitle1: String
@@ -53,6 +59,25 @@ class MangagoContent : BaseContentParser() {
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MANGAGO)
         parseAttributes(attributes, AttributeType.ARTIST, authors, false, Site.MANGAGO)
+
+        // Ongoing / Completed
+        status?.forEach {
+            if (it.ownText().contains("ongoing", true) || it.ownText().contains("on going", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, ongoingStr, "", Site.MANGAGO
+                    )
+                )
+            }
+            if (it.ownText().contains("completed", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, completedStr, "", Site.MANGAGO
+                    )
+                )
+            }
+        }
+
         content.putAttributes(attributes)
 
         if (updateImages) {

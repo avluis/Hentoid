@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.content
 
 import me.devsaki.hentoid.activities.sources.APC_GALLERY_PATTERN
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -11,7 +12,9 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -46,6 +49,9 @@ class AllPornComicContent : BaseContentParser() {
 
     @Selector(value = "[class^=page-break] img")
     private var chapterImages: List<Element>? = null
+
+    @Selector(value = ".summary-content")
+    private var properties: List<Element>? = null
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
@@ -121,6 +127,25 @@ class AllPornComicContent : BaseContentParser() {
             Site.ALLPORNCOMIC
         )
         parseAttributes(attributes, AttributeType.TAG, tags, false, Site.ALLPORNCOMIC)
+
+        // Ongoing / Completed
+        properties?.forEach {
+            if (it.ownText().contains("ongoing", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, ongoingStr, "", Site.ALLPORNCOMIC
+                    )
+                )
+            }
+            if (it.ownText().contains("completed", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, completedStr, "", Site.ALLPORNCOMIC
+                    )
+                )
+            }
+        }
+
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

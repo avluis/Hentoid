@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.content
 
 import me.devsaki.hentoid.activities.sources.Manhwa18Activity
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -11,6 +12,8 @@ import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.removeTextualTags
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.completedStr
+import me.devsaki.hentoid.util.ongoingStr
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
 import java.util.regex.Pattern
@@ -35,6 +38,9 @@ class Manhwa18Content : BaseContentParser() {
 
     @Selector(value = "#chapter-content img")
     private var chapterImgs: List<Element>? = null
+
+    @Selector(value = ".series-information a[href*=tinh-trang]")
+    private var status: List<Element>? = null
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
@@ -97,6 +103,25 @@ class Manhwa18Content : BaseContentParser() {
             "badge",
             Site.MANHWA18
         )
+
+        // Ongoing / Completed
+        status?.forEach {
+            if (it.ownText().contains("ongoing", true) || it.ownText().contains("on going", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, ongoingStr, "", Site.MANHWA18
+                    )
+                )
+            }
+            if (it.ownText().contains("completed", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, completedStr, "", Site.MANHWA18
+                    )
+                )
+            }
+        }
+
         content.putAttributes(attributes)
         return content
     }

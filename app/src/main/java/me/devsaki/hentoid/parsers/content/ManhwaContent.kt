@@ -121,20 +121,14 @@ class ManhwaContent : BaseContentParser() {
             if (it.ownText().contains("ongoing", true)) {
                 attributes.add(
                     Attribute(
-                        AttributeType.TAG,
-                        ongoingStr,
-                        "",
-                        Site.MANHWA
+                        AttributeType.TAG, ongoingStr, "", Site.MANHWA
                     )
                 )
             }
             if (it.ownText().contains("completed", true)) {
                 attributes.add(
                     Attribute(
-                        AttributeType.TAG,
-                        completedStr,
-                        "",
-                        Site.MANHWA
+                        AttributeType.TAG, completedStr, "", Site.MANHWA
                     )
                 )
             }

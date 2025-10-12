@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.content
 
 import me.devsaki.hentoid.activities.sources.HiperdexActivity
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -11,7 +12,9 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -36,6 +39,9 @@ class HiperdexContent : BaseContentParser() {
 
     @Selector(value = ".artist-content a")
     private var artist: List<Element>? = null
+
+    @Selector(value = ".summary-content")
+    private var properties: List<Element>? = null
 
     @Selector(value = "#chapter-heading")
     private var chapterTitle: Element? = null
@@ -108,6 +114,25 @@ class HiperdexContent : BaseContentParser() {
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.HIPERDEX)
         parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.HIPERDEX)
+
+        // Ongoing / Completed
+        properties?.forEach {
+            if (it.ownText().contains("ongoing", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, ongoingStr, "", Site.HIPERDEX
+                    )
+                )
+            }
+            if (it.ownText().contains("completed", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, completedStr, "", Site.HIPERDEX
+                    )
+                )
+            }
+        }
+
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())

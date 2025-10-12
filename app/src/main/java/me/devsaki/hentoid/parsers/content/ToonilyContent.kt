@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.parsers.content
 
 import me.devsaki.hentoid.activities.sources.ToonilyActivity
+import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -11,7 +12,9 @@ import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.jsonToObject
+import me.devsaki.hentoid.util.ongoingStr
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -42,6 +45,9 @@ class ToonilyContent : BaseContentParser() {
 
     @Selector(value = ".reading-content img")
     private var chapterImgs: List<Element>? = null
+
+    @Selector(value = ".summary-content")
+    private var properties: List<Element>? = null
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
@@ -108,6 +114,25 @@ class ToonilyContent : BaseContentParser() {
         val attributes = AttributeMap()
         parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.TOONILY)
         parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.TOONILY)
+
+        // Ongoing / Completed
+        properties?.forEach {
+            if (it.ownText().contains("ongoing", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, ongoingStr, "", Site.TOONILY
+                    )
+                )
+            }
+            if (it.ownText().contains("completed", true)) {
+                attributes.add(
+                    Attribute(
+                        AttributeType.TAG, completedStr, "", Site.TOONILY
+                    )
+                )
+            }
+        }
+
         content.putAttributes(attributes)
         if (updateImages) {
             content.setImageFiles(emptyList())
