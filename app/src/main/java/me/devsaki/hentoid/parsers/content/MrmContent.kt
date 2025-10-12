@@ -36,7 +36,7 @@ class MrmContent : BaseContentParser() {
     @Selector(value = ".entry-header .entry-terms a[href*='/status/']")
     private var status: List<Element>? = null
 
-    @Selector(value = ".entry-content img")
+    @Selector(value = ".entry-content img[decoding=async][src*='https://i']")
     private var images: List<Element>? = null
 
 
