@@ -1368,8 +1368,7 @@ private suspend fun reparseFromScratch(
         newContent.clearChapters()
 
         // Save cookies for future calls during download
-        val params: MutableMap<String, String> =
-            HashMap()
+        val params: MutableMap<String, String> = HashMap()
         val cookieStr = fetchResponse.second
         if (cookieStr.isNotEmpty()) params[HEADER_COOKIE_KEY] = cookieStr
 
