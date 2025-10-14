@@ -456,11 +456,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         }
     }
 
-    override fun onStop() {
+    override fun onPause() {
         if (WebkitPackageHelper.getWebViewAvailable()) {
             webView.url?.let { viewModel.saveCurrentUrl(getStartSite(), it) }
         }
-        super.onStop()
+        super.onPause()
     }
 
     /**

@@ -96,6 +96,11 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
         viewModel.loadHistory()
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadHistory()
+    }
+
     private fun loadActiveSites() {
         val activeSites = Settings.activeSites.filter { it.isVisible }
         val items = mutableSetOf<Site>()
@@ -107,7 +112,7 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
     private fun onHistoryChanged(history: List<SiteHistory>) {
         historyItemAdapter.set(
             history
-                .sortedBy { it.timestamp * -1 }
+                .sortedByDescending { it.timestamp }
                 .filter { it.site.isVisible }
                 .map {
                     val parts = UriParts(it.url)
@@ -115,7 +120,7 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
                     DrawerItem(shortUrl, it.site.ico, it.id, mTag = it)
                 }.filter { it.label.length > 1 } // Don't include site roots or '/'
         )
-        sitePerTimestamp = history.sortedBy { it.timestamp * -1 }
+        sitePerTimestamp = history.sortedByDescending { it.timestamp }
             .map { it.site }.distinct()
             .filter { it.isVisible }
         loadActiveSites()
