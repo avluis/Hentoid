@@ -227,6 +227,9 @@ dependencies {
     // Format recyclerView item as a badge https://github.com/nekocode/Badge
     implementation "com.github.nekocode:Badge:2.1"
 
+    // Time range picker
+    implementation "nl.joery.timerangepicker:timerangepicker:1.0.0"
+
 
     /**
      * NETWORKING

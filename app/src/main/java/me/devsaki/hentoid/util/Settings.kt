@@ -150,6 +150,7 @@ object Settings {
     fun getGroupingDisplayG(): Grouping {
         return Grouping.Companion.searchById(groupingDisplay)
     }
+
     val navigationNostalgiaMode: Boolean by BoolSetting(Key.NOSTALGIA_MODE, false)
 
     var artistGroupVisibility: Int by IntSettingStr(
@@ -301,6 +302,9 @@ object Settings {
         "pref_dl_blocked_tags_behaviour",
         Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE
     )
+    var downloadScheduleSummary: String by StringSetting("download_schedule", disabledStr)
+    var downloadScheduleStart: Int by IntSetting("download_schedule_start", 23 * 60)
+    var downloadScheduleEnd: Int by IntSetting("download_schedule_end", 6 * 60)
 
     // READER
     var isReaderResumeLastLeft: Boolean by BoolSetting("pref_viewer_resume_last_left", true)
@@ -518,6 +522,7 @@ object Settings {
 
     // APP-WIDE
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
+
     // Used to detect when LibraryActivity opens for the first time to force-open navigation drawer
     var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
     var lastKnownAppVersionCode: Int by IntSettingStr(Key.LAST_KNOWN_APP_VERSION_CODE, 0)

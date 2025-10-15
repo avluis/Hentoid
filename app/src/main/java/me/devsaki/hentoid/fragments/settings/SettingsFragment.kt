@@ -14,9 +14,12 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -112,6 +115,21 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onResume() {
         super.onResume()
+
+        // Update summaries
+        for (i in 0..<preferenceScreen.preferenceCount) {
+            val preference = preferenceScreen.getPreference(i)
+            if (preference is PreferenceGroup) {
+                val preferenceGroup: PreferenceGroup = preference
+                for (j in 0..<preferenceGroup.preferenceCount) {
+                    val singlePref = preferenceGroup.getPreference(j)
+                    updatePreferenceSummary(singlePref, singlePref.key)
+                }
+            } else {
+                updatePreferenceSummary(preference, preference.key)
+            }
+        }
+
         preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
@@ -142,6 +160,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     override fun onSharedPreferenceChanged(sp: SharedPreferences?, key: String?) {
         if (null == key) return
+
+        (findPreference(key) as Preference?)?.let { updatePreferenceSummary(it, key) }
+
         when (key) {
             Settings.Key.COLOR_THEME -> onPrefColorThemeChanged()
             Settings.Key.DL_THREADS_QUANTITY_LISTS,
@@ -154,6 +175,13 @@ class SettingsFragment : PreferenceFragmentCompat(),
             Settings.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
             Settings.Key.WEB_AUGMENTED_BROWSER -> onAugmentedBrowserChanged()
         }
+    }
+
+    private fun updatePreferenceSummary(preference: Preference, key: String?) {
+        if (null == key) return
+        if (preference is CheckBoxPreference) return
+        if (preference is ListPreference) return
+        preference.setSummary(preference.sharedPreferences?.getString(key, "") ?: "")
     }
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean =
@@ -199,6 +227,11 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
             "ext_import_pattern" -> {
                 ImportNamePatternDialogFragment.invoke(this)
+                true
+            }
+
+            "download_schedule" -> {
+                TimeRangeDialogFragment.invoke(this)
                 true
             }
 

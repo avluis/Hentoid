@@ -153,12 +153,14 @@
     <string name="pref_browser_lock_favs_panel_title">Lock favourites panel</string>
     <string name="pref_browser_lock_favs_panel_off">Favourites right panel can be opened by swiping</string>
     <string name="pref_browser_lock_favs_panel_on">Favourites right panel cannot be opened by swiping</string>
+    <string name="pref_downloader_set_time">Set time</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_title">Auto-start download queue</string>
     <string name="pref_queue_autostart_on">Download queue will start as soon as a download is done</string>
     <string name="pref_queue_autostart_off">Download queue must be started manually</string>
+    <string name="pref_queue_schedule_title">Schedule downloads</string>
     <string name="pref_queue_wifi_only_title">Only download on Wi-Fi</string>
     <string name="pref_queue_wifi_only_on">Download queue will only start if connected to Wi-Fi</string>
     <string name="pref_queue_wifi_only_off">Download queue will start if the device is connected to any network</string>

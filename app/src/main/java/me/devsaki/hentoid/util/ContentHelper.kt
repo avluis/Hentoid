@@ -262,12 +262,16 @@ var ongoingStr: String = "Ongoing" // Default english value; will be overriden a
 var completedStr: String = "Completed" // Default english value; will be overriden at init
     internal set
 
+var disabledStr: String = "Disabled" // Default english value; will be overriden at init
+    internal set
+
 val VANILLA_CHAPTERNAME_PATTERN: Pattern by lazy { Pattern.compile("$chapterStr [0-9]+") }
 
 fun initResources(res: Resources) {
     chapterStr = res.getString(R.string.gallery_chapter_prefix)
     ongoingStr = res.getString(R.string.tag_ongoing)
     completedStr = res.getString(R.string.tag_completed)
+    disabledStr = res.getString(R.string.disabled_generic)
 }
 
 fun getLibraryStatuses(): IntArray {
