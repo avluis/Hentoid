@@ -9,7 +9,6 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.databinding.DialogSettingsTimeRangeBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
@@ -124,13 +123,10 @@ class TimeRangeDialogFragment : BaseDialogFragment<Nothing>() {
         val workRequest = PeriodicWorkRequest.Builder(
             ContentDownloadWorker::class.java,
             24,
-            TimeUnit.HOURS,
-            PeriodicWorkRequest.Companion.MIN_PERIODIC_FLEX_MILLIS,
-            TimeUnit.MILLISECONDS
+            TimeUnit.HOURS
         )
             .setInitialDelay(delay, TimeUnit.MINUTES)
             .addTag(WORK_TAG)
-            .addTag(WORK_CLOSEABLE)
             .build()
 
         val workManager = WorkManager.getInstance(requireActivity())

@@ -190,6 +190,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private suspend fun iterateQueue() = withContext(Dispatchers.IO) {
+        // Unpause queue when triggered by a scheduled job
+        if (scheduledEnd != null) {
+            dao.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING)
+            ContentQueueManager.unpauseQueue()
+            EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_UNPAUSED))
+        }
         // Process these here to avoid initializing notifications for downloads that will never start
         if (isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
