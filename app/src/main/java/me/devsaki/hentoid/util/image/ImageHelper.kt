@@ -534,30 +534,38 @@ fun needsRotating(screenWidth: Int, screenHeight: Int, width: Int, height: Int):
  *
  * @param context Context to be used
  * @param uri     Uri of the image to be read
+ * @param data    Raw data of the image to be read; overrides Uri if set
  * @return Dimensions (x,y) of the given image
  */
-suspend fun getImageDimensions(context: Context, uri: String): Point = withContext(Dispatchers.IO) {
-    val fileUri = uri.toUri()
-    if (!fileExists(context, fileUri)) return@withContext Point(0, 0)
+suspend fun getImageDimensions(context: Context, uri: String, data: ByteArray? = null): Point =
+    withContext(Dispatchers.IO) {
+        if (null == data) {
+            val fileUri = uri.toUri()
+            if (!fileExists(context, fileUri)) return@withContext Point(0, 0)
+        }
 
-    val ext = getExtensionFromUri(uri)
-    if (ext == "jxl" || ext == "avif") {
-        return@withContext getDimensions(context, uri)
-    } else { // Natively supported by Android
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        return@withContext try {
-            BitmapFactory.decodeStream(getInputStream(context, fileUri), null, options)
-            Point(options.outWidth, options.outHeight)
-        } catch (e: IOException) {
-            Timber.w(e)
-            Point(0, 0)
-        } catch (e: IllegalArgumentException) {
-            Timber.w(e)
-            Point(0, 0)
+        val ext = getExtensionFromUri(uri)
+        if (ext == "jxl" || ext == "avif") {
+            return@withContext getDimensions(context, uri, data)
+        } else { // Natively supported by Android
+            val options = BitmapFactory.Options()
+            options.inJustDecodeBounds = true
+            return@withContext try {
+                if (null == data) {
+                    BitmapFactory.decodeStream(getInputStream(context, uri.toUri()), null, options)
+                } else {
+                    BitmapFactory.decodeByteArray(data, 0, data.size, options)
+                }
+                Point(options.outWidth, options.outHeight)
+            } catch (e: IOException) {
+                Timber.w(e)
+                Point(0, 0)
+            } catch (e: IllegalArgumentException) {
+                Timber.w(e)
+                Point(0, 0)
+            }
         }
     }
-}
 
 fun loadBitmap(context: Context, file: DocumentFile): Bitmap? {
     if (!file.exists()) return null

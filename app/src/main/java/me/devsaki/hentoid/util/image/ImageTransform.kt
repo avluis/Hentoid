@@ -201,7 +201,10 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
 
         PictureEncoder.JXL_LOSSY -> return JxlCoder.encode(bitmap, quality = quality)
 
-        PictureEncoder.JXL_LOSSLESS -> return JxlCoder.encode(bitmap, compressionOption = JxlCompressionOption.LOSSLESS)
+        PictureEncoder.JXL_LOSSLESS -> return JxlCoder.encode(
+            bitmap,
+            compressionOption = JxlCompressionOption.LOSSLESS
+        )
     }
     return output.toByteArray()
 }

@@ -30,6 +30,7 @@ import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.image.MIME_IMAGE_JXL
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isMimeTypeSupported
 import me.devsaki.hentoid.util.network.getExtensionFromUri
@@ -774,6 +775,7 @@ fun getExtensionFromMimeType(mimeType: String): String? {
     // Exceptions that MimeTypeMap does not support
     if (null == result) {
         if (mimeType == "image/apng" || mimeType == "image/vnd.mozilla.apng") return "png"
+        else if (mimeType == MIME_IMAGE_JXL) return "jxl"
         else if (mimeType == "image/avif") return "avif"
     }
     return result

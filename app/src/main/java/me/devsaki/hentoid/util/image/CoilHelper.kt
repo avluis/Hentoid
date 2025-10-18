@@ -127,18 +127,19 @@ fun ImageView.loadCover(content: Content, disableAnimation: Boolean = false) {
 }
 
 // get dimensions for formats provided by Coil custom loaders
-suspend fun getDimensions(context: Context, data: String): Point = withContext(Dispatchers.IO) {
-    val request = ImageRequest.Builder(context)
-        .data(data)
-        .memoryCacheKey(data)
-        .diskCacheKey(data)
+suspend fun getDimensions(context: Context, imgLocation: String, data: ByteArray? = null): Point =
+    withContext(Dispatchers.IO) {
+        val request = ImageRequest.Builder(context)
+            .data(data ?: imgLocation)
+            .memoryCacheKey(imgLocation)
+            .diskCacheKey(imgLocation)
 
-    val result = stillImageLoader.execute(request.build())
-    result.image?.let { img ->
-        return@withContext Point(img.width, img.height)
+        val result = stillImageLoader.execute(request.build())
+        result.image?.let { img ->
+            return@withContext Point(img.width, img.height)
+        }
+        return@withContext Point(0, 0)
     }
-    return@withContext Point(0, 0)
-}
 
 class AnimatedPngDecoder(private val source: ImageSource) : Decoder {
 

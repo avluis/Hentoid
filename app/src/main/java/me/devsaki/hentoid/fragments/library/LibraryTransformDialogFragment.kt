@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.library
 
 import android.annotation.SuppressLint
-import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -42,6 +41,7 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.image.TransformParams
 import me.devsaki.hentoid.util.image.determineEncoder
+import me.devsaki.hentoid.util.image.getImageDimensions
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isImageLossless
 import me.devsaki.hentoid.util.image.screenHeight
@@ -307,36 +307,29 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
     @SuppressLint("SetTextI18n")
     private fun refreshThumb() {
-        val rawSourceBitmap = getCurrentBitmap() ?: return
-        val rawData = rawSourceBitmap.second
-        val picName = rawSourceBitmap.first
+        val sourceBmp = getCurrentBitmap() ?: return
 
         binding?.previewProgress?.isVisible = true
 
         lifecycleScope.launch {
-            val isLossless = isImageLossless(rawData)
-            val sourceSize = formatHumanReadableSize(rawData.size.toLong(), resources)
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
-            BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
-            val sourceDims = Point(options.outWidth, options.outHeight)
-            val sourceMime = getMimeTypeFromPictureBinary(rawData)
-            val sourceName = picName + "." + getExtensionFromMimeType(sourceMime)
+            val isLossless = isImageLossless(sourceBmp.rawData)
+            val sourceSize = formatHumanReadableSize(sourceBmp.rawData.size.toLong(), resources)
+            val sourceDims = getImageDimensions(requireContext(), sourceBmp.uri)
+            val sourceMime = getMimeTypeFromPictureBinary(sourceBmp.rawData)
+            val sourceName = sourceBmp.name + "." + getExtensionFromMimeType(sourceMime)
             val params = buildParams()
             val targetData = withContext(Dispatchers.IO) {
                 return@withContext if (4 == params.resizeMethod) {
                     val res = transformManhwa(params, pageIndex)
-                    if (res.isEmpty()) rawData else res
-                } else transform(rawData, params, true)
+                    if (res.isEmpty()) sourceBmp.rawData else res
+                } else transform(sourceBmp.rawData, params, true)
             }
-            val unchanged = targetData == rawData
+            val unchanged = targetData == sourceBmp.rawData
 
             val targetSize = formatHumanReadableSize(targetData.size.toLong(), resources)
-            BitmapFactory.decodeByteArray(targetData, 0, targetData.size, options)
-            val targetDims = Point(options.outWidth, options.outHeight)
-            val targetMime = determineEncoder(isLossless, targetDims, params).mimeType
-            val targetName = picName + "." + getExtensionFromMimeType(targetMime)
-
+            val targetMime = determineEncoder(isLossless, Point(), params).mimeType
+            val targetName = sourceBmp.name + "." + getExtensionFromMimeType(targetMime)
+            val targetDims = getImageDimensions(requireContext(), targetName, targetData)
             targetDimsWarning = (targetDims.x > DIMS_LIMIT || targetDims.y > DIMS_LIMIT)
             refreshControls()
 
@@ -358,7 +351,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         }
     }
 
-    private fun getCurrentBitmap(): Pair<String, ByteArray>? {
+    private fun getCurrentBitmap(): BitmapInfo? {
         content?.apply {
             // Get bitmap for display
             val pages = imageList.filter { it.isReadable }
@@ -367,7 +360,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             val page = pages[pageIndex]
             try {
                 getInputStream(requireContext(), page.fileUri.toUri()).use {
-                    return Pair(page.name, it.readBytes())
+                    return BitmapInfo(page.fileUri, page.name, it.readBytes())
                 }
             } catch (t: Throwable) {
                 Timber.w(t)
@@ -479,6 +472,12 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         text.error = null
         return true
     }
+
+    data class BitmapInfo(
+        val uri: String,
+        val name: String,
+        val rawData: ByteArray
+    )
 
     interface Parent {
         fun leaveSelectionMode()

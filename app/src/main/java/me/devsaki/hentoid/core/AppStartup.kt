@@ -17,6 +17,7 @@ import coil3.SingletonImageLoader
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
 import com.awxkee.jxlcoder.coil.AnimatedJxlDecoder
+import com.awxkee.jxlcoder.coil.JxlDecoder
 import com.github.awxkee.avifcoil.decoder.HeifDecoder
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -363,6 +364,7 @@ object AppStartup {
                         add(AnimatedPngDecoder.Factory())
                         add(AnimatedAvifDecoder.Factory())
                         add(AnimatedJxlDecoder.Factory())
+                        //add(JxlDecoder.Factory())
                         add(HeifDecoder.Factory())
                     }
                     .build()
