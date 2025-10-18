@@ -246,9 +246,10 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
             if (applyValues) encoderLossless.value = Settings.transcodeEncoderLossless.toString()
             encoderLossy.isVisible = (1 == transcodeMethod.index && !isAiUpscale)
             if (applyValues) encoderLossy.value = Settings.transcodeEncoderLossy.toString()
-            encoderQuality.isVisible = (1 == transcodeMethod.index
-                    || (0 == transcodeMethod.index
-                    && (Settings.transcodeEncoderAll == PictureEncoder.JPEG.value || Settings.transcodeEncoderAll == PictureEncoder.WEBP_LOSSY.value  || Settings.transcodeEncoderAll == PictureEncoder.JXL.value)))
+            val isEncoderAllLossy =
+                !(PictureEncoder.fromValue(Settings.transcodeEncoderAll)?.isLossless ?: false)
+            encoderQuality.isVisible =
+                (1 == transcodeMethod.index || (0 == transcodeMethod.index && isEncoderAllLossy))
             if (isAiUpscale) encoderQuality.isVisible = false
             if (applyValues) encoderQuality.editText?.setText(Settings.transcodeQuality.toString())
 

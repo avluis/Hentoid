@@ -11,6 +11,7 @@ import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.awxkee.jxlcoder.JxlCoder
+import com.awxkee.jxlcoder.JxlCompressionOption
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -198,7 +199,9 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
 
         PictureEncoder.JPEG -> bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
 
-        PictureEncoder.JXL -> return JxlCoder.encode(bitmap, quality = quality)
+        PictureEncoder.JXL_LOSSY -> return JxlCoder.encode(bitmap, quality = quality)
+
+        PictureEncoder.JXL_LOSSLESS -> return JxlCoder.encode(bitmap, compressionOption = JxlCompressionOption.LOSSLESS)
     }
     return output.toByteArray()
 }

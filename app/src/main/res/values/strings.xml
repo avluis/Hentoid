@@ -1051,7 +1051,8 @@
     <string name="transcode_encoder_png">PNG</string>
     <string name="transcode_encoder_webp_lossy">WEBP (lossy)</string>
     <string name="transcode_encoder_jpeg">JPEG</string>
-    <string name="transcode_encoder_jxl">JXL</string>
+    <string name="transcode_encoder_jxl_lossy">JXL (lossy)</string>
+    <string name="transcode_encoder_jxl_lossless">JXL (lossless)</string>
     <string name="encoder_quality">Quality</string>
     <string name="encoder_warning">WEBP format is limited to 16383 pixels in width and height. Larger pictures will automatically be encoded to PNG or JPG.</string>
     <string name="retransform_warning">%d pages have already been transformed. Transforming them multiple times may result in noticeable quality loss.\nWe advise redownloading original images and transforming them one single time.</string>
