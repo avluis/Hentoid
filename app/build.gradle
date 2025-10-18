@@ -173,7 +173,7 @@ dependencies {
     implementation("io.coil-kt.coil3:coil-gif:$Coil_version")
 
     // Coil support for JXL
-    implementation 'io.github.awxkee:jxl-coder-coil:2.5.0'
+    implementation 'io.github.awxkee:jxl-coder-coil:2.5.1'
 
     // Coil support for AVIF
     implementation 'com.github.awxkee:avif-coder-coil:2.1.4'
