@@ -218,7 +218,9 @@ fun isImageAnimated(data: ByteArray): Boolean {
  * If the format is supported by the app, returns true if lossless (PNG, lossless WEBP); false if not
  *
  * NB1 : There's no clear way to know if an AVIF file is lossless or not
- * NB2 : There's no clear way to know if a JXL file is lossless or not (specs aren't public)
+ * NB2 : There's no clear way to know if a JXL file is lossless or not
+ * (see https://github.com/libjxl/libjxl/issues/432; implementation of "(possibly) lossless" in jxlinfo
+ * relies on jxl::ImageMetadata::xyb_encoded which describes color space, not encoding)
  *
  * @param data Binary picture file header (16 bytes minimum)
  * @return True if the format is lossless and supported by the app
