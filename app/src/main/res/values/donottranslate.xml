@@ -421,6 +421,7 @@
         <item>@string/transcode_encoder_png</item>
         <item>@string/transcode_encoder_webp_lossy</item>
         <item>@string/transcode_encoder_jpeg</item>
+        <item>@string/transcode_encoder_jxl</item>
     </string-array>
     <string-array name="transcode_encoders_lossless" translatable="false">
         <item>@string/transcode_encoder_webp_lossless</item>
@@ -429,6 +430,7 @@
     <string-array name="transcode_encoders_lossy" translatable="false">
         <item>@string/transcode_encoder_webp_lossy</item>
         <item>@string/transcode_encoder_jpeg</item>
+        <item>@string/transcode_encoder_jxl</item>
     </string-array>
     <!-- Values from PictureEncoder -->
     <string-array name="transcode_encoders_all_vals" translatable="false">
@@ -436,6 +438,7 @@
         <item>2</item>
         <item>1</item>
         <item>3</item>
+        <item>4</item>
     </string-array>
     <string-array name="transcode_encoders_lossless_vals" translatable="false">
         <item>0</item>
@@ -444,6 +447,7 @@
     <string-array name="transcode_encoders_lossy_vals" translatable="false">
         <item>1</item>
         <item>3</item>
+        <item>4</item>
     </string-array>
 
     <!-- Archive dialog -->

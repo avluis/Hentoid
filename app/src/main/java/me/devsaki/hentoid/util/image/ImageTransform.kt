@@ -10,6 +10,7 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
+import com.awxkee.jxlcoder.JxlCoder
 import com.squareup.moshi.JsonClass
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -196,6 +197,8 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
         PictureEncoder.PNG -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, output)
 
         PictureEncoder.JPEG -> bitmap.compress(Bitmap.CompressFormat.JPEG, quality, output)
+
+        PictureEncoder.JXL -> return JxlCoder.encode(bitmap, quality = quality)
     }
     return output.toByteArray()
 }

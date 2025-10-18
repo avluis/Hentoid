@@ -217,13 +217,13 @@ fun isImageAnimated(data: ByteArray): Boolean {
  * Analyze the given binary picture header to try and detect if the picture is lossless.
  * If the format is supported by the app, returns true if lossless (PNG, lossless WEBP); false if not
  *
- * NB : There's no clear way to know if an AVIF file is lossless or not
+ * NB1 : There's no clear way to know if an AVIF file is lossless or not
+ * NB2 : There's no clear way to know if a JXL file is lossless or not (specs aren't public)
  *
  * @param data Binary picture file header (16 bytes minimum)
  * @return True if the format is lossless and supported by the app
  */
 fun isImageLossless(data: ByteArray): Boolean {
-    // TODO JXL (specs aren't public :/)
     return if (data.size < 16) false else when (getMimeTypeFromPictureBinary(data)) {
         MIME_IMAGE_PNG -> true
         MIME_IMAGE_APNG -> true
