@@ -33,6 +33,7 @@ import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.image.MIME_IMAGE_JXL
 import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
 import me.devsaki.hentoid.util.image.isMimeTypeSupported
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
@@ -774,9 +775,11 @@ fun getExtensionFromMimeType(mimeType: String): String? {
     val result = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
     // Exceptions that MimeTypeMap does not support
     if (null == result) {
-        if (mimeType == "image/apng" || mimeType == "image/vnd.mozilla.apng") return "png"
-        else if (mimeType == MIME_IMAGE_JXL) return "jxl"
-        else if (mimeType == "image/avif") return "avif"
+        when (mimeType) {
+            "image/apng", "image/vnd.mozilla.apng" -> return "png"
+            MIME_IMAGE_JXL -> return "jxl"
+            "image/avif" -> return "avif"
+        }
     }
     return result
 }
@@ -787,7 +790,7 @@ fun getExtensionFromMimeType(mimeType: String): String? {
  * @param extension File extension to get the mime-type for (without the ".")
  * @return Most relevant mime-type for the given file extension; generic mime-type if none found
  */
-private fun getMimeTypeFromExtension(extension: String): String {
+fun getMimeTypeFromExtension(extension: String): String {
     if (extension.isEmpty()) return DEFAULT_MIME_TYPE
     val result = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
     // Exceptions that MimeTypeMap does not support
@@ -1567,14 +1570,13 @@ fun createFile(
     mimeType: String,
     findBefore: Boolean = true
 ): Uri {
-    var targetFileNameFinal =
-        targetFileName + "." + getExtensionFromMimeType(mimeType)
-    // Keep the extension if the target file name is provided with one
-    val dotOffset = targetFileName.lastIndexOf('.')
-    if (dotOffset > -1) {
-        val extLength = targetFileName.length - targetFileName.lastIndexOf('.') - 1
-        if (extLength < 5) targetFileNameFinal = targetFileName
-    }
+    val targetExt = UriParts(targetFileName).extension
+    // Guess the extension if it doesn't exist
+    val targetFileNameFinal = if (targetExt.isBlank() || targetExt.length > 4) {
+        val mimeExt = getExtensionFromMimeType(mimeType)
+        if (mimeExt.isNullOrBlank()) targetFileName else "$targetFileName.$mimeExt"
+    } else targetFileName
+
     return if (ContentResolver.SCHEME_FILE == targetFolderUri.scheme) {
         val path = targetFolderUri.path
             ?: throw IOException("Could not create file $targetFileNameFinal : $targetFolderUri has no path")

@@ -78,6 +78,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getMimeTypeFromExtension
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
@@ -1948,9 +1949,8 @@ suspend fun mergeContents(
                             idx++
                             if (idx + imgIndex >= imgs.size) break
                             val picToUnarchive = imgs[imgIndex + idx]
-                            if (picToUnarchive.fileUri.isNotEmpty() && !picToUnarchive.fileUri.startsWith(
-                                    c.storageUri
-                                )
+                            if (picToUnarchive.fileUri.isNotEmpty()
+                                && !picToUnarchive.fileUri.startsWith(c.storageUri)
                             ) continue // thumb
                             picsToUnarchive.add(picToUnarchive)
                             unarchivedBytes += picToUnarchive.size
@@ -2033,12 +2033,14 @@ suspend fun mergeContents(
 
                     // If exists, move the picture file to the merged books' folder
                     if (isInLibrary(newImg.status)) {
+                        val referenceExt =
+                            getExtensionFromUri(img.fileUri).ifBlank { getExtensionFromUri(img.url) }
                         val newUri = copyFile(
                             context,
                             img.fileUri.toUri(),
                             targetFolder,
-                            getMimeTypeFromFileUri(img.url),
-                            newImg.name + "." + getExtensionFromUri(img.url),
+                            getMimeTypeFromExtension(referenceExt),
+                            newImg.name + "." + referenceExt,
                             true
                         )
                         if (newUri != null) {
