@@ -752,15 +752,20 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             )
             searchHistory = powerMenuBuilder.build()
             searchHistory?.apply {
-                setOnMenuItemClickListener { _, (_, _, _, _, _, tag): PowerMenuItem ->
-                    if (tag != null) { // Tap on search record
-                        (tag as SearchRecord?)?.let {
+                setOnMenuItemClickListener { _, item ->
+                    if (item.tag != null) { // Tap on search record
+                        (item.tag as SearchRecord?)?.let {
                             val searchUri = it.searchString.toUri()
                             setAdvancedSearchCriteria(SearchActivityBundle.parseSearchUri(searchUri))
-                            if (getSearchCriteria().isEmpty()) { // Universal search
-                                if (getQuery().isNotEmpty())
-                                    viewModel.searchContentUniversal(getQuery())
-                            } else { // Advanced search
+                            val query = getQuery()
+                            if (getSearchCriteria().isEmpty() || query.isNotEmpty()) { // Universal search
+                                if (query.isNotEmpty()) {
+                                    if (SearchRecord.EntityType.CONTENT == it.entityType)
+                                        viewModel.searchContentUniversal(query)
+                                    else
+                                        viewModel.setGroupQuery(query)
+                                }
+                            } else { // Advanced search; content only
                                 viewModel.searchContent(
                                     getQuery(),
                                     getSearchCriteria(),
