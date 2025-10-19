@@ -364,7 +364,6 @@ object AppStartup {
                         add(AnimatedPngDecoder.Factory())
                         add(AnimatedAvifDecoder.Factory())
                         add(AnimatedJxlDecoder.Factory())
-                        //add(JxlDecoder.Factory())
                         add(HeifDecoder.Factory())
                     }
                     .build()
