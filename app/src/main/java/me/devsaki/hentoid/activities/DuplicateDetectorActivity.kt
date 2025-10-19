@@ -33,8 +33,6 @@ class DuplicateDetectorActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        applyTheme()
-
         binding = ActivityDuplicateDetectorBinding.inflate(layoutInflater)
         binding?.let {
             setContentView(it.root)

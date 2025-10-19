@@ -65,7 +65,6 @@ class SettingsStorageActivity : BaseActivity(), DownloadStrategyDialogFragment.P
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         binding = ActivitySettingsStorageBinding.inflate(layoutInflater)
         setContentView(binding?.root)

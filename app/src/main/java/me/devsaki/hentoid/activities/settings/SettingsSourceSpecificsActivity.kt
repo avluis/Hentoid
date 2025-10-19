@@ -34,7 +34,6 @@ class SettingsSourceSpecificsActivity : BaseActivity(), SelectSiteDialogFragment
     @SuppressLint("NonConstantResourceId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         if (null == intent || null == intent.extras) throw IllegalArgumentException("Required intent not found")
 

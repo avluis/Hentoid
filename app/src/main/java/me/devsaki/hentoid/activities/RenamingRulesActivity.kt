@@ -90,7 +90,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         binding = ActivityRulesBinding.inflate(layoutInflater)
         setContentView(binding?.root)

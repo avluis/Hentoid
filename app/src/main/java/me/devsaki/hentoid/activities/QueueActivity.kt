@@ -89,7 +89,6 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         binding = ActivityQueueBinding.inflate(layoutInflater)
         setContentView(binding?.root)

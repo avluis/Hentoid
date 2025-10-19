@@ -120,7 +120,6 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         binding = ActivityMetaEditBinding.inflate(layoutInflater)
         binding?.let {

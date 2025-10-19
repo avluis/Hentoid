@@ -31,7 +31,6 @@ class SettingsSourceSelectActivity : BaseActivity(), ItemTouchCallback {
     @SuppressLint("NonConstantResourceId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         binding = ActivitySettingsSourcesEditBinding.inflate(layoutInflater)
         binding?.let {

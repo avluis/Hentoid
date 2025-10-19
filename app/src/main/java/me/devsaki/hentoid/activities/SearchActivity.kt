@@ -46,7 +46,6 @@ class SearchActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        applyTheme()
 
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding!!.root)
