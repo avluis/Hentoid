@@ -26,7 +26,7 @@ class MultpornActivity : BaseBrowserActivity() {
         val client = CustomWebViewClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*AD_ELEMENTS)
-        client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
+        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
         //for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         return client

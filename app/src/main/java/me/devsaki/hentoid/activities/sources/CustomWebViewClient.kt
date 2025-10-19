@@ -252,7 +252,7 @@ open class CustomWebViewClient : WebViewClient {
      *
      * @param elements Elements (string) to addAll to page cleaner
      */
-    fun addJavascriptBlacklist(vararg elements: String) {
+    fun addJsContentBlacklist(vararg elements: String) {
         jsContentBlacklist.addAll(elements)
     }
 

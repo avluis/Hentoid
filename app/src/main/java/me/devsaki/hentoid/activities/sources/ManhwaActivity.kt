@@ -32,7 +32,7 @@ class ManhwaActivity : BaseBrowserActivity() {
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-        client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
+        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
         return client
     }
 }

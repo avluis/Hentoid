@@ -117,7 +117,7 @@ class HitomiActivity : BaseBrowserActivity() {
         val client = HitomiWebClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-        client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
+        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
         client.setResultsUrlPatterns(*RESULTS_FILTER)
         client.setResultUrlRewriter { resultsUri: Uri, page: Int ->
             rewriteResultsUrl(resultsUri, page)

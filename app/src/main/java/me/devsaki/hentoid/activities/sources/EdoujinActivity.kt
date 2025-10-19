@@ -24,7 +24,7 @@ class EdoujinActivity : BaseBrowserActivity() {
         val client = CustomWebViewClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-        client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
+        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
         client.adBlocker.addToJsUrlWhitelist(*JS_WHITELIST)
         return client
     }

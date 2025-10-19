@@ -44,7 +44,7 @@ class PorncomixActivity : BaseBrowserActivity() {
         val client = CustomWebViewClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(*DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-        client.addJavascriptBlacklist(*JS_CONTENT_BLACKLIST)
+        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
         client.adBlocker.addToJsUrlWhitelist(*DOMAIN_FILTER)
         for (s in JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s)
         return client
