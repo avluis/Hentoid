@@ -33,6 +33,7 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.DialogLibraryTransformBinding
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.fragments.BaseDialogFragment
+import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getBinary
@@ -71,6 +72,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
     // UI
     private var binding: DialogLibraryTransformBinding? = null
+    private lateinit var updatePreviewDebouncer: Debouncer<Unit>
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
@@ -97,6 +99,13 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         val contentIdArg = arguments?.getLongArray(KEY_CONTENTS)
         require(!(null == contentIdArg || contentIdArg.isEmpty())) { "No content IDs" }
         contentIds = contentIdArg
+
+        updatePreviewDebouncer = Debouncer(lifecycleScope, 300) { refreshPreview() }
+    }
+
+    override fun onDestroy() {
+        updatePreviewDebouncer.clear()
+        super.onDestroy()
     }
 
     override fun onCreateView(
@@ -115,23 +124,23 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
         super.onViewCreated(rootView, savedInstanceState)
 
         refreshControls(true)
-        refreshThumb()
+        updatePreviewDebouncer.submit(Unit)
 
         binding?.apply {
             resizeSwitch.setOnCheckedChangeListener { _, isChecked ->
                 Settings.isResizeEnabled = isChecked
                 refreshControls()
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             resizeMethod.setOnIndexChangeListener { index ->
                 Settings.resizeMethod = index
                 refreshControls()
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             resizeMethod1Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(resizeMethod1Ratio, 100, 200)) {
                     Settings.resizeMethod1Ratio = value.toInt()
-                    refreshThumb()
+                    updatePreviewDebouncer.submit(Unit)
                 }
             }
             resizeMethod2MaxWidth.editText?.setOnTextChangedListener(lifecycleScope) { value ->
@@ -142,7 +151,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     )
                 ) {
                     Settings.resizeMethod2Width = value.toInt()
-                    refreshThumb()
+                    updatePreviewDebouncer.submit(Unit)
                 }
             }
             resizeMethod2MaxHeight.editText?.setOnTextChangedListener(lifecycleScope) { value ->
@@ -153,52 +162,52 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                     )
                 ) {
                     Settings.resizeMethod2Height = value.toInt()
-                    refreshThumb()
+                    updatePreviewDebouncer.submit(Unit)
                 }
             }
             resizeMethod3Ratio.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(resizeMethod3Ratio, 10, 100)) {
                     Settings.resizeMethod3Ratio = value.toInt()
-                    refreshThumb()
+                    updatePreviewDebouncer.submit(Unit)
                 }
             }
             resizeMethod5Images.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(resizeMethod5Images, 1, 200)) {
                     Settings.resizeMethod5Images = value.toInt()
-                    refreshThumb()
+                    updatePreviewDebouncer.submit(Unit)
                 }
             }
             transcodeMethod.setOnIndexChangeListener { index ->
                 Settings.transcodeMethod = index
                 refreshControls()
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             encoderAll.setOnValueChangeListener { value ->
                 Settings.transcodeEncoderAll = value.toInt()
                 refreshControls()
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             encoderLossless.setOnValueChangeListener { value ->
                 Settings.transcodeEncoderLossless = value.toInt()
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             encoderLossy.setOnValueChangeListener { value ->
                 Settings.transcodeEncoderLossy = value.toInt()
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             encoderQuality.editText?.setOnTextChangedListener(lifecycleScope) { value ->
                 if (checkRange(encoderQuality, 75, 100)) {
                     Settings.transcodeQuality = value.toInt()
-                    refreshThumb()
+                    updatePreviewDebouncer.submit(Unit)
                 }
             }
             prevPageBtn.setOnClickListener {
                 if (pageIndex > 0) pageIndex--
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             nextPageBtn.setOnClickListener {
                 if (pageIndex < maxPages - 1) pageIndex++
-                refreshThumb()
+                updatePreviewDebouncer.submit(Unit)
             }
             thumb.setOnClickListener {
                 preview.isVisible = true
@@ -306,9 +315,10 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
 
     @Suppress("ReplaceArrayEqualityOpWithArraysEquals")
     @SuppressLint("SetTextI18n")
-    private fun refreshThumb() {
+    private fun refreshPreview() {
         val sourceBmp = getCurrentBitmap() ?: return
 
+        binding?.previewGrp?.visibility = View.INVISIBLE
         binding?.previewProgress?.isVisible = true
 
         lifecycleScope.launch {
@@ -347,6 +357,7 @@ class LibraryTransformDialogFragment : BaseDialogFragment<LibraryTransformDialog
                 thumb.load(targetData)
                 preview.load(targetData)
                 previewProgress.isVisible = false
+                previewGrp.visibility = View.VISIBLE
             }
         }
     }

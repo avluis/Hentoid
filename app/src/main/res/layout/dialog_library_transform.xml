@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center|center_vertical"
         android:clipToPadding="false"
-        android:padding="16dp">
+        android:padding="8dp">
 
         <TextView
             android:id="@+id/resize_header"
@@ -333,6 +333,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/preview_grp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+            app:constraint_referenced_ids="next_page_btn, prev_page_btn, preview_size, preview_dims, preview_name, thumb"
+            tools:visibility="visible" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
