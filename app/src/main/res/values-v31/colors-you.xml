@@ -11,7 +11,7 @@
     <color name="surface_inverse_you">@android:color/system_accent1_300</color>
     <color name="on_surface_inverse_you">@color/black_opacity_50</color>
     <color name="window_background_you">@android:color/system_accent1_300</color>
-    <color name="dialog_background_you">@android:color/system_accent1_700</color>
+    <color name="dialog_background_you">@android:color/system_accent1_300</color>
     <color name="on_background_you">@color/white_opacity_87</color>
     <color name="container_you">@android:color/system_accent1_800</color>
     <color name="ripple_you">@android:color/system_accent3_200</color>

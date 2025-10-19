@@ -11,7 +11,7 @@
     <color name="surface_inverse_you">@color/taupe_p4</color>
     <color name="on_surface_you">@color/white_opacity_87</color>
     <color name="window_background_you">@color/taupe_p1</color>
-    <color name="dialog_background_you">@color/taupe</color>
+    <color name="dialog_background_you">@color/taupe_p1</color>
     <color name="on_background_you">@color/white_opacity_87</color>
     <color name="container_you">@color/taupe_p2</color>
     <color name="ripple_you">@color/light_red</color>

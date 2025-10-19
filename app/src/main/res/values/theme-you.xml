@@ -111,10 +111,10 @@
         <item name="colorSecondary">@color/secondary_you</item>
 
         <!-- Depending on APIs, any of them might be applicable :/ -->
-        <item name="colorSurface">@color/window_background_you</item>
-        <item name="android:background">@color/window_background_you</item>
-        <item name="android:windowBackground">@color/window_background_you</item>
-        <item name="android:colorBackground">@color/window_background_you</item>
+        <item name="colorSurface">@color/dialog_background_you</item>
+        <item name="android:background">@color/dialog_background_you</item>
+        <item name="android:windowBackground">@color/dialog_background_you</item>
+        <item name="android:colorBackground">@color/dialog_background_you</item>
 
         <item name="colorOnSurface">@color/on_primary_you</item>
         <item name="android:textColor">@color/on_primary_you</item>
