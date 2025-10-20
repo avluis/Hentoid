@@ -693,8 +693,8 @@ open class CustomWebViewClient : WebViewClient {
                     if (targetUrl.isEmpty())
                         targetUrl = response.header("Location") ?: ""
                     if (BuildConfig.DEBUG)
-                        Timber.v("WebView : redirection from %s to %s", url, targetUrl)
-                    if (targetUrl.isNotEmpty())
+                        Timber.v("WebView : redirection from $url to $targetUrl")
+                    if (targetUrl.isNotEmpty() && !quickDownload)
                         browserLoadAsync(fixUrl(targetUrl, site.url))
                     return null
                 }
