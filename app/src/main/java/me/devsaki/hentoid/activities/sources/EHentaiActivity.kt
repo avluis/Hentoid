@@ -85,7 +85,8 @@ class EHentaiActivity : BaseBrowserActivity() {
                     }
                 }
             }
-            return if (isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || isMarkQueued())
+            return if (quickDownload) null
+            else if (isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || isMarkQueued())
                 super.parseResponse(
                     url,
                     requestHeaders,
