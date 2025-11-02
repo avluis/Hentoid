@@ -1020,6 +1020,8 @@
     <string name="meta_tag_all_selected_confirm">Tag all %1$d selected books with \'%2$s\'?</string>
     <string name="meta_rename_new_name">New name</string>
     <string name="meta_rename_new_rule">Remember for future downloads</string>
+    <string name="meta_remove_all_confirm">Remove all metadata from selected books?</string>
+    <string name="meta_remove_all_tags">Remove all metadata</string>
 
     <!-- Renaming rules editor -->
     <string name="meta_rule_source">Source</string>

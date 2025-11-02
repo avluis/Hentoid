@@ -42,7 +42,6 @@ import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.GalleryPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
-import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.getFlagResourceId
 import me.devsaki.hentoid.util.getThemedColor
@@ -340,6 +339,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
         when (menuItem.itemId) {
             R.id.action_edit_confirm -> confirmEdit()
             R.id.action_edit_cancel -> cancelEdit()
+            R.id.remove_all -> removeAllTags()
             R.id.help -> startBrowserActivity(URL_GITHUB_WIKI_EDIT_METADATA)
             else -> return true
         }
@@ -454,7 +454,6 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
                             }
                             .setNegativeButton(R.string.cancel, null)
                             .create().show()
-
                     }
 
                     else -> { // Remove
@@ -485,6 +484,21 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
 
     private fun cancelEdit() {
         finish()
+    }
+
+    private fun removeAllTags() {
+        val builder = MaterialAlertDialogBuilder(this)
+        val title = resources.getString(
+            R.string.meta_remove_all_confirm
+        )
+        builder.setMessage(title)
+            .setPositiveButton(
+                R.string.ok
+            ) { _, _ ->
+                viewModel.removeAllAttrs()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .create().show()
     }
 
     /**

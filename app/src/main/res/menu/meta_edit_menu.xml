@@ -19,6 +19,13 @@
         android:visible="true"
         app:showAsAction="always" />
     <item
+        android:id="@+id/remove_all"
+        android:icon="@drawable/ic_action_delete"
+        android:title="@string/meta_remove_all_tags"
+        android:tooltipText="@string/meta_remove_all_tags"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/help"
         android:icon="@drawable/ic_help_outline"
         android:title="@string/help_generic"

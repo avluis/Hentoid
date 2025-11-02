@@ -261,6 +261,16 @@ class MetadataEditViewModel(
         }
     }
 
+    fun removeAllAttrs() {
+        val contents = ArrayList<Content>()
+        if (contentList.value != null) {
+            contents.addAll(contentList.value!!)
+            contents.forEach { it.clearAttributes() }
+            contentList.postValue(contents)
+        }
+        contentAttributes.postValue(emptyList())
+    }
+
     fun setTitle(value: String) {
         // Update Contents
         val contents = ArrayList<Content>()
