@@ -1795,6 +1795,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             if (getStartSite() == Site.IMHENTAI) getAssetAsString(
                 assets, "imhentai.css", sb
             )
+            if (getStartSite() == Site.HENTAIFOX) getAssetAsString(
+                assets, "hentaifox.css", sb
+            )
             if (getStartSite() == Site.NHENTAI) getAssetAsString(
                 assets, "nhentai.css", sb
             )
