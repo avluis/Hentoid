@@ -19,6 +19,16 @@
         android:focusable="true"
         tools:ignore="ContentDescription" />
 
+    <VideoView
+        android:id="@+id/videoview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        tools:ignore="ContentDescription" />
+
     <TextView
         android:id="@+id/viewer_no_page_txt"
         android:layout_width="match_parent"

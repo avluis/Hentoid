@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -39,6 +40,7 @@ import kotlin.math.pow
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+
 private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
 const val PIXEL_BUFFER_HEIGHT = 1024
@@ -52,6 +54,7 @@ const val MIME_IMAGE_PNG = "image/png"
 const val MIME_IMAGE_APNG = "image/apng"
 const val MIME_IMAGE_JXL = "image/jxl"
 const val MIME_IMAGE_AVIF = "image/avif"
+const val MIME_VIDEO_MP4 = "video/mp4"
 
 // In Java and Kotlin, byte type is signed !
 // => Converting all raw values to byte to be sure they are evaluated as expected
@@ -89,26 +92,10 @@ private val JXL_ISO = byteArrayOf(
 private val AVIF_SIGNATURE = "ftypavif".toByteArray(CHARSET_LATIN_1)
 private val AVIF_ANIMATED_SIGNATURE = "ftypavis".toByteArray(CHARSET_LATIN_1)
 
+private val MP4_SIGNATURE = "ftyp".toByteArray(CHARSET_LATIN_1)
+
 val imageNamesFilter = NameFilter { isImageExtensionSupported(getExtension(it)) }
 
-
-/**
- * Determine if the given image file extension is supported by the app
- *
- * @param extension File extension to test
- * @return True if the app supports the reading of images with the given file extension; false if not
- */
-fun isMimeTypeSupported(extension: String): Boolean {
-    return (extension.equals(MIME_IMAGE_JPEG, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_WEBP, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_PNG, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_APNG, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_GIF, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_BMP, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_JXL, ignoreCase = true)
-            || extension.equals(MIME_IMAGE_AVIF, ignoreCase = true)
-            )
-}
 
 /**
  * Determine if the given image MIME type is supported by the app
@@ -116,15 +103,37 @@ fun isMimeTypeSupported(extension: String): Boolean {
  * @param mimeType MIME type to test
  * @return True if the app supports the reading of images with the given MIME type; false if not
  */
-private fun isImageExtensionSupported(mimeType: String): Boolean {
-    return (mimeType.equals("jpg", ignoreCase = true)
-            || mimeType.equals("jpeg", ignoreCase = true)
-            || mimeType.equals("webp", ignoreCase = true)
-            || mimeType.equals("png", ignoreCase = true)
-            || mimeType.equals("jfif", ignoreCase = true)
-            || mimeType.equals("gif", ignoreCase = true)
-            || mimeType.equals("jxl", ignoreCase = true)
-            || mimeType.equals("avif", ignoreCase = true))
+fun isMimeTypeSupported(mimeType: String): Boolean {
+    return (mimeType.equals(MIME_IMAGE_JPEG, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_WEBP, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_PNG, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_APNG, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_GIF, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_BMP, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_JXL, ignoreCase = true)
+            || mimeType.equals(MIME_IMAGE_AVIF, ignoreCase = true)
+            || mimeType.equals(MIME_VIDEO_MP4, ignoreCase = true)
+            )
+}
+
+/**
+ * Determine if the given image file extension is supported by the app
+ *
+ * @param extension File extension to test
+ * @return True if the app supports the reading of images with the given file extension; false if not
+ */
+
+private fun isImageExtensionSupported(extension: String): Boolean {
+    return (extension.equals("jpg", ignoreCase = true)
+            || extension.equals("jpeg", ignoreCase = true)
+            || extension.equals("webp", ignoreCase = true)
+            || extension.equals("png", ignoreCase = true)
+            || extension.equals("jfif", ignoreCase = true)
+            || extension.equals("gif", ignoreCase = true)
+            || extension.equals("jxl", ignoreCase = true)
+            || extension.equals("avif", ignoreCase = true)
+            || extension.equals("mp4", ignoreCase = true)
+            )
 }
 
 fun isSupportedImage(fileName: String): Boolean {
@@ -169,6 +178,7 @@ fun getMimeTypeFromPictureBinary(data: ByteArray, limit: Int = -1): String {
         MIME_IMAGE_PNG
     } else if (findSequencePosition(data, 4, AVIF_SIGNATURE, 12) > -1) MIME_IMAGE_AVIF
     else if (findSequencePosition(data, 4, AVIF_ANIMATED_SIGNATURE, 12) > -1) MIME_IMAGE_AVIF
+    else if (findSequencePosition(data, 4, MP4_SIGNATURE, 8) > -1) MIME_VIDEO_MP4
     else if (data.startsWith(BMP_SIGNATURE)) MIME_IMAGE_BMP
     else MIME_IMAGE_GENERIC
 }
@@ -185,6 +195,7 @@ fun isImageAnimated(data: ByteArray): Boolean {
     val limit = min(data.size, 1000)
     return when (getMimeTypeFromPictureBinary(data, limit)) {
         MIME_IMAGE_APNG -> true
+        MIME_VIDEO_MP4 -> true
         MIME_IMAGE_GIF ->
             return if (data.size < 400) false
             else findSequencePosition(
@@ -524,8 +535,8 @@ private fun successiveRescale(src: Bitmap, resizeNum: Int): Bitmap {
 fun needsRotating(screenWidth: Int, screenHeight: Int, width: Int, height: Int): Boolean {
     val isSourceSquare = abs(height - width) < width * 0.1
     if (isSourceSquare) return false
-    val isSourceLandscape = width > height * 1.33
-    val isScreenLandscape = screenWidth > screenHeight * 1.33
+    val isSourceLandscape = width > height * 1.3
+    val isScreenLandscape = screenWidth > screenHeight * 1.3
     return isSourceLandscape != isScreenLandscape
 }
 
@@ -548,15 +559,27 @@ suspend fun getImageDimensions(context: Context, uri: String, data: ByteArray? =
         if (ext == "jxl" || ext == "avif") {
             return@withContext getDimensions(context, uri, data)
         } else { // Natively supported by Android
-            val options = BitmapFactory.Options()
-            options.inJustDecodeBounds = true
             return@withContext try {
                 if (null == data) {
-                    BitmapFactory.decodeStream(getInputStream(context, uri.toUri()), null, options)
+                    val retriever = MediaMetadataRetriever()
+                    try {
+                        retriever.setDataSource(context, uri.toUri())
+                        val width =
+                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+                                ?.toInt() ?: 0
+                        val height =
+                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+                                ?.toInt() ?: 0
+                        Point(width, height)
+                    } finally {
+                        retriever.release()
+                    }
                 } else {
+                    val options = BitmapFactory.Options()
+                    options.inJustDecodeBounds = true
                     BitmapFactory.decodeByteArray(data, 0, data.size, options)
+                    Point(options.outWidth, options.outHeight)
                 }
-                Point(options.outWidth, options.outHeight)
             } catch (e: IOException) {
                 Timber.w(e)
                 Point(0, 0)

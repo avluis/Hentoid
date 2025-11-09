@@ -174,7 +174,7 @@ class PdfManager {
                             )
                         )
 
-                        val isImageLandscape = image.imageWidth > image.imageHeight * 1.33
+                        val isImageLandscape = image.imageWidth > image.imageHeight * 1.3
                         val pageRotation = if (isImageLandscape) LANDSCAPE else PORTRAIT
                         adjustImageLayout(image, doc, PageSize.A4, pageRotation)
                         rotationEventHandler.setRotation(pageRotation)

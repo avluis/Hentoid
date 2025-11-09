@@ -2078,8 +2078,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         val isSourceSquare = (abs(sHeight - sWidth) < sWidth * 0.1)
         if (isSourceSquare) return false
 
-        val isSourceLandscape = (sWidth > sHeight * 1.33)
-        val isScreenLandscape = (screenWidth > screenHeight * 1.33)
+        val isSourceLandscape = (sWidth > sHeight * 1.3)
+        val isScreenLandscape = (screenWidth > screenHeight * 1.3)
         return (isSourceLandscape != isScreenLandscape)
     }
 
