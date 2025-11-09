@@ -80,7 +80,6 @@ import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getMimeTypeFromExtension
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
-import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.getParent
@@ -692,11 +691,7 @@ fun getPathRoot(location: StorageLocation): String {
  */
 fun getPathRoot(locationUriStr: String): String {
     val pathDivider: Int = locationUriStr.lastIndexOf(URI_ELEMENTS_SEPARATOR)
-    if (pathDivider > -1) return locationUriStr.substring(
-        0,
-        pathDivider + URI_ELEMENTS_SEPARATOR.length
-    ) // Include separator
-
+    if (pathDivider > -1) return locationUriStr.take(pathDivider + URI_ELEMENTS_SEPARATOR.length) // Include separator
     return locationUriStr
 }
 
@@ -917,7 +912,7 @@ suspend fun setContentCover(
             archivePdfUri,
             libraryGridCardWidthDP,
             newCover.url,
-            { fileName -> null }, // Force creation of new file
+            { _ -> null }, // Force creation of new file
             { fileName ->
                 val file = File(targetFolder, fileName)
                 if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
@@ -1049,8 +1044,8 @@ private fun formatFolderName(
     // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
     val truncLength = Settings.folderTruncationNbChars
     val titleLength = result.length
-    if (truncLength > 0 && titleLength + suffix.length > truncLength) result =
-        result.substring(0, truncLength - suffix.length - 1)
+    if (truncLength > 0 && titleLength + suffix.length > truncLength)
+        result = result.take(truncLength - suffix.length - 1)
 
     // We always add the unique ID at the end of the folder name to avoid collisions between two books with the same title from the same source
     // (e.g. different scans, different languages)
@@ -1921,7 +1916,7 @@ suspend fun mergeContents(
 
             for (c in contentList) {
                 if (isCanceled.invoke()) break
-                contentIdx++;
+                contentIdx++
                 var newChapter: Chapter? = null
                 // Create a default "content chapter" that represents the original book before merging
                 val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)

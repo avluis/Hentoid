@@ -927,21 +927,23 @@ class UriParts(uri: String, lowercase: Boolean = false) {
         get() = "$path/$fileNameFull"
 
     init {
-        var uriNoParams =
-            if (uri.contains("%3A") || uri.contains("%2F")) URLDecoder.decode(uri, "UTF-8") else uri
-        uriNoParams = if (lowercase) uriNoParams.lowercase(Locale.getDefault()) else uriNoParams
+        var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri
         val fragmentIndex = uriNoParams.lastIndexOf('#')
         if (fragmentIndex > -1) {
             fragment = uriNoParams.substring(fragmentIndex + 1)
-            uriNoParams = uriNoParams.substring(0, fragmentIndex)
+            uriNoParams = uriNoParams.take(fragmentIndex)
         } else fragment = ""
         val paramsIndex = uriNoParams.lastIndexOf('?')
         if (paramsIndex > -1) {
             query = uriNoParams.substring(paramsIndex + 1)
-            uriNoParams = uriNoParams.substring(0, paramsIndex)
+            uriNoParams = uriNoParams.take(paramsIndex)
         } else query = ""
+
+        uriNoParams = if (uriNoParams.contains("%3A", true) || uriNoParams.contains("%2F", true))
+            URLDecoder.decode(uriNoParams, "UTF-8") else uriNoParams
+
         val pathIndex = uriNoParams.lastIndexOf('/')
-        path = if (pathIndex > -1) uriNoParams.substring(0, pathIndex) else uriNoParams
+        path = if (pathIndex > -1) uriNoParams.take(pathIndex) else uriNoParams
         val protocolEndIndex = path.indexOf("://")
         val hostEndIndex = path.indexOf("/", protocolEndIndex + 3)
         host = if (hostEndIndex > -1) path.substring(0, hostEndIndex) else path

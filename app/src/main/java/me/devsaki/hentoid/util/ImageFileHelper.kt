@@ -84,7 +84,7 @@ fun createImageListFromFiles(files: List<DocumentFile>, setCover : Boolean = tru
 fun createImageListFromFiles(
     files: List<DocumentFile>,
     targetStatus: StatusContent,
-    startingOrder: Int,
+    startingOrder: Int = 0,
     namePrefix: String = "",
     setCover: Boolean = true
 ): List<ImageFile> {
