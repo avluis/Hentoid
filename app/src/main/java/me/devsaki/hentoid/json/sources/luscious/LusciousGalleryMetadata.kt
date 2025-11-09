@@ -35,13 +35,29 @@ data class LusciousGalleryMetadata(
     @JsonClass(generateAdapter = true)
     data class PictureMetadata(
         @Json(name = "url_to_original")
-        val urlToOriginal: String,
+        val urlToOriginal: String?,
+        @Json(name = "url_to_video")
+        val urlToVideo: String?,
         val thumbnails: List<PictureThumbnail>
     ) {
-        val bestPic: String
+        val biggestThumb: String
+            get() = thumbnails.maxByOrNull { it.width }?.url ?: ""
+        val original: String
+            get() = urlToOriginal ?: ""
+        val video: String
+            get() = urlToVideo ?: ""
+        val bestUrl: String
             get() {
-                val thumb = thumbnails.maxByOrNull { it.width }?.url ?: ""
-                return thumb.ifEmpty { urlToOriginal }
+                var result = original
+                if (result.isEmpty()) result = video
+                if (result.isEmpty()) result = biggestThumb
+                return result
+            }
+        val bestBackupUrl: String
+            get() {
+                var result = video
+                if (result.isEmpty()) result = biggestThumb
+                return result
             }
     }
 
@@ -61,14 +77,14 @@ data class LusciousGalleryMetadata(
         var order = offset
         val imageList: List<PictureMetadata> = data.picture.list.items
         imageList.forEach {
-            result.add(
-                ImageFile.fromImageUrl(
-                    ++order,
-                    it.bestPic,
-                    StatusContent.SAVED,
-                    imageList.size
-                )
+            val img = ImageFile.fromImageUrl(
+                ++order,
+                it.bestUrl,
+                StatusContent.SAVED,
+                imageList.size
             )
+            img.backupUrl = it.bestBackupUrl
+            result.add(img)
         }
         return result
     }
