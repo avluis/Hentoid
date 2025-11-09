@@ -14,10 +14,10 @@ class KemonoActivity : BaseBrowserActivity() {
     companion object {
         const val DOMAIN_FILTER = "kemono.cr"
         private val GALLERY_FILTER = arrayOf(
-            "$DOMAIN_FILTER/[\\w_%\\-]+/user/[\\d\\-]+$",
-            "$DOMAIN_FILTER/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/posts-legacy$",
-            "$DOMAIN_FILTER/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$",
-            "$DOMAIN_FILTER/api/v1/[\\w_%\\-]+/user/[\\d\\-]+/post/[\\d\\-]+$"
+            "$DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+$",
+            "$DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/posts-legacy$",
+            "$DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$",
+            "$DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$"
         )
         private val BLOCKED_CONTENT = arrayOf("popunder")
         private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")
