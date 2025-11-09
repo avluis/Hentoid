@@ -43,8 +43,8 @@ class HiperdexContent : BaseContentParser() {
     @Selector(value = ".summary-content")
     private var properties: List<Element>? = null
 
-    @Selector(value = "#chapter-heading")
-    private var chapterTitle: Element? = null
+    @Selector(value = "head [property=og:title]")
+    private var chapterTitle: List<Element>? = null
 
     @Selector(value = ".reading-content img")
     private var chapterImgs: List<Element>? = null
@@ -62,10 +62,13 @@ class HiperdexContent : BaseContentParser() {
 
     private fun updateSingleChapter(content: Content, url: String, updateImages: Boolean): Content {
         var title = NO_TITLE
-        chapterTitle?.let {
-            title = cleanup(it.text())
+        // 2nd og:title is the one that contains the chapter title (1st is the book's)
+        chapterTitle?.last()?.let {
+            title = cleanup(it.attr("content"))
+            title = title.replace(" - HiperDEX", "", true)
+            content.title = title.ifEmpty { NO_TITLE }
         }
-        content.title = title
+
         val urlParts = url.split("/")
         if (urlParts.size > 1) content.uniqueSiteId =
             urlParts[urlParts.size - 2] else content.uniqueSiteId =
