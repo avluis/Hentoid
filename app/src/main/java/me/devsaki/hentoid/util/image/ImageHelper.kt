@@ -561,19 +561,22 @@ suspend fun getImageDimensions(context: Context, uri: String, data: ByteArray? =
         } else { // Natively supported by Android
             return@withContext try {
                 if (null == data) {
-                    val retriever = MediaMetadataRetriever()
+                    var dims = Point(0, 0)
+                    val theUri = uri.toUri()
                     try {
-                        retriever.setDataSource(context, uri.toUri())
-                        val width =
-                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
-                                ?.toInt() ?: 0
-                        val height =
-                            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
-                                ?.toInt() ?: 0
-                        Point(width, height)
-                    } finally {
-                        retriever.release()
+                        dims = getDimsFromBitmapFactory(context, theUri)
+                    } catch (e: Exception) {
+                        Timber.d(e)
                     }
+                    if (dims.x < 1 || dims.y < 1) {
+                        // Fallback for formats unsupported by BitmapFactory but supported by Android Media (e.g. MP4)
+                        try {
+                            dims = getDimsFromMediaRetriever(context, theUri)
+                        } catch (e: Exception) {
+                            Timber.w(e)
+                        }
+                    }
+                    dims
                 } else {
                     val options = BitmapFactory.Options()
                     options.inJustDecodeBounds = true
@@ -589,6 +592,33 @@ suspend fun getImageDimensions(context: Context, uri: String, data: ByteArray? =
             }
         }
     }
+
+@Throws(Exception::class)
+fun getDimsFromBitmapFactory(context: Context, uri: Uri): Point {
+    val options = BitmapFactory.Options()
+    options.inJustDecodeBounds = true
+    getInputStream(context, uri).use {
+        BitmapFactory.decodeStream(it, null, options)
+        return Point(options.outWidth, options.outHeight)
+    }
+}
+
+@Throws(Exception::class)
+fun getDimsFromMediaRetriever(context: Context, uri: Uri): Point {
+    val retriever = MediaMetadataRetriever()
+    try {
+        retriever.setDataSource(context, uri)
+        val width =
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)
+                ?.toInt() ?: 0
+        val height =
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)
+                ?.toInt() ?: 0
+        return Point(width, height)
+    } finally {
+        retriever.release()
+    }
+}
 
 fun loadBitmap(context: Context, file: DocumentFile): Bitmap? {
     if (!file.exists()) return null
