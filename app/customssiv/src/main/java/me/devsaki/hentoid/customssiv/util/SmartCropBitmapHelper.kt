@@ -24,7 +24,7 @@ private const val LUMI_TOLERANCE = 0.30f
 private const val SAMPLE_QTTY = 0.10
 
 // Max accepted standard deviation between samples to validate an actual border has been found
-private const val SAMPLES_MAX_STDEV = 0.6
+private const val SAMPLES_MAX_STDEV = 1
 
 
 internal suspend fun smartCropBitmap(src: Bitmap): Bitmap = withContext(Dispatchers.Default) {
@@ -32,6 +32,7 @@ internal suspend fun smartCropBitmap(src: Bitmap): Bitmap = withContext(Dispatch
     val cornerZoneDim = (min(src.width, src.height) * CORNER_ZONE).roundToInt()
     val bmpCorner = IntArray(cornerZoneDim * cornerZoneDim)
     Timber.d("cornerZone $cornerZoneDim")
+
     // Top left corner
     src.getPixels(bmpCorner, 0, cornerZoneDim, 0, 0, cornerZoneDim, cornerZoneDim)
 
@@ -88,8 +89,11 @@ internal suspend fun smartCropBitmap(src: Bitmap): Bitmap = withContext(Dispatch
     val targetStartY = min(bordersTopLeft.y, bordersTopRight.y)
     val targetEndX = max(src.width - bordersTopRight.x, src.width - bordersBottomRight.x)
     val targetEndY = max(src.height - bordersBottomLeft.y, src.height - bordersBottomRight.y)
-    Timber.d("Keeping original")
-    if (0 == targetStartX && 0 == targetStartY && src.width == targetEndX && src.height == targetEndY) return@withContext src
+
+    if (0 == targetStartX && 0 == targetStartY && src.width == targetEndX && src.height == targetEndY) {
+        Timber.d("Keeping original")
+        return@withContext src
+    }
 
     // Crop
     Timber.d("Target crop to ($targetStartX, $targetStartY) / ($targetEndX, $targetEndY)")
@@ -127,6 +131,8 @@ private fun detectBorders(pixels: IntArray, start: Point, end: Point): Point {
     )
 }
 
+// start : Page corner coordinates
+// end : Inner page coordinates
 private fun detectDichoY(
     pixels: IntArray,
     start: Point,
@@ -148,22 +154,30 @@ private fun detectDichoY(
     while (samples.size < minSamples && pickLevel < 8) {
         val picks = 2.0.pow(pickLevel).roundToInt()
         for (i in 1..picks) {
-            val posX = start.x + i * (width / picks) * direction
+            val posX = start.x + i * ((width - 1) / picks) * direction
             if (testedPos.contains(posX)) continue
             testedPos.add(posX)
             newSample = detectX(pixels, posX, start.y, end.y, width)
-            if (newSample > -1) samples.add(newSample)
+            if (newSample > -1) {
+                Timber.d("sampleY $newSample @ $posX")
+                samples.add(newSample)
+            }
         }
         pickLevel++
     }
+    Timber.d("sizeY ${samples.size} / $minSamples")
     if (samples.size < minSamples) return -1
 
     val avg = samples.average()
     val variance = samples.map { (it - avg).pow(2) }.average()
     val stdev = sqrt(variance)
+
+    Timber.d("stdevY $stdev / $SAMPLES_MAX_STDEV")
     return if (stdev < SAMPLES_MAX_STDEV) avg.roundToInt() else -1
 }
 
+// start : Page corner coordinates
+// end : Inner page coordinates
 private fun detectDichoX(
     pixels: IntArray,
     start: Point,
@@ -172,7 +186,7 @@ private fun detectDichoX(
     val samples = ArrayList<Int>()
     val testedPos = HashSet<Int>()
     val width = abs(end.x - start.x) + 1
-    val height = abs(end.y - start.y) + 1
+    val height = abs(end.y - start.y)
     val direction = if (start.y < end.y) 1 else -1
     val minSamples = height * SAMPLE_QTTY
 
@@ -190,18 +204,35 @@ private fun detectDichoX(
             if (testedPos.contains(posY)) continue
             testedPos.add(posY)
             newSample = detectY(pixels, posY, start.x, end.x, width)
-            if (newSample > -1) samples.add(newSample)
+            if (newSample > -1) {
+                Timber.d("sampleX $newSample @ $posY")
+                samples.add(newSample)
+            }
         }
         pickLevel++
     }
+    Timber.d("sizeX ${samples.size} / $minSamples")
     if (samples.size < minSamples) return -1
 
     val avg = samples.average()
     val variance = samples.map { (it - avg).pow(2) }.average()
     val stdev = sqrt(variance)
+
+    Timber.d("stdevX $stdev / $SAMPLES_MAX_STDEV")
     return if (stdev < SAMPLES_MAX_STDEV) avg.roundToInt() else -1
 }
 
+/**
+ * Find the Y position with a luminance delta that exceeds LUMI_TOLERANCE for the given X position
+ *
+ * @param pixels    Pixels array to analyze
+ * @param posX      X position to analyze
+ * @param startY    Y start position
+ * @param endY      Y end position
+ * @param width     Width of the pixels array
+ * @return Y position with a luminance delta that exceeds LUMI_TOLERANCE for the given X position;
+ * -1 if nothing found
+ */
 private fun detectX(pixels: IntArray, posX: Int, startY: Int, endY: Int, width: Int): Int {
     var initLumi = -1f
     val direction = if (startY < endY) 1 else -1
@@ -216,6 +247,17 @@ private fun detectX(pixels: IntArray, posX: Int, startY: Int, endY: Int, width: 
     return -1
 }
 
+/**
+ * Find the X position with a luminance delta that exceeds LUMI_TOLERANCE for the given Y position
+ *
+ * @param pixels    Pixels array to analyze
+ * @param posY      Y position to analyze
+ * @param startX    X start position
+ * @param endX      X end position
+ * @param width     Width of the pixels array
+ * @return X position with a luminance delta that exceeds LUMI_TOLERANCE for the given Y position;
+ * -1 if nothing found
+ */
 private fun detectY(pixels: IntArray, posY: Int, startX: Int, endX: Int, width: Int): Int {
     var initLumi = -1f
     val direction = if (startX < endX) 1 else -1
@@ -230,6 +272,14 @@ private fun detectY(pixels: IntArray, posY: Int, startX: Int, endX: Int, width: 
     return -1
 }
 
+/**
+ * Get luminance for the pixel at coords (x,y)
+ *
+ * @param pixels    Pixels array to analyze
+ * @param x         X position where to get the luminance from
+ * @param y         Y position where to get the luminance from
+ * @param width     Width of the pixels array
+ */
 private fun getPxLumi(pixels: IntArray, x: Int, y: Int, width: Int): Float {
     val pos = x + (y * width)
     if (pos < 0 || pos >= pixels.size) return 0f
