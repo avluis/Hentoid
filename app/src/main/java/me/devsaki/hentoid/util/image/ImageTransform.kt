@@ -82,43 +82,53 @@ internal data class ManhwaProcessingItem(
  * Transform the given raw picture data using the given params
  */
 fun transform(
-    source: ByteArray,
+    rawData: ByteArray,
     params: TransformParams,
     allowBogusAiRescale: Boolean = false
 ): ByteArray {
-    if (isImageAnimated(source)) return source
+    if (isImageAnimated(rawData)) return rawData
 
     val options = BitmapFactory.Options()
     options.inJustDecodeBounds = true
-    BitmapFactory.decodeByteArray(source, 0, source.size, options)
+    BitmapFactory.decodeByteArray(rawData, 0, rawData.size, options)
     val dims = Point(options.outWidth, options.outHeight)
     val bitmapOut: Bitmap = if (params.resizeEnabled) {
         when (params.resizeMethod) {
-            0 -> resizeScreenRatio(source, dims, params.resize1Ratio / 100f)
+            0 -> resizeScreenRatio(rawData, dims, params.resize1Ratio / 100f)
             1 -> resizeDims(
-                source, dims, params.resize2Height, params.resize2Width, params.forceManhwa
+                rawData, dims, params.resize2Height, params.resize2Width, params.forceManhwa
             )
 
-            2 -> resizePlainRatio(source, dims, params.resize3Ratio / 100f)
+            2 -> resizePlainRatio(rawData, dims, params.resize3Ratio / 100f)
             3 -> { // AI rescale; handled at Worker level
                 val scale = if (allowBogusAiRescale) 2f else 1f
-                resizePlainRatio(source, dims, scale, allowBogusAiRescale)
+                resizePlainRatio(rawData, dims, scale, allowBogusAiRescale)
             }
 
             // 4 : Manhwa split/merge; handled at Worker level and requires multiple images
 
-            else -> resizePlainRatio(source, dims, 1f)
+            else -> resizePlainRatio(rawData, dims, 1f)
         }
     } else {
-        BitmapFactory.decodeByteArray(source, 0, source.size)
+        BitmapFactory.decodeByteArray(rawData, 0, rawData.size)
     }
 
-    val isLossless = isImageLossless(source)
+    val isLossless = isImageLossless(rawData)
     val targetDims = Point(bitmapOut.width, bitmapOut.height)
     try {
-        return transcodeTo(
-            bitmapOut, determineEncoder(isLossless, targetDims, params), params.transcodeQuality
-        )
+        val encoder = determineEncoder(isLossless, targetDims, params)
+        val noResize = (targetDims.x == dims.x && targetDims.y == dims.y)
+        return if (noResize && PictureEncoder.JXL_LOSSLESS == encoder
+            && getMimeTypeFromPictureBinary(rawData) == MIME_IMAGE_JPEG
+        ) {
+            transcodeJpegToLosslessJxl(rawData)
+        } else {
+            transcodeTo(
+                bitmapOut,
+                determineEncoder(isLossless, targetDims, params),
+                params.transcodeQuality
+            )
+        }
     } finally {
         bitmapOut.recycle()
     }
@@ -167,7 +177,11 @@ private fun resizePlainRatio(
     }
 }
 
-fun determineEncoder(isLossless: Boolean, dims: Point, params: TransformParams): PictureEncoder {
+fun determineEncoder(
+    isLossless: Boolean,
+    dims: Point,
+    params: TransformParams
+): PictureEncoder {
     // AI rescale always produces PNGs
     if (3 == params.resizeMethod) return PictureEncoder.PNG
 
@@ -207,6 +221,10 @@ fun transcodeTo(bitmap: Bitmap, encoder: PictureEncoder, quality: Int): ByteArra
         )
     }
     return output.toByteArray()
+}
+
+fun transcodeJpegToLosslessJxl(jpegData: ByteArray): ByteArray {
+    return JxlCoder.Convenience.construct(jpegData)
 }
 
 suspend fun transformManhwaChapter(
@@ -516,7 +534,11 @@ private suspend fun processManhwaImageQueue(
         } // queue loop
 
         val encoder =
-            determineEncoder(containsLossless, Point(bmpBuffer.width, bmpBuffer.height), params)
+            determineEncoder(
+                containsLossless,
+                Point(bmpBuffer.width, bmpBuffer.height),
+                params
+            )
         val targetName = formatIntAsStr(startIndex, 4)
         Timber.d("create image $targetName (${encoder.mimeType})")
 
