@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.retrofit.sources
 
-import me.devsaki.hentoid.activities.sources.KemonoActivity.Companion.DOMAIN_FILTER
+import me.devsaki.hentoid.activities.sources.KEMONO_DOMAIN_FILTER
 import me.devsaki.hentoid.json.sources.kemono.KemonoArtist
 import me.devsaki.hentoid.json.sources.kemono.KemonoGallery
 import me.devsaki.hentoid.json.sources.kemono.KemonoPost
@@ -13,7 +13,7 @@ import retrofit2.http.Header
 import retrofit2.http.Path
 
 object KemonoServer {
-    private const val KEMONO_URL = "https://$DOMAIN_FILTER/api/v1/"
+    private const val KEMONO_URL = "https://$KEMONO_DOMAIN_FILTER/api/v1/"
 
     lateinit var api: Api
 

@@ -10,29 +10,27 @@ import me.devsaki.hentoid.parsers.content.ContentParser
 import me.devsaki.hentoid.parsers.content.KemonoContent
 import timber.log.Timber
 
-class KemonoActivity : BaseBrowserActivity() {
-    companion object {
-        const val DOMAIN_FILTER = "kemono.cr"
-        private val GALLERY_FILTER = arrayOf(
-            "$DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+$",
-            "$DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/posts-legacy$",
-            "$DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$",
-            "$DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$"
-        )
-        private val BLOCKED_CONTENT = arrayOf("popunder")
-        private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")
-    }
+const val KEMONO_DOMAIN_FILTER = "kemono.cr"
+private val GALLERY_FILTER = arrayOf(
+    "$KEMONO_DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+$",
+    "$KEMONO_DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/posts-legacy$",
+    "$KEMONO_DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$",
+    "$KEMONO_DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$"
+)
+private val BLOCKED_CONTENT = arrayOf("popunder")
+private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")
 
+class KemonoActivity : BaseBrowserActivity() {
     override fun getStartSite(): Site {
         return Site.KEMONO
     }
 
     override fun createWebClient(): CustomWebViewClient {
         val client = KemonoViewClient(getStartSite(), GALLERY_FILTER, this)
-        client.restrictTo(DOMAIN_FILTER)
+        client.restrictTo(KEMONO_DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
-        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
+        client.adBlocker.addToJsUrlWhitelist(KEMONO_DOMAIN_FILTER)
         return client
     }
 
