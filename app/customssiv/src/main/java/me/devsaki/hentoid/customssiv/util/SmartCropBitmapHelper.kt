@@ -14,8 +14,8 @@ import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 
-// % of max page width/height used as corner
-private const val CORNER_ZONE = 0.15
+// Default % of max page width/height used as corner
+private const val CORNER_ZONE_DEFAULT = 0.15
 
 // Tolerance to luminance before detecting a border (%)
 private const val LUMI_TOLERANCE = 0.30f
@@ -28,91 +28,132 @@ private const val SAMPLES_STDEV_THRESHOLD = 1
 private const val SAMPLES_STDEV_FACTOR_THRESHOLD = 2
 
 
-internal suspend fun smartCropBitmap(src: Bitmap): Bitmap = withContext(Dispatchers.Default) {
-    Timber.d("src (${src.width}, ${src.height})")
-    val cornerZoneDim = (min(src.width, src.height) * CORNER_ZONE).roundToInt()
-    val bmpCorner = IntArray(cornerZoneDim * cornerZoneDim)
-    Timber.d("cornerZone $cornerZoneDim")
+internal suspend fun smartCropBitmap(
+    src: Bitmap,
+    cornerZone: Double = CORNER_ZONE_DEFAULT
+): Bitmap =
+    withContext(Dispatchers.Default) {
+        Timber.d("src (${src.width}, ${src.height})")
+        val cornerZoneDim = (min(src.width, src.height) * cornerZone).roundToInt()
+        val bmpCorner = IntArray(cornerZoneDim * cornerZoneDim)
+        Timber.d("cornerZone $cornerZoneDim")
 
-    // Top left corner
-    src.getPixels(bmpCorner, 0, cornerZoneDim, 0, 0, cornerZoneDim, cornerZoneDim)
+        // Top left corner
+        src.getPixels(bmpCorner, 0, cornerZoneDim, 0, 0, cornerZoneDim, cornerZoneDim)
 
-    val bordersTopLeft =
-        detectBorders(bmpCorner, Point(0, 0), Point(cornerZoneDim - 1, cornerZoneDim - 1))
-    Timber.d("top left $bordersTopLeft")
+        val bordersTopLeft =
+            detectBorders(bmpCorner, Point(0, 0), Point(cornerZoneDim - 1, cornerZoneDim - 1))
+        Timber.d("top left $bordersTopLeft")
 
-    // Top right corner
-    src.getPixels(
-        bmpCorner,
-        0,
-        cornerZoneDim,
-        src.width - cornerZoneDim,
-        0,
-        cornerZoneDim,
-        cornerZoneDim
-    )
-
-    val bordersTopRight =
-        detectBorders(bmpCorner, Point(cornerZoneDim - 1, 0), Point(0, cornerZoneDim - 1))
-    Timber.d("top right $bordersTopRight")
-
-    // Bottom left corner
-    src.getPixels(
-        bmpCorner,
-        0,
-        cornerZoneDim,
-        0,
-        src.height - cornerZoneDim,
-        cornerZoneDim,
-        cornerZoneDim
-    )
-
-    val bordersBottomLeft =
-        detectBorders(bmpCorner, Point(0, cornerZoneDim - 1), Point(cornerZoneDim - 1, 0))
-    Timber.d("bottom left $bordersBottomLeft")
-
-    // Bottom right corner
-    src.getPixels(
-        bmpCorner,
-        0,
-        cornerZoneDim,
-        src.width - cornerZoneDim,
-        src.height - cornerZoneDim,
-        cornerZoneDim,
-        cornerZoneDim
-    )
-
-    val bordersBottomRight =
-        detectBorders(bmpCorner, Point(cornerZoneDim - 1, cornerZoneDim - 1), Point(0, 0))
-    Timber.d("bottom right $bordersBottomRight")
-
-    val targetStartX = min(bordersTopLeft.x, bordersBottomLeft.x)
-    val targetStartY = min(bordersTopLeft.y, bordersTopRight.y)
-    val targetEndX = max(src.width - bordersTopRight.x, src.width - bordersBottomRight.x)
-    val targetEndY = max(src.height - bordersBottomLeft.y, src.height - bordersBottomRight.y)
-
-    if (0 == targetStartX && 0 == targetStartY && src.width == targetEndX && src.height == targetEndY) {
-        Timber.d("Keeping original")
-        return@withContext src
-    }
-
-    // Crop
-    Timber.d("Target crop to ($targetStartX, $targetStartY) / ($targetEndX, $targetEndY)")
-    try {
-        return@withContext Bitmap.createBitmap(
-            src,
-            targetStartX,
-            targetStartY,
-            targetEndX - targetStartX,
-            targetEndY - targetStartY
+        // Top right corner
+        src.getPixels(
+            bmpCorner,
+            0,
+            cornerZoneDim,
+            src.width - cornerZoneDim,
+            0,
+            cornerZoneDim,
+            cornerZoneDim
         )
-    } finally {
-        src.recycle()
+
+        val bordersTopRight =
+            detectBorders(bmpCorner, Point(cornerZoneDim - 1, 0), Point(0, cornerZoneDim - 1))
+        Timber.d("top right $bordersTopRight")
+
+        // Bottom left corner
+        src.getPixels(
+            bmpCorner,
+            0,
+            cornerZoneDim,
+            0,
+            src.height - cornerZoneDim,
+            cornerZoneDim,
+            cornerZoneDim
+        )
+
+        val bordersBottomLeft =
+            detectBorders(bmpCorner, Point(0, cornerZoneDim - 1), Point(cornerZoneDim - 1, 0))
+        Timber.d("bottom left $bordersBottomLeft")
+
+        // Bottom right corner
+        src.getPixels(
+            bmpCorner,
+            0,
+            cornerZoneDim,
+            src.width - cornerZoneDim,
+            src.height - cornerZoneDim,
+            cornerZoneDim,
+            cornerZoneDim
+        )
+
+        val bordersBottomRight =
+            detectBorders(bmpCorner, Point(cornerZoneDim - 1, cornerZoneDim - 1), Point(0, 0))
+        Timber.d("bottom right $bordersBottomRight")
+
+        // Retry with a double corner surface if detection failed somewhere during 1st try
+        if (cornerZone == CORNER_ZONE_DEFAULT && (
+                    bordersTopLeft.x < 0 || bordersTopLeft.y < 0 || bordersBottomLeft.x < 0 || bordersBottomLeft.y < 0
+                            || bordersTopRight.x < 0 || bordersTopRight.y < 0 || bordersBottomRight.x < 0 || bordersBottomRight.y < 0
+                    )
+        ) {
+            Timber.d("Retrying with larger corners")
+            return@withContext smartCropBitmap(src, cornerZone * 2)
+        }
+
+        val targetStartX = computeStartCoordinates(bordersTopLeft.x, bordersBottomLeft.x)
+        val targetStartY = computeStartCoordinates(bordersTopLeft.y, bordersTopRight.y)
+        val targetEndX = computeEndCoordinates(bordersTopRight.x, bordersBottomRight.x, src.width)
+        val targetEndY =
+            computeEndCoordinates(bordersBottomLeft.y, bordersBottomRight.y, src.height)
+
+        if (0 == targetStartX && 0 == targetStartY && src.width == targetEndX && src.height == targetEndY) {
+            Timber.d("Keeping original")
+            return@withContext src
+        }
+
+        // Crop
+        Timber.d("Target crop to ($targetStartX, $targetStartY) / ($targetEndX, $targetEndY)")
+        try {
+            return@withContext Bitmap.createBitmap(
+                src,
+                targetStartX,
+                targetStartY,
+                targetEndX - targetStartX,
+                targetEndY - targetStartY
+            )
+        } finally {
+            src.recycle()
+        }
     }
+
+private fun computeStartCoordinates(c1: Int, c2: Int): Int {
+    // Nothing found at all
+    if (c1 < 0 && c2 < 0) return 0
+    // One corner found something; the other didn't
+    if (c1 < 0) return c2
+    if (c2 < 0) return c1
+    // Found something on both corners
+    return min(c1, c2)
 }
 
-// start : Page corner coordinates
-// end : Inner page coordinates
+private fun computeEndCoordinates(c1: Int, c2: Int, referenceSide: Int): Int {
+    // Nothing found at all
+    if (c1 < 0 && c2 < 0) return referenceSide
+    // One corner found something; the other didn't
+    if (c1 < 0) return referenceSide - c2
+    if (c2 < 0) return referenceSide - c1
+    // Found something on both corners
+    return max(referenceSide - c1, referenceSide - c2)
+}
+
+/**
+ * Detect borders
+ *
+ * @param pixels    Array of pixels to analyze
+ * @param start     Page corner coordinates
+ * @param end       Inner page coordinates
+ * @return          -1 if detection fails (no samples; e.g. whole corner is solid)
+ */
 private fun detectBorders(pixels: IntArray, start: Point, end: Point): Point {
     val width = abs(end.x - start.x) + 1
     val height = abs(end.y - start.y) + 1
@@ -125,15 +166,21 @@ private fun detectBorders(pixels: IntArray, start: Point, end: Point): Point {
     return Point(
         if (xBorder > -1)
             if (directionX < 0) width - xBorder else xBorder
-        else 0,
+        else -1,
         if (yBorder > -1)
             if (directionY < 0) height - yBorder else yBorder
-        else 0
+        else -1
     )
 }
 
-// start : Page corner coordinates
-// end : Inner page coordinates
+/**
+ * Detect dicho y
+ *
+ * @param pixels    Array of pixels to analyze
+ * @param start     Page corner coordinates
+ * @param end       Inner page coordinates
+ * @return          -1 if detection fails (no samples; e.g. whole corner is solid)
+ */
 private fun detectDichoY(
     pixels: IntArray,
     start: Point,
@@ -166,13 +213,22 @@ private fun detectDichoY(
         }
         pickLevel++
     }
-    if (samples.size < minSamples) return -1
+    if (samples.size < minSamples) {
+        Timber.d("sizeY KO ${samples.size} / $minSamples")
+        return -1
+    }
 
     return computeSamples(samples, direction)
 }
 
-// start : Page corner coordinates
-// end : Inner page coordinates
+/**
+ * Detect dicho x
+ *
+ * @param pixels    Array of pixels to analyze
+ * @param start     Page corner coordinates
+ * @param end       Inner page coordinates
+ * @return          -1 if detection fails (no samples; e.g. whole corner is solid)
+ */
 private fun detectDichoX(
     pixels: IntArray,
     start: Point,
@@ -206,7 +262,10 @@ private fun detectDichoX(
         }
         pickLevel++
     }
-    if (samples.size < minSamples) return -1
+    if (samples.size < minSamples) {
+        Timber.d("sizeX KO ${samples.size} / $minSamples")
+        return -1
+    }
 
     return computeSamples(samples, direction)
 }
