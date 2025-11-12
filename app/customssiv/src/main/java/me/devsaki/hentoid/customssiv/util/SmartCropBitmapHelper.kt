@@ -23,8 +23,9 @@ private const val LUMI_TOLERANCE = 0.30f
 // Number of samples to take to validate border detection
 private const val SAMPLE_QTTY = 0.10
 
-// Max accepted standard deviation between samples to validate an actual border has been found
-private const val SAMPLES_MAX_STDEV = 1
+// Max accepted standard deviation between samples
+private const val SAMPLES_STDEV_THRESHOLD = 1
+private const val SAMPLES_STDEV_FACTOR_THRESHOLD = 2
 
 
 internal suspend fun smartCropBitmap(src: Bitmap): Bitmap = withContext(Dispatchers.Default) {
@@ -165,15 +166,9 @@ private fun detectDichoY(
         }
         pickLevel++
     }
-    Timber.d("sizeY ${samples.size} / $minSamples")
     if (samples.size < minSamples) return -1
 
-    val avg = samples.average()
-    val variance = samples.map { (it - avg).pow(2) }.average()
-    val stdev = sqrt(variance)
-
-    Timber.d("stdevY $stdev / $SAMPLES_MAX_STDEV")
-    return if (stdev < SAMPLES_MAX_STDEV) avg.roundToInt() else -1
+    return computeSamples(samples, direction)
 }
 
 // start : Page corner coordinates
@@ -211,15 +206,21 @@ private fun detectDichoX(
         }
         pickLevel++
     }
-    Timber.d("sizeX ${samples.size} / $minSamples")
     if (samples.size < minSamples) return -1
 
+    return computeSamples(samples, direction)
+}
+
+private fun computeSamples(samples: Collection<Int>, direction: Int): Int {
+    // Remove outliers (> 2 * standard deviation if stdev is significant)
     val avg = samples.average()
     val variance = samples.map { (it - avg).pow(2) }.average()
     val stdev = sqrt(variance)
 
-    Timber.d("stdevX $stdev / $SAMPLES_MAX_STDEV")
-    return if (stdev < SAMPLES_MAX_STDEV) avg.roundToInt() else -1
+    val filteredSamples = if (stdev > SAMPLES_STDEV_THRESHOLD)
+        samples.filterNot { abs(it - avg) > stdev * SAMPLES_STDEV_FACTOR_THRESHOLD }
+    else samples
+    return if (direction > 0) filteredSamples.min() else filteredSamples.max()
 }
 
 /**
