@@ -860,6 +860,7 @@
     <string name="loading_archive">Loading: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
     <string name="loading_image">Loading image: <x:g example="50%" id="percentage">%d%%</x:g></string>
     <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (scale <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="viewer_img_details_cropped"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g>, cropped to %3$d x %4$d (scale <x:g example="100%" id="scale_percentage">%5$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%6$s</x:g></string>
     <string name="viewer_choose_direction">Choose reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>

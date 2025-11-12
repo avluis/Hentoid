@@ -24,6 +24,10 @@ class ReaderActivityBundle(val bundle: Bundle = Bundle()) {
 
     var scale by bundle.float(default = -1f)
 
+    var croppedX by bundle.int(default = -1)
+
+    var croppedY by bundle.int(default = -1)
+
     var isForceShowGallery by bundle.boolean(default = false)
 
     var isOpenFavPages by bundle.boolean(default = false)

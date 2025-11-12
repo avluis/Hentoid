@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.reader
 
 import android.content.Context
+import android.graphics.Point
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -47,6 +48,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
     // VARS
     private var imageIndex: Int = -1
     private var scale = -1f
+    private var croppedDims = Point(-1, -1)
     private var image: ImageFile? = null
 
 
@@ -59,6 +61,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
             imageIndex = parser.imageIndex
             require(-1 != imageIndex) { "Initialization failed : invalid image index" }
             scale = parser.scale
+            croppedDims = Point(parser.croppedX, parser.croppedY)
         }
 
         val vmFactory = ViewModelFactory(requireActivity().application)
@@ -111,7 +114,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
             if (it.isArchived) {
                 filePath = it.url
                 val lastSeparator = filePath.lastIndexOf('/')
-                val archiveUri = filePath.substring(0, lastSeparator)
+                val archiveUri = filePath.take(lastSeparator)
                 val fileName = filePath.substring(lastSeparator)
                 filePath =
                     getFullPathFromUri(
@@ -128,21 +131,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
                 val imageExists = fileExists(requireContext(), it.fileUri.toUri())
                 if (imageExists) {
                     lifecycleScope.launch {
-                        val dimensions = getImageDimensions(requireContext(), it.fileUri)
-                        val sizeStr: String = if (it.size > 0) {
-                            formatHumanReadableSize(it.size, resources)
-                        } else {
-                            val size =
-                                fileSizeFromUri(requireContext(), it.fileUri.toUri())
-                            formatHumanReadableSize(size, resources)
-                        }
-                        imageStats.text = resources.getString(
-                            R.string.viewer_img_details,
-                            dimensions.x,
-                            dimensions.y,
-                            scale * 100,
-                            sizeStr
-                        )
+                        imageStats.text = formatImageStats(it)
                     }
                     ivThumb.load(it.fileUri)
                 } else {
@@ -159,6 +148,37 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
                 }
             }
             updateFavouriteDisplay(it.favourite)
+        }
+    }
+
+    private suspend fun formatImageStats(img: ImageFile): String {
+        val dimensions = getImageDimensions(requireContext(), img.fileUri)
+        val sizeStr = formatHumanReadableSize(
+            if (img.size > 0) {
+                img.size
+            } else {
+                fileSizeFromUri(requireContext(), img.fileUri.toUri())
+            }, resources
+        )
+
+        return if (croppedDims.x > 0) {
+            resources.getString(
+                R.string.viewer_img_details_cropped,
+                dimensions.x,
+                dimensions.y,
+                croppedDims.x,
+                croppedDims.y,
+                scale * 100,
+                sizeStr
+            )
+        } else {
+            resources.getString(
+                R.string.viewer_img_details,
+                dimensions.x,
+                dimensions.y,
+                scale * 100,
+                sizeStr
+            )
         }
     }
 
@@ -269,13 +289,16 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
             context: Context,
             fragmentManager: FragmentManager,
             imageIndex: Int,
-            currentScale: Float
+            currentScale: Float,
+            croppedDims: Point
         ) {
             val bottomSheetFragment = ReaderImageBottomSheetFragment()
 
             val builder = ReaderActivityBundle()
             builder.imageIndex = imageIndex
             builder.scale = currentScale
+            builder.croppedX = croppedDims.x
+            builder.croppedY = croppedDims.y
             bottomSheetFragment.arguments = builder.bundle
 
             context.setStyle(

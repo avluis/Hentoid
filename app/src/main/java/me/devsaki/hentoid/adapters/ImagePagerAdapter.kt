@@ -282,6 +282,13 @@ class ImagePagerAdapter(context: Context) :
         return Point()
     }
 
+    fun getCroppedDimensionsAtPosition(position: Int): Point {
+        (recyclerView?.findViewHolderForAdapterPosition(position) as ImageViewHolder?)?.let {
+            return it.croppedDimensions
+        }
+        return Point()
+    }
+
     fun getAbsoluteScaleAtPosition(position: Int): Float {
         if (absoluteScales.containsKey(position)) {
             val result = absoluteScales[position]
@@ -665,6 +672,19 @@ class ImagePagerAdapter(context: Context) :
 
                     else -> { // VideoView
                         Point(videoView.width, videoView.height)
+                    }
+                }
+            }
+
+        val croppedDimensions: Point
+            get() {
+                return when (activeView) {
+                    ActiveView.SSIV -> {
+                        ssiv.getCroppedDimensions()
+                    }
+
+                    else -> { // ImageView and VideoView don't crop anything
+                        Point(-1, -1)
                     }
                 }
             }

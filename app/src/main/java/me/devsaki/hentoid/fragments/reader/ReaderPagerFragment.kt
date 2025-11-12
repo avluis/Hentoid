@@ -613,15 +613,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                     isContentDynamic
                 )
             }
-        } else { // Image
-            val currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex)
-            invoke(
-                requireContext(),
-                requireActivity().supportFragmentManager,
-                absImageIndex,
-                currentScale
-            )
-        }
+        } else invokeImageDetails(absImageIndex)
+
         binding?.controlsOverlay?.informationMicroMenu?.dips()
     }
 
@@ -1379,15 +1372,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      * Handler for long-tapping the screen
      */
     private fun onLongTap() {
-        if (!Settings.isReaderHoldToZoom) {
-            val currentScale = adapter.getAbsoluteScaleAtPosition(absImageIndex)
-            invoke(
-                requireContext(),
-                requireActivity().supportFragmentManager,
-                absImageIndex,
-                currentScale
-            )
-        }
+        if (!Settings.isReaderHoldToZoom) invokeImageDetails(absImageIndex)
     }
 
     private fun showControlsOverlay() {
@@ -1510,6 +1495,18 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     override fun setAndStartSmoothScroll(s: ReaderSmoothScroller) {
         smoothScroller = s
         layoutMgr.startSmoothScroll(s)
+    }
+
+    private fun invokeImageDetails(absIndex: Int) {
+        val currentScale = adapter.getAbsoluteScaleAtPosition(absIndex)
+        val croppedDims = adapter.getCroppedDimensionsAtPosition(absIndex)
+        invoke(
+            requireContext(),
+            requireActivity().supportFragmentManager,
+            absIndex,
+            currentScale,
+            croppedDims
+        )
     }
 
     data class DisplayParams(

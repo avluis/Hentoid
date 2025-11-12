@@ -2721,6 +2721,14 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         return scale
     }
 
+    fun getCroppedDimensions(): Point {
+        return if (null == tileMap)
+            Point(singleImage.croppedWidth, singleImage.croppedHeight)
+        else
+        // Cropping is not supported in tiled mode
+            Point(-1, -1)
+    }
+
     /**
      * Externally change the absolute scale and translation of the source image. This may be used with getCenter() and getScale()
      * to restore the scale and zoom after a screen rotate.
