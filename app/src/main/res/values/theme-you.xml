@@ -87,6 +87,8 @@
 
     <style name="Theme.You.MonochromeModalBottomSheetDialog" parent="Widget.Material3.BottomSheet.Modal">
         <item name="backgroundTint">@color/cod_gray</item>
+        <item name="behavior_draggable">false</item>
+        <item name="behavior_draggableOnNestedScroll">false</item>
     </style>
 
     <!-- Prefs Activity -->

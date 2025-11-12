@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
@@ -14,16 +12,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.ISelectionListener
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.select.SelectExtension
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.LibraryActivity
 import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle
+import me.devsaki.hentoid.core.fixBottomSheetLanscape
 import me.devsaki.hentoid.databinding.IncludeLibrarySortFilterBottomPanelBinding
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.getThemedColor
@@ -144,22 +140,8 @@ class LibraryBottomSortFilterFragment : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // Hack to show the bottom sheet in expanded state by default (https://stackoverflow.com/a/45706484/8374722)
-        view.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                view.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                val dialog = dialog as BottomSheetDialog?
-                if (dialog != null) {
-                    val bottomSheet =
-                        dialog.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
-                    if (bottomSheet != null) {
-                        val behavior = BottomSheetBehavior.from(bottomSheet)
-                        behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                        behavior.skipCollapsed = true
-                    }
-                }
-            }
-        })
+        super.onViewCreated(view, savedInstanceState)
+        view.fixBottomSheetLanscape(this)
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.requireOrCreateExtension()

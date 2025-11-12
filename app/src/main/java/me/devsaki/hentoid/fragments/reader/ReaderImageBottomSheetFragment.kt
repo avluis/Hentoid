@@ -19,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
+import me.devsaki.hentoid.core.fixBottomSheetLanscape
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
@@ -92,6 +93,7 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        view.fixBottomSheetLanscape(this)
 
         viewModel.getViewerImages().observe(viewLifecycleOwner) { images ->
             this.onImagesChanged(images)
