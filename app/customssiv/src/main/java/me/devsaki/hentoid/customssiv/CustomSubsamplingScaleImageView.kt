@@ -43,6 +43,7 @@ import me.devsaki.hentoid.customssiv.util.getScreenDpi
 import me.devsaki.hentoid.customssiv.util.lifecycleScope
 import me.devsaki.hentoid.customssiv.util.resizeBitmap
 import me.devsaki.hentoid.customssiv.util.smartCropBitmap
+import me.devsaki.hentoid.customssiv.util.smartCropBitmapDims
 import me.devsaki.hentoid.gles_renderer.GPUImage
 import timber.log.Timber
 import java.util.concurrent.locks.ReadWriteLock
@@ -1407,8 +1408,21 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
 
         lifecycleScope?.launch {
             try {
+                var bmp: Bitmap? = null
                 val targetScale = if (null == inTargetScale) {
-                    val dims = getImageDimensions(context, uri)
+                    val dims = if (isSmartCrop) {
+                        bmp = loadSingleBitmap(context, uri)
+                        val cropLimits = smartCropBitmapDims(bmp)
+                        val cropDims = Point(
+                            cropLimits.second.x - cropLimits.first.x,
+                            cropLimits.second.y - cropLimits.first.y
+                        )
+                        singleImage.croppedWidth = cropDims.x
+                        singleImage.croppedHeight = cropDims.y
+                        cropDims
+                    } else {
+                        getImageDimensions(context, uri)
+                    }
                     val sat = ScaleAndTranslate(0f, PointF(0f, 0f))
                     fitToBounds(true, dims, sat).scale
                 } else inTargetScale
@@ -1416,9 +1430,9 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
                 // Don't load something that's already loaded
                 if (singleImage.location == uri.toString() && abs(singleImage.targetScale - targetScale) < 0.01) return@launch
 
-                val bmp = loadBitmap(context, uri)
+                if (null == bmp) bmp = loadSingleBitmap(context, uri)
                 // Remove invalid results
-                val res = processBitmap(
+                val res = processSingleBitmap(
                     uri,
                     context,
                     bmp,
@@ -1923,23 +1937,24 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     }
 
     @Throws(Exception::class)
-    private suspend fun loadBitmap(context: Context, uri: Uri): Bitmap =
+    private suspend fun loadSingleBitmap(context: Context, uri: Uri): Bitmap =
         withContext(Dispatchers.IO) {
+            singleImage.reset()
             singleImage.loading = true
             val decoder: ImageDecoder = SkiaImageDecoder(preferredBitmapConfig)
-            return@withContext decoder.decode(context, uri)
+            val bmp = decoder.decode(context, uri)
+            singleImage.rawWidth = bmp.width
+            singleImage.rawHeight = bmp.height
+            return@withContext bmp
         }
 
-    private suspend fun processBitmap(
+    private suspend fun processSingleBitmap(
         source: Uri,
         context: Context,
         bitmap: Bitmap,
         view: CustomSubsamplingScaleImageView,
         targetScale: Float
     ): ProcessBitmapResult = withContext(Dispatchers.Default) {
-        singleImage.rawWidth = bitmap.width
-        singleImage.rawHeight = bitmap.height
-
         // TODO sharp mode - don't ask to resize when the image in memory already has the correct target scale
         val isPrepareRotate = when (detectRotation()) {
             Orientation.O_90 -> true
@@ -1957,10 +1972,20 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             // That's more or less cheating but it does work
             singleImage.rawWidth = targetWidth
             singleImage.rawHeight = targetHeight
-            val cropped = if (isSmartCrop) smartCropBitmap(bitmap) else bitmap
+            val cropped = if (isSmartCrop) {
+                val croppedBmp = smartCropBitmap(bitmap)
+                singleImage.croppedWidth = croppedBmp.width
+                singleImage.croppedHeight = croppedBmp.height
+                croppedBmp
+            } else bitmap
             resizeBitmap(glEsRenderer, cropped, stretchedScale)
         } else {
-            val cropped = if (isSmartCrop) smartCropBitmap(bitmap) else bitmap
+            val cropped = if (isSmartCrop) {
+                val croppedBmp = smartCropBitmap(bitmap)
+                singleImage.croppedWidth = croppedBmp.width
+                singleImage.croppedHeight = croppedBmp.height
+                croppedBmp
+            } else bitmap
             resizeBitmap(glEsRenderer, cropped, targetScale)
         }
 
@@ -2090,6 +2115,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
         var scale = 1f
         var rawWidth = -1
         var rawHeight = -1
+        var croppedWidth = -1
+        var croppedHeight = -1
 
         var loading = false
 
@@ -2099,6 +2126,8 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
             scale = 1f
             rawWidth = -1
             rawHeight = -1
+            croppedWidth = -1
+            croppedHeight = -1
             loading = false
         }
     }
@@ -2167,9 +2196,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sWidth(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
+            if (singleImage.croppedHeight > -1) singleImage.croppedHeight
+            else if (singleImage.rawHeight > -1) singleImage.rawHeight
+            else sHeight
         } else {
-            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
+            if (singleImage.croppedWidth > -1) singleImage.croppedWidth
+            else if (singleImage.rawWidth > -1) singleImage.rawWidth
+            else sWidth
         }
     }
 
@@ -2179,9 +2212,13 @@ open class CustomSubsamplingScaleImageView(context: Context, attr: AttributeSet?
     private fun sHeight(): Int {
         val rotation = getRequiredRotation()
         return if (rotation.code == 90 || rotation.code == 270) {
-            if (singleImage.rawWidth > -1) singleImage.rawWidth else sWidth
+            if (singleImage.croppedWidth > -1) singleImage.croppedWidth
+            else if (singleImage.rawWidth > -1) singleImage.rawWidth
+            else sWidth
         } else {
-            if (singleImage.rawHeight > -1) singleImage.rawHeight else sHeight
+            if (singleImage.croppedHeight > -1) singleImage.croppedHeight
+            else if (singleImage.rawHeight > -1) singleImage.rawHeight
+            else sHeight
         }
     }
 

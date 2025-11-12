@@ -27,11 +27,23 @@ private const val SAMPLE_QTTY = 0.10
 private const val SAMPLES_STDEV_THRESHOLD = 1
 private const val SAMPLES_STDEV_FACTOR_THRESHOLD = 2
 
+internal suspend fun smartCropBitmapDims(
+    src: Bitmap
+): Pair<Point, Point> {
+    return smartCropBitmap(src, true).second
+}
 
 internal suspend fun smartCropBitmap(
+    src: Bitmap
+): Bitmap {
+    return smartCropBitmap(src, false).first
+}
+
+private suspend fun smartCropBitmap(
     src: Bitmap,
+    onlyDimensions: Boolean,
     cornerZone: Double = CORNER_ZONE_DEFAULT
-): Bitmap =
+): Pair<Bitmap, Pair<Point, Point>> =
     withContext(Dispatchers.Default) {
         Timber.d("src (${src.width}, ${src.height})")
         val cornerZoneDim = (min(src.width, src.height) * cornerZone).roundToInt()
@@ -97,7 +109,7 @@ internal suspend fun smartCropBitmap(
                     )
         ) {
             Timber.d("Retrying with larger corners")
-            return@withContext smartCropBitmap(src, cornerZone * 2)
+            return@withContext smartCropBitmap(src, onlyDimensions, cornerZone * 2)
         }
 
         val targetStartX = computeStartCoordinates(bordersTopLeft.x, bordersBottomLeft.x)
@@ -105,21 +117,26 @@ internal suspend fun smartCropBitmap(
         val targetEndX = computeEndCoordinates(bordersTopRight.x, bordersBottomRight.x, src.width)
         val targetEndY =
             computeEndCoordinates(bordersBottomLeft.y, bordersBottomRight.y, src.height)
+        val target = Pair(Point(targetStartX, targetStartY), Point(targetEndX, targetEndY))
 
         if (0 == targetStartX && 0 == targetStartY && src.width == targetEndX && src.height == targetEndY) {
             Timber.d("Keeping original")
-            return@withContext src
+            return@withContext Pair(src, target)
         }
+
+        if (onlyDimensions) return@withContext Pair(src, target)
 
         // Crop
         Timber.d("Target crop to ($targetStartX, $targetStartY) / ($targetEndX, $targetEndY)")
         try {
-            return@withContext Bitmap.createBitmap(
-                src,
-                targetStartX,
-                targetStartY,
-                targetEndX - targetStartX,
-                targetEndY - targetStartY
+            return@withContext Pair(
+                Bitmap.createBitmap(
+                    src,
+                    targetStartX,
+                    targetStartY,
+                    targetEndX - targetStartX,
+                    targetEndY - targetStartY
+                ), target
             )
         } finally {
             src.recycle()
@@ -207,7 +224,7 @@ private fun detectDichoY(
             testedPos.add(posX)
             newSample = detectX(pixels, posX, start.y, end.y, width)
             if (newSample > -1) {
-                Timber.d("sampleY $newSample @ $posX")
+                Timber.v("sampleY $newSample @ $posX")
                 samples.add(newSample)
             }
         }
@@ -256,7 +273,7 @@ private fun detectDichoX(
             testedPos.add(posY)
             newSample = detectY(pixels, posY, start.x, end.x, width)
             if (newSample > -1) {
-                Timber.d("sampleX $newSample @ $posY")
+                Timber.v("sampleX $newSample @ $posY")
                 samples.add(newSample)
             }
         }

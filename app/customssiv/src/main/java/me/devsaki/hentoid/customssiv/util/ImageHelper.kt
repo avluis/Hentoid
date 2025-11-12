@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.net.Uri
-import androidx.core.net.toUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -154,8 +153,9 @@ internal suspend fun getImageDimensions(context: Context, uri: Uri): Point =
         if (!fileExists(context, uri)) return@withContext Point(0, 0)
 
         val ext = getExtensionFromUri(uri.toString())
-        if (ext == "jxl" || ext == "avif") {
-            return@withContext Point(0, 0) // Not supported by SSIV
+        if (ext == "jxl" || ext == "avif" || ext == "mp4") {
+            // Not supported by SSIV
+            return@withContext Point(0, 0)
         } else { // Natively supported by Android
             val options = BitmapFactory.Options()
             options.inJustDecodeBounds = true
