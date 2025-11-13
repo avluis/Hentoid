@@ -480,7 +480,9 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         try {
             val groupsFile = explorer.findFile(context, rootFolder, GROUPS_JSON_FILE_NAME)
             if (groupsFile != null) {
-                dao.flagAllGroups(Grouping.CUSTOM) // Flag existing groups for cleanup
+                // Flag existing groups for cleanup
+                dao.flagAllGroups(Grouping.CUSTOM)
+                dao.flagAllGroups(Grouping.DYNAMIC)
                 importGroups(context, groupsFile, dao, log)
             } else trace(Log.INFO, STEP_GROUPS, log, "No groups file found")
         } finally {
@@ -1033,7 +1035,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         val contentCollection = deserialiseCollectionJson(context, groupsFile)
         if (null != contentCollection) {
             trace(Log.INFO, STEP_GROUPS, log, "Groups JSON deserialized")
-            importCustomGroups(contentCollection, dao, log)
+            importGroups(Grouping.CUSTOM, contentCollection, dao, log)
+            importGroups(Grouping.DYNAMIC, contentCollection, dao, log)
             importEditedGroups(contentCollection, Grouping.ARTIST, dao, log)
             importEditedGroups(contentCollection, Grouping.DL_DATE, dao, log)
         } else {
@@ -1046,22 +1049,24 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private fun importCustomGroups(
+    private fun importGroups(
+        grouping : Grouping,
         contentCollection: JsonContentCollection,
         dao: CollectionDAO,
         log: MutableList<LogEntry>
     ) {
-        val groups = contentCollection.getEntityGroups(Grouping.CUSTOM)
+        val groups = contentCollection.getEntityGroups(grouping)
         eventProgress(STEP_GROUPS, groups.size, 0, 0)
         trace(
             Log.INFO,
             STEP_GROUPS,
             log,
-            "%s custom groups detected",
-            groups.size.toString()
+            "%s %s groups detected",
+            groups.size.toString(),
+            grouping.displayName
         )
         groups.forEachIndexed { index, g ->
-            val existing = dao.selectGroupByName(Grouping.CUSTOM.id, g.name)
+            val existing = dao.selectGroupByName(grouping.id, g.name)
             if (null == existing) { // Create brand new
                 dao.insertGroup(g)
                 trace(Log.INFO, STEP_GROUPS, log, "Import OK : %s", g.name)
@@ -1078,7 +1083,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             }
             eventProgress(STEP_GROUPS, groups.size, index + 1, 0)
         }
-        trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded")
+        trace(Log.INFO, STEP_GROUPS, log, "Import ${grouping.displayName} groups succeeded")
     }
 
     private fun importEditedGroups(
