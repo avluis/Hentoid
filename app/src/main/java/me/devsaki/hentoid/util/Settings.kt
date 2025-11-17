@@ -534,7 +534,7 @@ object Settings {
     var isTextMenuOn: Boolean by BoolSetting(Key.TEXT_SELECT_MENU, false)
     var arePlugReactionsOn: Boolean by BoolSetting("plug_reactions_on", true)
     val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
-    val maxDbSizeKb: Long by LongSetting("db_max_size", 3L * 1024 * 1024) // 3GB
+    val maxDbSizeKb: Long by LongSetting("db_max_size", 4L * 1024 * 1024) // 4GB
     var colorTheme: Int by IntSettingStr(Key.COLOR_THEME, Value.COLOR_THEME_LIGHT)
 
 
