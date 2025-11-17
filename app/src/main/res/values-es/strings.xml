@@ -149,10 +149,10 @@
     <string name="close_drawer">Cerrar panel </string>
     <string name="confirm">Confirmar</string>
     <string name="confirm_cancel_all">¿Cancelar todas las descargas?</string>
-    <plurals name="confirm_cancel_all_errors">
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
         <item quantity="other">¿Cancelar todos los %d libros con errores?</item>
     </plurals>
-    <plurals name="confirm_redownload_all">
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
         <item quantity="other">¿Volver a descargar %d elementos?</item>
     </plurals>
     <string name="content_not_found">Error - contenido no encontrado</string>

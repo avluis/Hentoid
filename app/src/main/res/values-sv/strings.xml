@@ -138,10 +138,10 @@
     <string name="close_drawer">Stäng låda</string>
     <string name="confirm">Bekräfta</string>
     <string name="confirm_cancel_all">Avbryt hela kön?</string>
-    <plurals name="confirm_cancel_all_errors">
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
         <item quantity="other">Avbryt alla %d böcker med fel?</item>
     </plurals>
-    <plurals name="confirm_redownload_all">
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
         <item quantity="other">Ladda ner pånytt %d föremål?</item>
     </plurals>
     <string name="content_not_found">Fel - innehåll kunde inte hittas</string>
