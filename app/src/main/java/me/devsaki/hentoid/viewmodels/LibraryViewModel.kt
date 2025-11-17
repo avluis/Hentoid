@@ -535,6 +535,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
             contentSearchManager.setExcludedAttrs(searchUri.excludedAttributeTypes)
             contentSearchManager.setLocation(searchUri.location.value)
             contentSearchManager.setContentType(searchUri.contentType.value)
+            contentSearchManager.setQuery(searchUri.query)
         } else contentSearchManager.setGroup(group)
 
         newContentSearch.value = true
