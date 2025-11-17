@@ -135,7 +135,7 @@ open class CustomWebViewClient : WebViewClient {
     private val markQueued = AtomicBoolean(Settings.isBrowserMarkQueued)
     private val markBlockedTags = AtomicBoolean(Settings.isBrowserMarkBlockedTags)
     private val dnsOverHttpsEnabled = AtomicBoolean(Settings.dnsOverHttps > -1)
-
+    private val proxyEnabled = AtomicBoolean(Settings.proxy.isNotEmpty())
 
     // List of elements (CSS selector) to be removed before displaying the page
     private val removableElements: MutableList<String> by lazy { ArrayList() }
@@ -557,7 +557,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun sendRequest(request: WebResourceRequest, postBody: String = ""): WebResourceResponse? {
-        if (dnsOverHttpsEnabled.get() || site.useManagedRequests) {
+        if (dnsOverHttpsEnabled.get() || proxyEnabled.get() || site.useManagedRequests) {
             // Query resource using OkHttp
             val urlStr = request.url.toString()
             val requestHeadersList =
@@ -858,6 +858,10 @@ open class CustomWebViewClient : WebViewClient {
 
     fun setDnsOverHttpsEnabled(value: Boolean) {
         dnsOverHttpsEnabled.set(value)
+    }
+
+    fun setProxyEnabled(value: Boolean) {
+        proxyEnabled.set(value)
     }
 
     /**

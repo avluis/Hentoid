@@ -1853,6 +1853,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         } else if (Settings.Key.BROWSER_DNS_OVER_HTTPS == key) {
             webClient.setDnsOverHttpsEnabled(Settings.dnsOverHttps > -1)
             reload = true
+        } else if (Settings.Key.BROWSER_PROXY == key) {
+            webClient.setProxyEnabled(Settings.proxy.isNotEmpty())
+            reload = true
         } else if (Settings.Key.BROWSER_QUICK_DL == key) {
             if (Settings.isBrowserQuickDl) webView.setOnLongTapListener { x: Int, y: Int ->
                 onLongTap(x, y)

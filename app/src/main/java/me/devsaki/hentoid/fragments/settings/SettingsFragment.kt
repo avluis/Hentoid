@@ -42,7 +42,9 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.retrofit.GithubServer
+import me.devsaki.hentoid.retrofit.JikanServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
+import me.devsaki.hentoid.retrofit.sources.KemonoServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.Settings
@@ -173,6 +175,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
             Settings.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
             Settings.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
+            Settings.Key.BROWSER_PROXY -> onProxyChanged()
             Settings.Key.WEB_AUGMENTED_BROWSER -> onAugmentedBrowserChanged()
         }
     }
@@ -301,6 +304,26 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 LusciousServer.init()
                 PixivServer.init()
                 DeviantArtServer.init()
+                KemonoServer.init()
+                JikanServer.init()
+            }
+        }
+    }
+
+    private fun onProxyChanged() {
+        if (Settings.proxy.isNotEmpty()) showSnackbar(R.string.proxy_warning)
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+                RequestQueueManager.getInstance()?.resetRequestQueue(true)
+                // Reset all retrofit clients
+                GithubServer.init()
+                EHentaiServer.init()
+                LusciousServer.init()
+                PixivServer.init()
+                DeviantArtServer.init()
+                KemonoServer.init()
+                JikanServer.init()
             }
         }
     }

@@ -107,7 +107,7 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
 
         // TODO optimize, factorize
         private fun sendRequest(request: WebResourceRequest): WebResourceResponse? {
-            if (Settings.dnsOverHttps > -1) {
+            if (Settings.dnsOverHttps > -1 || Settings.proxy.isNotEmpty()) {
                 // Query resource using OkHttp
                 val urlStr = request.url.toString()
                 val requestHeadersList =

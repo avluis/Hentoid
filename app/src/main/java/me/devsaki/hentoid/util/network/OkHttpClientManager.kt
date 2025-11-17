@@ -4,6 +4,7 @@ import android.util.SparseArray
 import androidx.core.util.containsKey
 import androidx.core.util.valueIterator
 import me.devsaki.hentoid.core.HentoidApp
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.dnsOverHttps
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.network.Source.Companion.fromValue
@@ -15,7 +16,10 @@ import okhttp3.brotli.BrotliInterceptor
 import okhttp3.dnsoverhttps.DnsOverHttps
 import timber.log.Timber
 import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.concurrent.TimeUnit
+
 
 /**
  * Manages a single instance of OkHttpClient per timeout delay
@@ -74,11 +78,24 @@ object OkHttpClientManager {
         val primaryClient = instances.get(0)
 
         // Set custom delays
-        val result = primaryClient.newBuilder()
+        val builder = primaryClient.newBuilder()
             .followRedirects(followRedirects)
             .connectTimeout(connectTimeout.toLong(), TimeUnit.MILLISECONDS)
             .readTimeout(ioTimeout.toLong(), TimeUnit.MILLISECONDS)
             .writeTimeout(ioTimeout.toLong(), TimeUnit.MILLISECONDS)
+
+        // Add proxy if needed
+        try {
+            val proxyStr = Settings.proxy.lowercase()
+            val isProtocol = proxyStr.startsWith("http")
+            val proxyParts = proxyStr.split(':')
+            val host = proxyParts[if (isProtocol) 1 else 0]
+            val port =
+                if (proxyParts.size > if (isProtocol) 2 else 1) proxyParts.last().toInt() else 80
+            builder.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(host, port)))
+        } catch (e: Exception) {
+            Timber.w(e)
+        }
 
         // Add DNS over HTTPS if needed
         val doHSource = fromValue(dnsOverHttps)
@@ -88,10 +105,10 @@ object OkHttpClientManager {
                 .url(doHSource.getPrimaryUrl())
                 .bootstrapDnsHosts(doHSource.getHosts())
                 .build()
-            result.dns(dns)
+            builder.dns(dns)
         }
 
-        return result.build()
+        return builder.build()
     }
 
     @Throws(IOException::class)
@@ -100,7 +117,12 @@ object OkHttpClientManager {
         // If not specified, all requests are done with the device's mobile user-agent, without the Hentoid string
         if (null == chain.request().header("User-Agent")
             && null == chain.request().header("user-agent")
-        ) builder.header(HEADER_USER_AGENT, getMobileUserAgent(false, true))
+        ) builder.header(
+            HEADER_USER_AGENT, getMobileUserAgent(
+                withHentoid = false,
+                withWebview = true
+            )
+        )
         return chain.proceed(builder.build())
     }
 }

@@ -122,7 +122,9 @@ class CloudflareHelper {
                 it.loadWithOverviewMode = true
             }
             if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
-            client = CloudflareWebViewClient(Settings.dnsOverHttps > -1)
+            client = CloudflareWebViewClient(
+                Settings.dnsOverHttps > -1, Settings.proxy.isNotEmpty()
+            )
             webViewClient = client
         }
 
@@ -141,7 +143,10 @@ class CloudflareHelper {
         }
     }
 
-    internal class CloudflareWebViewClient(private val dnsOverHttpsEnabled: Boolean) :
+    internal class CloudflareWebViewClient(
+        private val dnsOverHttpsEnabled: Boolean,
+        private val proxyEnabled: Boolean
+    ) :
         WebViewClient() {
 
         var useMobileAgent = false
@@ -155,7 +160,7 @@ class CloudflareHelper {
             view: WebView,
             request: WebResourceRequest
         ): WebResourceResponse? {
-            if (dnsOverHttpsEnabled) {
+            if (dnsOverHttpsEnabled || proxyEnabled) {
                 // Query resource using OkHttp
                 val urlStr = request.url.toString()
                 val requestHeadersList =

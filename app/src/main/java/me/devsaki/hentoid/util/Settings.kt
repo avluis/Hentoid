@@ -265,6 +265,10 @@ object Settings {
         Key.BROWSER_DNS_OVER_HTTPS,
         Source.NONE.value // No DNS
     )
+    val proxy: String by StringSetting(
+        Key.BROWSER_PROXY,
+        "" // No proxy
+    )
 
     // QUEUE / DOWNLOADER
     val isDownloadEhHires: Boolean by BoolSetting("pref_dl_eh_hires", false)
@@ -683,6 +687,7 @@ object Settings {
         const val BROWSER_QUICK_DL = "pref_browser_quick_dl"
         const val BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold"
         const val BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https"
+        const val BROWSER_PROXY = "pref_browser_proxy"
         const val BROWSER_CLEAR_COOKIES = "pref_browser_clear_cookies"
         const val BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist"
         const val DL_HTTP_429_DEFAULT_DELAY = "pref_dl_http_429_default_delay"
