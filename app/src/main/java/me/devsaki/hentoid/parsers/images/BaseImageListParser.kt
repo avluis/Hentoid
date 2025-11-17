@@ -7,6 +7,7 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.parsers.ParseProgress
+import me.devsaki.hentoid.parsers.Progressor
 import me.devsaki.hentoid.parsers.addSavedCookiesToHeader
 import me.devsaki.hentoid.parsers.setDownloadParams
 import me.devsaki.hentoid.parsers.urlsToImageFiles
@@ -16,7 +17,7 @@ import org.greenrobot.eventbus.Subscribe
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class BaseImageListParser : ImageListParser {
+abstract class BaseImageListParser : ImageListParser, Progressor {
     private val progress = ParseProgress()
     protected var processHalted = AtomicBoolean(false)
     protected var processedUrl = ""
@@ -85,25 +86,25 @@ abstract class BaseImageListParser : ImageListParser {
         return result
     }
 
-    open fun progressStart(
+    override fun progressStart(
         onlineContent: Content,
-        storedContent: Content? = null,
-        maxSteps: Int = 1
+        storedContent: Content?,
+        maxSteps: Int
     ) {
         if (progress.hasStarted()) return
         val storedId = storedContent?.id ?: -1
         progress.start(onlineContent.id, storedId, maxSteps)
     }
 
-    open fun progressPlus(progress: Float) {
+    override fun progressPlus(progress: Float) {
         this.progress.advance(progress)
     }
 
-    open fun progressNext() {
+    override fun progressNext() {
         progress.nextStep()
     }
 
-    open fun progressComplete() {
+    override fun progressComplete() {
         progress.complete()
     }
 
@@ -116,7 +117,7 @@ abstract class BaseImageListParser : ImageListParser {
     open fun onDownloadCommand(event: DownloadCommandEvent) {
         when (event.type) {
             DownloadCommandEvent.Type.EV_PAUSE, DownloadCommandEvent.Type.EV_CANCEL, DownloadCommandEvent.Type.EV_SKIP
-            -> processHalted.set(true)
+                -> processHalted.set(true)
 
             DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT ->
                 if (event.content != null && event.content.galleryUrl == processedUrl) {

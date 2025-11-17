@@ -1,19 +1,17 @@
 package me.devsaki.hentoid.parsers.images
 
-import me.devsaki.hentoid.activities.sources.KEMONO_DOMAIN_FILTER
-import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.json.sources.kemono.KemonoArtist
+import me.devsaki.hentoid.parsers.Progressor
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getUserAgent
 import me.devsaki.hentoid.retrofit.sources.KemonoServer
+import me.devsaki.hentoid.util.download.DownloadRateLimiter
 import me.devsaki.hentoid.util.download.DownloadRateLimiter.setRateLimit
-import me.devsaki.hentoid.util.download.DownloadRateLimiter.take
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.getCookies
@@ -75,13 +73,15 @@ class KemonoParser : BaseImageListParser() {
                 parts.service,
                 parts.userId,
                 cookieStr,
-                userAgent
+                userAgent,
+                this,
+                true
             ).imageList
         } catch (e: Exception) {
             Timber.d(e)
             throw EmptyResultException(e.message ?: "")
         }
-        take() // One last delay before download phase
+        DownloadRateLimiter.take() // One last delay before download phase
         return emptyList()
     }
 
@@ -119,6 +119,10 @@ class KemonoParser : BaseImageListParser() {
             userAgent: String
         ): Content {
             try {
+                // Get artist info
+                val artist = getArtistAttr(service, userId, cookieStr, userAgent)
+                DownloadRateLimiter.take()
+
                 // Get gallery info
                 KemonoServer.api.getGallery(
                     service = service,
@@ -129,8 +133,7 @@ class KemonoParser : BaseImageListParser() {
                     userAgent = userAgent
                 ).execute().body()?.update(content, url, updateImages)?.let { result ->
                     // Add artist info
-                    enrichWithArtist(result, service, userId, cookieStr, userAgent)
-                    return result
+                    return result.addAttributes(listOf(artist.toAttribute()))
                 }
                 throw ParseException("No content found")
             } catch (e: IOException) {
@@ -145,52 +148,74 @@ class KemonoParser : BaseImageListParser() {
             service: String,
             userId: String,
             cookieStr: String,
-            userAgent: String
+            userAgent: String,
+            progressor: Progressor? = null,
+            parseImages: Boolean = false
         ): Content {
             // Get galleries info
             try {
-                KemonoServer.api.getArtistGalleries(
-                    service = service,
-                    userId = userId,
-                    cookies = cookieStr,
-                    accept = "text/css",
-                    userAgent = userAgent
-                ).execute().body()?.let { post ->
-                    content.site = Site.KEMONO
-                    content.url = url.replace("/api/v1/", "/")
-                        .replace("/posts", "/")
-                    content.status = StatusContent.SAVED
-                    content.uploadDate = 0L
-                    val artist = enrichWithArtist(content, service, userId, cookieStr, userAgent)
-                    content.title = cleanup(artist.name)
+                // Get artist info
+                progressor?.progressStart(content)
+                val artist = getArtistAttr(service, userId, cookieStr, userAgent)
+                DownloadRateLimiter.take()
+                content.site = Site.KEMONO
+                content.url = url.replace("/api/v1/", "/")
+                    .replace("/posts", "/")
+                content.status = StatusContent.SAVED
+                content.uploadDate = 0L
+                content.title = cleanup(artist.name)
+                content.addAttributes(listOf(artist.toAttribute()))
 
-                    // One result = one chapter, if it contains at least an usable picture (i.e. not exclusively MEGA links)
-                    val chapters = kotlin.collections.ArrayList<Chapter>()
-                    val chapterOrder = AtomicInteger(1)
-                    val pageOrder = AtomicInteger(1)
-                    post.forEachIndexed { _, result ->
-                        chapters.add(
-                            result.toChapter(
-                                artist.id,
-                                chapterOrder,
-                                pageOrder
-                            )
-                        )
-                    }
-                    content.setChapters(chapters)
-                    content.qtyPages = chapters.sumOf { it.imageList.size }
-                    content.setImageFiles(chapters.flatMap { it.imageList })
+                if (!parseImages) {
+                    content.qtyPages = 0
+                    content.setImageFiles(emptyList())
                     return content
                 }
-                throw ParseException("No content found")
+
+                // One result = one chapter, if it contains at least an usable picture (i.e. not exclusively MEGA links)
+                val chapters = ArrayList<Chapter>()
+                val chapterOrder = AtomicInteger(1)
+                val pageOrder = AtomicInteger(1)
+                var collectedGalleries = 0
+                var nbResultsPerCall = 0
+                var iteration = 0
+
+                while (collectedGalleries < artist.postCount) {
+                    KemonoServer.api.getArtistGalleries(
+                        service = service,
+                        userId = userId,
+                        cookies = cookieStr,
+                        accept = "text/css",
+                        userAgent = userAgent,
+                        offset = nbResultsPerCall * iteration++
+                    ).execute().body()?.let { post ->
+                        if (0 == nbResultsPerCall) nbResultsPerCall = post.count()
+                        collectedGalleries += post.count()
+                        post.forEachIndexed { _, result ->
+                            chapters.add(
+                                result.toChapter(
+                                    artist.id,
+                                    chapterOrder,
+                                    pageOrder
+                                )
+                            )
+                        }
+                        progressor?.progressPlus(collectedGalleries * 1f / artist.postCount)
+                        DownloadRateLimiter.take()
+                    }
+                }
+                content.setChapters(chapters)
+                content.qtyPages = chapters.sumOf { it.imageList.size }
+                content.setImageFiles(chapters.flatMap { it.imageList })
+                progressor?.progressComplete()
+                return content
             } catch (e: IOException) {
                 Timber.e(e, "Error parsing content.")
             }
             return Content(site = Site.KEMONO, status = StatusContent.IGNORED)
         }
 
-        private fun enrichWithArtist(
-            content: Content,
+        private fun getArtistAttr(
             service: String,
             userId: String,
             cookieStr: String,
@@ -202,19 +227,7 @@ class KemonoParser : BaseImageListParser() {
                 cookies = cookieStr,
                 accept = "text/css",
                 userAgent = userAgent
-            ).execute().body()?.let { artist ->
-                content.addAttributes(
-                    listOf(
-                        Attribute(
-                            AttributeType.ARTIST,
-                            artist.name,
-                            "https://$KEMONO_DOMAIN_FILTER/${artist.service}/user/${artist.id}",
-                            Site.KEMONO
-                        )
-                    )
-                )
-                return artist
-            }
+            ).execute().body()?.let { return it }
             throw ParseException("No artist found")
         }
     }

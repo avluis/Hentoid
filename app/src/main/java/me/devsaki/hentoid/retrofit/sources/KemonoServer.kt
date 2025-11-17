@@ -11,6 +11,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 object KemonoServer {
     private const val KEMONO_URL = "https://$KEMONO_DOMAIN_FILTER/api/v1/"
@@ -47,7 +48,8 @@ object KemonoServer {
             @Path("id") userId: String,
             @Header("cookie") cookies: String,
             @Header("accept") accept: String,
-            @Header("user-agent") userAgent: String
+            @Header("user-agent") userAgent: String,
+            @Query("o") offset: Int = 0
         ): Call<List<KemonoPost>>
 
         @GET("{service}/user/{user_id}/post/{id}")
