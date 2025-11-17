@@ -149,10 +149,10 @@
     <string name="close_drawer">Cerrar panel </string>
     <string name="confirm">Confirmar</string>
     <string name="confirm_cancel_all">¿Cancelar todas las descargas?</string>
-    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
+    <plurals name="confirm_cancel_all_errors">
         <item quantity="other">¿Cancelar todos los %d libros con errores?</item>
     </plurals>
-    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
+    <plurals name="confirm_redownload_all">
         <item quantity="other">¿Volver a descargar %d elementos?</item>
     </plurals>
     <string name="content_not_found">Error - contenido no encontrado</string>
@@ -377,6 +377,7 @@
     <string name="group_60">Últimos 60 días</string>
     <string name="group_7">Últimos 7 días</string>
     <string name="group_change">Mover a grupo personalizado</string>
+    <string name="group_delete_nothing">Los grupos seleccionados no se pueden eliminar manualmente</string>
     <plurals name="group_delete_selected_book">
         <item quantity="many">Eliminar %d libros</item>
         <item quantity="one">Eliminar %d libro</item>
@@ -539,6 +540,7 @@
         <item quantity="one">%d elemento seleccionado</item>
         <item quantity="other">%d elementos seleccionados</item>
     </plurals>
+    <string name="keep_chapters_first_book_title">Conserva todos los capítulos del primer libro</string>
     <string name="keep_fav_groups">Conservar grupos favoritos</string>
     <string name="lang_cs">checo</string>
     <string name="lang_de">alemán</string>
@@ -644,6 +646,8 @@
     <string name="meta_choose_type">Elegir un tipo para \'%s\'</string>
     <string name="meta_cover_archive_warning">La portada no se puede cambiar para los archivos</string>
     <string name="meta_cover_multiple_warning">La portada no se puede cambiar para varios libros</string>
+    <string name="meta_remove_all_confirm">¿Eliminar todos los metadatos de los libros seleccionados?</string>
+    <string name="meta_remove_all_tags">Eliminar todos los metadatos</string>
     <string name="meta_rename_new_name">Nuevo nombre</string>
     <string name="meta_rename_new_rule">Recordar para descargas futuras</string>
     <string name="meta_replace_with">Reemplazar con…</string>
@@ -665,7 +669,9 @@
     <string name="next_book_help">Libro siguiente</string>
     <string name="next_page">Siguiente página</string>
     <string name="no">No</string>
+    <string name="no_artist_circle_group_name">[sin artista, sin círculo]</string>
     <string name="no_artist_group_name">[sin artista]</string>
+    <string name="no_circle_group_name">[sin círculo]</string>
     <string name="no_error_detected">No se han detectado errores.</string>
     <string name="no_images">No se pudo cargar el libro: No se encontraron imágenes</string>
     <string name="none">Ninguno</string>
@@ -991,6 +997,8 @@
     <string name="stream_progress">Transmitiendo libros</string>
     <string name="stream_updating_webview">Transmisión cancelada - WebView actualizándose</string>
     <string name="streamed_help">Libro transmitido</string>
+    <string name="tag_completed">Terminado</string>
+    <string name="tag_ongoing">En curso</string>
     <string name="tap_to_download">Toca para descargar</string>
     <string name="tap_to_install">Toca para instalar</string>
     <string name="tap_to_retry">Toca para volver a intentar</string>
@@ -1020,6 +1028,8 @@
     <string name="title_submenu_settings">Avanzado</string>
     <string name="torrent_dl_fail">No se pudo realizar la descarga del torrent: %s</string>
     <string name="transcode_encoder_jpeg">JPEG</string>
+    <string name="transcode_encoder_jxl_lossless">JXL (sin pérdida)</string>
+    <string name="transcode_encoder_jxl_lossy">JXL (con pérdida)</string>
     <string name="transcode_encoder_png">PNG</string>
     <string name="transcode_encoder_webp_lossless">WEBP (sin pérdida)</string>
     <string name="transcode_encoder_webp_lossy">WEBP (con pérdida)</string>
@@ -1112,5 +1122,6 @@
     </plurals>
     <string name="work_pages_queue">Páginas: %1$s%2$s</string>
     <string name="work_series">Serie: %s</string>
+    <string name="work_untitled">[Sin datos]</string>
     <string name="yes">Sí</string>
 </resources>

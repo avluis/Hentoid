@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="doh_warning">Algunos sitios web no funcionan bien con DNS mediante HTTPS. Utiliza una aplicación DNS externa si experimentas problemas durante la navegación (p. ej. páginas en blanco o formularios de inicio de sesión que no responden)</string>
     <string name="download_eh_hires_title">Descargar imágenes en alta resolución</string>
     <string name="download_hitomi_avif_off">Descargar imágenes en formato WEBP</string>
@@ -11,6 +11,7 @@
     <string name="library_display_group_figure_title">Figura de grupo</string>
     <string name="mass_operations_summary">Operaciones masivas para la biblioteca</string>
     <string name="mass_operations_title">Operaciones masivas</string>
+    <string name="material_you_warning">Tu dispositivo no es compatible con Material You,  volviendo al tema claro</string>
     <string name="pref_analytics_preference_summary_off">El seguimiento de Analytics se encuentra deshabilitado. Habilitarlo nos ayudará a mejorar la aplicación mediante el seguimiento de los errores y excepciones</string>
     <string name="pref_analytics_preference_summary_on">Seguimiento de Analytics activado.\n¡Gracias por ayudarnos a mejorar Hentoid!</string>
     <string name="pref_analytics_preference_title">Analytics de Firebase</string>
@@ -126,6 +127,7 @@
     <string name="pref_dl_speed_cap_title">Límite de velocidad de descarga</string>
     <string name="pref_dl_threads_quantity_summary">Número de páginas descargadas de forma simultánea\nActual: %s</string>
     <string name="pref_dl_threads_quantity_title">Descargas paralelas</string>
+    <string name="pref_downloader_set_time">Hora establecida</string>
     <string name="pref_drawer_sources_summary">Habilita, deshabilita y reorganiza las fuentes que aparecen en el panel lateral</string>
     <string name="pref_drawer_sources_title">Gestionar fuentes</string>
     <string name="pref_endless_scroll_summary_off">Habilitar desplazamiento infinito en la lista de descargas\nDesactiva el paginado</string>
@@ -168,6 +170,7 @@
     <string name="pref_queue_autostart_on">La cola de descargas se iniciará en cuanto se agregue una descarga</string>
     <string name="pref_queue_autostart_title">Inicio automático de la cola de descargas</string>
     <string name="pref_queue_new_position_title">Posición de las nuevas descargas agregadas</string>
+    <string name="pref_queue_schedule_title">Programar descargas</string>
     <string name="pref_queue_wifi_only_off">Solo se iniciará la cola de descargas si se está conectado a cualquier red</string>
     <string name="pref_queue_wifi_only_on">Solo se iniciará la cola de descargas si se está conectado a una red Wi-Fi</string>
     <string name="pref_queue_wifi_only_title">Solo descargar mediante Wi-Fi</string>

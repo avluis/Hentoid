@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="doh_warning">Vissa webbplatser kommer inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
     <string name="download_eh_hires_title">Ladda ner högupplösta bilder</string>
     <string name="download_hitomi_avif_off">Ladda ner bilder i WEBP-format</string>
@@ -11,6 +11,7 @@
     <string name="library_display_group_figure_title">Gruppfigur</string>
     <string name="mass_operations_summary">Masshandlingar för biblioteket</string>
     <string name="mass_operations_title">Masshandlingar</string>
+    <string name="material_you_warning">Din enhet stödjer inte Material You, byter tillbaka till ljust tema</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking är just nu avstängd.\nAtt slå på den här inställningen kommer hjälpa oss att förbättra appen genom spårande av kraschar &amp; undantagsfall.</string>
     <string name="pref_analytics_preference_summary_on">Analytics Tracking är påslaget.\nTack för hjälpen att förbättra Hentoid!</string>
     <string name="pref_analytics_preference_title">Firebase Analytics</string>
@@ -125,6 +126,7 @@
     <string name="pref_dl_speed_cap_title">Nerladdningshastighetsgräns</string>
     <string name="pref_dl_threads_quantity_summary">Antal bilder som laddas ner samtidigt\nNuvarande: %s</string>
     <string name="pref_dl_threads_quantity_title">Antal parallella nedladdningar</string>
+    <string name="pref_downloader_set_time">Ställ in tid</string>
     <string name="pref_drawer_sources_summary">Aktivera, inaktivera och omorganisera webbplatser som dyker upp på det vänstra navigationsfältet</string>
     <string name="pref_drawer_sources_title">Hantera källor</string>
     <string name="pref_endless_scroll_summary_off">Tillåter ändlöst skrollande i nedladdningslistan\nStänger av bläddrande</string>
@@ -167,6 +169,7 @@
     <string name="pref_queue_autostart_on">Nerladdningskön kommer påbörjas precis efter en nerladdning har färdigställts</string>
     <string name="pref_queue_autostart_title">Auto-starta nerladdningskön</string>
     <string name="pref_queue_new_position_title">Nya nedladdningars position</string>
+    <string name="pref_queue_schedule_title">Schemalägg nerladdningar</string>
     <string name="pref_queue_wifi_only_off">Nerladdningskön kommer påbörjas när enheten är ansluten till något nätverk överhuvudtaget</string>
     <string name="pref_queue_wifi_only_on">Nerladdningskön kommer endast påbörjas om ansluten till Wi-Fi</string>
     <string name="pref_queue_wifi_only_title">Ladda endast ner via Wi-Fi</string>

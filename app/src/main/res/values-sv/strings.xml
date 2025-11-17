@@ -138,10 +138,10 @@
     <string name="close_drawer">Stäng låda</string>
     <string name="confirm">Bekräfta</string>
     <string name="confirm_cancel_all">Avbryt hela kön?</string>
-    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
+    <plurals name="confirm_cancel_all_errors">
         <item quantity="other">Avbryt alla %d böcker med fel?</item>
     </plurals>
-    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
+    <plurals name="confirm_redownload_all">
         <item quantity="other">Ladda ner pånytt %d föremål?</item>
     </plurals>
     <string name="content_not_found">Fel - innehåll kunde inte hittas</string>
@@ -352,6 +352,7 @@
     <string name="group_60">Senaste 60 dagarna</string>
     <string name="group_7">Senaste 7 dagarna</string>
     <string name="group_change">Flytta till anpassad grupp</string>
+    <string name="group_delete_nothing">Valda grupper kan inte raderas manuellt</string>
     <plurals name="group_delete_selected_book">
         <item quantity="one">Ta bort %d bok</item>
         <item quantity="other">Ta bort %d böcker</item>
@@ -499,6 +500,7 @@
         <item quantity="one">%d föremål valt</item>
         <item quantity="other">%d föremål utvalda</item>
     </plurals>
+    <string name="keep_chapters_first_book_title">Behåll alla kapitel i den första boken</string>
     <string name="keep_fav_books">Behåll favoritböcker</string>
     <string name="keep_fav_groups">Behandla inte böcker i favoritgrupper</string>
     <string name="lang_cs">Tjeckiska</string>
@@ -605,6 +607,8 @@
     <string name="meta_choose_type">Välj en typ för \'%s\'</string>
     <string name="meta_cover_archive_warning">Det går inte att ändra omslag på arkiv</string>
     <string name="meta_cover_multiple_warning">Omlaget kan inte ändras på fler än en bok åt gången</string>
+    <string name="meta_remove_all_confirm">Ta bort metadata från valda böcker</string>
+    <string name="meta_remove_all_tags">Ta bort all metadata</string>
     <string name="meta_rename_new_name">Nytt namn</string>
     <string name="meta_rename_new_rule">Kom ihåg det här för framtida nedladdningar</string>
     <string name="meta_replace_with">Ersätt med…</string>
@@ -626,7 +630,9 @@
     <string name="next_book_help">Nästa bok</string>
     <string name="next_page">Nästa sida</string>
     <string name="no">Nej</string>
+    <string name="no_artist_circle_group_name">[Ingen konstnär, ingen cirkel]</string>
     <string name="no_artist_group_name">[ingen konstnär]</string>
+    <string name="no_circle_group_name">[Ingen cirkel]</string>
     <string name="no_error_detected">Inga fel hittade.</string>
     <string name="no_images">Kunde inte ladda boken: Ingen bild hittad</string>
     <string name="none">inget</string>
@@ -946,6 +952,8 @@
     <string name="stream_progress">Strömma böcker</string>
     <string name="stream_updating_webview">Streaming avbruten - Webbvyn uppdaterar</string>
     <string name="streamed_help">Streama bok</string>
+    <string name="tag_completed">Färdigställd</string>
+    <string name="tag_ongoing">Pågående</string>
     <string name="tap_to_download">Tryck för att ladda ner</string>
     <string name="tap_to_install">Tryck för att installera</string>
     <string name="tap_to_retry">Tryck för att försöka igen</string>
@@ -975,6 +983,8 @@
     <string name="title_submenu_settings">Avancerat</string>
     <string name="torrent_dl_fail">Nerladdning av torrent misslyckades: %s</string>
     <string name="transcode_encoder_jpeg">JPEG</string>
+    <string name="transcode_encoder_jxl_lossless">JXL (förlustfri)</string>
+    <string name="transcode_encoder_jxl_lossy">JXL (förlustbenägen)</string>
     <string name="transcode_encoder_png">PNG</string>
     <string name="transcode_encoder_webp_lossless">WEBP (förlustfri)</string>
     <string name="transcode_encoder_webp_lossy">WEBP (förlustbenägen)</string>
@@ -1063,5 +1073,6 @@
     </plurals>
     <string name="work_pages_queue">Sidor: %1$s%2$s</string>
     <string name="work_series">Serier: %s</string>
+    <string name="work_untitled">[Ingen data]</string>
     <string name="yes">Ja</string>
 </resources>
