@@ -85,16 +85,19 @@ object OkHttpClientManager {
             .writeTimeout(ioTimeout.toLong(), TimeUnit.MILLISECONDS)
 
         // Add proxy if needed
-        try {
-            val proxyStr = Settings.proxy.lowercase()
-            val isProtocol = proxyStr.startsWith("http")
-            val proxyParts = proxyStr.split(':')
-            val host = proxyParts[if (isProtocol) 1 else 0]
-            val port =
-                if (proxyParts.size > if (isProtocol) 2 else 1) proxyParts.last().toInt() else 80
-            builder.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(host, port)))
-        } catch (e: Exception) {
-            Timber.w(e)
+        val proxyStr = Settings.proxy.lowercase().trim()
+        if (proxyStr.isNotEmpty()) {
+            try {
+                val isProtocol = proxyStr.startsWith("http")
+                val proxyParts = proxyStr.split(':')
+                val host = proxyParts[if (isProtocol) 1 else 0]
+                val port =
+                    if (proxyParts.size > if (isProtocol) 2 else 1) proxyParts.last()
+                        .toInt() else 80
+                builder.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(host, port)))
+            } catch (e: Exception) {
+                Timber.w(e)
+            }
         }
 
         // Add DNS over HTTPS if needed
