@@ -100,7 +100,7 @@ open class CustomWebViewClient : WebViewClient {
     private val scope: CoroutineScope
 
     // Listener to the results of the page parser
-    protected val resConsumer: WebResultConsumer? // TODO remove if unused in v1.21.x
+    protected val resConsumer: WebResultConsumer?
 
     // List of the URL patterns identifying a parsable book gallery page
     // TODO differentiate API call URLs and HTML gallery URLs

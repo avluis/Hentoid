@@ -936,8 +936,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * Listener for the Action button : download content, view queue or read content
      */
     protected open fun onActionClick() {
-        val theContent = currentContent
-        if (null == theContent) return
+        val theContent = currentContent ?: return
         val needsDuplicateAlert =
             Settings.downloadDuplicateAsk && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD
         when (actionButtonMode) {
@@ -1311,8 +1310,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 dao.selectContentByUrlOrCover(
                     onlineContent.site,
                     onlineContent.url,
-                    searchUrl,
-                    false
+                    searchUrl
                 )
             val isInCollection = contentDB != null && isInLibrary(contentDB.status)
             val isInQueue = contentDB != null && isInQueue(contentDB.status)
