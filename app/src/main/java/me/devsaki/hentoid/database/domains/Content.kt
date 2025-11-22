@@ -329,9 +329,9 @@ data class Content(
         attributes.clear()
     }
 
-    fun putAttributes(attributes: Collection<Attribute?>?) {
+    fun putAttributes(attributes: Collection<Attribute>) {
         // We do want to compare array references, not content
-        if (attributes != null && attributes !== this.attributes) {
+        if (attributes !== this.attributes) {
             this.attributes.clear()
             this.attributes.addAll(attributes)
         }

@@ -261,14 +261,23 @@ class MetadataEditViewModel(
         }
     }
 
-    fun removeAllAttrs() {
+    fun removeAllAttrs(types: List<AttributeType>) {
         val contents = ArrayList<Content>()
         if (contentList.value != null) {
             contents.addAll(contentList.value!!)
-            contents.forEach { it.clearAttributes() }
+            contents.forEach { c ->
+                val attrs = c.attributeMap
+                types.forEach { attrs.remove(it) }
+                c.putAttributes(attrs)
+            }
             contentList.postValue(contents)
         }
-        contentAttributes.postValue(emptyList())
+
+        contentAttributes.value?.let { ca ->
+            contentAttributes.postValue(
+                ca.filterNot { types.contains(it.type) }
+            )
+        }
     }
 
     fun setTitle(value: String) {

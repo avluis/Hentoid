@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities
 
 import android.graphics.Typeface
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -195,7 +196,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             it.tvTitle.text = contents[0].title
 
             // Tag filters
-            bindTagFilterssUI()
+            bindTagFiltersUI()
 
             // Cover
             val thumbLocation = if (contents.size > 1) "" else contents[0].cover.usableUri
@@ -233,7 +234,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
         }
     }
 
-    private fun bindTagFilterssUI() {
+    private fun bindTagFiltersUI() {
         binding?.tagFilter?.adapter = fastFilterAdapter
         fastFilterAdapter.onClickListener =
             { _: View?, _: IAdapter<AttributeTypeFilterItem>, i: AttributeTypeFilterItem, _: Int ->
@@ -487,15 +488,22 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
     }
 
     private fun removeAllTags() {
+        val title = if (selectedAttributeTypes.size == allAttributeTypes.size)
+            resources.getString(R.string.meta_remove_all_confirm)
+        else
+            resources.getString(
+                R.string.meta_remove_all_type_confirm,
+                TextUtils.join(
+                    ",",
+                    selectedAttributeTypes.map { resources.getString(it.displayName) })
+            )
+
         val builder = MaterialAlertDialogBuilder(this)
-        val title = resources.getString(
-            R.string.meta_remove_all_confirm
-        )
         builder.setMessage(title)
             .setPositiveButton(
                 R.string.ok
             ) { _, _ ->
-                viewModel.removeAllAttrs()
+                viewModel.removeAllAttrs(selectedAttributeTypes)
             }
             .setNegativeButton(R.string.cancel, null)
             .create().show()
