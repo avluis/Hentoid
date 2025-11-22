@@ -476,7 +476,6 @@ class ImagePagerAdapter(context: Context) :
             clear()
             videoView.isVisible = false
             videoView.stopPlayback()
-            videoView.setOnPreparedListener { it.setVolume(0f, 0f) }
 
             imageView.isClickable = true
             imageView.isFocusable = true
@@ -582,6 +581,7 @@ class ImagePagerAdapter(context: Context) :
             Timber.d("Picture $absoluteAdapterPosition : Using VideoView")
             videoView.setVideoURI(uri)
             videoView.setOnPreparedListener { mp ->
+                mp.setVolume(0f, 0f)
                 mp.isLooping = true
                 videoView.start()
             }
