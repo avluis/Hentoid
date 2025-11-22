@@ -151,8 +151,8 @@ private fun resizeDims(
     val ratio = if (isManhwa) {
         if (dims.x > maxWidth) maxWidth * 1f / dims.x else 1f
     } else {
-        val maxDim = max(dims.x, dims.y) // Portrait vs. landscape
-        if (maxDim > maxHeight) maxHeight * 1f / maxDim else 1f
+        // Only take height into account (portrait)
+        if (dims.y > maxHeight) maxHeight * 1f / dims.y else 1f
     }
     return resizePlainRatio(source, dims, ratio)
 }
