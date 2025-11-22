@@ -92,9 +92,10 @@ object OkHttpClientManager {
                 val proxyParts = proxyStr.split(':')
                 val host = proxyParts[if (isProtocol) 1 else 0]
                 val port =
-                    if (proxyParts.size > if (isProtocol) 2 else 1) proxyParts.last()
-                        .toInt() else 80
-                builder.proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress(host, port)))
+                    if (proxyParts.size > if (isProtocol) 2 else 1)
+                        proxyParts.last().toInt() else 80
+                Timber.d("proxy $host $port")
+                builder.proxy(Proxy(Proxy.Type.SOCKS, InetSocketAddress(host, port)))
             } catch (e: Exception) {
                 Timber.w(e)
             }
