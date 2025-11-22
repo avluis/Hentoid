@@ -182,6 +182,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
 
     private fun updatePreferenceSummary(preference: Preference, key: String?) {
         if (null == key) return
+        if (Settings.Key.APP_LOCK == key) return // Don't display that ^^"
         if (preference is CheckBoxPreference) return
         if (preference is ListPreference) return
         preference.setSummary(preference.sharedPreferences?.getString(key, "") ?: "")
