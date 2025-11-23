@@ -43,6 +43,7 @@ object OkHttpClientManager {
 
     fun reset() {
         assertNonUiThread() // Closing network operations shouldn't happen on the UI thread
+        Timber.d("Shutting down OkHTTP : Start")
         synchronized(instances) {
             instances.valueIterator().forEach {
                 it.dispatcher.executorService.shutdown()
@@ -55,6 +56,7 @@ object OkHttpClientManager {
             }
             instances.clear()
         }
+        Timber.d("Shutting down OkHTTP : Done")
     }
 
     private fun buildBootstrapClient(): OkHttpClient {
@@ -94,7 +96,7 @@ object OkHttpClientManager {
                 val port =
                     if (proxyParts.size > if (isProtocol) 2 else 1)
                         proxyParts.last().toInt() else 80
-                Timber.d("proxy $host $port")
+                Timber.d("Using proxy $host $port")
                 builder.proxy(Proxy(Proxy.Type.SOCKS, InetSocketAddress(host, port)))
             } catch (e: Exception) {
                 Timber.w(e)

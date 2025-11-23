@@ -43,6 +43,7 @@ import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.JikanServer
+import me.devsaki.hentoid.retrofit.UpdateServer
 import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.KemonoServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
@@ -52,6 +53,7 @@ import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.getFullPathFromUri
+import me.devsaki.hentoid.util.network.OkHttpClientManager
 import me.devsaki.hentoid.viewmodels.SettingsViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.UpdateCheckWorker
@@ -297,7 +299,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
         if (Settings.dnsOverHttps > -1) showSnackbar(R.string.doh_warning)
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+                // Reset OkHttp instance
+                OkHttpClientManager.reset()
+                // Reset connection pool used by the downloader
                 RequestQueueManager.getInstance()?.resetRequestQueue(true)
                 // Reset all retrofit clients
                 GithubServer.init()
@@ -307,6 +311,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 DeviantArtServer.init()
                 KemonoServer.init()
                 JikanServer.init()
+                UpdateServer.init()
             }
         }
     }
@@ -315,7 +320,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
         if (Settings.proxy.isNotEmpty()) showSnackbar(R.string.proxy_warning)
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+                // Reset OkHttp instance
+                OkHttpClientManager.reset()
+                // Reset connection pool used by the downloader
                 RequestQueueManager.getInstance()?.resetRequestQueue(true)
                 // Reset all retrofit clients
                 GithubServer.init()
@@ -325,6 +332,7 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 DeviantArtServer.init()
                 KemonoServer.init()
                 JikanServer.init()
+                UpdateServer.init()
             }
         }
     }

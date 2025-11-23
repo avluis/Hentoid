@@ -19,13 +19,21 @@ object UpdateServer {
             .build()
     }
 
-    val api: Api = Retrofit.Builder()
-        .baseUrl(BuildConfig.UPDATE_URL)
-        .client(OkHttpClientManager.getInstance())
-        .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
-        .build()
-        .create(Api::class.java)
+    lateinit var api: Api
 
+    init {
+        init()
+    }
+
+    // Must have a public init method to reset the connexion pool when updating DoH settings
+    fun init() {
+        api = Retrofit.Builder()
+            .baseUrl(BuildConfig.UPDATE_URL)
+            .client(OkHttpClientManager.getInstance())
+            .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
+            .build()
+            .create(Api::class.java)
+    }
 
     interface Api {
         @get:GET("update.json")
