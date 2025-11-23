@@ -1083,8 +1083,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     showDownloadModeMenu(
                         menu,
                         it.queueList,
-                        { position: Int, _: PowerMenuItem? ->
-                            onNewModeSelected(DownloadMode.fromValue(position))
+                        { _: Int, item: PowerMenuItem ->
+                            onNewModeSelected(DownloadMode.fromValue(item.tag as Int))
                             menu.dismiss()
                         },
                         { leaveSelectionMode() }

@@ -247,7 +247,7 @@
             <ListPreference
                 android:defaultValue="@string/pref_browser_dl_action_default"
                 android:entries="@array/pref_viewer_dl_action_entries"
-                android:entryValues="@array/int_three"
+                android:entryValues="@array/pref_viewer_dl_action_values"
                 android:key="pref_browser_dl_action"
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_browser_dl_action_title"

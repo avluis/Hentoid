@@ -1164,11 +1164,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 showDownloadModeMenu(
                     this,
                     webView, this,
-                    { position2, _ ->
+                    { _, item ->
                         addToQueue(
                             theContent,
                             if (0 == position1) QueuePosition.TOP else QueuePosition.BOTTOM,
-                            if (0 == position2) DownloadMode.DOWNLOAD else DownloadMode.STREAM,
+                            DownloadMode.fromValue(item.tag as Int),
                             isReplaceDuplicate,
                             replacementTitleFinal
                         )
@@ -1187,11 +1187,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             }
         } else if (Settings.getBrowserDlAction() == DownloadMode.ASK) {
             showDownloadModeMenu(
-                this, webView, this, { position, _ ->
+                this, webView, this, { _, item ->
                     addToQueue(
                         theContent,
                         QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
-                        if (0 == position) DownloadMode.DOWNLOAD else DownloadMode.STREAM,
+                        DownloadMode.fromValue(item.tag as Int),
                         isReplaceDuplicate,
                         replacementTitleFinal
                     )
