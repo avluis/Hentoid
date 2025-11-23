@@ -13,7 +13,7 @@ import timber.log.Timber
 const val KEMONO_DOMAIN_FILTER = "kemono.cr"
 private val GALLERY_FILTER = arrayOf(
     "$KEMONO_DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+$",
-    "$KEMONO_DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/posts-legacy$",
+    "$KEMONO_DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/posts[-legacy]{0,1}$",
     "$KEMONO_DOMAIN_FILTER/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$",
     "$KEMONO_DOMAIN_FILTER/api/v1/[\\w%\\-]+/user/[\\w\\-]+/post/[\\d\\-]+$"
 )
