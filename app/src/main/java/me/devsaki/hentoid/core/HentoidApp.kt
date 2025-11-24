@@ -43,7 +43,6 @@ class HentoidApp : Application() {
 
         // Prefs
         Settings.init(this)
-        Settings.performHousekeeping()
 
         // Init version number
         if (0 == Settings.lastKnownAppVersionCode)

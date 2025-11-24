@@ -213,6 +213,8 @@ object AppStartup {
                 Timber.d("Process app update : Clearing app cache")
                 context.clearAppCache()
                 StorageCache.clearAll(context)
+                Timber.d("Process app update : Updating settings")
+                Settings.performHousekeeping(Settings.lastKnownAppVersionCode)
                 Timber.d("Process app update : Complete")
                 EventBus.getDefault().postSticky(AppUpdatedEvent())
                 Settings.lastKnownAppVersionCode = BuildConfig.VERSION_CODE

@@ -37,6 +37,18 @@
         app:layout_constraintTop_toTopOf="@id/picker"
         tools:text="11:10 AM - 5:45 PM" />
 
+    <TextView
+        android:id="@+id/next_schedule_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginTop="4dp"
+        android:textSize="@dimen/text_body_2"
+        app:layout_constraintEnd_toEndOf="@id/picker"
+        app:layout_constraintStart_toStartOf="@id/picker"
+        app:layout_constraintTop_toBottomOf="@id/picker"
+        tools:text="Next run scheduled in 640 min" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"
         style="@style/Widget.Material3.Button.TonalButton.Icon"
@@ -48,7 +60,7 @@
         android:layout_marginEnd="4dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/cancel_button"
-        app:layout_constraintTop_toBottomOf="@id/picker" />
+        app:layout_constraintTop_toBottomOf="@id/next_schedule_txt" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/cancel_button"
@@ -61,6 +73,6 @@
         android:text="@string/cancel"
         app:layout_constraintStart_toEndOf="@id/action_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/picker" />
+        app:layout_constraintTop_toBottomOf="@id/next_schedule_txt" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

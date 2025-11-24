@@ -277,6 +277,7 @@
     <string name="material_you_warning">Your device doesn\'t support Material You; switching back to Light theme</string>
 
     <!-- Misc -->
+    <string name="pref_next_schedule">Next run scheduled in %.0f mins</string>
     <string name="pref_text_select_menu_title">Text select menu</string>
     <string name="pref_text_select_menu_summary_off">You device\'s text select menu doesn\'t allow you to launch nuke codes with Hentoid</string>
     <string name="pref_text_select_menu_summary_on">You device\'s text select menu allows you to launch nuke codes with Hentoid</string>

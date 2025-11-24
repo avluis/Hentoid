@@ -121,11 +121,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     companion object {
         fun isRunning(context: Context): Boolean {
             return isRunning(context, R.id.download_service)
+                    || isRunning(context, R.id.download_service_scheduled)
         }
     }
 
     private enum class QueuingResult {
-        CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
+        CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END, WORKER_STOPPED, CONTENT_DOWNLOADED
     }
 
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
@@ -145,7 +146,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private val requestQueueManager: RequestQueueManager
     private lateinit var progressNotification: DownloadProgressNotification
 
+    private var isManualStart = false
+
     // If the current instance is a scheduled run, when does it end?
+    private var scheduledStart: LocalTime? = null
     private var scheduledEnd: LocalTime? = null
 
     init {
@@ -158,8 +162,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // Are we inside a scheduled run?
         if (Settings.downloadScheduleStart > 0 && Settings.downloadScheduleEnd > 0) {
-            val scheduledTime = LocalTime.ofSecondOfDay(Settings.downloadScheduleStart * 60L)
-            if (LocalTime.now().isAfter(scheduledTime))
+            scheduledStart = LocalTime.ofSecondOfDay(Settings.downloadScheduleStart * 60L)
+            if (LocalTime.now().isAfter(scheduledStart))
                 scheduledEnd = LocalTime.ofSecondOfDay(Settings.downloadScheduleEnd * 60L)
         }
     }
@@ -186,6 +190,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override suspend fun getToWork(input: Data) {
+        isManualStart = inputData.getBoolean("MANUAL_START", false)
         iterateQueue()
     }
 
@@ -196,6 +201,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             ContentQueueManager.unpauseQueue()
             EventBus.getDefault().post(DownloadEvent(DownloadEvent.Type.EV_UNPAUSED))
         }
+
+        // Scheduled start
+        if (!isManualStart) {
+            dao.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING)
+            ContentQueueManager.unpauseQueue()
+        }
+
         // Process these here to avoid initializing notifications for downloads that will never start
         if (isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
@@ -203,9 +215,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
         var result = downloadFirstInQueue()
         while (result.first != QueuingResult.QUEUE_END) {
-            if (result.first == QueuingResult.CONTENT_FOUND) watchProgress(result.second!!)
-            result = downloadFirstInQueue()
+            if (result.first == QueuingResult.CONTENT_FOUND)
+                result = watchProgress(result.second!!)
+            if (result.first != QueuingResult.QUEUE_END) result = downloadFirstInQueue()
             dao.cleanup()
+        }
+        // Reschedule worker if needed
+        if (isManualStart && Settings.downloadScheduleStart > 0) {
+            Timber.d("Rescheduling queue")
+            ContentQueueManager.schedule(applicationContext, Settings.downloadScheduleStart)
         }
         notificationManager.cancel()
     }
@@ -683,7 +701,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      *
      * @param content Content to watch (1st unfrozen book of the download queue)
      */
-    private suspend fun watchProgress(content: Content) {
+    private suspend fun watchProgress(content: Content): Pair<QueuingResult, Content?> {
         val refreshDelayMs = 500
         var isDone: Boolean
         var pagesOK = 0
@@ -701,7 +719,17 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val contentQueueManager = ContentQueueManager
         var isScheduledTimeOver = false
         do {
-            scheduledEnd?.let { isScheduledTimeOver = LocalTime.now().isAfter(it) }
+            if (!isManualStart) {
+                scheduledEnd?.let {
+                    val isCrossDay = (scheduledStart ?: LocalTime.MIN) > it
+                    val now = LocalTime.now()
+                    isScheduledTimeOver = if (isCrossDay) {
+                        (now.isAfter(LocalTime.MIDNIGHT) && now.isAfter(it))
+                    } else {
+                        now.isAfter(it)
+                    }
+                }
+            }
 
             val statuses = dao.countProcessedImagesById(content.id)
             var status = statuses[StatusContent.DOWNLOADED]
@@ -781,7 +809,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             progressNotification.estimateBookSizeMB = estimateBookSizeMB.toInt()
             progressNotification.avgSpeedKbps = avgSpeedKbps
 
-            if (isStopped) return
+            if (isStopped) return Pair(QueuingResult.WORKER_STOPPED, null)
             notificationManager.notify(progressNotification)
 
             EventBus.getDefault().post(
@@ -816,10 +844,14 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (isDone && !downloadInterrupted.get()) {
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.id, content.title, pagesOK, pagesKO, downloadedBytes)
+        } else if (isScheduledTimeOver) {
+            pauseQueue()
+            return Pair(QueuingResult.QUEUE_END, null)
         } else {
             Timber.d("Content download paused : %s [%s]", content.title, content.id)
             if (downloadCanceled.get()) notificationManager.cancel()
         }
+        return Pair(QueuingResult.CONTENT_DOWNLOADED, null)
     }
 
     /**

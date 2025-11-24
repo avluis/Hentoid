@@ -31,7 +31,7 @@ object Settings {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
     }
 
-    fun performHousekeeping() {
+    fun performHousekeeping(lastKnownVersionCode: Int) {
         // PIN activation -> Lock type (v1.18.4)
         if (sharedPreferences.contains(Key.APP_LOCK)) {
             if (!appLockPin.isEmpty()) lockType = 1
@@ -42,6 +42,11 @@ object Settings {
             sharedPreferences.edit { remove(Key.VIEWER_AUTO_ROTATE_OLD) }
             readerAutoRotate =
                 if (autoRotate) Value.READER_AUTO_ROTATE_LEFT else Value.READER_AUTO_ROTATE_NONE
+        }
+        // Reset download schedule values to "off" (v1.21.3)
+        if (lastKnownVersionCode < 868) {
+            if (downloadScheduleStart == 23 * 60) downloadScheduleStart = 0
+            if (downloadScheduleEnd == 6 * 60) downloadScheduleEnd = 0
         }
     }
 
@@ -307,8 +312,8 @@ object Settings {
         Value.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE
     )
     var downloadScheduleSummary: String by StringSetting("download_schedule", disabledStr)
-    var downloadScheduleStart: Int by IntSetting("download_schedule_start", 23 * 60)
-    var downloadScheduleEnd: Int by IntSetting("download_schedule_end", 6 * 60)
+    var downloadScheduleStart: Int by IntSetting("download_schedule_start", 0)
+    var downloadScheduleEnd: Int by IntSetting("download_schedule_end", 0)
 
     // READER
     var isReaderResumeLastLeft: Boolean by BoolSetting("pref_viewer_resume_last_left", true)
