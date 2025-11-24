@@ -39,6 +39,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.json.JsonContent
+import me.devsaki.hentoid.json.JsonContentCollection
 import me.devsaki.hentoid.util.file.ArchiveEntry
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.InnerNameNumberFileComparator
@@ -1576,13 +1577,29 @@ fun parseBookmarks(input: InputStream): List<SiteBookmark> {
                                     site = Site.searchByUrl(url) ?: Site.NONE
                                 )
                             }
-                            .filter { it.url.startsWith("http") }
-                            .filter { it.site != Site.NONE }
-                            .filter { it.site.isVisible }
+                            .filter { filterBookmark(it) }
                     )
                     return@forEachLine
                 }
+                // JSON file
+                if (line.startsWith("{")) {
+                    try {
+                        jsonToObject(line, JsonContentCollection::class.java)?.let { doc ->
+                            if (doc.bookmarks.isNotEmpty()) {
+                                result.addAll(
+                                    doc.bookmarks
+                                        .map { it.toEntity() }
+                                        .filter { filterBookmark(it) }
+                                )
+                            }
+                            return@forEachLine
+                        }
+                    } catch (t: Throwable) {
+                        Timber.d(t)
+                    }
+                }
             }
+
             // Regular file
             val l = line.trim().lowercase()
             if (l.isNotBlank()) {
@@ -1599,4 +1616,10 @@ fun parseBookmarks(input: InputStream): List<SiteBookmark> {
         }
     }
     return result
+}
+
+fun filterBookmark(b: SiteBookmark): Boolean {
+    return b.url.startsWith("http")
+            && b.site != Site.NONE
+            && b.site.isVisible
 }
