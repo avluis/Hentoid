@@ -586,6 +586,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             DownloadEvent.Step.START_DOWNLOAD -> R.string.step_start_download
             DownloadEvent.Step.COMPLETE_DOWNLOAD -> R.string.step_complete_download
             DownloadEvent.Step.REMOVE_DUPLICATE -> R.string.step_remove_duplicate
+            DownloadEvent.Step.ENCODE_ANIMATION -> R.string.step_encode_animation
             DownloadEvent.Step.NONE -> R.string.empty_string
         }
     }

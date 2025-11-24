@@ -180,6 +180,7 @@
     <string name="step_start_download">Download chain started!</string>
     <string name="step_complete_download">Completing download</string>
     <string name="step_remove_duplicate">Replacing duplicate</string>
+    <string name="step_encode_animation">Encoding animation</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <string name="redownloaded_missing_webview">WebView is unavailable, can\'t redownload now</string>

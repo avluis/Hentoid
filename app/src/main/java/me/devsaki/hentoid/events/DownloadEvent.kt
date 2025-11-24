@@ -69,7 +69,8 @@ class DownloadEvent {
         WAIT_PURGE,
         START_DOWNLOAD,
         COMPLETE_DOWNLOAD,
-        REMOVE_DUPLICATE
+        REMOVE_DUPLICATE,
+        ENCODE_ANIMATION // Specific to Pixiv (ugoira -> animation)
     }
 
     var eventType = Type.EV_NONE // Event type (see constants EV_XXX above)

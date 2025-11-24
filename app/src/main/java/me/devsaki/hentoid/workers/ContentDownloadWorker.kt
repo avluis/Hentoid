@@ -555,6 +555,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
                 GlobalScope.launch(Dispatchers.IO) {
+                    EventBus.getDefault().post(
+                        DownloadEvent.fromPreparationStep(
+                            DownloadEvent.Step.ENCODE_ANIMATION,
+                            content
+                        )
+                    )
                     ugoirasToDownload.forEach {
                         downloadAndUnzipUgoira(it, targetFolder, content.site)
                     }
@@ -977,7 +983,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             content.computeSize()
 
             // Replace the book with its new title, if any
-            @Suppress("USELESS_ELVIS") // Central log reports NPE here
+            @Suppress("USELESS_ELVIS") // Central log reports NPE here (probably because of ObjectBox not applying default value to a new field)
             if ((content.replacementTitle ?: "").isNotEmpty()) {
                 content.title = content.replacementTitle
                 content.replacementTitle = ""
