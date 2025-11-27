@@ -1501,7 +1501,7 @@ fun jsonToContent(
 ): Content? {
     val nameNoExt = getFileNameWithoutExtension(archiveName)
     // Use new suffixed naming; default on old naming
-    val jsonFile = getFileWithName(jsons, nameNoExt + JSON_ARCHIVE_SUFFIX)
+    val jsonFile = getFileWithName(jsons, "$nameNoExt$JSON_ARCHIVE_SUFFIX.json")
         ?: getFileWithName(jsons, nameNoExt) ?: return null
     try {
         val content = jsonToObject(context, jsonFile, JsonContent::class.java)
