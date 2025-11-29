@@ -55,6 +55,7 @@ import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.network.getOnlineResource
 import me.devsaki.hentoid.util.network.getOnlineResourceFast
+import me.devsaki.hentoid.util.network.isPrefetch
 import me.devsaki.hentoid.util.network.okHttpResponseToWebkitResponse
 import me.devsaki.hentoid.util.network.postOnlineResource
 import me.devsaki.hentoid.util.network.setCookies
@@ -508,6 +509,8 @@ open class CustomWebViewClient : WebViewClient {
             // Don't block the main page
             && (!isMainPage && adBlocker.isBlocked(url, headers ?: emptyMap()))
             || !url.startsWith("http")
+            // Don't support prefetch intentionally to keep things simple
+            || isPrefetch(headers)
         ) {
             WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {

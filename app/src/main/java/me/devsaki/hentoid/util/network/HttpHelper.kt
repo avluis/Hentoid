@@ -745,7 +745,7 @@ fun simplifyUrl(url: String): String {
     var result = url
     // Remove parameters
     val paramsIndex = result.indexOf("?")
-    if (paramsIndex > -1) result = result.substring(0, paramsIndex)
+    if (paramsIndex > -1) result = result.take(paramsIndex)
     // Simplify & eliminate double separators
     result = result.trim { it <= ' ' }.replace("-", "/")
     if (!result.endsWith("/")) result = "$result/"
@@ -823,6 +823,11 @@ fun fetchBodyFast(
     }
 
     return Pair(response.body, cookieStr)
+}
+
+fun isPrefetch(headers: Map<String, String>?): Boolean {
+    if (null == headers) return false
+    return headers["sec-purpose"] == "prefetch" || headers["Sec-Purpose"] == "prefetch"
 }
 
 data class Cookie(
