@@ -6,6 +6,7 @@ import androidx.annotation.IdRes
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
 import androidx.work.Data
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -47,7 +48,7 @@ abstract class BaseWorker(
             val infos =
                 WorkManager.getInstance(context).getWorkInfosForUniqueWork(serviceId.toString())
             try {
-                val info = infos.get().firstOrNull { !it.state.isFinished }
+                val info = infos.get().firstOrNull { it.state == WorkInfo.State.RUNNING }
                 return info != null
             } catch (e: Exception) {
                 Timber.e(e)

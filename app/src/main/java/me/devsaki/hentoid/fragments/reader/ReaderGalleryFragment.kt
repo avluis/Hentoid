@@ -646,8 +646,10 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
     private fun updateSelectionToolbar(selectedCount: Int, selectedContiguous: Boolean) {
         toggleFavouriteMenu.isVisible = editMode == EditMode.NONE
         itemSetCoverMenu.isVisible = editMode == EditMode.NONE && 1 == selectedCount
-        editChapterNameMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && 1 == selectedCount
-        mergeMenu.isVisible = editMode == EditMode.EDIT_CHAPTERS && selectedContiguous
+        editChapterNameMenu.isVisible =
+            editMode == EditMode.EDIT_CHAPTERS && 1 == selectedCount && !isReorderingChapters
+        mergeMenu.isVisible =
+            editMode == EditMode.EDIT_CHAPTERS && selectedContiguous && !isReorderingChapters
         binding?.apply {
             selectionToolbar.title = resources.getQuantityString(
                 R.plurals.items_selected,

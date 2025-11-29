@@ -4,6 +4,7 @@
     <item name="startup_service" type="id" />
     <item name="update_download_service" type="id" />
     <item name="download_service" type="id" />
+    <item name="download_service_scheduled" type="id" />
     <item name="import_service" type="id" />
     <item name="external_import_service" type="id" />
     <item name="metadata_import_service" type="id" />

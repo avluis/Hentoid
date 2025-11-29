@@ -1882,9 +1882,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     class FetchHandler(private val handler: BiConsumer<String, String>) {
         @JavascriptInterface
         @Suppress("unused")
-        fun onFetchCall(url: String, body: String) {
+        fun onFetchCall(url: String, body: String?) {
             Timber.d("fetch Begin %s : %s", url, body)
-            handler.invoke(url, body)
+            handler.invoke(url, body ?: "")
         }
     }
 

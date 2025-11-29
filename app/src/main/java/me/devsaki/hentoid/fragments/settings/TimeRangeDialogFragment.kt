@@ -5,23 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.DialogSettingsTimeRangeBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.disabledStr
+import me.devsaki.hentoid.util.download.ContentQueueManager
 import me.devsaki.hentoid.util.formatIntAsStr
-import me.devsaki.hentoid.workers.ContentDownloadWorker
 import nl.joery.timerangepicker.TimeRangePicker
-import java.time.LocalTime
-import java.time.temporal.ChronoUnit
-import java.util.concurrent.TimeUnit
+import timber.log.Timber
 
-
-private const val WORK_TAG = "download_scheduled"
 
 class TimeRangeDialogFragment : BaseDialogFragment<Nothing>() {
 
@@ -60,6 +55,20 @@ class TimeRangeDialogFragment : BaseDialogFragment<Nothing>() {
         binding?.apply {
             picker.startTimeMinutes = timeStart
             picker.endTimeMinutes = timeEnd
+
+            // Query WorkManager for next scheduled run
+            val infos =
+                WorkManager.getInstance(requireActivity())
+                    .getWorkInfosForUniqueWork(R.id.download_service_scheduled.toString())
+            try {
+                infos.get().firstOrNull { it.state == WorkInfo.State.ENQUEUED }?.let {
+                    val delay =
+                        (it.nextScheduleTimeMillis - System.currentTimeMillis()) / (1000.0 * 60.0)
+                    nextScheduleTxt.text = resources.getString(R.string.pref_next_schedule, delay)
+                }
+            } catch (e: Exception) {
+                Timber.d(e)
+            }
 
             picker.setOnTimeChangeListener(object : TimeRangePicker.OnTimeChangeListener {
                 override fun onStartTimeChange(startTime: TimeRangePicker.Time) {
@@ -100,8 +109,7 @@ class TimeRangeDialogFragment : BaseDialogFragment<Nothing>() {
         Settings.downloadScheduleEnd = 0
         Settings.downloadScheduleSummary = disabledStr
 
-        val workManager = WorkManager.getInstance(requireActivity())
-        workManager.cancelAllWorkByTag(WORK_TAG)
+        ContentQueueManager.cancelSchedule(requireActivity())
 
         dismissAllowingStateLoss()
     }
@@ -111,31 +119,7 @@ class TimeRangeDialogFragment : BaseDialogFragment<Nothing>() {
         Settings.downloadScheduleEnd = timeEnd
         Settings.downloadScheduleSummary = timeStr
 
-        // Schedule downloader
-        val now = LocalTime.now()
-        val scheduledTime = LocalTime.ofSecondOfDay(timeStart * 60L)
-        val delay = if (now < scheduledTime) {
-            now.until(scheduledTime, ChronoUnit.MINUTES)
-        } else {
-            24 * 60 - scheduledTime.until(now, ChronoUnit.MINUTES)
-        }
-
-        val workRequest = PeriodicWorkRequest.Builder(
-            ContentDownloadWorker::class.java,
-            24,
-            TimeUnit.HOURS
-        )
-            .setInitialDelay(delay, TimeUnit.MINUTES)
-            .addTag(WORK_TAG)
-            .build()
-
-        val workManager = WorkManager.getInstance(requireActivity())
-        workManager.cancelAllWorkByTag(WORK_TAG)
-        workManager.enqueueUniquePeriodicWork(
-            R.id.download_service.toString(),
-            ExistingPeriodicWorkPolicy.KEEP,
-            workRequest
-        )
+        ContentQueueManager.schedule(requireActivity(), timeStart)
 
         dismissAllowingStateLoss()
     }

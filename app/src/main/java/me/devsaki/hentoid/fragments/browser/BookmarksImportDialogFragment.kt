@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -144,19 +143,17 @@ class BookmarksImportDialogFragment : BaseDialogFragment<Parent>() {
                     try {
                         return@withContext readFile(requireContext(), file)
                     } catch (e: Exception) {
-                        Timber.Forest.w(e)
+                        Timber.w(e)
                         errorFileName = file.name ?: ""
                     }
                     return@withContext emptyList()
                 }
-                coroutineScope {
-                    if (errorFileName.isEmpty()) onFileRead(result, file)
-                    else {
-                        importFileInvalidText.text = resources.getString(
-                            R.string.import_file_invalid,
-                            errorFileName
-                        )
-                    }
+                if (errorFileName.isEmpty()) onFileRead(result, file)
+                else {
+                    importFileInvalidText.text = resources.getString(
+                        R.string.import_file_invalid,
+                        errorFileName
+                    )
                 }
             }
         }

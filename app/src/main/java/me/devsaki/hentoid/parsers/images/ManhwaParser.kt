@@ -35,7 +35,7 @@ class ManhwaParser : BaseChapteredImageListParser() {
     ): List<Element> {
         val canonicalUrl = getCanonicalUrl(doc)
         val postId = doc.select("#manga-chapters-holder").attr("data-id")
-        if (!postId.isNullOrEmpty()) {
+        if (postId.isNotEmpty()) {
             val postUrl = onlineContent.site.url + "wp-admin/admin-ajax.php"
             val headers = fetchHeaders(onlineContent)
             // Retrieve the chapters page chunk

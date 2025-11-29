@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.21.2a/hentoid1212a-865.apk",
-  "versionCode": "865",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.21.3/hentoid1213-869.apk",
+  "versionCode": "869",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -16,7 +16,6 @@
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"442"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"449"},
 	  {"sourceName":"MRM", "status":"ORANGE", "fixedByBuild":"467"},
-	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"565"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"611"},
 	  {"sourceName":"PURURIN", "status":"RED", "fixedByBuild":"669"},
 	  {"sourceName":"TOONILY", "status":"RED", "fixedByBuild":"688"},
@@ -42,7 +41,9 @@
 	  {"sourceName":"NOVELCROW", "status":"RED", "fixedByBuild":"858"},
 	  {"sourceName":"LUSCIOUS", "status":"ORANGE", "fixedByBuild":"858"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"858"},
+	  {"sourceName":"KEMONO", "status":"ORANGE", "fixedByBuild":"869"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
+	  {"sourceName":"TSUMINO", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
 	  {"sourceName":"HBROWSE", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"GREY"},

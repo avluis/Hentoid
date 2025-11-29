@@ -387,9 +387,8 @@ abstract class BaseSplitMergeWorker(
         val orderById = chapterIds.withIndex().associate { (index, it) -> it to index }
         chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
 
-        // Renumber all chapters and update the DB
+        // Renumber all chapters (and don't save them to the DB yet)
         renumberChapters(chapters)
-        dao.insertChapters(chapters)
 
         // Renumber all readable images
         val orderedImages =
@@ -420,6 +419,7 @@ abstract class BaseSplitMergeWorker(
         // Case where chapters have been imported from distinct folders
         // => No need to swap anything
         if (chapters.all { it.url.startsWith(SCHEME_CONTENT) } && chapters.distinctBy { it.url }.size == chapters.size) {
+            dao.insertChapters(chapters)
             dao.insertImageFiles(orderedImages)
             val finalContent = dao.selectContent(contentId)
             if (finalContent != null) persistJson(applicationContext, finalContent)
@@ -433,9 +433,16 @@ abstract class BaseSplitMergeWorker(
         ) ?: throw IOException("Parent folder not found")
 
         buildPermutationGroups(applicationContext, operations, root)
-        val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
+
+        // Most complicated steps have passed => save new chapter order to the DB
+        dao.insertChapters(chapters)
+
+        val finalOpsTmp = operations.values
+            .filterNot { it.sequenceNumber < 0 }
+            .sortedBy { it.sequenceNumber }.sortedBy { it.order }
         val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
 
+        Timber.d("Post-mapping recap")
         finalOps.forEach { seq ->
             seq.forEach { op ->
                 Timber.d(
