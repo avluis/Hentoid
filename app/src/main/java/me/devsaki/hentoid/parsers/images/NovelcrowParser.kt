@@ -35,15 +35,30 @@ class NovelcrowParser : BaseChapteredImageListParser() {
     ): List<Element> {
         val canonicalUrl = getCanonicalUrl(doc)
         val headers = fetchHeaders(onlineContent)
+
+        // Chapter chunk may have pages
+        var currentPage = 0
+        var allPages = 1 // We assume there's just one page
+
         // Retrieve the chapters page chunk
-        postOnlineDocument(
-            canonicalUrl + "ajax/chapters/",
-            headers,
-            Site.NOVELCROW.useHentoidAgent, Site.NOVELCROW.useWebviewAgent,
-            "",
-            POST_MIME_TYPE
-        )?.let { return it.select(selector.selectors[0]) }
-        throw EmptyResultException("Chapters page couldn't be downloaded @ $canonicalUrl")
+        val result = ArrayList<Element>()
+        while (currentPage < allPages) {
+            postOnlineDocument(
+                canonicalUrl + "ajax/chapters/?t=" + (currentPage + 1),
+                headers,
+                Site.NOVELCROW.useHentoidAgent, Site.NOVELCROW.useWebviewAgent,
+                "",
+                POST_MIME_TYPE
+            )?.let {
+                if (0 == currentPage) {
+                    val extraPages = it.select("a[href^='/?t=']").count()
+                    allPages += extraPages
+                }
+                result.addAll(it.select(selector.selectors[0]))
+                currentPage++
+            } ?: throw EmptyResultException("Chapters page couldn't be downloaded @ $canonicalUrl")
+        }
+        return result
     }
 
     @Throws(Exception::class)
