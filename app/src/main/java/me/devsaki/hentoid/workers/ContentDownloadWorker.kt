@@ -83,6 +83,7 @@ import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getConnectivity
 import me.devsaki.hentoid.util.network.getCookies
@@ -1207,6 +1208,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     ): RequestOrder {
         val site = content.site
         val imageUrl = fixUrl(img.url, site.url)
+        val urlParts = UriParts(imageUrl, true)
 
         // Apply image download parameters
         val requestHeaders = getRequestHeaders(imageUrl, img.downloadParams)
@@ -1222,7 +1224,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             img.name,
             img.order,
             backupUrlFinal,
-            img
+            img,
+            urlParts.extension == "mp4"
         )
     }
 
@@ -1385,8 +1388,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 Uri.fromFile(ugoiraCacheFolder),
                 targetFileName,
                 downloadInterrupted,
-                ZIP_MIME_TYPE,
-                resourceId = img.order
+                resourceId = img.order,
+                ZIP_MIME_TYPE
             )
 
             val targetFileUri = result
