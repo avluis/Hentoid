@@ -434,15 +434,19 @@ abstract class BaseSplitMergeWorker(
 
         buildPermutationGroups(applicationContext, operations, root)
 
-        // Most complicated steps have passed => save new chapter order to the DB
+        // If any operation hasn't been mapped to a permutation group, we can't continue
+        if (operations.values.any { it.sequenceNumber < 0 }) {
+            nbError = nbMax
+            progressDone(nbMax)
+            return
+        }
+
+        // Operations validity check has passed => wa save new chapter order to the DB
         dao.insertChapters(chapters)
 
-        val finalOpsTmp = operations.values
-            .filterNot { it.sequenceNumber < 0 }
-            .sortedBy { it.sequenceNumber }.sortedBy { it.order }
+        val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
         val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
 
-        Timber.d("Post-mapping recap")
         finalOps.forEach { seq ->
             seq.forEach { op ->
                 Timber.d(

@@ -274,7 +274,6 @@ suspend fun downloadToFile(
     resourceId: Int,
     forceMimeType: String? = null,
     failFast: Boolean = true,
-    bigFile: Boolean = false,
     notifyProgress: Consumer<Float>? = null
 ): Uri? {
     return downloadToFile(
@@ -282,7 +281,7 @@ suspend fun downloadToFile(
         fileCreator = { ctx, mimeType ->
             createFile(ctx, targetFolderUri, targetFileName, mimeType)
         },
-        resourceId, interruptDownload, forceMimeType, failFast, bigFile, notifyProgress
+        resourceId, interruptDownload, forceMimeType, failFast, notifyProgress
     )
 }
 
@@ -318,7 +317,6 @@ private suspend fun downloadToFile(
     interruptDownload: AtomicBoolean? = null,
     forceMimeType: String? = null,
     failFast: Boolean = true,
-    bigFile: Boolean = false,
     notifyProgress: Consumer<Float>? = null
 ): Uri? = withContext(Dispatchers.IO) {
     val url = fixUrl(rawUrl, site.url)
@@ -336,8 +334,7 @@ private suspend fun downloadToFile(
         site.useMobileAgent,
         site.useHentoidAgent,
         site.useWebviewAgent,
-        followRedirects = true,
-        bigFile = bigFile
+        followRedirects = true
     )
     Timber.d("DOWNLOADING %d - RESPONSE %s", resourceId, response.code)
     if (response.code >= 300) throw NetworkingException(

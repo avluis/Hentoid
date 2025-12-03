@@ -204,14 +204,12 @@ fun getOnlineResourceDownloader(
     useMobileAgent: Boolean,
     useHentoidAgent: Boolean,
     useWebviewAgent: Boolean,
-    followRedirects: Boolean,
-    bigFile: Boolean = false
+    followRedirects: Boolean
 ): Response {
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
     val request: Request = requestBuilder.get().build()
-    val ioTimeout = if (bigFile) 5 * 60 * 1000 else 15000
-    return OkHttpClientManager.getInstance(4000, ioTimeout, followRedirects).newCall(request)
+    return OkHttpClientManager.getInstance(4000, 15000, followRedirects).newCall(request)
         .execute()
 }
 

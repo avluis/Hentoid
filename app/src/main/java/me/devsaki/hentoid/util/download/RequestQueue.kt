@@ -59,7 +59,6 @@ class RequestQueue(
                     requestOrder.targetDir,
                     requestOrder.fileName,
                     requestOrder.pageIndex,
-                    requestOrder.bigFile,
                     requestOrder.killSwitch
                 )
             }
@@ -137,7 +136,6 @@ class RequestQueue(
         targetFolder: DocumentFile,
         targetFileNameNoExt: String,
         pageIndex: Int,
-        bigFile: Boolean,
         killSwitch: AtomicBoolean
     ): Pair<Int, Uri> {
         assertNonUiThread()
@@ -161,8 +159,7 @@ class RequestQueue(
             targetFileNameNoExt,
             killSwitch,
             pageIndex,
-            failFast = false,
-            bigFile = bigFile
+            failFast = false
         )
 
         if (null == result) throw ParseException("Resource not available")
