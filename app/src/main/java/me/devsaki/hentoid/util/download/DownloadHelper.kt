@@ -336,7 +336,8 @@ private suspend fun downloadToFile(
         site.useMobileAgent,
         site.useHentoidAgent,
         site.useWebviewAgent,
-        bigFile
+        followRedirects = true,
+        bigFile = bigFile
     )
     Timber.d("DOWNLOADING %d - RESPONSE %s", resourceId, response.code)
     if (response.code >= 300) throw NetworkingException(
