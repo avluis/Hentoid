@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util.download
 
 import android.content.Context
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.BiConsumer
@@ -133,7 +132,7 @@ class RequestQueue(
         site: Site,
         url: String,
         headers: Map<String, String>,
-        targetFolder: DocumentFile,
+        targetFolder: Uri,
         targetFileNameNoExt: String,
         pageIndex: Int,
         killSwitch: AtomicBoolean
@@ -155,17 +154,15 @@ class RequestQueue(
             site,
             url,
             requestHeaders,
-            targetFolder.uri,
+            targetFolder,
             targetFileNameNoExt,
             killSwitch,
             null,
             false,
             pageIndex
         )
+        if (null == result) throw ParseException("Resource not available")
 
-        val targetFileUri = result
-        if (null == targetFileUri) throw ParseException("Resource not available")
-
-        return Pair(pageIndex, targetFileUri)
+        return Pair(pageIndex, result)
     }
 }

@@ -38,7 +38,7 @@ import java.util.zip.ZipOutputStream
 /**
  * Archive / unarchive helper for formats supported by 7Z
  */
-const val ZIP_MIME_TYPE = "application/zip"
+const val MIME_TYPE_ZIP = "application/zip"
 
 private val SUPPORTED_EXTENSIONS = setOf("zip", "epub", "cbz", "cbr", "cb7", "7z", "rar")
 

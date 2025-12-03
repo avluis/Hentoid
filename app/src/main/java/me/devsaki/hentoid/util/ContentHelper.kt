@@ -2172,6 +2172,14 @@ fun Content.getStorageRoot(): Uri? {
     return null
 }
 
+fun Content.getContainingFolder(context: Context): Uri? {
+    if (storageUri.isEmpty()) return null
+    if (!isArchive) return storageUri.toUri()
+
+    val storageRoot = getStorageRoot() ?: return null
+    return getParent(context, storageRoot, storageUri.toUri())
+}
+
 /**
  * Comparator to be used to sort file entries according to their names
  */

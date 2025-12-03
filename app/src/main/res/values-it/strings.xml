@@ -213,7 +213,7 @@
         <item quantity="other">%d libri selezionati sono già scaricati\nVerranno ignorati</item>
     </plurals>
     <string name="download_notif_failed">Attenzione: download fallito</string>
-    <string name="download_notif_failed_details">Impossibile scaricare %1$s: incapace di creare la cartella %2$s. Perfavore controlla la tua posizione primaria e riprova usando il pulsante \'!\'</string>
+    <string name="download_notif_failed_details">Impossibile scaricare %1$s: incapace di creare la cartella. Perfavore controlla la tua posizione primaria e riprova usando il pulsante \'!\'</string>
     <string name="download_notif_speed">%1$d%2$s MB a %3$d KBps</string>
     <string name="download_updating_webview">Download cancellato - WebView si sta aggiornando</string>
     <string name="downloader_title">Downloader</string>

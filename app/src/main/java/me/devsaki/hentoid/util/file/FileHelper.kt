@@ -134,11 +134,11 @@ private fun getFullPathFromTreeUri(context: Context, uri: Uri): String {
 
     var volumePath = getVolumePath(context, getVolumeIdFromUri(uri)) ?: "UnknownVolume"
     if (volumePath.endsWith(File.separator))
-        volumePath = volumePath.substring(0, volumePath.length - 1)
+        volumePath = volumePath.dropLast(1)
 
     var documentPath = getDocumentPathFromUri(uri) ?: ""
     if (documentPath.endsWith(File.separator))
-        documentPath = documentPath.substring(0, documentPath.length - 1)
+        documentPath = documentPath.dropLast(1)
 
     return if (documentPath.isNotEmpty()) {
         if (documentPath.startsWith(File.separator)) volumePath + documentPath
@@ -608,13 +608,13 @@ fun listFiles(
     parent: Uri
 ): List<Uri> {
     if (ContentResolver.SCHEME_FILE == parent.scheme) {
-        legacyFileFromUri(parent)?.let {
-            return it.listFiles()?.map { it.toUri() } ?: emptyList()
+        legacyFileFromUri(parent)?.let { p ->
+            return p.listFiles()?.map { it.toUri() } ?: emptyList()
         }
     } else {
         getDocumentFromTreeUri(context, parent)?.let {
-            getDocumentFromTreeUri(context, parent)?.let {
-                return listFiles(context, it).map { it.uri }
+            getDocumentFromTreeUri(context, parent)?.let { p ->
+                return listFiles(context, p).map { it.uri }
             }
         }
     }
@@ -726,7 +726,7 @@ fun getFileNameWithoutExtension(filePath: String): String {
 
     val dotIndex = fileName.lastIndexOf('.')
     return if (-1 == dotIndex) fileName
-    else fileName.substring(0, dotIndex)
+    else fileName.take(dotIndex)
 }
 
 /**
@@ -1610,7 +1610,6 @@ fun createFile(
 
 /**
  * Cleans a directory without deleting it.
- *
  *
  * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
  *

@@ -43,6 +43,7 @@ const val RENAMING_RULES_JSON_FILE_NAME = "rules.json"
 const val THUMB_FILE_NAME = "thumb"
 const val EXT_THUMB_FILE_PREFIX = "ext-thumb-"
 const val UGOIRA_CACHE_FOLDER = "ugoira"
+const val DOWNLOAD_CACHE_FOLDER = "download"
 
 const val SEED_CONTENT = "content"
 const val SEED_PAGES = "pages"

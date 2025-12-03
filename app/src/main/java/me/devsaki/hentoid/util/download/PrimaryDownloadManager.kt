@@ -1,0 +1,163 @@
+package me.devsaki.hentoid.util.download
+
+import android.content.Context
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.core.DOWNLOAD_CACHE_FOLDER
+import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
+import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
+import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
+import me.devsaki.hentoid.json.JsonContent
+import me.devsaki.hentoid.util.file.ArchiveStreamer
+import me.devsaki.hentoid.util.file.MIME_TYPE_ZIP
+import me.devsaki.hentoid.util.file.createFile
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
+import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
+import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.file.tryCleanDirectory
+import me.devsaki.hentoid.util.formatFolderName
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
+import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
+import me.devsaki.hentoid.util.getStorageRoot
+import me.devsaki.hentoid.util.jsonToFile
+import me.devsaki.hentoid.util.pause
+import timber.log.Timber
+import java.io.IOException
+
+class PrimaryDownloadManager {
+    private var downloadMode: DownloadMode? = null
+
+    /**
+     * Parent folder of the target downloads' location
+     *   DownloadMode.DOWNLOAD or STREAM : book folder inside site folder
+     *   DownloadMode.DOWNLOAD_ARCHIVE : site folder
+     */
+    private var downloadFolder: DocumentFile? = null
+
+    /**
+     * Target archive for downloads
+     *   DownloadMode.DOWNLOAD or STREAM : null
+     *   DownloadMode.DOWNLOAD_ARCHIVE : archive file
+     */
+    private var downloadArchive: Uri? = null
+
+    private var archiveStreamer: ArchiveStreamer? = null
+
+
+    /**
+     * Create download folder or archive
+     */
+    suspend fun createTargetLocation(context: Context, content: Content): Boolean =
+        withContext(Dispatchers.IO) {
+            downloadMode = content.downloadMode
+            val locationResult =
+                getDownloadLocation(getInstance(), content) ?: return@withContext false
+
+            // Location is known already
+            locationResult.first?.let {
+                content.setStorageDoc(it)
+                downloadFolder = if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+                    // Compute parent folder of the archive
+                    content.getStorageRoot()?.let { root ->
+                        getDocumentFromTreeUri(context, getParent(context, root, it.uri))
+                    }
+                } else {
+                    it
+                }
+                return@withContext true
+            }
+
+            // Location has to be computed
+            val location = locationResult.second
+            downloadFolder = if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+                getOrCreateSiteDownloadDir(context, location, content.site)
+            } else {
+                getOrCreateContentDownloadDir(context, content, location)
+            }
+
+            downloadFolder?.let { dlFolder ->
+                if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+                    val archiveName = formatFolderName(content).first + ".cbz"
+                    val archiveUri =
+                        createFile(context, dlFolder.uri, archiveName, MIME_TYPE_ZIP)
+                    getDocumentFromTreeUri(context, archiveUri)?.let { content.setStorageDoc(it) }
+                    downloadArchive = archiveUri
+                    val archiveStream = getOutputStream(context, archiveUri)
+                        ?: throw IOException("Couldn't stream archive $archiveUri")
+                    archiveStreamer = ArchiveStreamer(archiveStream)
+                } else {
+                    content.setStorageDoc(dlFolder)
+                }
+            } ?: throw IOException("Couldn't create download folder")
+
+            return@withContext true
+        }
+
+    /**
+     * Identify download folder
+     */
+    suspend fun getDownloadFolder(context: Context): Uri = withContext(Dispatchers.IO) {
+        return@withContext if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+            Uri.fromFile(
+                getOrCreateCacheFolder(context, DOWNLOAD_CACHE_FOLDER)
+                    ?: throw IOException("Couldn't initialize cache folder $DOWNLOAD_CACHE_FOLDER")
+            )
+        } else {
+            downloadFolder?.uri ?: throw IllegalArgumentException("Download folder not set")
+        }
+    }
+
+    /**
+     * Process downloaded file
+     */
+    suspend fun processDownloadedFile(context: Context, uri: Uri) {
+        if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+            archiveStreamer?.addFile(context, uri)
+        } else {
+            // Nothing; file's already at the correct location (see getDownloadLocation)
+        }
+    }
+
+    /**
+     * Process post-download actions
+     */
+    suspend fun completeDownload(context: Context, content: Content) = withContext(Dispatchers.IO) {
+        val refreshDelayMs = 500
+        val jsonName = if (content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+            val archiveFile = getFileFromSingleUriString(context, content.storageUri)
+            getFileNameWithoutExtension(archiveFile?.name ?: "") + JSON_ARCHIVE_SUFFIX + ".json"
+        } else JSON_FILE_NAME_V2
+
+        downloadFolder?.let { dlFolder ->
+            val jsonFile = jsonToFile(
+                context, JsonContent(content),
+                JsonContent::class.java, dlFolder, jsonName
+            )
+            // Cache its URI to the newly created content
+            content.jsonUri = jsonFile.uri.toString()
+        }
+        getOrCreateCacheFolder(context, DOWNLOAD_CACHE_FOLDER)?.let {
+            if (!tryCleanDirectory(it)) Timber.d("Failed to clean download cache")
+        }
+
+        // Wait until archive streaming has completed
+        while (archiveStreamer?.queueActive ?: false) {
+            pause(refreshDelayMs)
+        }
+        clear()
+    }
+
+    fun clear() {
+        downloadMode = null
+        archiveStreamer?.close()
+        archiveStreamer = null
+        downloadFolder = null
+    }
+}

@@ -49,12 +49,12 @@ import me.devsaki.hentoid.util.download.ContentQueueManager.pauseQueue
 import me.devsaki.hentoid.util.download.DownloadRateLimiter
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.prefsSpeedCapToKbps
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.setSpeedLimitKbps
+import me.devsaki.hentoid.util.download.PrimaryDownloadManager
 import me.devsaki.hentoid.util.download.RequestOrder
 import me.devsaki.hentoid.util.download.RequestOrder.NetworkError
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.download.RequestQueueManager.Companion.getInstance
 import me.devsaki.hentoid.util.download.downloadToFile
-import me.devsaki.hentoid.util.download.getDownloadLocation
 import me.devsaki.hentoid.util.exception.AccountException
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
@@ -63,16 +63,16 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.fetchImageURLs
+import me.devsaki.hentoid.util.file.MIME_TYPE_ZIP
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
-import me.devsaki.hentoid.util.file.ZIP_MIME_TYPE
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntries
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
+import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
-import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.jsonToFile
@@ -109,11 +109,10 @@ import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log10
 
-// seconds; should be higher than the connect + I/O timeout defined in RequestQueueManager
-private const val IDLE_THRESHOLD = 20
+// Should be higher than the connect + I/O timeout defined in RequestQueueManager
+private const val IDLE_THRESHOLD_S = 20 // Seconds
 
-// KBps
-private const val LOW_NETWORK_THRESHOLD = 10
+private const val LOW_NETWORK_THRESHOLD_KBPS = 10 // KBps
 
 class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.download_service, null) {
@@ -129,8 +128,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END, WORKER_STOPPED, CONTENT_DOWNLOADED
     }
 
-    // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
-    private val dao: CollectionDAO = ObjectBoxDAO()
+
+    // == Queue control
 
     // True if a Cancel event has been processed; false by default
     private val downloadCanceled = AtomicBoolean(false)
@@ -140,17 +139,32 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     // downloadCanceled || downloadSkipped
     private val downloadInterrupted = AtomicBoolean(false)
-    private var isCloudFlareBlocked = false
-
-    private val userActionNotificationManager: NotificationManager
     private val requestQueueManager: RequestQueueManager
-    private lateinit var progressNotification: DownloadProgressNotification
 
+
+    // == Queue scheduling
     private var isManualStart = false
 
     // If the current instance is a scheduled run, when does it end?
     private var scheduledStart: LocalTime? = null
     private var scheduledEnd: LocalTime? = null
+
+
+    // == Cloudflare handling
+    private var isCloudFlareBlocked = false
+    private val userActionNotificationManager: NotificationManager
+
+
+    // == Misc
+
+    // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
+    private val dao: CollectionDAO = ObjectBoxDAO()
+
+    // Progress notifications
+    private lateinit var progressNotification: DownloadProgressNotification
+
+    private var dlManager = PrimaryDownloadManager()
+
 
     init {
         EventBus.getDefault().register(this)
@@ -302,10 +316,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
 
+        /*
         val locationResult =
             getDownloadLocation(context, content) ?: return Pair(QueuingResult.QUEUE_END, null)
         var dir = locationResult.first
         val location = locationResult.second
+ */
 
         downloadCanceled.set(false)
         downloadSkipped.set(false)
@@ -456,15 +472,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content))
 
         // Create destination folder for images to be downloaded
-        if (null == dir) dir = getOrCreateContentDownloadDir(applicationContext, content, location)
-        // Folder creation failed
-        if (null == dir || !dir.exists()) {
+        if (!dlManager.createTargetLocation(context, content)) {
             val title = content.title
-            val absolutePath = dir?.uri?.toString() ?: ""
-            val message = String.format("Directory could not be created: %s.", absolutePath)
+            val message = String.format("Directory could not be created for $title.")
+
             Timber.w(message)
             logErrorRecord(content.id, ErrorType.IO, content.url, "Destination folder", message)
-            notificationManager.notify(DownloadWarningNotification(title, absolutePath))
+            notificationManager.notify(DownloadWarningNotification(title))
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
@@ -473,9 +487,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
-        // Folder creation succeeds -> memorize its path
-        val targetFolder: DocumentFile = dir
-        content.setStorageDoc(targetFolder)
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.qtyPages) content.qtyPages = images.count { it.isReadable }
@@ -524,12 +535,14 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val pagesToParse: MutableList<ImageFile> = ArrayList()
         val ugoirasToDownload: MutableList<ImageFile> = ArrayList()
 
+        val downloadFolder = dlManager.getDownloadFolder(context)
+
         // Streamed download => just get the cover
         if (downloadMode == DownloadMode.STREAM) {
             content.cover.let { cover ->
                 enrichImageDownloadParams(cover, content)
                 requestQueueManager.queueRequest(
-                    buildImageDownloadRequest(cover, targetFolder, content)
+                    buildImageDownloadRequest(cover, downloadFolder, content)
                 )
             }
         } else { // Regular download
@@ -549,7 +562,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     else if (img.downloadParams.contains(KEY_DL_PARAMS_UGOIRA_FRAMES))
                         ugoirasToDownload.add(img)
                     else if (!img.isCover) requestQueueManager.queueRequest(
-                        buildImageDownloadRequest(img, targetFolder, content)
+                        buildImageDownloadRequest(img, downloadFolder, content)
                     )
                 }
             }
@@ -557,7 +570,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Download cover last, to avoid being blocked by the server when downloading cover and page 1 back to back when they are the same resource
             covers.forEach {
                 requestQueueManager.queueRequest(
-                    buildImageDownloadRequest(it, targetFolder, content)
+                    buildImageDownloadRequest(it, downloadFolder, content)
                 )
             }
 
@@ -565,7 +578,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             if (pagesToParse.isNotEmpty()) {
                 GlobalScope.launch(Dispatchers.IO) {
                     pagesToParse.forEach {
-                        parsePageforImage(it, targetFolder, content)
+                        parsePageforImage(it, downloadFolder, content)
                     }
                 }
             }
@@ -580,7 +593,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         )
                     )
                     ugoirasToDownload.forEach {
-                        downloadAndUnzipUgoira(it, targetFolder, content.site)
+                        downloadAndUnzipUgoira(it, downloadFolder, content.site)
                     }
                 }
             }
@@ -768,7 +781,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             deltaNetworkBytes = networkBytesNow - networkBytes
 
             // LOW_NETWORK_THRESHOLD KBps threshold once download has started
-            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++
+            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD_KBPS * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++
             else nbDeltaLowNetwork = 0
 
             networkBytes = networkBytesNow
@@ -790,7 +803,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Restart request queue when the queue has idled for too long
             // Idle = very low download speed _AND_ no new pages downloaded
-            if (nbDeltaLowNetwork > IDLE_THRESHOLD * 1000f / refreshDelayMs && nbDeltaZeroPages > IDLE_THRESHOLD * 1000f / refreshDelayMs) {
+            if (nbDeltaLowNetwork > IDLE_THRESHOLD_S * 1000f / refreshDelayMs && nbDeltaZeroPages > IDLE_THRESHOLD_S * 1000f / refreshDelayMs) {
                 nbDeltaLowNetwork = 0
                 nbDeltaZeroPages = 0
                 Timber.d("Inactivity detected ====> restarting request queue")
@@ -868,9 +881,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      */
     private suspend fun completeDownload(
         contentId: Long, title: String,
-        pagesOK: Int, pagesKO: Int, sizeDownloadedBytes: Long
+        pagesOK: Int, pagesKO: Int,
+        sizeDownloadedBytes: Long
     ) {
-        val contentQueueManager = ContentQueueManager
         // Get the latest value of Content
         val content = dao.selectContent(contentId)
         if (null == content) {
@@ -945,8 +958,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.qtyPages = nbImages
                 content.downloadDate = now
             }
+
+            dlManager.completeDownload(applicationContext, content)
+
             if (content.storageUri.isEmpty()) return
-            val dir = getDocumentFromTreeUriString(applicationContext, content.storageUri)
+
+            WARNING : content.storageUri might now point to an archive file as well
+            //val dir = getDocumentFromTreeUriString(applicationContext, content.storageUri)
             if (null == dir) {
                 Timber.w(
                     "completeDownload : Directory %s does not exist - JSON not saved",
@@ -989,7 +1007,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         requestQueueManager.queueRequest(
                             buildImageDownloadRequest(
                                 img,
-                                dir,
+                                dir.uri,
                                 content
                             )
                         )
@@ -1066,9 +1084,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             dao.deleteQueue(content)
 
             // Increase downloads count
-            contentQueueManager.downloadComplete()
+            ContentQueueManager.downloadComplete()
             if (0 == pagesKO) {
-                val downloadCount = contentQueueManager.downloadCount
+                val downloadCount = ContentQueueManager.downloadCount
                 notificationManager.notify(DownloadSuccessNotification(downloadCount))
             } else {
                 notificationManager.notify(DownloadErrorNotification(content))
@@ -1115,7 +1133,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     @SuppressLint("TimberArgCount")
     private fun parsePageforImage(
         img: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         content: Content
     ) {
         val site = content.site
@@ -1208,7 +1226,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private fun buildImageDownloadRequest(
         img: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         content: Content
     ): RequestOrder {
         val site = content.site
@@ -1243,7 +1261,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i(
                 "I/O error - Image %s not saved in dir %s",
                 img.url,
-                request.targetDir.uri.path
+                request.targetDir.path
             )
             updateImageProperties(img, false, "")
             logErrorRecord(
@@ -1251,7 +1269,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 ErrorType.IO,
                 img.url,
                 "Picture " + img.name,
-                "Save failed in dir " + request.targetDir.uri.path
+                "Save failed in dir " + request.targetDir.path
             )
         }
     }
@@ -1295,7 +1313,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private fun tryUsingBackupUrl(
         img: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         backupUrl: String,
         requestHeaders: Map<String, String>
     ) {
@@ -1333,7 +1351,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun processBackupImage(
         backupImage: ImageFile?,
         originalImage: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         content: Content
     ) {
         if (backupImage != null) {
@@ -1360,12 +1378,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * NB : Ugoiuras are Pixiv's own animated pictures
      *
      * @param img  Link to the Ugoira file
-     * @param dir  Folder to save the picture to
+     * @param targetUri  Folder to save the picture to
      * @param site Correponding site
      */
     private suspend fun downloadAndUnzipUgoira(
         img: ImageFile,
-        dir: DocumentFile,
+        targetUri: Uri,
         site: Site
     ) {
         var isError = false
@@ -1391,7 +1409,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 Uri.fromFile(ugoiraCacheFolder),
                 targetFileName,
                 downloadInterrupted,
-                ZIP_MIME_TYPE,
+                MIME_TYPE_ZIP,
                 resourceId = img.order
             )
 
@@ -1437,10 +1455,14 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             ) ?: throw IOException("Couldn't assemble ugoira file")
 
             // Save it to the book folder
+            val targetFolder = getDocumentFromTreeUri(
+                applicationContext, targetUri
+            ) ?: throw IOException("Couldn't reach target folder")
+
             val finalImgUri = copyFile(
                 applicationContext,
                 ugoiraGifFile,
-                dir,
+                targetFolder,
                 MIME_IMAGE_GIF,
                 img.name + ".gif"
             ) ?: throw IOException("Couldn't copy result ugoira file")

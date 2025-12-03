@@ -193,7 +193,7 @@
         <item quantity="other">%d Utvalda böcker är redan nerladdade\nDe kommer bli ignorerade.</item>
     </plurals>
     <string name="download_notif_failed">Nerladdning misslyckades</string>
-    <string name="download_notif_failed_details">Kan inte ladda ned %1$s: kan inte skapa mapp %2$s. Vänligen kontrollera din primärmapp och försök ladda ned igen genom att använda nerladdningsknappen.</string>
+    <string name="download_notif_failed_details">Kan inte ladda ned %1$s: kan inte skapa mapp. Vänligen kontrollera din primärmapp och försök ladda ned igen genom att använda nerladdningsknappen.</string>
     <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
     <string name="download_updating_webview">Nerladdning avbruten - Webbvy uppdaterar</string>
     <string name="downloader_title">Nerladdare</string>

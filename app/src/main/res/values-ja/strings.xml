@@ -151,7 +151,7 @@
     <string name="queue_bottom_bar_speed">%d KBps</string>
     <string name="download_notif_speed">%1$d%2$sメガバイト＠%3$d KBps</string>
     <string name="download_notif_failed">ダウンロードに失敗しました</string>
-    <string name="download_notif_failed_details">%1$sをダウンロードできません： フォルダ%2$sを作成できません。 プライマリフォルダを確認し、「!」ボタンを使用してダウンロードを再試行してください。</string>
+    <string name="download_notif_failed_details">%1$sをダウンロードできません： フォルダ を作成できません。 プライマリフォルダを確認し、「!」ボタンを使用してダウンロードを再試行してください。</string>
     <string name="menu_change_dl_mode">ダウンロードモードの変更</string>
     <string name="mode_dl">画像のダウンロード</string>
     <string name="mode_stream">ストリーミング</string>

@@ -473,6 +473,14 @@ fun selectDownloadLocation(context: Context): StorageLocation {
     }
 }
 
+/**
+ * Get download location for the given Content : either existing valid folder or target location
+ *
+ * @return Pair containing either of the two (_mutually exclusive_)
+ *   first : Target download folder if already set (e.g. resume paused download, redownload from library) and valid
+ *   or
+ *   second : Target download location (default)
+ */
 fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?, StorageLocation>? {
     // Check for download folder existence, available free space and credentials
     var dir: DocumentFile? = null

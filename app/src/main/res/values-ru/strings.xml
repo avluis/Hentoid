@@ -181,7 +181,7 @@
     <string name="queue_bottom_bar_speed">%d Кб/с</string>
     <string name="download_notif_speed">%1$d%2$s МБ, %3$d Кб/c</string>
     <string name="download_notif_failed">Загрузка не удалась</string>
-    <string name="download_notif_failed_details">Невозможно загрузить %1$s: не удалось создать папку %2$s. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
+    <string name="download_notif_failed_details">Невозможно загрузить %1$s: не удалось создать папку. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
     <string name="menu_change_dl_mode">Изменить способ загрузки</string>
     <string name="mode_dl">Загрузить изображение</string>
     <string name="mode_stream">Потоковый режим</string>

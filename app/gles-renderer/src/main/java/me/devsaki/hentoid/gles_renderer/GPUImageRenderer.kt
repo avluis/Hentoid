@@ -95,7 +95,7 @@ class GPUImageRenderer(private var filter: GPUImageFilter) : GLSurfaceView.Rende
     private fun runAll(queue: Queue<Runnable>) {
         synchronized(queue) {
             while (!queue.isEmpty()) {
-                queue.poll()!!.run()
+                queue.poll()?.run()
             }
         }
     }

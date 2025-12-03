@@ -151,7 +151,7 @@
     <string name="queue_bottom_bar_speed">%d KBps</string>
     <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
     <string name="download_notif_failed">다운로드 실패</string>
-    <string name="download_notif_failed_details">%1$s 다운로드 불가: %2$s 폴더를 생성할 수 없습니다. 기본 폴더를 확인하고 \'!\' 버튼을 사용하여 다운로드를 다시 시도하세요.</string>
+    <string name="download_notif_failed_details">%1$s 다운로드 불가: 폴더를 생성할 수 없습니다. 기본 폴더를 확인하고 \'!\' 버튼을 사용하여 다운로드를 다시 시도하세요.</string>
     <string name="menu_change_dl_mode">다운로드 모드 변경</string>
     <string name="mode_dl">이미지 다운로드</string>
     <string name="mode_stream">스트리밍</string>
