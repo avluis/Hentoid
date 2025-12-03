@@ -1208,7 +1208,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     ): RequestOrder {
         val site = content.site
         val imageUrl = fixUrl(img.url, site.url)
-        val urlParts = UriParts(imageUrl, true)
 
         // Apply image download parameters
         val requestHeaders = getRequestHeaders(imageUrl, img.downloadParams)
@@ -1224,8 +1223,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             img.name,
             img.order,
             backupUrlFinal,
-            img,
-            urlParts.extension == "mp4"
+            img
         )
     }
 
