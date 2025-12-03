@@ -163,6 +163,7 @@ class KemonoParser : BaseImageListParser() {
                     .replace("/posts", "/")
                 content.status = StatusContent.SAVED
                 content.uploadDate = 0L
+                content.coverImageUrl = artist.iconUrl
                 content.title = cleanup(artist.name)
                 content.addAttributes(listOf(artist.toAttribute()))
 
