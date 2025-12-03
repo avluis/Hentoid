@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util.image
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.view.View
 import android.widget.ImageView
@@ -20,6 +21,7 @@ import coil3.request.ImageRequest
 import coil3.request.Options
 import coil3.request.target
 import coil3.serviceLoaderEnabled
+import coil3.toBitmap
 import com.awxkee.jxlcoder.coil.JxlDecoder
 import com.github.awxkee.avifcoil.decoder.HeifDecoder
 import com.github.penfeizhou.animation.apng.APNGDrawable
@@ -139,6 +141,21 @@ suspend fun getDimensions(context: Context, imgLocation: String, data: ByteArray
             return@withContext Point(img.width, img.height)
         }
         return@withContext Point(0, 0)
+    }
+
+// get dimensions for formats provided by Coil custom loaders
+suspend fun getFirstFrame(context: Context, imgLocation: String, dims: Point): Bitmap? =
+    withContext(Dispatchers.IO) {
+        val request = ImageRequest.Builder(context)
+            .data(imgLocation)
+            .memoryCacheKey(imgLocation)
+            .diskCacheKey(imgLocation)
+
+        val result = stillImageLoader.execute(request.build())
+        result.image?.let { img ->
+            return@withContext img.toBitmap(dims.x, dims.y)
+        }
+        return@withContext null
     }
 
 class AnimatedPngDecoder(private val source: ImageSource) : Decoder {

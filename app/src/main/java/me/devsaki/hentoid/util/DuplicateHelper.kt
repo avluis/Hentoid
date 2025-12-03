@@ -15,6 +15,7 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.image.ImagePHash
 import me.devsaki.hentoid.util.image.decodeSampledBitmapFromStream
+import me.devsaki.hentoid.util.image.isImageAnimated
 import me.devsaki.hentoid.util.image.similarity
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import timber.log.Timber
@@ -117,7 +118,7 @@ private suspend fun indexContent(
     content: Content,
     hashEngine: ImagePHash,
 ) {
-    val bitmap = getCoverBitmapFromContent(context, content)
+    val bitmap = getIdxCoverBitmapFromContent(context, content)
     try {
         val pHash = calcPhash(hashEngine, bitmap)
         savePhash(context, dao, content, pHash)
@@ -126,19 +127,33 @@ private suspend fun indexContent(
     }
 }
 
-suspend fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? =
+suspend fun getIdxCoverBitmapFromContent(context: Context, content: Content): Bitmap? =
     withContext(Dispatchers.IO) {
-        if (content.cover.fileUri.isEmpty()) return@withContext null
+        val uriStr = content.cover.fileUri
+        if (uriStr.isEmpty()) return@withContext null
 
-        return@withContext try {
-            getInputStream(context, content.cover.fileUri.toUri())
-                .use {
-                    getCoverBitmapFromStream(it)
-                }
+        val isAnimated = try {
+            getInputStream(context, uriStr.toUri()).use {
+                val header = ByteArray(400)
+                if (it.read(header) > 0) isImageAnimated(header)
+                else false
+            }
         } catch (e: IOException) {
             Timber.w(e) // Doesn't break the loop
-            null
+            false
         }
+
+        if (!isAnimated) {
+            try {
+                getInputStream(context, content.cover.fileUri.toUri()).use {
+                    return@withContext getCoverBitmapFromStream(it)
+                }
+            } catch (e: IOException) {
+                Timber.w(e) // Doesn't break the loop
+            }
+        }
+        // Don't index anything if image is animated
+        return@withContext null
     }
 
 suspend fun getCoverBitmapFromStream(stream: InputStream): Bitmap? =
