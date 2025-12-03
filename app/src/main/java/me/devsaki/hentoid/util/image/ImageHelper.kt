@@ -628,14 +628,3 @@ fun loadBitmap(context: Context, file: DocumentFile): Bitmap? {
         null
     }
 }
-
-@Throws(Exception::class)
-fun getFirstFrameFromMediaRetriever(context: Context, uri: Uri, dims: Point): Bitmap? {
-    val retriever = MediaMetadataRetriever()
-    try {
-        retriever.setDataSource(context, uri)
-        return retriever.getScaledFrameAtTime(0, OPTION_CLOSEST_SYNC, dims.x, dims.y)
-    } finally {
-        retriever.release()
-    }
-}
