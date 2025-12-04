@@ -134,7 +134,7 @@ suspend fun getIdxCoverBitmapFromContent(context: Context, content: Content): Bi
 
         val isAnimated = try {
             getInputStream(context, uriStr.toUri()).use {
-                val header = ByteArray(400)
+                val header = ByteArray(1000)
                 if (it.read(header) > 0) isImageAnimated(header)
                 else false
             }
