@@ -96,6 +96,7 @@ import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
@@ -458,7 +459,12 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
     override fun onPause() {
         if (WebkitPackageHelper.getWebViewAvailable()) {
-            webView.url?.let { viewModel.saveCurrentUrl(getStartSite(), it) }
+            webView.url?.let {
+                val parts = UriParts(it)
+                val usefulData = parts.pathFull.substring(parts.host.length).replace("/", "")
+                if (usefulData.length < 8) return // Don't record useless locations (e.g. /en/, /artists/, /search/...)
+                viewModel.saveCurrentUrl(getStartSite(), it)
+            }
         }
         super.onPause()
     }
