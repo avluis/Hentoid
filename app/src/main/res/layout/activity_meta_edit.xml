@@ -93,7 +93,8 @@
             android:lines="2"
             android:maxLines="3"
             android:scrollbars="vertical"
-            android:scrollHorizontally="false" />
+            android:scrollHorizontally="false"
+            android:textCursorDrawable="@null" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
