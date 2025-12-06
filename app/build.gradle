@@ -192,7 +192,7 @@ dependencies {
     /**
      * UI
      */
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
 
     // https://github.com/mikepenz/FastAdapter
     def fastadapter_version = '5.7.0'
