@@ -547,12 +547,9 @@ suspend fun getPictureFilesFromContent(context: Context, content: Content): List
             return@withContext emptyList()
         }
 
-        return@withContext listFoldersFilter(
-            context, folder
-        ) { displayName: String ->
-            (displayName.lowercase(
-                Locale.getDefault()
-            ).startsWith(THUMB_FILE_NAME) && isSupportedImage(displayName))
+        return@withContext listFoldersFilter(context, folder) {
+            it.lowercase(Locale.getDefault()).startsWith(THUMB_FILE_NAME)
+                    && isSupportedImage(it)
         }
     }
 
@@ -1701,7 +1698,7 @@ suspend fun computeAndSaveCoverHash(
     content: Content,
     dao: CollectionDAO
 ) {
-    val coverBitmap = getCoverBitmapFromContent(context, content)
+    val coverBitmap = getIdxCoverBitmapFromContent(context, content)
     try {
         val pHash = calcPhash(getHashEngine(), coverBitmap)
         content.cover.imageHash = pHash

@@ -19,8 +19,11 @@ data class KemonoArtist(
         return Attribute(
             AttributeType.ARTIST,
             name,
-            "https://$KEMONO_DOMAIN_FILTER/${service}/user/${id}/profile",
+            "https://$KEMONO_DOMAIN_FILTER/$service/user/$id/profile",
             Site.KEMONO
         )
     }
+
+    val iconUrl
+        get() = "https://img.$KEMONO_DOMAIN_FILTER/icons/$service/$id"
 }

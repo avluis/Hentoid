@@ -83,6 +83,7 @@ import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getConnectivity
 import me.devsaki.hentoid.util.network.getCookies
@@ -1409,7 +1410,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 Uri.fromFile(ugoiraCacheFolder),
                 targetFileName,
                 downloadInterrupted,
-                MIME_TYPE_ZIP,
+                ZIP_MIME_TYPE,
                 resourceId = img.order
             )
 

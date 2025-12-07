@@ -33,7 +33,7 @@ object OkHttpClientManager {
     }
 
     fun getInstance(connectTimeout: Int, ioTimeout: Int, followRedirects: Boolean): OkHttpClient {
-        val key = (connectTimeout * 100) + ioTimeout + (if (followRedirects) 1 else 0)
+        val key = (connectTimeout * 433) + ioTimeout + (if (followRedirects) 1 else 0)
         synchronized(instances) {
             if (!instances.containsKey(key))
                 instances[key] = buildClient(connectTimeout, ioTimeout, followRedirects)

@@ -9,6 +9,7 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.media.MediaMetadataRetriever
+import android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC
 import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -433,34 +434,30 @@ fun getScaledDownBitmap(
     maxDim: Int,
     noRecycle: Boolean
 ): Bitmap {
-    val width = bitmap.width
-    val height = bitmap.height
-    var newWidth = width
-    var newHeight = height
-    if (width > height && width > maxDim) {
-        newWidth = maxDim
-        newHeight = (height * newWidth.toFloat() / width).toInt()
+    val srcDims = Point(bitmap.width, bitmap.height)
+    val targetDims = scaleDownToMax(srcDims, maxDim)
+
+    return if (targetDims == srcDims) bitmap
+    else sharpRescale(bitmap, targetDims.x, targetDims.y, noRecycle)
+}
+
+/**
+ * Scale down given dimensions so that none of them are larger than the given constraint,
+ * keeping the aspect ratio.
+ *
+ * NB : Given dimensions are unchanged if both are shorter than the given constraint
+ */
+fun scaleDownToMax(srcDims: Point, maxDim: Int): Point {
+    if (srcDims.x > srcDims.y && srcDims.x > maxDim) {
+        return Point(maxDim, (srcDims.y * maxDim.toFloat() / srcDims.x).toInt())
     }
-    if (width in (height + 1)..maxDim) {
-        //the bitmap is already smaller than our required dimension, no need to resize it
-        return bitmap
+    if (srcDims.x < srcDims.y && srcDims.y > maxDim) {
+        return Point(maxDim, (srcDims.x * maxDim.toFloat() / srcDims.y).toInt())
     }
-    if (width < height && height > maxDim) {
-        newHeight = maxDim
-        newWidth = (width * newHeight.toFloat() / height).toInt()
+    if (srcDims.x == srcDims.y && srcDims.x > maxDim) {
+        return Point(maxDim, maxDim)
     }
-    if (height in (width + 1)..maxDim) {
-        //the bitmap is already smaller than our required dimension, no need to resize it
-        return bitmap
-    }
-    if (width == height && width > maxDim) {
-        newWidth = maxDim
-        newHeight = newWidth
-    }
-    return if (width == height && width <= maxDim) {
-        //the bitmap is already smaller than our required dimension, no need to resize it
-        bitmap
-    } else sharpRescale(bitmap, newWidth, newHeight, noRecycle)
+    return srcDims
 }
 
 private fun sharpRescale(

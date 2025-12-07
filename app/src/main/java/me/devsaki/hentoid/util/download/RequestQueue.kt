@@ -157,9 +157,8 @@ class RequestQueue(
             targetFolder,
             targetFileNameNoExt,
             killSwitch,
-            null,
-            false,
-            pageIndex
+            pageIndex,
+            failFast = false
         )
         if (null == result) throw ParseException("Resource not available")
 

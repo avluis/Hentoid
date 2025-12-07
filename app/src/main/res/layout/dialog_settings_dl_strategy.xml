@@ -60,6 +60,7 @@
             android:inputType="number"
             android:lines="1"
             android:maxLines="1"
+            android:textCursorDrawable="@null"
             tools:text="80" />
 
     </com.google.android.material.textfield.TextInputLayout>

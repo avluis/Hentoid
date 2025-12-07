@@ -33,6 +33,7 @@
             android:inputType="text"
             android:lines="1"
             android:maxLines="1"
+            android:textCursorDrawable="@null"
             tools:text="Name goes here" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -61,6 +62,7 @@
             android:inputType="text"
             android:lines="1"
             android:maxLines="1"
+            android:textCursorDrawable="@null"
             tools:text="Name goes here" />
     </com.google.android.material.textfield.TextInputLayout>
 

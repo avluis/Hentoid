@@ -192,7 +192,7 @@ dependencies {
     /**
      * UI
      */
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
 
     // https://github.com/mikepenz/FastAdapter
     def fastadapter_version = '5.7.0'
@@ -303,7 +303,7 @@ dependencies {
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // Biometrics
-    implementation 'dev.skomlach:biometric:2.2.51'
+    implementation 'dev.skomlach:biometric:2.3.4'
 
     // Searchable prefs
     implementation 'com.github.ByteHamster:SearchPreference:2.7.3'
@@ -318,7 +318,7 @@ dependencies {
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:34.4.0')
+    implementation platform('com.google.firebase:firebase-bom:34.6.0')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'

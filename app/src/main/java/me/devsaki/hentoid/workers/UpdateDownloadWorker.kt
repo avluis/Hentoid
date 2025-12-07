@@ -85,8 +85,8 @@ class UpdateDownloadWorker(context: Context, parameters: WorkerParameters) :
             Uri.fromFile(applicationContext.externalCacheDir),
             "hentoid.apk",
             killSwitch,
-            forceMimeType = APK_MIMETYPE,
-            resourceId = 0
+            resourceId = 0,
+            forceMimeType = APK_MIMETYPE
         ) { it ->
             progressPc = it
             if (0 == (progressPc.roundToInt() % 5)) launchProgressNotification()

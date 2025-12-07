@@ -66,6 +66,7 @@
                 android:inputType="textNoSuggestions|textVisiblePassword"
                 android:lines="1"
                 android:maxLines="1"
+                android:textCursorDrawable="@null"
                 tools:text="[%a] %t" />
 
         </com.google.android.material.textfield.TextInputLayout>
@@ -128,6 +129,7 @@
                     android:lines="1"
                     android:maxLines="1"
                     android:text="@string/import_ext_test_file_name"
+                    android:textCursorDrawable="@null"
                     android:textSize="12sp"
                     tools:text="[the artist] the title" />
 
