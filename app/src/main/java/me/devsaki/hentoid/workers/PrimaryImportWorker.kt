@@ -72,6 +72,7 @@ import me.devsaki.hentoid.util.notification.BaseNotification
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeExternalAttributes
 import me.devsaki.hentoid.util.scanBookFolder
+import me.devsaki.hentoid.util.scanForArchivesPdf
 import me.devsaki.hentoid.util.trace
 import me.devsaki.hentoid.util.writeLog
 import me.devsaki.hentoid.workers.data.PrimaryImportData
@@ -235,7 +236,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 // 1st pass : Import groups JSON
                 if (importGroups) importGroups(context, rootFolder, explorer, log)
 
-                // 2nd pass : count subfolders of every site folder
+                // 2nd pass : count subfolders and archives of every site folder
                 eventProgress(
                     STEP_2_BOOK_FOLDERS,
                     1,
@@ -243,8 +244,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     0,
                     context.getString(R.string.refresh_step1)
                 )
-                val siteFolders =
-                    explorer.listFolders(context, rootFolder)
+                val siteFolders = explorer.listFolders(context, rootFolder)
                 for ((foldersProcessed, f) in siteFolders.withIndex()) {
                     eventProgress(
                         STEP_2_BOOK_FOLDERS,
@@ -253,10 +253,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         0,
                         f.name ?: ""
                     )
-                    // Ignore syncthing subfolders
+                    // Identify all subfolders of the current site folder
                     bookFolders.addAll(
                         explorer.listFolders(context, f)
-                            .filterNot { (it.name ?: "").startsWith(".st") })
+                            // Ignore syncthing subfolders
+                            .filterNot { (it.name ?: "").startsWith(".st") }
+                    )
                 }
                 eventComplete(
                     STEP_2_BOOK_FOLDERS,
@@ -326,6 +328,16 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
                 try {
                     dao = ObjectBoxDAO()
+
+                    importArchives(
+                        context,
+                        rootFolder,
+                        siteFolders,
+                        explorer,
+                        dao,
+                        log
+                    )
+
                     nbBookFolders = bookFolders.size
                     val toScan = ArrayList<DocumentFile>()
                     // 1st wave = initially detected folders
@@ -348,6 +360,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             )
                             nbBookFolders += subfolders.size
                             allSubfolders.addAll(subfolders)
+
                             // Clear the DAO every 2500K iterations to optimize memory
                             if (0 == index % 2500) {
                                 dao.cleanup()
@@ -487,6 +500,84 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             } else trace(Log.INFO, STEP_GROUPS, log, "No groups file found")
         } finally {
             dao.cleanup()
+        }
+    }
+
+    private suspend fun importArchives(
+        context: Context,
+        parent: DocumentFile,
+        subFolders: List<DocumentFile>,
+        explorer: FileExplorer,
+        dao: CollectionDAO,
+        log: MutableList<LogEntry>
+    ) {
+        trace(
+            Log.INFO,
+            STEP_3_BOOKS,
+            log,
+            "Importing archives..."
+        )
+
+        // Add all archives inside the current site folder
+        val archiveBooks = scanForArchivesPdf(
+            context,
+            parent,
+            subFolders,
+            explorer,
+            emptyList(),
+            dao,
+            log,
+            requiresJson = true
+        )
+
+        trace(
+            Log.INFO,
+            STEP_3_BOOKS,
+            log,
+            "Importing archives : ${archiveBooks.size} found"
+        )
+
+
+        archiveBooks.forEach { c ->
+            val bookLocation = URLDecoder.decode(
+                c.storageUri.replace(parent.toString(), ""),
+                "UTF-8"
+            )
+            // Find the corresponding flagged book in the library
+            val existingFlaggedContent = dao.selectContentByStorageUri(c.storageUri, true)
+            // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
+            if (existingFlaggedContent != null) dao.deleteContent(existingFlaggedContent)
+
+            // If the very same book still exists in the DB at this point, it means it's present in the queue
+            // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
+            val existingDuplicate = findDuplicateContentByUrl(c, dao)
+            if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
+                booksKO++
+                val location =
+                    if (isInQueue(existingDuplicate.status)) "queue" else "collection"
+                trace(
+                    Log.INFO, STEP_3_BOOKS, log,
+                    "Import book KO! (already in $location) : %s", bookLocation
+                )
+                return
+            }
+
+            // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
+            removeExternalAttributes(c)
+            addContent(context, dao, c)
+            val customGroups =
+                c.getGroupItems(Grouping.CUSTOM)
+                    .mapNotNull { it.linkedGroup }
+                    .map { it.name }
+            val groupStr =
+                if (customGroups.isEmpty()) "" else " in " + customGroups.joinToString(", ")
+            trace(
+                Log.INFO,
+                STEP_3_BOOKS,
+                log,
+                "Import book OK$groupStr : %s",
+                bookLocation
+            )
         }
     }
 
@@ -1050,7 +1141,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     private fun importGroups(
-        grouping : Grouping,
+        grouping: Grouping,
         contentCollection: JsonContentCollection,
         dao: CollectionDAO,
         log: MutableList<LogEntry>

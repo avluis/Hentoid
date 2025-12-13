@@ -61,6 +61,7 @@ import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
+import me.devsaki.hentoid.workers.STEP_3_BOOKS
 import me.devsaki.hentoid.workers.data.ExternalImportData
 import me.devsaki.hentoid.workers.data.PrimaryImportData
 import org.jsoup.Jsoup
@@ -703,7 +704,7 @@ fun scanFolderRecursive(
                     explorer,
                     parentNames,
                     dao,
-                    true
+                    chaptered = true
                 ).forEach { onContentFound(it) }
             }
         }
@@ -1008,15 +1009,15 @@ private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
     ref.mapNotNull { it.linkedChapter }.distinct().forEach { it.clearImageFiles() }
     // Copy metadata from ref to recipient images, using name as pivot
     recipient.forEach { img ->
-        ref.firstOrNull { it.name == img.name }?.let {
+        ref.firstOrNull { it.name == img.name }?.let { ref ->
             img.apply {
-                url = it.url
-                pageUrl = it.pageUrl
-                read = it.read
-                favourite = it.favourite
-                isTransformed = it.isTransformed
-                isCover = it.isCover
-                chapter = it.chapter
+                url = ref.url
+                pageUrl = ref.pageUrl
+                read = ref.read
+                favourite = ref.favourite
+                isTransformed = ref.isTransformed
+                isCover = ref.isCover
+                chapter = ref.chapter
             }
         }
     }
@@ -1103,35 +1104,55 @@ fun scanForArchivesPdf(
     explorer: FileExplorer,
     parentNames: List<String>,
     dao: CollectionDAO,
-    chaptered: Boolean = false
+    log: MutableList<LogEntry>? = null,
+    chaptered: Boolean = false,
+    requiresJson: Boolean = false,
 ): List<Content> {
     val result: MutableList<Content> = ArrayList()
     for (subfolder in subFolders) {
-        val files = explorer.listFiles(context, subfolder, null)
-        val archives: MutableList<DocumentFile> = ArrayList()
-        val jsons: MutableList<DocumentFile> = ArrayList()
+        try {
+            val files = explorer.listFiles(context, subfolder, null)
+            val archives: MutableList<DocumentFile> = ArrayList()
+            val jsons: MutableList<DocumentFile> = ArrayList()
 
-        // Look for the interesting stuff
-        for (file in files) {
-            val fileName = file.name ?: ""
-            if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
-            else if (getPdfNamesFilter().accept(fileName)) archives.add(file)
-            else if (getJsonNamesFilter().accept(fileName)) jsons.add(file)
-        }
-        for (archive in archives) {
-            val content = jsonToContent(context, dao, jsons, archive.name ?: "")
-            val c = scanArchivePdf(
-                context,
-                subfolder.uri,
-                archive,
-                parentNames,
-                StatusContent.EXTERNAL,
-                content
-            )
-            if (0 == c.first) {
-                result.add(c.second!!)
-                if (chaptered) break // Just read the 1st archive of any subfolder
+            // Look for the interesting stuff
+            for (file in files) {
+                val fileName = file.name ?: ""
+                if (getArchiveNamesFilter().accept(fileName)) archives.add(file)
+                else if (getPdfNamesFilter().accept(fileName)) archives.add(file)
+                else if (getJsonNamesFilter().accept(fileName)) jsons.add(file)
             }
+            for (archive in archives) {
+                try {
+                    val content = jsonToContent(context, dao, jsons, archive.name ?: "")
+                    if (requiresJson && null == content) {
+                        trace(
+                            Log.WARN,
+                            STEP_3_BOOKS,
+                            log,
+                            "Import book KO! (no JSON found) : ${archive.uri}"
+                        )
+                        continue
+                    }
+
+                    val c = scanArchivePdf(
+                        context,
+                        subfolder.uri,
+                        archive,
+                        parentNames,
+                        StatusContent.EXTERNAL,
+                        content
+                    )
+                    if (0 == c.first) {
+                        result.add(c.second!!)
+                        if (chaptered) break // Just read the 1st archive of any subfolder
+                    }
+                } catch (e: Exception) {
+                    Timber.w(e)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.w(e)
         }
     }
     if (chaptered) { // Return one single book with all results as chapters
@@ -1208,7 +1229,7 @@ fun scanArchivePdf(
     doc: DocumentFile,
     parentNames: List<String>,
     targetStatus: StatusContent,
-    content: Content?
+    content: Content? = null
 ): Pair<Int, Content?> {
     val isPdf = doc.getExtension().equals("pdf", true)
     val now = Instant.now().toEpochMilli()
@@ -1256,8 +1277,8 @@ fun scanArchivePdf(
         if (0L == downloadDate) downloadDate = now
         downloadCompletionDate = now
         lastEditDate = now
-        if (null == content) setImageFiles(images)
-        else mapMetadata(images, content.imageList)
+        if (content != null) mapMetadata(images, content.imageList)
+        setImageFiles(images)
         if (0 == qtyPages) {
             val countUnreadable = images.filterNot { it.isReadable }.count()
             qtyPages = images.size - countUnreadable // Minus unreadable pages (cover thumb)
