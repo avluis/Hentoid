@@ -3,6 +3,7 @@ package me.devsaki.hentoid.workers
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -10,7 +11,6 @@ import kotlinx.coroutines.*
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
-import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.core.UGOIRA_CACHE_FOLDER
 import me.devsaki.hentoid.database.CollectionDAO
@@ -29,7 +29,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
-import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.json.sources.pixiv.UGOIRA_FRAMES_TYPE
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification
@@ -70,12 +69,10 @@ import me.devsaki.hentoid.util.file.extractArchiveEntries
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
+import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
-import me.devsaki.hentoid.util.jsonToFile
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.Connectivity
@@ -83,7 +80,6 @@ import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.addSampleNow
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator.getAvgSpeedKbps
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
-import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getConnectivity
 import me.devsaki.hentoid.util.network.getCookies
@@ -895,6 +891,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             DownloadEvent.fromPreparationStep(DownloadEvent.Step.COMPLETE_DOWNLOAD, content)
         )
 
+        val context = applicationContext
         if (!downloadInterrupted.get()) {
             val images: List<ImageFile> = content.imageList
             val nbImages = images.count { !it.isCover } // Don't count the cover
@@ -960,10 +957,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.downloadDate = now
             }
 
-            dlManager.completeDownload(applicationContext, content)
+            dlManager.completeDownload(context, content)
 
             if (content.storageUri.isEmpty()) return
 
+            /*
             WARNING : content.storageUri might now point to an archive file as well
             //val dir = getDocumentFromTreeUriString(applicationContext, content.storageUri)
             if (null == dir) {
@@ -973,26 +971,29 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
                 return
             }
+             */
 
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
             if (pagesKO > 0 && Settings.isDlRetriesActive && content.numberDownloadRetries < Settings.dlRetriesNumber) {
-                val freeSpaceRatio =
-                    MemoryUsageFigures(applicationContext, dir).freeUsageRatio100
-                if (freeSpaceRatio < Settings.dlRetriesMemLimit) {
-                    Timber.i(
-                        "Initiating auto-retry #%s for content %s (%s%% free space)",
-                        content.numberDownloadRetries + 1,
-                        content.title,
-                        freeSpaceRatio
-                    )
-                    logErrorRecord(
-                        content.id,
-                        ErrorType.UNDEFINED,
-                        "",
-                        content.title,
-                        "Auto-retry #" + content.numberDownloadRetries
-                    )
+                content.getContainingFolder(context)?.let { containingUri ->
+                    val freeSpaceRatio =
+                        MemoryUsageFigures(context, containingUri).freeUsageRatio100
+                    if (freeSpaceRatio < Settings.dlRetriesMemLimit) {
+                        Timber.i(
+                            "Initiating auto-retry #%s for content %s (%s%% free space)",
+                            content.numberDownloadRetries + 1,
+                            content.title,
+                            freeSpaceRatio
+                        )
+                        logErrorRecord(
+                            content.id,
+                            ErrorType.UNDEFINED,
+                            "",
+                            content.title,
+                            "Auto-retry #" + content.numberDownloadRetries
+                        )
+                    }
                     content.increaseNumberDownloadRetries()
 
                     // Re-queue all failed images
@@ -1008,7 +1009,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         requestQueueManager.queueRequest(
                             buildImageDownloadRequest(
                                 img,
-                                dir.uri,
+                                content.storageUri.toUri(),
                                 content
                             )
                         )
@@ -1040,6 +1041,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.replacementTitle = ""
             }
 
+            /*
             // Save JSON file
             try {
                 val jsonFile = jsonToFile(
@@ -1051,6 +1053,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             } catch (e: IOException) {
                 Timber.e(e, "I/O Error saving JSON: %s", title)
             }
+             */
             addContent(applicationContext, dao, content)
 
             // Delete the duplicate book that was meant to be replaced, if any
@@ -1106,9 +1109,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
             )
             val context = applicationContext
-            if (
-                updateQueueJson(context, dao)
-            ) Timber.i(context.getString(R.string.queue_json_saved)) else Timber.w(
+            if (updateQueueJson(context, dao))
+                Timber.i(context.getString(R.string.queue_json_saved))
+            else Timber.w(
                 context.getString(
                     R.string.queue_json_failed
                 )
@@ -1252,26 +1255,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     }
 
     // This is run on the I/O thread pool spawned by the downloader
+    @OptIn(DelicateCoroutinesApi::class)
     private fun onRequestSuccess(request: RequestOrder, fileUri: Uri) {
         val img = request.img
-        val imgFile = getFileFromSingleUri(applicationContext, fileUri)
-        if (imgFile != null) {
-            img.size = imgFile.length()
-            updateImageProperties(img, true, fileUri.toString())
-        } else {
-            Timber.i(
-                "I/O error - Image %s not saved in dir %s",
-                img.url,
-                request.targetDir.path
-            )
-            updateImageProperties(img, false, "")
-            logErrorRecord(
-                img.content.targetId,
-                ErrorType.IO,
-                img.url,
-                "Picture " + img.name,
-                "Save failed in dir " + request.targetDir.path
-            )
+        img.size = fileSizeFromUri(applicationContext, fileUri)
+        updateImageProperties(img, true, fileUri.toString())
+        GlobalScope.launch {
+            dlManager.processDownloadedFile(applicationContext, fileUri)
         }
     }
 
@@ -1410,8 +1400,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 Uri.fromFile(ugoiraCacheFolder),
                 targetFileName,
                 downloadInterrupted,
-                ZIP_MIME_TYPE,
-                resourceId = img.order
+                img.order,
+                MIME_TYPE_ZIP
             )
 
             val targetFileUri = result

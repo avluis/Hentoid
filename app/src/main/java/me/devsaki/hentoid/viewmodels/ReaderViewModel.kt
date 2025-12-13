@@ -404,7 +404,12 @@ class ReaderViewModel(
                 val newImg = newImages[i]
                 val cacheUri = StorageCache.getFile(READER_CACHE, formatCacheKey(newImg))
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
-                else newImg.fileUri = ""
+                else {
+                    // Downloads saved as archives
+                    if (newImg.url.startsWith("http") && newImg.fileUri.isNotEmpty())
+                        newImg.url = newImg.fileUri
+                    newImg.fileUri = ""
+                }
             }
             processImages(theContent, pageNumber, newImages)
         }

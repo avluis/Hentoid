@@ -611,6 +611,7 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> items selected</item>
     </plurals>
     <string name="folder_undefined">Error - containing folder undefined</string>
+    <string name="folder_not_found">Error - containing folder not found</string>
     <string name="malformed_url">Error - Malformed URL</string>
     <string name="unsupported_site">Error - Site is not supported</string>
     <plurals name="external_not_removed">

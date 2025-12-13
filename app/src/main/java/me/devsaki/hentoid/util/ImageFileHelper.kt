@@ -121,24 +121,21 @@ fun createImageListFromFiles(
  * @param files          Entries to create the ImageFile list with
  * @param targetStatus   Target status of the ImageFiles
  * @param startingOrder  Starting order of the first ImageFile to add; will be numbered incrementally from that number on
- * @param namePrefix     Prefix to add to image names
  * @return List of ImageFiles contructed from the given parameters
  */
 fun createImageListFromArchiveEntries(
     archiveFileUri: Uri,
     files: List<ArchiveEntry>,
     targetStatus: StatusContent,
-    startingOrder: Int,
-    namePrefix: String
+    startingOrder: Int
 ): List<ImageFile> {
     assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
     var order = startingOrder
     // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
     val fileList = files.sortedWith(InnerNameNumberArchiveComparator())
-    for ((path1, size) in fileList) {
-        val name = namePrefix + path1
-        val path = archiveFileUri.toString() + File.separator + path1
+    for ((name, size) in fileList) {
+        val path = archiveFileUri.toString() + File.separator + name
         val img = ImageFile()
         if (name.startsWith(THUMB_FILE_NAME)) img.isCover = true
         else order++

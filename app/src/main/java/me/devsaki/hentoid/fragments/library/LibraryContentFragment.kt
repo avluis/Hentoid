@@ -82,11 +82,11 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.contentItemDiffCallback
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
+import me.devsaki.hentoid.util.file.folderExists
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.formatEpochToDate
+import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.launchBrowserFor
@@ -689,19 +689,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (1 == selectedItems.size) {
             val item = selectedItems.firstOrNull() ?: return
             val c = item.content ?: return
-            if (c.storageUri.isEmpty()) {
-                toast(R.string.folder_undefined)
-                return
-            }
-            val folder = getDocumentFromTreeUriString(context, c.storageUri)
-            if (folder != null) {
-                selectExtension?.apply { deselect(selections.toMutableSet()) }
-                activity.get()?.getSelectionToolbar()?.visibility = View.GONE
 
-                val uri = if (c.isArchive || c.isPdf)
-                    getParent(context, Settings.externalLibraryUri.toUri(), folder.uri)
-                else folder.uri
-                uri?.let { openUri(context, it) }
+            selectExtension?.apply { deselect(selections.toMutableSet()) }
+            activity.get()?.getSelectionToolbar()?.visibility = View.GONE
+
+            c.getContainingFolder(context)?.let {
+                if (folderExists(context, it)) openUri(context, it)
+                else toast(R.string.folder_not_found)
+            } ?: run {
+                toast(R.string.folder_undefined)
             }
         }
     }

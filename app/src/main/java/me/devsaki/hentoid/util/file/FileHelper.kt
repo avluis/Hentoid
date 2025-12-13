@@ -120,6 +120,31 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
     }
 }
 
+fun getDocumentProperties(context: Context, uri: Uri): FileExplorer.DocumentProperties? {
+    if (ContentResolver.SCHEME_FILE == uri.scheme) {
+        legacyFileFromUri(uri)?.let { file ->
+            return FileExplorer.DocumentProperties(
+                file.absolutePath,
+                file.name,
+                file.length(),
+                file.isDirectory,
+                file.lastModified()
+            )
+        }
+    } else {
+        getDocumentFromTreeUri(context, uri)?.let { doc ->
+            return FileExplorer.DocumentProperties(
+                doc.uri.toString(),
+                doc.name ?: "",
+                doc.length(),
+                doc.isDirectory,
+                doc.lastModified()
+            )
+        }
+    }
+    return null
+}
+
 /**
  * Get the full, human-readable access path from the given Uri
  *
@@ -765,6 +790,7 @@ fun getBinary(context: Context, uri: Uri): ByteArray {
 
 /**
  * Get the relevant file extension (without the ".") from the given mime-type
+ * Also see https://android.googlesource.com/platform/external/mime-support/
  *
  * @param mimeType Mime-type to get a file extension from
  * @return Most relevant file extension (without the ".") corresponding to the given mime-type; null if none has been found
@@ -786,6 +812,7 @@ fun getExtensionFromMimeType(mimeType: String): String? {
 
 /**
  * Get the most relevant mime-type for the given file extension
+ * Also see https://android.googlesource.com/platform/external/mime-support/
  *
  * @param extension File extension to get the mime-type for (without the ".")
  * @return Most relevant mime-type for the given file extension; generic mime-type if none found
@@ -1136,7 +1163,7 @@ fun formatHumanReadableSizeInt(bytes: Long, res: Resources): String {
  * @param context Context to use
  * @param f       Folder to get the figures from
  */
-class MemoryUsageFigures(context: Context, f: DocumentFile) {
+class MemoryUsageFigures(context: Context, fUri: Uri) {
     private var freeMemBytes: Long = 0
 
     /**
@@ -1145,15 +1172,17 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     var totalSpaceBytes: Long = 0
         private set
 
+    constructor(context: Context, doc: DocumentFile) : this(context, doc.uri)
+
     init {
-        init26(context, f)
-        if (0L == totalSpaceBytes) init21(context, f)
-        if (0L == totalSpaceBytes) initLegacy(context, f)
+        init26(context, fUri)
+        if (0L == totalSpaceBytes) init21(context, fUri)
+        if (0L == totalSpaceBytes) initLegacy(context, fUri)
     }
 
     // Old way of measuring memory (inaccurate on certain devices)
-    private fun initLegacy(context: Context, f: DocumentFile) {
-        val fullPath = getFullPathFromUri(context, f.uri) // Oh so dirty !!
+    private fun initLegacy(context: Context, fUri: Uri) {
+        val fullPath = getFullPathFromUri(context, fUri) // Oh so dirty !!
         if (fullPath.isNotEmpty()) {
             val file = File(fullPath)
             this.freeMemBytes = file.freeSpace // should actually have been getUsableSpace
@@ -1162,8 +1191,8 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     }
 
     // Init for API 21 to 25
-    private fun init21(context: Context, f: DocumentFile) {
-        val fullPath = getFullPathFromUri(context, f.uri) // Oh so dirty !!
+    private fun init21(context: Context, fUri: Uri) {
+        val fullPath = getFullPathFromUri(context, fUri) // Oh so dirty !!
         try {
             if (fullPath.isNotEmpty()) {
                 val stat = StatFs(fullPath)
@@ -1179,8 +1208,8 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
 
     // Init for API 26+
     // Inspired by https://github.com/Cheticamp/Storage_Volumes/
-    private fun init26(context: Context, f: DocumentFile) {
-        val volumeId = getVolumeIdFromUri(f.uri)
+    private fun init26(context: Context, fUri: Uri) {
+        val volumeId = getVolumeIdFromUri(fUri)
         val mgr = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
         val volumes = mgr.storageVolumes
@@ -1428,6 +1457,24 @@ fun fileExists(context: Context, fileUri: Uri): Boolean {
         else false
     } else {
         val doc = getFileFromSingleUri(context, fileUri)
+        return (doc != null)
+    }
+}
+
+/**
+ * Indicate whether the folder at the given Uri exists or not
+ *
+ * @param context Context to be used
+ * @param fileUri Uri to the folder whose existence is to check
+ * @return True if the given Uri points to an existing folder; false instead
+ */
+fun folderExists(context: Context, fileUri: Uri): Boolean {
+    if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
+        val path = fileUri.path
+        return if (path != null) File(path).exists()
+        else false
+    } else {
+        val doc = getDocumentFromTreeUri(context, fileUri)
         return (doc != null)
     }
 }

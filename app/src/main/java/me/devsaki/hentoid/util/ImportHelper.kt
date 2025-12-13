@@ -1237,8 +1237,7 @@ fun scanArchivePdf(
         doc.uri,
         imageEntries,
         targetStatus,
-        0,
-        ""
+        0
     ).toMutableList()
     val coverExists = images.any { it.isCover }
     if (!coverExists) createCover(images)

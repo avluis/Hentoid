@@ -13,19 +13,17 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.util.file.ArchiveStreamer
-import me.devsaki.hentoid.util.file.MIME_TYPE_ZIP
+import me.devsaki.hentoid.util.file.MIME_TYPE_CBZ
 import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
-import me.devsaki.hentoid.util.file.getOutputStream
-import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.tryCleanDirectory
 import me.devsaki.hentoid.util.formatFolderName
+import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
-import me.devsaki.hentoid.util.getStorageRoot
 import me.devsaki.hentoid.util.jsonToFile
 import me.devsaki.hentoid.util.pause
 import timber.log.Timber
@@ -65,8 +63,8 @@ class PrimaryDownloadManager {
                 content.setStorageDoc(it)
                 downloadFolder = if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
                     // Compute parent folder of the archive
-                    content.getStorageRoot()?.let { root ->
-                        getDocumentFromTreeUri(context, getParent(context, root, it.uri))
+                    content.getContainingFolder(context)?.let { parent ->
+                        getDocumentFromTreeUri(context, parent)
                     }
                 } else {
                     it
@@ -85,13 +83,11 @@ class PrimaryDownloadManager {
             downloadFolder?.let { dlFolder ->
                 if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
                     val archiveName = formatFolderName(content).first + ".cbz"
-                    val archiveUri =
-                        createFile(context, dlFolder.uri, archiveName, MIME_TYPE_ZIP)
-                    getDocumentFromTreeUri(context, archiveUri)?.let { content.setStorageDoc(it) }
-                    downloadArchive = archiveUri
-                    val archiveStream = getOutputStream(context, archiveUri)
-                        ?: throw IOException("Couldn't stream archive $archiveUri")
-                    archiveStreamer = ArchiveStreamer(archiveStream)
+                    createFile(context, dlFolder.uri, archiveName, MIME_TYPE_CBZ).let { uri ->
+                        getDocumentFromTreeUri(context, uri)?.let { content.setStorageDoc(it) }
+                        downloadArchive = uri
+                        archiveStreamer = ArchiveStreamer(context, uri)
+                    }
                 } else {
                     content.setStorageDoc(dlFolder)
                 }
@@ -129,7 +125,21 @@ class PrimaryDownloadManager {
      * Process post-download actions
      */
     suspend fun completeDownload(context: Context, content: Content) = withContext(Dispatchers.IO) {
-        val refreshDelayMs = 500
+        if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+            // Wait until archive streaming has completed (poll every 500ms)
+            while (archiveStreamer?.queueActive ?: false) pause(500)
+
+            // Update imageURLs
+            val imgs = content.imageList
+            imgs.forEach { img ->
+                archiveStreamer?.mappedUris?.let { map ->
+                    map[img.fileUri]?.let { img.fileUri = it }
+                }
+            }
+            content.setImageFiles(imgs)
+        }
+
+        // Create JSON
         val jsonName = if (content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
             val archiveFile = getFileFromSingleUriString(context, content.storageUri)
             getFileNameWithoutExtension(archiveFile?.name ?: "") + JSON_ARCHIVE_SUFFIX + ".json"
@@ -143,14 +153,12 @@ class PrimaryDownloadManager {
             // Cache its URI to the newly created content
             content.jsonUri = jsonFile.uri.toString()
         }
+
+        // Empty cache
         getOrCreateCacheFolder(context, DOWNLOAD_CACHE_FOLDER)?.let {
             if (!tryCleanDirectory(it)) Timber.d("Failed to clean download cache")
         }
 
-        // Wait until archive streaming has completed
-        while (archiveStreamer?.queueActive ?: false) {
-            pause(refreshDelayMs)
-        }
         clear()
     }
 
