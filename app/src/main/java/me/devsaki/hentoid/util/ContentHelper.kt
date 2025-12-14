@@ -585,11 +585,16 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
             }
 
             // Remove the cover stored in the app's persistent folder
-            val appFolder = context.filesDir
-            val images = appFolder.listFiles { _, name ->
+            context.filesDir.listFiles { _, name ->
                 getFileNameWithoutExtension(name) == content.id.toString()
+            }?.let { imgs ->
+                imgs.filterNotNull().forEach { removeFile(it) }
             }
-            if (images != null) for (f in images) removeFile(f!!)
+
+            // Remove the corresponding JSON
+            if (content.jsonUri.isNotEmpty())
+                removeFile(context, content.jsonUri.toUri())
+
         } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             val folder = getDocumentFromTreeUriString(context, content.storageUri)
