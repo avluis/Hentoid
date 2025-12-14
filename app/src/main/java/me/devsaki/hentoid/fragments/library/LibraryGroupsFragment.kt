@@ -288,8 +288,8 @@ class LibraryGroupsFragment : Fragment(),
             R.id.action_edit -> editSelectedItemName()
             R.id.action_delete -> deleteSelectedItems()
             R.id.action_rate -> onMassRateClick()
-            R.id.action_archive -> archiveSelectedItems()
-            R.id.action_export_metadata -> exportSelectedItems()
+            R.id.action_export -> exportSelectedItems()
+            R.id.action_export_metadata -> exportSelectedItemsMetadata()
             R.id.action_select_all -> {
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 var count = 0
@@ -550,7 +550,7 @@ class LibraryGroupsFragment : Fragment(),
     /**
      * Callback for the "archive item" action button
      */
-    private fun archiveSelectedItems() {
+    private fun exportSelectedItems() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val selectedContent = selectedItems
             .map { it.group }
@@ -564,7 +564,7 @@ class LibraryGroupsFragment : Fragment(),
     /**
      * Callback for the "export metadata" action button
      */
-    private fun exportSelectedItems() {
+    private fun exportSelectedItemsMetadata() {
         val selectedItems: Set<GroupDisplayItem> = selectExtension!!.selectedItems
         val selectedGroups = selectedItems.map { it.group }
         if (selectedGroups.isEmpty()) return

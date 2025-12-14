@@ -569,7 +569,6 @@
     <string name="memory_title">Användning av lagring</string>
     <string name="memory_total">Totalt: %s</string>
     <string name="menu_archive">Arkiv</string>
-    <string name="menu_archive_help">Arkivera boken i en zip-fil</string>
     <string name="menu_change_dl_mode">Ändra nerladdningsläge</string>
     <string name="menu_change_group">Flytta till grupp</string>
     <string name="menu_completed_single">Markera som komplett</string>

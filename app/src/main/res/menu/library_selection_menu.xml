@@ -47,9 +47,9 @@
         android:tooltipText="@string/menu_reset_read"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_archive"
+        android:id="@+id/action_export"
         android:icon="@drawable/ic_archive"
-        android:title="@string/menu_archive"
+        android:title="@string/menu_export"
         android:tooltipText="@string/menu_archive_help"
         app:showAsAction="ifRoom" />
     <item

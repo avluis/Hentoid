@@ -92,7 +92,6 @@
     <string name="menu_share">Поділитися</string>
     <string name="menu_share_help">Поділитися лінком на книгу та її назвою через сторонній додаток</string>
     <string name="menu_archive">В архів</string>
-    <string name="menu_archive_help">Заархівувати книгу в ZIP</string>
     <string name="menu_share_title">Лінк на книгу</string>
     <string name="library_search_hint">Назва, художник, теґ чи ID книги</string>
     <string name="send_to">Поділитися через:</string>

@@ -118,8 +118,8 @@
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_share_title">Book URL</string>
-    <string name="menu_archive">Archive</string>
-    <string name="menu_archive_help">Archive the book to a ZIP file</string>
+    <string name="menu_export">Export</string>
+    <string name="menu_archive_help">Export books as archives or PDFs</string>
     <string name="library_search_hint">Title, artist, tag or book ID</string>
     <string name="group_search_hint">Group title</string>
     <string name="send_to">Share with:</string>

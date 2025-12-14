@@ -79,7 +79,6 @@
     <string name="menu_share_help">작품 제목과 URL을 다른 앱으로 공유합니다</string>
     <string name="menu_share_title">작품 URL</string>
     <string name="menu_archive">아카이브</string>
-    <string name="menu_archive_help">작품을 압축 파일로 보관합니다</string>
     <string name="library_search_hint">제목, 작가, 태그 또는 작품 ID</string>
     <string name="group_search_hint">그룹 제목</string>
     <string name="send_to">다음과 공유:</string>

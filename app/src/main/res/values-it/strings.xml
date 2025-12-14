@@ -609,7 +609,6 @@
     <string name="memory_title">Utilizzo della memoria</string>
     <string name="memory_total">Totale: %s</string>
     <string name="menu_archive">Archivio</string>
-    <string name="menu_archive_help">Archivia il libro in un file ZIP</string>
     <string name="menu_change_dl_mode">Cambia modalità download</string>
     <string name="menu_change_group">Muovi nel gruppo</string>
     <string name="menu_completed_single">Segna come completato</string>

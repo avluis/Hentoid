@@ -850,7 +850,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 resetReadStatsMenu = findItem(R.id.action_reset_read)
                 rateMenu = findItem(R.id.action_rate)
                 shareMenu = findItem(R.id.action_share)
-                archiveMenu = findItem(R.id.action_archive)
+                exportMenu = findItem(R.id.action_export)
                 changeGroupMenu = findItem(R.id.action_change_group)
                 folderMenu = findItem(R.id.action_open_folder)
                 redownloadMenu = findItem(R.id.action_redownload)

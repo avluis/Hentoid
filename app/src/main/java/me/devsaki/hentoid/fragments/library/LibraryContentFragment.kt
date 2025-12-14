@@ -475,7 +475,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_completed -> markSelectedAsCompleted()
             R.id.action_reset_read -> resetSelectedReadStats()
             R.id.action_rate -> onMassRateClick()
-            R.id.action_archive -> archiveSelectedItems()
+            R.id.action_export -> exportSelectedItems()
             R.id.action_change_group -> moveSelectedItems()
             R.id.action_open_folder -> openItemFolder()
             R.id.action_redownload -> {
@@ -652,7 +652,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     /**
      * Callback for the "archive item" action button
      */
-    private fun archiveSelectedItems() {
+    private fun exportSelectedItems() {
         selectExtension?.apply {
             val selectedItems: Set<ContentItem> = selectedItems
             val contents = selectedItems.mapNotNull { ci -> ci.content }
