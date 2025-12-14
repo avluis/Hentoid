@@ -569,32 +569,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
         dao.deleteContent(content)
 
         if (content.isArchive || content.isPdf) { // Remove an archive
-            val archive = getFileFromSingleUriString(context, content.storageUri)
-                ?: throw FileNotProcessedException(
-                    content,
-                    "Failed to find archive ${content.storageUri}"
-                )
-
-            if (archive.delete()) {
-                Timber.i("Archive removed : ${content.storageUri}")
-            } else {
-                throw FileNotProcessedException(
-                    content,
-                    "Failed to delete archive ${content.storageUri}"
-                )
-            }
-
-            // Remove the cover stored in the app's persistent folder
-            context.filesDir.listFiles { _, name ->
-                getFileNameWithoutExtension(name) == content.id.toString()
-            }?.let { imgs ->
-                imgs.filterNotNull().forEach { removeFile(it) }
-            }
-
-            // Remove the corresponding JSON
-            if (content.jsonUri.isNotEmpty())
-                removeFile(context, content.jsonUri.toUri())
-
+            purgeArchivePdfFiles(context, content, removeJson = true, removeCover = true)
         } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             val folder = getDocumentFromTreeUriString(context, content.storageUri)
@@ -1358,10 +1333,8 @@ private suspend fun reparseFromScratch(
 
         if (newContent.status == StatusContent.IGNORED) {
             val canonicalUrl = contentParser.canonicalUrl
-            return@withContext if (canonicalUrl.isNotEmpty() && !canonicalUrl.equals(
-                    urlToLoad,
-                    ignoreCase = true
-                )
+            return@withContext if (canonicalUrl.isNotEmpty()
+                && !canonicalUrl.equals(urlToLoad, ignoreCase = true)
             ) reparseFromScratch(canonicalUrl, content)
             else null
         }
@@ -1399,6 +1372,51 @@ private suspend fun reparseFromScratch(
  * @return Nothing, but content.storageUri, content.storageDoc and content.jsonUri are updated
  */
 fun purgeFiles(
+    context: Context,
+    content: Content,
+    removeJson: Boolean,
+    removeCover: Boolean
+) {
+    if (content.isArchive || content.isPdf) {
+        purgeArchivePdfFiles(context, content, removeJson, removeCover)
+    } else { // Regular and streamed downloads
+        purgeFolderFiles(context, content, removeJson, removeCover)
+    }
+}
+
+private fun purgeArchivePdfFiles(
+    context: Context,
+    content: Content,
+    removeJson: Boolean,
+    removeCover: Boolean
+) {
+    val archive = getFileFromSingleUriString(context, content.storageUri)
+        ?: throw FileNotProcessedException(content, "Failed to find archive ${content.storageUri}")
+
+    if (archive.delete()) {
+        Timber.i("Archive removed : ${content.storageUri}")
+        content.storageUri = ""
+    } else {
+        throw FileNotProcessedException(content, "Failed to delete archive ${content.storageUri}")
+    }
+
+    // Remove the cover stored in the app's persistent folder
+    if (removeCover) {
+        context.filesDir.listFiles { _, name ->
+            getFileNameWithoutExtension(name) == content.id.toString()
+        }?.let { imgs ->
+            imgs.filterNotNull().forEach { removeFile(it) }
+        }
+    }
+
+    // Remove the corresponding JSON
+    if (removeJson && content.jsonUri.isNotEmpty()) {
+        removeFile(context, content.jsonUri.toUri())
+        content.jsonUri = ""
+    }
+}
+
+private fun purgeFolderFiles(
     context: Context,
     content: Content,
     removeJson: Boolean,
