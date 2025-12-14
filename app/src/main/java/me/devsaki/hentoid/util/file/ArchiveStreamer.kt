@@ -33,6 +33,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri) {
     private val isQueueActive = AtomicBoolean(false)
 
     init {
+        Timber.d("Archive streamer : Init @ $archiveUri")
         stream.setMethod(STORED)
     }
 
@@ -42,11 +43,14 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri) {
     val mappedUris: Map<String, String>
         get() = filesMatch
 
+
     fun close() {
+        Timber.d("Archive streamer : Closing")
         stop.set(true)
         stream.flush()
         stream.close()
         filesMatch.clear()
+        isQueueActive.set(false)
     }
 
     fun addFile(context: Context, uri: Uri) {
@@ -74,6 +78,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri) {
                     getInputStream(context, uri).use {
                         entry.crc = getChecksumValue(CRC32(), it)
                     }
+                    // TODO retry when CRC32 fails (ZipException)
                     stream.putNextEntry(entry)
                     getInputStream(context, uri).use {
                         copy(it, stream)

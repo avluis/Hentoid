@@ -54,6 +54,8 @@ class PrimaryDownloadManager {
      */
     suspend fun createTargetLocation(context: Context, content: Content): Boolean =
         withContext(Dispatchers.IO) {
+            Timber.d("Primary download manager : Init ${content.downloadMode}")
+
             downloadMode = content.downloadMode
             val locationResult =
                 getDownloadLocation(getInstance(), content) ?: return@withContext false
@@ -163,6 +165,7 @@ class PrimaryDownloadManager {
     }
 
     fun clear() {
+        Timber.d("Primary download manager : Clearing")
         downloadMode = null
         archiveStreamer?.close()
         archiveStreamer = null
