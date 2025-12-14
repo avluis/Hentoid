@@ -1161,7 +1161,7 @@ fun formatHumanReadableSizeInt(bytes: Long, res: Resources): String {
  * Get memory usage figures for the volume containing the given folder
  *
  * @param context Context to use
- * @param f       Folder to get the figures from
+ * @param fUri    Uri of the folder to get the figures from
  */
 class MemoryUsageFigures(context: Context, fUri: Uri) {
     private var freeMemBytes: Long = 0
@@ -1776,8 +1776,16 @@ fun DocumentFile.getExtension(): String {
     return getExtension(this.name ?: "")
 }
 
+fun DocumentFile.formatDisplayUri(rootUri: Uri): String {
+    return this.uri.formatDisplay(rootUri.toString())
+}
+
 fun DocumentFile.formatDisplayUri(rootUri: String = ""): String {
     return this.uri.formatDisplay(rootUri)
+}
+
+fun Uri.formatDisplay(uri: Uri): String {
+    return this.formatDisplay(uri.toString())
 }
 
 fun Uri.formatDisplay(rootUri: String = ""): String {

@@ -3,6 +3,7 @@ package me.devsaki.hentoid.workers
 import android.content.Context
 import android.util.Log
 import androidx.annotation.CheckResult
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.BOOKMARKS_JSON_FILE_NAME
+import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.core.GROUPS_JSON_FILE_NAME
 import me.devsaki.hentoid.core.JSON_FILE_NAME
 import me.devsaki.hentoid.core.JSON_FILE_NAME_OLD
@@ -55,8 +57,11 @@ import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.StorageCache
+import me.devsaki.hentoid.util.file.formatDisplay
+import me.devsaki.hentoid.util.file.formatDisplayUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
+import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getPathRoot
@@ -79,7 +84,6 @@ import me.devsaki.hentoid.workers.data.PrimaryImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
-import java.net.URLDecoder
 import java.time.Instant
 import kotlin.math.floor
 import kotlin.math.log10
@@ -107,7 +111,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
     private var booksKO = 0 // Number of folders found with no valid book inside
 
-    private var nbBookFolders = 0 // Number of folders found with a book inside
+    private var nbBookSources = 0 // Number of folders found with a book inside
 
     private var nbSubfolders = 0 // Number of folders found with no content but subfolders
 
@@ -207,7 +211,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     ) = withContext(Dispatchers.IO) {
         booksOK = 0
         booksKO = 0
-        nbBookFolders = 0
+        nbBookSources = 0
         nbSubfolders = 0
         val log: MutableList<LogEntry> = ArrayList()
         val context = applicationContext
@@ -220,14 +224,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
         val rootFolder = getDocumentFromTreeUriString(context, targetRootUri)
         if (null == rootFolder) {
-            Timber.e("Root folder is invalid for location %s (%s)", location.name, targetRootUri)
+            Timber.e("Root folder is invalid for location ${location.name} ($targetRootUri)")
             return@withContext
         }
         trace(
             Log.INFO,
             0,
             log,
-            "Import from ${URLDecoder.decode(rootFolder.uri.toString(), "UTF-8")}"
+            "Import from ${rootFolder.formatDisplayUri()}"
         )
 
         val bookFolders: MutableList<DocumentFile> = ArrayList()
@@ -245,6 +249,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     context.getString(R.string.refresh_step1)
                 )
                 val siteFolders = explorer.listFolders(context, rootFolder)
+                var nbArchives = 0
                 for ((foldersProcessed, f) in siteFolders.withIndex()) {
                     eventProgress(
                         STEP_2_BOOK_FOLDERS,
@@ -259,6 +264,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             // Ignore syncthing subfolders
                             .filterNot { (it.name ?: "").startsWith(".st") }
                     )
+                    nbArchives += explorer.countFiles(f) { isSupportedArchive(it) }
                 }
                 eventComplete(
                     STEP_2_BOOK_FOLDERS,
@@ -328,6 +334,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
 
                 try {
                     dao = ObjectBoxDAO()
+                    nbBookSources = bookFolders.size + nbArchives
 
                     importArchives(
                         context,
@@ -335,10 +342,24 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         siteFolders,
                         explorer,
                         dao,
-                        log
-                    )
+                        log,
+                    ) { name, ok ->
+                        if (ok) booksOK++ else booksKO++
+                        notificationManager.notify(
+                            ImportProgressNotification(
+                                name,
+                                booksOK + booksKO,
+                                nbBookSources - nbSubfolders
+                            )
+                        )
+                        eventProgress(
+                            STEP_3_BOOKS,
+                            nbBookSources - nbSubfolders,
+                            booksOK,
+                            booksKO
+                        )
+                    }
 
-                    nbBookFolders = bookFolders.size
                     val toScan = ArrayList<DocumentFile>()
                     // 1st wave = initially detected folders
                     toScan.addAll(bookFolders)
@@ -358,7 +379,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                                 cleanNoJSON,
                                 cleanNoImages
                             )
-                            nbBookFolders += subfolders.size
+                            nbBookSources += subfolders.size
                             allSubfolders.addAll(subfolders)
 
                             // Clear the DAO every 2500K iterations to optimize memory
@@ -473,7 +494,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             }
             eventComplete(
                 STEP_4_QUEUE_FINAL,
-                nbBookFolders,
+                nbBookSources,
                 booksOK,
                 booksKO,
                 logFile
@@ -503,13 +524,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         }
     }
 
-    private suspend fun importArchives(
+    private fun importArchives(
         context: Context,
         parent: DocumentFile,
         subFolders: List<DocumentFile>,
         explorer: FileExplorer,
         dao: CollectionDAO,
-        log: MutableList<LogEntry>
+        log: MutableList<LogEntry>,
+        onProgress: BiConsumer<String, Boolean>
     ) {
         trace(
             Log.INFO,
@@ -519,7 +541,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         )
 
         // Add all archives inside the current site folder
-        val archiveBooks = scanForArchivesPdf(
+        scanForArchivesPdf(
             context,
             parent,
             subFolders,
@@ -528,57 +550,68 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             dao,
             log,
             requiresJson = true
-        )
+        ) { res ->
+            res?.let {
+                onArchiveFound(
+                    context,
+                    it,
+                    parent,
+                    dao,
+                    log,
+                    onProgress
+                )
+            } ?: run {
+                onProgress("", false)
+            }
+        }
+    }
 
+    private fun onArchiveFound(
+        context: Context,
+        c: Content,
+        parent: DocumentFile,
+        dao: CollectionDAO,
+        log: MutableList<LogEntry>,
+        onProgress: BiConsumer<String, Boolean>
+    ) {
+        val bookLocation = c.storageUri.toUri().formatDisplay(parent.uri)
+        // Find the corresponding flagged book in the library
+        val existingFlaggedContent = dao.selectContentByStorageUri(c.storageUri, true)
+        // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
+        if (existingFlaggedContent != null) dao.deleteContent(existingFlaggedContent)
+
+        // If the very same book still exists in the DB at this point, it means it's present in the queue
+        // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
+        val existingDuplicate = findDuplicateContentByUrl(c, dao)
+        if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
+            booksKO++
+            val location =
+                if (isInQueue(existingDuplicate.status)) "queue" else "collection"
+            trace(
+                Log.INFO, STEP_3_BOOKS, log,
+                "Import book KO! (already in $location) : %s", bookLocation
+            )
+            onProgress("", false)
+            return
+        }
+
+        // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
+        removeExternalAttributes(c)
+        addContent(context, dao, c)
+        val customGroups =
+            c.getGroupItems(Grouping.CUSTOM)
+                .mapNotNull { it.linkedGroup }
+                .map { it.name }
+        val groupStr =
+            if (customGroups.isEmpty()) "" else " in " + customGroups.joinToString(", ")
         trace(
             Log.INFO,
             STEP_3_BOOKS,
             log,
-            "Importing archives : ${archiveBooks.size} found"
+            "Import book OK$groupStr : %s",
+            bookLocation
         )
-
-
-        archiveBooks.forEach { c ->
-            val bookLocation = URLDecoder.decode(
-                c.storageUri.replace(parent.toString(), ""),
-                "UTF-8"
-            )
-            // Find the corresponding flagged book in the library
-            val existingFlaggedContent = dao.selectContentByStorageUri(c.storageUri, true)
-            // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
-            if (existingFlaggedContent != null) dao.deleteContent(existingFlaggedContent)
-
-            // If the very same book still exists in the DB at this point, it means it's present in the queue
-            // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
-            val existingDuplicate = findDuplicateContentByUrl(c, dao)
-            if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion) {
-                booksKO++
-                val location =
-                    if (isInQueue(existingDuplicate.status)) "queue" else "collection"
-                trace(
-                    Log.INFO, STEP_3_BOOKS, log,
-                    "Import book KO! (already in $location) : %s", bookLocation
-                )
-                return
-            }
-
-            // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
-            removeExternalAttributes(c)
-            addContent(context, dao, c)
-            val customGroups =
-                c.getGroupItems(Grouping.CUSTOM)
-                    .mapNotNull { it.linkedGroup }
-                    .map { it.name }
-            val groupStr =
-                if (customGroups.isEmpty()) "" else " in " + customGroups.joinToString(", ")
-            trace(
-                Log.INFO,
-                STEP_3_BOOKS,
-                log,
-                "Import book OK$groupStr : %s",
-                bookLocation
-            )
-        }
+        onProgress(c.title, true)
     }
 
     private suspend fun importFolder(
@@ -596,11 +629,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         var content: Content? = null
         var bookFiles: List<DocumentFile>? = null
         val result = ArrayList<DocumentFile>()
-
-        val bookLocation = URLDecoder.decode(
-            bookFolder.uri.toString().replace(explorer.root.toString(), ""),
-            "UTF-8"
-        )
+        val bookLocation = bookFolder.formatDisplayUri(explorer.root)
 
         // Detect the presence of images if the corresponding cleanup option has been enabled
         if (cleanNoImages) {
@@ -952,12 +981,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             ImportProgressNotification(
                 bookName,
                 booksOK + booksKO,
-                nbBookFolders - nbSubfolders
+                nbBookSources - nbSubfolders
             )
         )
         eventProgress(
             STEP_3_BOOKS,
-            nbBookFolders - nbSubfolders,
+            nbBookSources - nbSubfolders,
             booksOK,
             booksKO
         )
