@@ -237,11 +237,9 @@ interface CollectionDAO {
 
     fun flagImagesForDeletion(ids: LongArray, value: Boolean)
 
-    fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>>
+    fun selectImagesFromContentLive(id: Long, downloadedOnly: Boolean): LiveData<List<ImageFile>>
 
-    fun selectDownloadedImagesFromContent(id: Long): List<ImageFile>
-
-    fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>>
+    fun selectImagesFromContent(id: Long, downloadedOnly: Boolean): List<ImageFile>
 
     fun selectAllFavouritePagesLive(): LiveData<List<ImageFile>>
 

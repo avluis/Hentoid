@@ -1073,16 +1073,15 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.flagImagesForDeletion(ids, value)
     }
 
-    override fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>> {
-        return ObjectBoxLiveData(ObjectBoxDB.selectDownloadedImagesFromContentQ(id))
+    override fun selectImagesFromContentLive(
+        id: Long,
+        downloadedOnly: Boolean
+    ): LiveData<List<ImageFile>> {
+        return ObjectBoxLiveData(ObjectBoxDB.selectImagesFromContentQ(id, downloadedOnly))
     }
 
-    override fun selectDownloadedImagesFromContent(id: Long): List<ImageFile> {
-        return ObjectBoxDB.selectDownloadedImagesFromContentQ(id).safeFind()
-    }
-
-    override fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>> {
-        return ObjectBoxDB.countProcessedImagesById(contentId)
+    override fun selectImagesFromContent(id: Long, downloadedOnly: Boolean): List<ImageFile> {
+        return ObjectBoxDB.selectImagesFromContentQ(id, downloadedOnly).safeFind()
     }
 
     override fun selectAllFavouritePagesLive(): LiveData<List<ImageFile>> {

@@ -43,7 +43,6 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.computeAndSaveCoverHash
 import me.devsaki.hentoid.util.download.ContentQueueManager
-import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.download.ContentQueueManager.pauseQueue
 import me.devsaki.hentoid.util.download.DownloadRateLimiter
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.prefsSpeedCapToKbps
@@ -219,7 +218,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
 
         // Process these here to avoid initializing notifications for downloads that will never start
-        if (isQueuePaused) {
+        if (ContentQueueManager.isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
             return@withContext
         }
@@ -254,7 +253,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val context = applicationContext
 
         // Check if queue has been paused
-        if (isQueuePaused) {
+        if (ContentQueueManager.isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
             return Pair(QueuingResult.QUEUE_END, null)
         }
@@ -719,12 +718,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var networkBytes: Long = 0
         var deltaNetworkBytes: Long
         var nbDeltaLowNetwork = 0
-        val images = content.imageList
-        // Compute total downloadable pages; online (stream) pages do not count
-        val totalPages = images.count { it.status != StatusContent.ONLINE }
-        val contentQueueManager = ContentQueueManager
         var isScheduledTimeOver = false
+
         do {
+            // Check if scheduled end has time been reached
             if (!isManualStart) {
                 scheduledEnd?.let {
                     val isCrossDay = (scheduledStart ?: LocalTime.MIN) > it
@@ -737,21 +734,32 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
-            val statuses = dao.countProcessedImagesById(content.id)
-            var status = statuses[StatusContent.DOWNLOADED]
+            // Get fresh images from the DB
+            val images = dao.selectImagesFromContent(content.id, false)
+            // Compute total downloadable pages; online (streamed) pages do not count
+            val totalPages = images.count { it.status != StatusContent.ONLINE }
 
+            // Compute image stats per status
+            // Array[0] : Number of images; Array[1] : Total size of images
+            val statuses = images.groupingBy { it.status }.fold(
+                initialValueSelector = { _, _ -> Array<Long>(2) { 0 } },
+                operation = { _, acc, a -> acc[0]++; acc[1] += a.size; acc }
+            )
+
+            var status = statuses[StatusContent.DOWNLOADED]
             // Measure idle time since last iteration
             if (status != null) {
-                deltaPages = status.first - pagesOK
+                deltaPages = status[0].toInt() - pagesOK
                 if (deltaPages == 0) nbDeltaZeroPages++ else {
                     firstPageDownloaded = true
                     nbDeltaZeroPages = 0
                 }
-                pagesOK = status.first
-                downloadedBytes = status.second
+                pagesOK = status[0].toInt()
+                downloadedBytes = status[1]
             }
+
             status = statuses[StatusContent.ERROR]
-            if (status != null) pagesKO = status.first
+            if (status != null) pagesKO = status[0].toInt()
             val downloadedMB = downloadedBytes / (1024.0 * 1024)
             val progress = pagesOK + pagesKO
             isDone = progress == totalPages
@@ -805,6 +813,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
             }
 
+            // Fire progress notification
             if (!this::progressNotification.isInitialized) {
                 progressNotification = DownloadProgressNotification()
             }
@@ -844,8 +853,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
+            // Refresh image locations when an archive download is in progress
+            if (dlManager.refreshLocation(images)) {
+                if (content.id > 0) dao.replaceImageList(content.id, images)
+            }
+
             pause(refreshDelayMs)
-        } while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused && !isScheduledTimeOver)
+        } while (!isDone && !downloadInterrupted.get() && !ContentQueueManager.isQueuePaused && !isScheduledTimeOver)
 
         if (isDone && !downloadInterrupted.get()) {
             // NB : no need to supply the Content itself as it has not been updated during the loop
@@ -949,7 +963,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             try {
                 dlManager.completeDownload(context, content)
-            } catch (e : ArchiveException) {
+            } catch (e: ArchiveException) {
                 hasError = true
                 logErrorRecord(
                     contentId,

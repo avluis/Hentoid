@@ -1066,7 +1066,7 @@ class ReaderViewModel(
         synchronized(databaseImages) {
             currentImageSource?.let { databaseImages.removeSource(it) }
             currentImageSource = try {
-                dao.selectDownloadedImagesFromContentLive(theContent.id)
+                dao.selectImagesFromContentLive(theContent.id, true)
             } finally {
                 dao.cleanup()
             }
@@ -1808,7 +1808,7 @@ class ReaderViewModel(
 
         // Work on a clean image set directly from the DAO
         // (we don't want to depend on LiveData being on time here)
-        val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
+        val theViewerImages = dao.selectImagesFromContent(theContent.id, true)
         // Rely on the order of pictures to get chapter in the right order
         val allChapters =
             theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()

@@ -117,7 +117,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
         dao.updateContentsProcessedFlagById(contentIds.filter { it > 0 }, true)
 
         contentIds.forEach {
-            totalItems += dao.selectDownloadedImagesFromContent(it).count { i -> i.isReadable }
+            totalItems += dao.selectImagesFromContent(it, true).count { i -> i.isReadable }
             if (isStopped) return
         }
 

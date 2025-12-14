@@ -1602,27 +1602,6 @@ object ObjectBoxDB {
         }
     }
 
-    // Returns a list of processed images grouped by status, with count and filesize (in bytes)
-    fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>> {
-        val imgQuery = store.boxFor(ImageFile::class.java).query()
-        imgQuery.equal(ImageFile_.contentId, contentId)
-        val images = imgQuery.safeFind()
-        val result: MutableMap<StatusContent, Pair<Int, Long>> =
-            EnumMap(StatusContent::class.java)
-        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
-        // (see https://github.com/objectbox/objectbox-java/issues/422)
-        // => Group by and count have to be done manually (thanks God Stream exists !)
-        // Group and count by type
-        val map = images.groupBy { i -> i.status }
-        map.forEach {
-            var sizeBytes: Long = 0
-            val count: Int = it.value.size
-            for (img in it.value) sizeBytes += img.size
-            result[it.key] = Pair(count, sizeBytes)
-        }
-        return result
-    }
-
     fun selectAllFavouritePagesQ(): Query<ImageFile> {
         return store.boxFor(ImageFile::class.java).query()
             .equal(ImageFile_.favourite, true)
@@ -1729,19 +1708,21 @@ object ObjectBoxDB {
         return builder.build().safeFind()
     }
 
-    fun selectDownloadedImagesFromContentQ(id: Long): Query<ImageFile> {
+    fun selectImagesFromContentQ(id: Long, downloadedOnly: Boolean): Query<ImageFile> {
         val builder = store.boxFor(ImageFile::class.java).query()
         builder.equal(ImageFile_.contentId, id)
-        builder.`in`(
-            ImageFile_.status,
-            intArrayOf(
-                StatusContent.DOWNLOADED.code,
-                StatusContent.EXTERNAL.code,
-                StatusContent.ONLINE.code,
-                StatusContent.PLACEHOLDER.code,
-                StatusContent.STORAGE_RESOURCE.code
+        if (downloadedOnly) {
+            builder.`in`(
+                ImageFile_.status,
+                intArrayOf(
+                    StatusContent.DOWNLOADED.code,
+                    StatusContent.EXTERNAL.code,
+                    StatusContent.ONLINE.code,
+                    StatusContent.PLACEHOLDER.code,
+                    StatusContent.STORAGE_RESOURCE.code
+                )
             )
-        )
+        }
         builder.order(ImageFile_.dbOrder)
         return builder.build()
     }

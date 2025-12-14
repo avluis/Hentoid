@@ -11,6 +11,7 @@ import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
+import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.file.ArchiveStreamer
@@ -128,6 +129,19 @@ class PrimaryDownloadManager {
     }
 
     /**
+     * Manually trigger image location refresh when downloading an archive
+     * NB : Optional; is done automatically when calling completeDownload
+     *
+     * @return true if at least one value has been updated; false if nothing changed
+     */
+    fun refreshLocation(imageList: Collection<ImageFile>): Boolean {
+        if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+            archiveStreamer?.let { return refreshLocation(imageList, it) }
+        }
+        return false
+    }
+
+    /**
      * Process post-download actions
      */
     @Throws(ArchiveException::class)
@@ -141,12 +155,8 @@ class PrimaryDownloadManager {
                 if (streamer.queueFailed)
                     throw ArchiveException(streamer.queueFailMessage)
 
-                // Update imageURLs
-                val imgs = content.imageList
-                imgs.forEach { img ->
-                    streamer.mappedUris[img.fileUri]?.let { img.fileUri = it }
-                }
-                content.setImageFiles(imgs)
+                val imgList = content.imageList
+                if (refreshLocation(imgList, streamer)) content.setImageFiles(imgList)
             }
         }
 
@@ -171,6 +181,28 @@ class PrimaryDownloadManager {
         }
 
         clear()
+    }
+
+
+    /**
+     * Refresh image location according to what's been archived
+     *
+     * @return true if at least one value has been updated; false if nothing changed
+     */
+    private fun refreshLocation(
+        imageList: Collection<ImageFile>,
+        streamer: ArchiveStreamer
+    ): Boolean {
+        var hasChanges = false
+        imageList.forEach { img ->
+            streamer.mappedUris[img.fileUri]?.let {
+                if (img.fileUri != it) {
+                    img.fileUri = it
+                    hasChanges = true
+                }
+            }
+        }
+        return hasChanges
     }
 
     fun clear() {
