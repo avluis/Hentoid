@@ -218,6 +218,7 @@ class DownloadEvent {
             DownloadCommandEvent.Type.EV_CANCEL -> Type.EV_CANCELED
             DownloadCommandEvent.Type.EV_SKIP -> Type.EV_SKIPPED
             DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT -> Type.EV_CONTENT_INTERRUPTED
+            DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE -> Type.EV_NONE // Technical event; no use to inform user
         }
     }
 

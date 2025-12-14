@@ -114,6 +114,7 @@ abstract class BaseImageListParser : ImageListParser, Progressor {
      * @param event Download event
      */
     @Subscribe
+    @Suppress("unused")
     open fun onDownloadCommand(event: DownloadCommandEvent) {
         when (event.type) {
             DownloadCommandEvent.Type.EV_PAUSE, DownloadCommandEvent.Type.EV_CANCEL, DownloadCommandEvent.Type.EV_SKIP
@@ -125,7 +126,7 @@ abstract class BaseImageListParser : ImageListParser, Progressor {
                     processedUrl = ""
                 }
 
-            DownloadCommandEvent.Type.EV_UNPAUSE -> {}
+            DownloadCommandEvent.Type.EV_UNPAUSE, DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE -> {}
         }
     }
 

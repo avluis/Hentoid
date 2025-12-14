@@ -52,7 +52,6 @@ import me.devsaki.hentoid.util.download.PrimaryDownloadManager
 import me.devsaki.hentoid.util.download.RequestOrder
 import me.devsaki.hentoid.util.download.RequestOrder.NetworkError
 import me.devsaki.hentoid.util.download.RequestQueueManager
-import me.devsaki.hentoid.util.download.RequestQueueManager.Companion.getInstance
 import me.devsaki.hentoid.util.download.downloadToFile
 import me.devsaki.hentoid.util.exception.AccountException
 import me.devsaki.hentoid.util.exception.CaptchaException
@@ -136,7 +135,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     // downloadCanceled || downloadSkipped
     private val downloadInterrupted = AtomicBoolean(false)
-    private val requestQueueManager: RequestQueueManager
+    private val requestQueueManager =
+        RequestQueueManager(context, this::onRequestSuccess, this::onRequestError)
 
 
     // == Queue scheduling
@@ -160,14 +160,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     // Progress notifications
     private lateinit var progressNotification: DownloadProgressNotification
 
-    private var dlManager = PrimaryDownloadManager()
+    private val dlManager = PrimaryDownloadManager()
 
 
     init {
         EventBus.getDefault().register(this)
-        requestQueueManager = getInstance(
-            context, this::onRequestSuccess, this::onRequestError
-        )
         userActionNotificationManager = NotificationManager(context, R.id.user_action_notification)
         setSpeedLimitKbps(prefsSpeedCapToKbps(Settings.dlSpeedCap))
 
@@ -193,6 +190,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     override suspend fun onClear(logFile: DocumentFile?) {
         EventBus.getDefault().unregister(this)
+        dao.cleanup()
     }
 
     override fun runProgressNotification() {
@@ -466,7 +464,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         // Create destination folder for images to be downloaded
         if (!dlManager.createTargetLocation(context, content)) {
             val title = content.title
-            val message = String.format("Directory could not be created for $title.")
+            val message = String.format("Failed to create destination folder for $title.")
 
             Timber.w(message)
             logErrorRecord(content.id, ErrorType.IO, content.url, "Destination folder", message)
@@ -1490,6 +1488,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 downloadSkipped.set(true)
                 downloadInterrupted.set(true)
             }
+
+            DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE ->
+                requestQueueManager.resetRequestQueue(true)
 
             DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, DownloadCommandEvent.Type.EV_UNPAUSE -> {}
         }

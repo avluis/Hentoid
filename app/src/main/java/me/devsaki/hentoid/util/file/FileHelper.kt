@@ -290,14 +290,16 @@ fun syncStream(stream: FileOutputStream): Boolean {
 
 /**
  * Create an OutputStream opened the given file
- * NB1 : File length will be truncated to the length of the written data
- * NB2 : Code initially from org.apache.commons.io.FileUtils
+ * Code inspired from org.apache.commons.io.FileUtils
  *
  * @param file File to open the OutputStream on
+ * @param append  True to open the Stream to append data; false to write from scratch (default)
+ * NB : If false, file length will be truncated to the length of the written data
+ *
  * @return New OutputStream opened on the given file
  */
 @Throws(IOException::class)
-fun getOutputStream(file: File): OutputStream {
+fun getOutputStream(file: File, append: Boolean = false): OutputStream {
     if (file.exists()) {
         if (!file.isFile) throw IOException(file.path + " is not a File")
         if (!file.canWrite()) throw IOException(file.path + " can't be written to")
@@ -308,43 +310,51 @@ fun getOutputStream(file: File): OutputStream {
             }
         }
     }
-    return FileOutputStream(file, false)
+    return FileOutputStream(file, append)
 }
 
 /**
  * Create an OutputStream for the given file
- * NB : File length will be truncated to the length of the written data
  *
  * @param context Context to use
  * @param target  File to open the OutputStream on
+ * @param append  True to open the Stream to append data; false to write from scratch (default)
+ * NB : If false, file length will be truncated to the length of the written data
+ *
  * @return New OutputStream opened on the given file
  * @throws IOException In case something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun getOutputStream(context: Context, target: DocumentFile): OutputStream? {
+fun getOutputStream(
+    context: Context,
+    target: DocumentFile,
+    append: Boolean = false
+): OutputStream? {
     return context.contentResolver.openOutputStream(
         target.uri,
-        "rwt"
-    ) // Always truncate file to whatever data needs to be written
+        if (append) "wa" else "rwt"
+    )
 }
 
 /**
  * Create an OutputStream for the file at the given Uri
- * NB : File length will be truncated to the length of the written data
  *
  * @param context Context to use
  * @param fileUri Uri of the file to open the OutputStream on
+ * @param append  True to open the Stream to append data; false to write from scratch (default)
+ * NB : If false, file length will be truncated to the length of the written data
+ *
  * @return New OutputStream opened on the given file
  * @throws IOException In case something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun getOutputStream(context: Context, fileUri: Uri): OutputStream? {
+fun getOutputStream(context: Context, fileUri: Uri, append: Boolean = false): OutputStream? {
     if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
         val path = fileUri.path
-        if (null != path) return getOutputStream(File(path))
+        if (null != path) return getOutputStream(File(path), append)
     } else {
         val doc = getFileFromSingleUri(context, fileUri)
-        if (doc != null) return getOutputStream(context, doc)
+        if (doc != null) return getOutputStream(context, doc, append)
     }
     throw IOException("Couldn't find document for Uri : $fileUri")
 }

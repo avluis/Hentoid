@@ -23,9 +23,9 @@ import java.util.zip.ZipEntry.STORED
 import java.util.zip.ZipOutputStream
 
 
-class ArchiveStreamer(context: Context, val archiveUri: Uri) {
+class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
-    private val stream = ZipOutputStream(getOutputStream(context, archiveUri))
+    private val stream = ZipOutputStream(getOutputStream(context, archiveUri, append))
     private val filesQueue: Queue<Uri> = LinkedList()
     private val filesMatch: MutableMap<String, String> = Hashtable()
 

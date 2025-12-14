@@ -60,17 +60,20 @@ class PrimaryDownloadManager {
             val locationResult =
                 getDownloadLocation(getInstance(), content) ?: return@withContext false
 
-            // Location is known already
+            // Location is known already (e.g. resume download or redownload)
             locationResult.first?.let {
                 content.setStorageDoc(it)
-                downloadFolder = if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+                if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
+                    downloadArchive = it.uri
                     // Compute parent folder of the archive
-                    content.getContainingFolder(context)?.let { parent ->
+                    downloadFolder = content.getContainingFolder(context)?.let { parent ->
                         getDocumentFromTreeUri(context, parent)
                     }
+                    archiveStreamer = ArchiveStreamer(context, it.uri, true)
                 } else {
-                    it
+                    downloadFolder = it
                 }
+
                 return@withContext true
             }
 
@@ -88,7 +91,7 @@ class PrimaryDownloadManager {
                     createFile(context, dlFolder.uri, archiveName, MIME_TYPE_CBZ).let { uri ->
                         getDocumentFromTreeUri(context, uri)?.let { content.setStorageDoc(it) }
                         downloadArchive = uri
-                        archiveStreamer = ArchiveStreamer(context, uri)
+                        archiveStreamer = ArchiveStreamer(context, uri, false)
                     }
                 } else {
                     content.setStorageDoc(dlFolder)
