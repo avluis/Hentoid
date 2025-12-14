@@ -30,7 +30,10 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
     private val filesMatch: MutableMap<String, String> = Hashtable()
 
     private val stop = AtomicBoolean(false)
+
     private val isQueueActive = AtomicBoolean(false)
+    private val isQueueFailed = AtomicBoolean(false)
+    private var queueFailMsg = ""
 
     init {
         Timber.d("Archive streamer : Init @ $archiveUri")
@@ -39,6 +42,12 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
     val queueActive: Boolean
         get() = isQueueActive.get()
+
+    val queueFailed: Boolean
+        get() = isQueueFailed.get()
+
+    val queueFailMessage: String
+        get() = queueFailMsg
 
     val mappedUris: Map<String, String>
         get() = filesMatch
@@ -51,6 +60,8 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
         stream.close()
         filesMatch.clear()
         isQueueActive.set(false)
+        isQueueFailed.set(false)
+        queueFailMsg = ""
     }
 
     fun addFile(context: Context, uri: Uri) {
@@ -66,30 +77,38 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
         Timber.d("Archive queue : activating")
 
         GlobalScope.launch(Dispatchers.IO) {
-            var uri = filesQueue.poll()
-            while (uri != null && !stop.get()) {
-                isQueueActive.set(true)
-                getDocumentProperties(context, uri)?.let { doc ->
-                    Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
-                    val name = doc.name
-                    val entry = ZipEntry(name)
-                    entry.size = doc.size
-                    entry.method = STORED
-                    getInputStream(context, uri).use {
-                        entry.crc = getChecksumValue(CRC32(), it)
+            try {
+                var uri = filesQueue.poll()
+                while (uri != null && !stop.get()) {
+                    isQueueActive.set(true)
+                    getDocumentProperties(context, uri)?.let { doc ->
+                        Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
+                        val name = doc.name
+                        val entry = ZipEntry(name)
+                        entry.size = doc.size
+                        entry.method = STORED
+                        getInputStream(context, uri).use {
+                            entry.crc = getChecksumValue(CRC32(), it)
+                        }
+                        // TODO retry when CRC32 fails (ZipException)
+                        stream.putNextEntry(entry)
+                        getInputStream(context, uri).use {
+                            copy(it, stream)
+                        }
+                        stream.closeEntry()
+                        filesMatch[uri.toString()] = archiveUri.toString() + File.separator + name
                     }
-                    // TODO retry when CRC32 fails (ZipException)
-                    stream.putNextEntry(entry)
-                    getInputStream(context, uri).use {
-                        copy(it, stream)
-                    }
-                    filesMatch[uri.toString()] = archiveUri.toString() + File.separator + name
+                    removeFile(context, uri)
+                    uri = filesQueue.poll()
                 }
-                removeFile(context, uri)
-                uri = filesQueue.poll()
+                Timber.d("Archive queue : nothing more to process")
+            } catch (e: Exception) {
+                Timber.w(e, "Archive queue FAILED")
+                isQueueFailed.set(true)
+                queueFailMsg = e.message ?: ""
+            } finally {
+                isQueueActive.set(false)
             }
-            Timber.d("Archive queue : nothing more to process")
-            isQueueActive.set(false)
         }
     }
 

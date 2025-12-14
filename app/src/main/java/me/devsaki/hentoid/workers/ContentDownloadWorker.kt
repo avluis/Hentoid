@@ -54,6 +54,7 @@ import me.devsaki.hentoid.util.download.RequestOrder.NetworkError
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.download.downloadToFile
 import me.devsaki.hentoid.util.exception.AccountException
+import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -946,7 +947,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.downloadDate = now
             }
 
-            dlManager.completeDownload(context, content)
+            try {
+                dlManager.completeDownload(context, content)
+            } catch (e : ArchiveException) {
+                hasError = true
+                logErrorRecord(
+                    contentId,
+                    ErrorType.IO,
+                    content.galleryUrl,
+                    "archive",
+                    e.message
+                )
+            }
 
             if (content.storageUri.isEmpty()) return
 

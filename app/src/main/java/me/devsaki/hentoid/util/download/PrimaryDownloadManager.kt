@@ -12,6 +12,7 @@ import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.json.JsonContent
+import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.file.ArchiveStreamer
 import me.devsaki.hentoid.util.file.MIME_TYPE_CBZ
 import me.devsaki.hentoid.util.file.createFile
@@ -129,19 +130,24 @@ class PrimaryDownloadManager {
     /**
      * Process post-download actions
      */
+    @Throws(ArchiveException::class)
     suspend fun completeDownload(context: Context, content: Content) = withContext(Dispatchers.IO) {
         if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
             // Wait until archive streaming has completed (poll every 500ms)
             while (archiveStreamer?.queueActive ?: false) pause(500)
 
-            // Update imageURLs
-            val imgs = content.imageList
-            imgs.forEach { img ->
-                archiveStreamer?.mappedUris?.let { map ->
-                    map[img.fileUri]?.let { img.fileUri = it }
+            archiveStreamer?.let { streamer ->
+                // Throws exception if archiving has failed
+                if (streamer.queueFailed)
+                    throw ArchiveException(streamer.queueFailMessage)
+
+                // Update imageURLs
+                val imgs = content.imageList
+                imgs.forEach { img ->
+                    streamer.mappedUris[img.fileUri]?.let { img.fileUri = it }
                 }
+                content.setImageFiles(imgs)
             }
-            content.setImageFiles(imgs)
         }
 
         // Create JSON
