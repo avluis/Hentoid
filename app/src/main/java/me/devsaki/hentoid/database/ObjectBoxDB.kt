@@ -1532,7 +1532,6 @@ object ObjectBoxDB {
             )
 
             Type.ARCHIVE -> {
-                qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
                 var combinedCondition: QueryCondition<Content>? = null
                 for (ext in getSupportedExtensions()) {
                     combinedCondition =

@@ -406,7 +406,7 @@ class ReaderViewModel(
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
                 else {
                     // Downloads saved as archives
-                    if (newImg.url.startsWith("http") && newImg.fileUri.isNotEmpty())
+                    if (newImg.url.startsWith("http") || newImg.pageUrl.startsWith("http") && newImg.fileUri.isNotEmpty())
                         newImg.url = newImg.fileUri
                     newImg.fileUri = ""
                 }

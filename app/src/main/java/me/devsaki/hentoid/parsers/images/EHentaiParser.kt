@@ -121,13 +121,12 @@ class EHentaiParser : ImageListParser {
             requestHeaders: List<Pair<String, String>>,
             site: Site
         ): Pair<String, String?> {
-            val doc = getOnlineDocument(
+            getOnlineDocument(
                 url,
                 requestHeaders,
                 site.useHentoidAgent,
                 site.useWebviewAgent
-            )
-            if (doc != null) {
+            )?.let { doc ->
                 var imageUrl = getDisplayedImageUrl(doc).lowercase(Locale.getDefault())
                 // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
                 if (imageUrl.contains(LIMIT_509_URL)) throw LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry")
@@ -361,8 +360,8 @@ class EHentaiParser : ImageListParser {
 
         private fun getDisplayedImageUrl(doc: Document): String {
             var element = doc.selectFirst("img#img")
-            if (element != null) return getImgSrc(element)
-            element = doc.selectFirst("#i3.img")
+            if (null == element) element = doc.selectFirst("#i3.img")
+            if (null == element) element = doc.selectFirst("#i3 img")
             return if (element != null) getImgSrc(element) else ""
         }
 

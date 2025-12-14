@@ -2,8 +2,10 @@ package me.devsaki.hentoid.util.file
 
 import android.content.Context
 import android.net.Uri
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.io.IOException
 import me.devsaki.hentoid.util.copy
 import timber.log.Timber
@@ -47,38 +49,43 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri) {
         filesMatch.clear()
     }
 
-    suspend fun addFile(context: Context, uri: Uri) = withContext(Dispatchers.IO) {
+    fun addFile(context: Context, uri: Uri) {
         filesQueue.add(uri)
         Timber.d("Adding file to archive queue : $uri")
         processQueue(context)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun processQueue(context: Context) {
         if (isQueueActive.get()) return
 
-        var uri = filesQueue.poll()
-        while (uri != null && !stop.get()) {
-            isQueueActive.set(true)
-            getDocumentProperties(context, uri)?.let { doc ->
-                Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
-                val name = doc.name
-                val entry = ZipEntry(name)
-                entry.size = doc.size
-                entry.method = STORED
-                getInputStream(context, uri).use {
-                    entry.crc = getChecksumValue(CRC32(), it)
+        Timber.d("Archive queue : activating")
+
+        GlobalScope.launch(Dispatchers.IO) {
+            var uri = filesQueue.poll()
+            while (uri != null && !stop.get()) {
+                isQueueActive.set(true)
+                getDocumentProperties(context, uri)?.let { doc ->
+                    Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
+                    val name = doc.name
+                    val entry = ZipEntry(name)
+                    entry.size = doc.size
+                    entry.method = STORED
+                    getInputStream(context, uri).use {
+                        entry.crc = getChecksumValue(CRC32(), it)
+                    }
+                    stream.putNextEntry(entry)
+                    getInputStream(context, uri).use {
+                        copy(it, stream)
+                    }
+                    filesMatch[uri.toString()] = archiveUri.toString() + File.separator + name
                 }
-                stream.putNextEntry(entry)
-                getInputStream(context, uri).use {
-                    copy(it, stream)
-                }
-                filesMatch[uri.toString()] = archiveUri.toString() + File.separator + name
+                removeFile(context, uri)
+                uri = filesQueue.poll()
             }
-            removeFile(context, uri)
-            uri = filesQueue.poll()
+            Timber.d("Archive queue : nothing more to process")
+            isQueueActive.set(false)
         }
-        Timber.d("Archive queue : nothing more to process")
-        isQueueActive.set(false)
     }
 
     fun getChecksumValue(checksum: Checksum, fis: InputStream): Long {

@@ -784,7 +784,8 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     }
                     if (renumberPages) renumberPages(context, content, contentImages, log)
                 } else if (Settings.isImportQueueEmptyBooks
-                    && !content.manuallyMerged && content.downloadMode == DownloadMode.DOWNLOAD
+                    && !content.manuallyMerged
+                    && (content.downloadMode == DownloadMode.DOWNLOAD || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE)
                 ) { // If no image file found, it goes in the errors queue
                     if (!isInQueue(content.status)) content.status = StatusContent.ERROR
                     val errors: MutableList<ErrorRecord> = ArrayList()

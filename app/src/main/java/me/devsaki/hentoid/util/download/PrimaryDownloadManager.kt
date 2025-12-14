@@ -113,7 +113,7 @@ class PrimaryDownloadManager {
     /**
      * Process downloaded file
      */
-    suspend fun processDownloadedFile(context: Context, uri: Uri) {
+    fun processDownloadedFile(context: Context, uri: Uri) {
         if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
             archiveStreamer?.addFile(context, uri)
         } else {

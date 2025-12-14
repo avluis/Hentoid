@@ -586,7 +586,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                     if (isStreamed) resourceId = R.drawable.ic_action_download_stream
                     ivStorage?.setImageResource(resourceId)
                 } else {
-                    ivStorage?.setImageResource(if (isStreamed) R.drawable.ic_action_download_stream else R.drawable.ic_storage)
+                    val resourceId =
+                        if (isStreamed) R.drawable.ic_action_download_stream
+                        else if (content.isArchive) R.drawable.ic_archive
+                        else R.drawable.ic_storage
+                    ivStorage?.setImageResource(resourceId)
                 }
 
                 ivFavourite?.apply {

@@ -313,13 +313,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
 
-        /*
-        val locationResult =
-            getDownloadLocation(context, content) ?: return Pair(QueuingResult.QUEUE_END, null)
-        var dir = locationResult.first
-        val location = locationResult.second
- */
-
         downloadCanceled.set(false)
         downloadSkipped.set(false)
         downloadInterrupted.set(false)
@@ -338,8 +331,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PROCESS_IMG, content))
         var images = content.imageList
-        val targetImageStatus =
-            if (downloadMode == DownloadMode.DOWNLOAD) StatusContent.SAVED else StatusContent.ONLINE
+        val targetImageStatus = when (downloadMode) {
+            DownloadMode.DOWNLOAD, DownloadMode.DOWNLOAD_ARCHIVE -> StatusContent.SAVED
+            else -> StatusContent.ONLINE
+        }
 
         var hasError = false
         val nbErrors = images.count { it.status == StatusContent.ERROR }
@@ -572,12 +567,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Parse pages for images
-            if (pagesToParse.isNotEmpty()) {
-                GlobalScope.launch(Dispatchers.IO) {
-                    pagesToParse.forEach {
-                        parsePageforImage(it, downloadFolder, content)
-                    }
-                }
+            pagesToParse.forEach {
+                parsePageforImage(it, downloadFolder, content)
             }
 
             // Parse ugoiras for images
@@ -961,18 +952,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             if (content.storageUri.isEmpty()) return
 
-            /*
-            WARNING : content.storageUri might now point to an archive file as well
-            //val dir = getDocumentFromTreeUriString(applicationContext, content.storageUri)
-            if (null == dir) {
-                Timber.w(
-                    "completeDownload : Directory %s does not exist - JSON not saved",
-                    content.storageUri
-                )
-                return
-            }
-             */
-
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
             if (pagesKO > 0 && Settings.isDlRetriesActive && content.numberDownloadRetries < Settings.dlRetriesNumber) {
@@ -1041,19 +1020,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.replacementTitle = ""
             }
 
-            /*
-            // Save JSON file
-            try {
-                val jsonFile = jsonToFile(
-                    applicationContext, JsonContent(content),
-                    JsonContent::class.java, dir, JSON_FILE_NAME_V2
-                )
-                // Cache its URI to the newly created content
-                content.jsonUri = jsonFile.uri.toString()
-            } catch (e: IOException) {
-                Timber.e(e, "I/O Error saving JSON: %s", title)
-            }
-             */
             addContent(applicationContext, dao, content)
 
             // Delete the duplicate book that was meant to be replaced, if any
@@ -1254,18 +1220,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         )
     }
 
-    // This is run on the I/O thread pool spawned by the downloader
-    @OptIn(DelicateCoroutinesApi::class)
     private fun onRequestSuccess(request: RequestOrder, fileUri: Uri) {
         val img = request.img
         img.size = fileSizeFromUri(applicationContext, fileUri)
         updateImageProperties(img, true, fileUri.toString())
-        GlobalScope.launch {
-            dlManager.processDownloadedFile(applicationContext, fileUri)
-        }
+        dlManager.processDownloadedFile(applicationContext, fileUri)
     }
 
-    // This is run on the I/O thread pool spawned by the downloader
     private fun onRequestError(request: RequestOrder, error: NetworkError) {
         val img = request.img
         val contentId = img.contentId
@@ -1506,6 +1467,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      *
      * @param event Download event
      */
+    @Suppress("unused")
     @Subscribe
     fun onDownloadCommand(event: DownloadCommandEvent) {
         when (event.type) {
