@@ -1651,8 +1651,14 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             DownloadMode.STREAM ->
                 viewModel.streamContent(toProcess) { onProcessError(it) }
 
-            DownloadMode.DOWNLOAD ->
-                download(toProcess) { onProcessError(it) }
+            DownloadMode.DOWNLOAD -> {
+                toProcess.filter { it.status == StatusContent.ONLINE }.let {
+                    if (it.isNotEmpty()) download(it) { e -> onProcessError(e) }
+                }
+                toProcess.filter { it.isArchive }.let {
+                    if (it.isNotEmpty()) viewModel.unarchive(it) { e -> onProcessError(e) }
+                }
+            }
 
             DownloadMode.DOWNLOAD_ARCHIVE ->
                 viewModel.archiveContent(toProcess) { onProcessError(it) }

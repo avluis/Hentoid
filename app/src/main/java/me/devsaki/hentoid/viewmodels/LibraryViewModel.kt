@@ -34,6 +34,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.SEED_CONTENT
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
@@ -44,6 +45,7 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.MergerLiveData
 import me.devsaki.hentoid.util.QueuePosition
@@ -53,10 +55,14 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
+import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -64,6 +70,7 @@ import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
+import me.devsaki.hentoid.util.purgeFiles
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.splitUniqueStr
 import me.devsaki.hentoid.util.updateGroupsJson
@@ -82,6 +89,7 @@ import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
+import java.io.IOException
 import java.security.InvalidParameterException
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
@@ -1318,4 +1326,89 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 .addTag(WORK_CLOSEABLE).build()
         )
     }
+
+    /**
+     * Turn archived Content into folder-stored Content
+     *
+     * @param contentList List of Content stored in the form of archives
+     */
+    fun unarchive(contentList: List<Content>, onError: Consumer<Throwable>) {
+        // Flag contents as "being processed" (trigger blink animation)
+        dao.updateContentsProcessedFlag(contentList, true)
+
+        viewModelScope.launch {
+            contentList.forEach { c ->
+                try {
+                    doUnarchive(application, c)
+                } catch (t: Throwable) {
+                    onError.invoke(t)
+                } finally {
+                    // Unflag contents as "being processed" (cancel blink animation)
+                    dao.updateContentsProcessedFlag(listOf(c), false)
+                }
+            } // Each content
+            dao.cleanup()
+        } // ViewModelScope
+        dao.cleanup()
+    }
+
+    /**
+     * Turn archived Content into folder-stored Content
+     *
+     * @param content Content stored in the form of an archive
+     */
+    private suspend fun doUnarchive(context: Context, content: Content) =
+        withContext(Dispatchers.IO) {
+            // Create target folder for streaming from scratch
+            val location = selectDownloadLocation(context)
+            getOrCreateContentDownloadDir(
+                context,
+                content,
+                location,
+                createFromScratch = true
+            )?.let { f ->
+                // Copy the JSON file inside target folder
+                copyFile(
+                    context,
+                    content.jsonUri.toUri(),
+                    f,
+                    JSON_MIME_TYPE,
+                    JSON_FILE_NAME_V2
+                )?.let { content.jsonUri = it.toString() }
+                    ?: throw IOException("Couldn't copy JSON file")
+
+                // Unarchive the whole book inside target folder
+                val imgs = content.imageList
+                val isLocationInUri =
+                    imgs.all { it.isReadable && it.fileUri.startsWith(content.storageUri) }
+                val toExtract: List<Triple<String, Long, String>> = imgs.mapIndexed { i, e ->
+                    val path = if (isLocationInUri) e.fileUri else e.url
+                    path.replace(content.storageUri, "")
+                    Triple(path, i.toLong(), path.substring(path.indexOf('/') + 1))
+                }
+                val imgUris = context.extractArchiveEntriesBlocking(
+                    content.storageUri.toUri(),
+                    f.uri,
+                    toExtract
+                )
+                content.storageUri = f.toString()
+
+                // Save core
+                dao.insertContentCore(content)
+
+                // Remap pictures
+                imgs.forEachIndexed { i, e ->
+                    if (imgUris.size <= i) return@forEachIndexed
+                    imgUris[i].toString().let {
+                        if (isLocationInUri) e.fileUri = it else e.url = it
+                    }
+                }
+
+                // Save pictures
+                dao.insertImageFiles(imgs)
+            } ?: throw IOException("Couldn't create book folder")
+
+            // Remove the initial archive
+            purgeFiles(context, content, removeJson = true, removeCover = true)
+        }
 }

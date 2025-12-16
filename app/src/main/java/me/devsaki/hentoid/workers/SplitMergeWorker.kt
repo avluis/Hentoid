@@ -156,7 +156,7 @@ abstract class BaseSplitMergeWorker(
                 splitContent,
                 location,
                 true,
-                content.storageUri.toUri()
+                siblingLocation = content.storageUri.toUri()
             )
             if (null == targetFolder || !targetFolder.exists())
                 throw ContentNotProcessedException(

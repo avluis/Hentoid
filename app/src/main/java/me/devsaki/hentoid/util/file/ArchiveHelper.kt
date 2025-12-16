@@ -129,20 +129,20 @@ private fun getTypeFromArchiveHeader(binary: ByteArray): ArchiveFormat? {
 /**
  * Get the entries of the given archive file
  *
- * @param file    Archive file to read
+ * @param uri    Archive file to read
  * @return List of the entries of the given archive file; an empty list if the archive file is not supported
  * @throws IOException If something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun Context.getArchiveEntries(file: DocumentFile): List<ArchiveEntry> {
+fun Context.getArchiveEntries(uri: Uri): List<ArchiveEntry> {
     assertNonUiThread()
     var format: ArchiveFormat?
-    getInputStream(this, file).use { fi ->
+    getInputStream(this, uri).use { fi ->
         val header = ByteArray(8)
         if (fi.read(header) < header.size) return emptyList()
         format = getTypeFromArchiveHeader(header)
     }
-    return if (null == format) emptyList() else getArchiveEntries(format, file.uri)
+    return if (null == format) emptyList() else getArchiveEntries(format, uri)
 }
 
 /**
@@ -219,7 +219,7 @@ fun Context.extractArchiveEntries(
  *
  * @param archive           Uri of the archive file to extract from
  * @param targetFolder      Folder to extract files to
- * @param entriesToExtract  List of entries to extract; null to extract everything
+ * @param entriesToExtract  List of entries to extract
  *      first = relative paths to the archive root
  *      second = resource identifier set by the caller (for remapping purposes)
  *      third = target file name (with extension)

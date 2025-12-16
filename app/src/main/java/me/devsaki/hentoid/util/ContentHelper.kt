@@ -754,12 +754,12 @@ fun getPictureThumbCached(
             val results = if (isArchive) {
                 val entries = if (resource.isNullOrBlank()) {
                     // No targeted resource => take the first one
-                    context.getArchiveEntries(archive)
+                    context.getArchiveEntries(archive.uri)
                         .filter { isSupportedImage(it.path) }.filter { it.size > 0 }
                         .sortedWith(InnerNameNumberArchiveComparator())
                 } else {
                     // Get targeted resource
-                    context.getArchiveEntries(archive)
+                    context.getArchiveEntries(archive.uri)
                         .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
                         .filter {
                             // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
@@ -961,6 +961,7 @@ fun getOrCreateContentDownloadDir(
     content: Content,
     location: StorageLocation,
     createOnly: Boolean = false,
+    createFromScratch: Boolean = false,
     siblingLocation: Uri = Uri.EMPTY
 ): DocumentFile? {
     // Parent = site folder if primary; parent folder if external
@@ -978,12 +979,15 @@ fun getOrCreateContentDownloadDir(
     val bookFolderName = formatFolderName(content)
 
     // First try finding the folder with new naming...
-    if (!createOnly) {
+    if (!createOnly || createFromScratch) {
         var bookFolder = findFolder(context, parentFolder, bookFolderName.first)
         if (null == bookFolder) { // ...then with old (sanitized) naming
             bookFolder = findFolder(context, parentFolder, bookFolderName.second)
         }
-        if (bookFolder != null) return bookFolder
+        if (bookFolder != null) {
+            if (createFromScratch) bookFolder.delete()
+            else return bookFolder
+        }
     }
 
     // If nothing found, or create-only, create a new folder with the new naming...
