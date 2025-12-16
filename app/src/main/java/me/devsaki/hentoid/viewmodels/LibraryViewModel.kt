@@ -712,6 +712,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         reparseContent: Boolean,
         reparseImages: Boolean,
         position: QueuePosition,
+        forceArchive: Boolean,
         onSuccess: Consumer<Int>,
         onError: Consumer<Throwable>
     ) {
@@ -778,7 +779,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                         }
 
                         res?.let {
-                            it.downloadMode = DownloadMode.DOWNLOAD
+                            it.downloadMode =
+                                if (forceArchive) DownloadMode.DOWNLOAD_ARCHIVE else DownloadMode.DOWNLOAD
                             if (areModifiedImages) {
                                 dao.insertChapters(it.chaptersList)
                                 dao.insertImageFiles(it.imageList)

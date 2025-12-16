@@ -59,7 +59,7 @@ class ChangeStorageDialogFragment : BaseDialogFragment<ChangeStorageDialogFragme
             val contents = dao.selectContent(contentIds)
             val nbPdf = contents.count { it.isPdf }
             val nbArchive = contents.count { it.isArchive }
-            val nbStreamed = contents.count { StatusContent.ONLINE == it.status }
+            val nbStreamed = contents.count { DownloadMode.STREAM == it.downloadMode }
             val nbFolders = contents.size - nbPdf - nbArchive - nbStreamed
 
             val onlyFolders = nbFolders == (contents.size - nbPdf)
@@ -108,6 +108,6 @@ class ChangeStorageDialogFragment : BaseDialogFragment<ChangeStorageDialogFragme
     }
 
     interface Parent {
-        fun onChangeStorageSuccess(storageMethod: DownloadMode)
+        fun onChangeStorageSuccess(targetStorage: DownloadMode)
     }
 }

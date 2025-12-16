@@ -79,6 +79,7 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.canBeArchived
 import me.devsaki.hentoid.util.contentItemDiffCallback
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
@@ -731,6 +732,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     reparseContent = true,
                     reparseImages = false,
                     position = QueuePosition.TOP,
+                    forceArchive = false,
                     onSuccess = { nbSuccess: Int? ->
                         val message = resources.getQuantityString(
                             R.plurals.add_to_queue,
@@ -1469,6 +1471,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 reparseContent = true,
                 reparseImages = true,
                 position = addMode,
+                forceArchive = false,
                 onSuccess = { nbSuccess ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
@@ -1487,13 +1490,18 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
     }
 
-    private fun download(contentList: List<Content>, onError: Consumer<Throwable>) {
+    private fun download(
+        contentList: List<Content>,
+        forceArchive: Boolean,
+        onError: Consumer<Throwable>
+    ) {
         if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
                 showAddQueueMenu(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
                     download(
                         contentList,
                         if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
+                        forceArchive,
                         onError
                     )
                 }
@@ -1501,6 +1509,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         } else download(
             contentList,
             QueuePosition.fromValue(Settings.queueNewDownloadPosition),
+            forceArchive,
             onError
         )
     }
@@ -1508,6 +1517,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun download(
         contentList: List<Content>,
         addMode: QueuePosition,
+        forceArchive: Boolean,
         onError: Consumer<Throwable>
     ) {
         topItemPosition = getTopItemPosition()
@@ -1516,6 +1526,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 contentList,
                 false, reparseImages = true,
                 position = addMode,
+                forceArchive = forceArchive,
                 onSuccess = { nbSuccess ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
@@ -1630,15 +1641,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         refreshIfNeeded()
     }
 
-    override fun onChangeStorageSuccess(storageMethod: DownloadMode) {
+    override fun onChangeStorageSuccess(targetStorage: DownloadMode) {
         val selectedItems: Set<ContentItem> = selectExtension?.selectedItems ?: return
         val toProcess: MutableList<Content> = ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
             if (c.isPdf) continue
-            if (c.isArchive && storageMethod == DownloadMode.DOWNLOAD_ARCHIVE) continue
-            if (c.status == StatusContent.ONLINE && storageMethod == DownloadMode.STREAM) continue
-            if (storageMethod == DownloadMode.DOWNLOAD && c.status != StatusContent.ONLINE && !c.isArchive) continue
+            if (c.isArchive && targetStorage == DownloadMode.DOWNLOAD_ARCHIVE) continue
+            if (c.downloadMode == DownloadMode.STREAM && targetStorage == DownloadMode.STREAM) continue
+            if (targetStorage == DownloadMode.DOWNLOAD && c.downloadMode != DownloadMode.STREAM && !c.isArchive) continue
             toProcess.add(c)
         }
         if (toProcess.size > 1000) {
@@ -1647,21 +1658,27 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
         leaveSelectionMode()
 
-        when (storageMethod) {
+        when (targetStorage) {
             DownloadMode.STREAM ->
                 viewModel.streamContent(toProcess) { onProcessError(it) }
 
             DownloadMode.DOWNLOAD -> {
-                toProcess.filter { it.status == StatusContent.ONLINE }.let {
-                    if (it.isNotEmpty()) download(it) { e -> onProcessError(e) }
+                toProcess.filter { it.downloadMode == DownloadMode.STREAM }.let {
+                    if (it.isNotEmpty()) download(it, false) { e -> onProcessError(e) }
                 }
                 toProcess.filter { it.isArchive }.let {
                     if (it.isNotEmpty()) viewModel.unarchive(it) { e -> onProcessError(e) }
                 }
             }
 
-            DownloadMode.DOWNLOAD_ARCHIVE ->
-                viewModel.archiveContent(toProcess) { onProcessError(it) }
+            DownloadMode.DOWNLOAD_ARCHIVE -> {
+                toProcess.filter { it.downloadMode == DownloadMode.STREAM }.let {
+                    if (it.isNotEmpty()) download(it, true) { e -> onProcessError(e) }
+                }
+                toProcess.filter { canBeArchived(it) }.let {
+                    if (it.isNotEmpty()) viewModel.archiveContent(toProcess) { onProcessError(it) }
+                }
+            }
 
             else -> {} // Nothing
         }
