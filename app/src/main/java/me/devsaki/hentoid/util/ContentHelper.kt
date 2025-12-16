@@ -300,7 +300,7 @@ private fun isInQueueTab(status: StatusContent): Boolean {
 }
 
 fun canBeArchived(content: Content): Boolean {
-    return !(content.isArchive || content.downloadMode == DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
+    return !(content.isArchive || content.isPdf || content.downloadMode == DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
 }
 
 /**
