@@ -7,27 +7,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.DOWNLOAD_CACHE_FOLDER
 import me.devsaki.hentoid.core.HentoidApp.Companion.getInstance
-import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
-import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ImageFile
-import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.file.ArchiveStreamer
 import me.devsaki.hentoid.util.file.MIME_TYPE_CBZ
 import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
-import me.devsaki.hentoid.util.file.getFileFromSingleUriString
-import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.tryCleanDirectory
 import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
-import me.devsaki.hentoid.util.jsonToFile
 import me.devsaki.hentoid.util.pause
+import me.devsaki.hentoid.util.persistJson
 import timber.log.Timber
 import java.io.IOException
 
@@ -161,19 +156,7 @@ class PrimaryDownloadManager {
         }
 
         // Create JSON
-        val jsonName = if (content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
-            val archiveFile = getFileFromSingleUriString(context, content.storageUri)
-            getFileNameWithoutExtension(archiveFile?.name ?: "") + JSON_ARCHIVE_SUFFIX + ".json"
-        } else JSON_FILE_NAME_V2
-
-        downloadFolder?.let { dlFolder ->
-            val jsonFile = jsonToFile(
-                context, JsonContent(content),
-                JsonContent::class.java, dlFolder, jsonName
-            )
-            // Cache its URI to the newly created content
-            content.jsonUri = jsonFile.uri.toString()
-        }
+        persistJson(context, content)
 
         // Empty cache
         getOrCreateCacheFolder(context, DOWNLOAD_CACHE_FOLDER)?.let {

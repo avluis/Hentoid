@@ -47,7 +47,8 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val targetFormat: Int,
         val pdfBackgroundColor: Int,
         val overwrite: Boolean,
-        val deleteOnSuccess: Boolean
+        val deleteOnSuccess: Boolean,
+        val archivePrimaryContent : Boolean = false
     )
 
     private var nbItems = 0

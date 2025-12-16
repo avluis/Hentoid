@@ -28,17 +28,20 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification
+import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.file.FileExplorer
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.removeFile
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getStackTraceString
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.purgeFiles
 import me.devsaki.hentoid.util.removeContent
 import me.devsaki.hentoid.util.removeQueuedContent
@@ -51,6 +54,7 @@ import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
 import me.devsaki.hentoid.workers.data.DeleteData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
+import java.io.IOException
 import kotlin.math.ceil
 
 /**
@@ -291,6 +295,7 @@ abstract class BaseDeleteWorker(
 
     private suspend fun streamContent(content: Content) {
         Timber.d("Checking pages availability")
+        val context = applicationContext
         // Reparse content from scratch if images KO
         val res = if (!isDownloadable(content)) {
             trace(Log.INFO, "Pages unreachable; reparsing content %s", content.title)
@@ -318,7 +323,17 @@ abstract class BaseDeleteWorker(
         if (res != null) {
             // Use an updated content from the DB
             val updatedContent = dao.selectContent(res.id)?.let {
-                purgeFiles(applicationContext, it, removeJson = false, removeCover = false)
+                if (it.isArchive) {
+                    purgeFiles(context, it, removeJson = true, removeCover = true)
+                    // Create target folder for streaming
+                    val location = selectDownloadLocation(context)
+                    getOrCreateContentDownloadDir(context, content, location, true)?.let { f ->
+                        content.storageUri = f.toString()
+                        dao.insertContentCore(content)
+                    } ?: throw IOException("Couldn't create book folder")
+                } else {
+                    purgeFiles(context, it, removeJson = false, removeCover = false)
+                }
                 it
             }
             // Use an updated content from the DB again
@@ -343,7 +358,7 @@ abstract class BaseDeleteWorker(
                 it.size = 0
                 it.isBeingProcessed = false
                 dao.insertContent(it)
-                updateJson(applicationContext, it)
+                persistJson(applicationContext, it)
             }
             trace(Log.INFO, "Streaming succeeded for %s", content.title)
         } else {

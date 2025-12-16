@@ -558,7 +558,7 @@ class LibraryGroupsFragment : Fragment(),
             .filterNot { it.storageUri.isEmpty() }
             .toList()
         if (selectedContent.isNotEmpty()) activity.get()!!
-            .askArchiveItems(selectedContent, selectExtension!!)
+            .askExportItems(selectedContent, selectExtension!!)
     }
 
     /**

@@ -26,6 +26,7 @@ import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
+import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.QUEUE_JSON_FILE_NAME
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
@@ -373,19 +374,33 @@ suspend fun updateJson(context: Context, content: Content): Boolean = withContex
  */
 suspend fun createJson(context: Context, content: Content): DocumentFile? =
     withContext(Dispatchers.IO) {
-        if (content.isArchive || content.isPdf) return@withContext null // Keep that as is, we can't find the parent folder anyway
+        var folder: DocumentFile? = null
+        var name = JSON_FILE_NAME_V2
+        if (content.isArchive || content.isPdf) {
+            // Parent folder
+            content.getContainingFolder(context)?.let { parent ->
+                folder = getDocumentFromTreeUri(context, parent)
+            }
+            // Name
+            val archiveFile = getFileFromSingleUriString(context, content.storageUri)
+            name =
+                getFileNameWithoutExtension(archiveFile?.name ?: "") + JSON_ARCHIVE_SUFFIX + ".json"
+        } else {
+            folder =
+                getDocumentFromTreeUriString(context, content.storageUri)
+        }
 
-        val folder =
-            getDocumentFromTreeUriString(context, content.storageUri) ?: return@withContext null
-        try {
-            val newJson = jsonToFile(
-                context, JsonContent(content),
-                JsonContent::class.java, folder, JSON_FILE_NAME_V2
-            )
-            content.jsonUri = newJson.uri.toString()
-            return@withContext newJson
-        } catch (e: IOException) {
-            Timber.e(e, "Error while writing to %s", content.storageUri)
+        folder?.let { f ->
+            try {
+                val newJson = jsonToFile(
+                    context, JsonContent(content),
+                    JsonContent::class.java, f, name
+                )
+                content.jsonUri = newJson.uri.toString()
+                return@withContext newJson
+            } catch (e: IOException) {
+                Timber.e(e, "Error while writing to %s", content.storageUri)
+            }
         }
         return@withContext null
     }

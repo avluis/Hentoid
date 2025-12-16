@@ -728,7 +728,6 @@
     <string name="folder_device_downloads">장치의 다운로드 폴더</string>
     <string name="folder_other">폴더 선택…</string>
     <string name="archive_overwrite">기존 아카이브 덮어쓰기</string>
-    <string name="archive_delete_after_archiving">아카이빙 후 작품 삭제</string>
     <string name="create_archive">아카이브 생성</string>
     <string name="notif_archive_title">컨텐츠 보관</string>
     <string name="notif_delete_title">컨텐츠 삭제</string>

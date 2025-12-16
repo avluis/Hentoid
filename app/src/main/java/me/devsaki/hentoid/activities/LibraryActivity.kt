@@ -51,7 +51,7 @@ import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.events.AppUpdatedEvent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.library.LibraryArchiveDialogFragment
+import me.devsaki.hentoid.fragments.library.LibraryExportDialogFragment
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment
 import me.devsaki.hentoid.fragments.library.LibraryFoldersFragment
@@ -95,7 +95,7 @@ private const val BEHOLDER_DELAY_MS = 2 * 60 * 1000 // 2 min
 var hasChangedGridDisplay = false
 var hasClosedTopAlert = false
 
-class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
+class LibraryActivity : BaseActivity(), LibraryExportDialogFragment.Parent {
 
     // ======== COMMUNICATION
     // Viewmodel
@@ -141,12 +141,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     private var resetReadStatsMenu: MenuItem? = null
     private var rateMenu: MenuItem? = null
     private var shareMenu: MenuItem? = null
-    private var archiveMenu: MenuItem? = null
+    private var exportMenu: MenuItem? = null
     private var changeGroupMenu: MenuItem? = null
     private var folderMenu: MenuItem? = null
     private var redownloadMenu: MenuItem? = null
-    private var downloadStreamedMenu: MenuItem? = null
-    private var streamMenu: MenuItem? = null
+    private var storageMethodMenu: MenuItem? = null
     private var groupCoverMenu: MenuItem? = null
     private var mergeMenu: MenuItem? = null
     private var splitMenu: MenuItem? = null
@@ -297,6 +296,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onAppUpdated(event: AppUpdatedEvent) {
         EventBus.getDefault().removeStickyEvent(event)
@@ -854,8 +854,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
                 changeGroupMenu = findItem(R.id.action_change_group)
                 folderMenu = findItem(R.id.action_open_folder)
                 redownloadMenu = findItem(R.id.action_redownload)
-                downloadStreamedMenu = findItem(R.id.action_download)
-                streamMenu = findItem(R.id.action_stream)
+                storageMethodMenu = findItem(R.id.action_storage_method)
                 groupCoverMenu = findItem(R.id.action_set_group_cover)
                 mergeMenu = findItem(R.id.action_merge)
                 splitMenu = findItem(R.id.action_split)
@@ -1108,12 +1107,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             completedMenu?.isVisible = false
             resetReadStatsMenu?.isVisible = false
             rateMenu?.isVisible = isMultipleSelection
-            archiveMenu?.isVisible = !hasProcessed
+            exportMenu?.isVisible = !hasProcessed
             changeGroupMenu?.isVisible = false
             folderMenu?.isVisible = false
             redownloadMenu?.isVisible = false
-            downloadStreamedMenu?.isVisible = false
-            streamMenu?.isVisible = false
+            storageMethodMenu?.isVisible = false
             groupCoverMenu?.isVisible = false
             mergeMenu?.isVisible = false
             splitMenu?.isVisible = false
@@ -1130,12 +1128,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             completedMenu?.isVisible = false
             resetReadStatsMenu?.isVisible = false
             rateMenu?.isVisible = false
-            archiveMenu?.isVisible = false
+            exportMenu?.isVisible = false
             changeGroupMenu?.isVisible = false
             folderMenu?.isVisible = 1 == selectedTotalCount
             redownloadMenu?.isVisible = false
-            downloadStreamedMenu?.isVisible = false
-            streamMenu?.isVisible = false
+            storageMethodMenu?.isVisible = false
             groupCoverMenu?.isVisible = false
             mergeMenu?.isVisible = false
             splitMenu?.isVisible = false
@@ -1151,12 +1148,11 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             resetReadStatsMenu?.isVisible = true
             rateMenu?.isVisible = isMultipleSelection
             shareMenu?.isVisible = true
-            archiveMenu?.isVisible = !hasProcessed
+            exportMenu?.isVisible = !hasProcessed
             changeGroupMenu?.isVisible = !hasProcessed
             folderMenu?.isVisible = !isMultipleSelection
             redownloadMenu?.isVisible = !hasProcessed && selectedDownloadedCount > 0
-            downloadStreamedMenu?.isVisible = !hasProcessed && selectedStreamedCount > 0
-            streamMenu?.isVisible = !hasProcessed && selectedDownloadedCount > 0
+            storageMethodMenu?.isVisible = !hasProcessed
             groupCoverMenu?.isVisible =
                 !isMultipleSelection && Settings.getGroupingDisplayG() != Grouping.FLAT
             // Can only merge downloaded, streamed or non-archive external content together
@@ -1204,6 +1200,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         if (R.id.delete_service_delete == event.processId
@@ -1211,8 +1208,9 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
         ) processDeleteEvent(event)
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    fun onProcesStickyEvent(event: ProcessEvent) {
+    fun onProcessStickyEvent(event: ProcessEvent) {
         var canRemove = false
         if (R.id.delete_service_delete == event.processId
             && ProcessEvent.Type.COMPLETE == event.eventType
@@ -1247,13 +1245,13 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
     }
 
     /**
-     * Display the yes/no dialog to make sure the user really wants to archive selected items
+     * Display the yes/no dialog to make sure the user really wants to export selected items
      *
-     * @param items Items to be archived if the answer is yes
+     * @param items Items to be exported if the answer is yes
      */
-    fun askArchiveItems(items: List<Content>, selectExtension: SelectExtension<*>) {
+    fun askExportItems(items: List<Content>, selectExtension: SelectExtension<*>) {
         if (items.size > 1000) {
-            snack(R.string.archive_limit)
+            snack(R.string.process_limit)
             return
         }
         if (items.isEmpty()) {
@@ -1261,7 +1259,7 @@ class LibraryActivity : BaseActivity(), LibraryArchiveDialogFragment.Parent {
             return
         }
         selectExtension.deselect(selectExtension.selections.toMutableSet())
-        LibraryArchiveDialogFragment.invoke(this, items)
+        LibraryExportDialogFragment.invoke(this, items)
     }
 
     override fun leaveSelectionMode() {

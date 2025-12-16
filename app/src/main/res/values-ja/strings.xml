@@ -728,7 +728,6 @@
     <string name="folder_device_downloads">デバイスのダウンロードフォルダー</string>
     <string name="folder_other">フォルダーを選択してください…</string>
     <string name="archive_overwrite">既存のアーカイブを上書きする</string>
-    <string name="archive_delete_after_archiving">アーカイブが成功した後に本を削除する</string>
     <string name="create_archive">アーカイブを作成</string>
     <string name="notif_archive_title">コンテンツのアーカイブ</string>
     <string name="notif_delete_title">コンテンツの削除</string>

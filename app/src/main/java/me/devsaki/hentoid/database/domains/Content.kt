@@ -454,8 +454,8 @@ data class Content(
                 Site.PORNCOMIX -> return url
                 Site.HENTAIFOX -> {
                     var result = site.url + "/gallery$url".replace("//", "/")
-                    if (result.endsWith("/1/")) result = result.substring(0, result.length - 3)
-                    if (result.endsWith("/1")) result = result.substring(0, result.length - 2)
+                    if (result.endsWith("/1/")) result = result.dropLast(3)
+                    if (result.endsWith("/1")) result = result.dropLast(2)
                     return result
                 }
 
@@ -652,7 +652,7 @@ data class Content(
     val chaptersList: List<Chapter>
         get() = chapters.safeReach(this)
 
-    val attributeList : List<Attribute>
+    val attributeList: List<Attribute>
         get() = attributes.safeReach(this)
 
     fun setChapters(chapters: List<Chapter?>?) {

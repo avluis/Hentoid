@@ -20,7 +20,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.databinding.DialogLibraryArchiveBinding
+import me.devsaki.hentoid.databinding.DialogLibraryExportBinding
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.PickFolderContract
@@ -33,12 +33,12 @@ import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.workers.ArchiveWorker
 
-class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFragment.Parent>() {
+class LibraryExportDialogFragment : BaseDialogFragment<LibraryExportDialogFragment.Parent>() {
     companion object {
         const val KEY_CONTENTS = "contents"
 
         fun invoke(parent: FragmentActivity, contentList: List<Content>) {
-            invoke(parent, LibraryArchiveDialogFragment(), getArgs(contentList))
+            invoke(parent, LibraryExportDialogFragment(), getArgs(contentList))
         }
 
         private fun getArgs(contentList: List<Content>): Bundle {
@@ -52,7 +52,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
 
 
     // UI
-    private var binding: DialogLibraryArchiveBinding? = null
+    private var binding: DialogLibraryExportBinding? = null
 
     // === VARIABLES
     private lateinit var contentIds: LongArray
@@ -75,7 +75,7 @@ class LibraryArchiveDialogFragment : BaseDialogFragment<LibraryArchiveDialogFrag
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedState: Bundle?
     ): View? {
-        binding = DialogLibraryArchiveBinding.inflate(inflater, container, false)
+        binding = DialogLibraryExportBinding.inflate(inflater, container, false)
         return binding?.root
     }
 

@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import androidx.work.Data
@@ -18,6 +19,9 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import androidx.work.workDataOf
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
@@ -67,6 +71,7 @@ import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.FolderSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
+import me.devsaki.hentoid.workers.ArchiveWorker
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.MergeWorker
@@ -691,8 +696,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     /**
      * General purpose download/redownload
-     * @reparseContent : True to reparse Content metadata from the site
-     * @reparseImages : True to reparse and redownload images from the site
+     * @param reparseContent    True to reparse Content metadata from the site
+     * @param reparseImages     True to reparse and redownload images from the site
      */
     fun downloadContent(
         contentList: List<Content>,
@@ -703,11 +708,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         onError: Consumer<Throwable>
     ) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.invoke(
-                EmptyResultException(
-                    getApplication<Application>().getString(R.string.download_updating_webview)
-                )
-            ) else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.download_missing_webview)))
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.download_updating_webview)))
+            else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.download_missing_webview)))
             return
         }
 
@@ -912,7 +915,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         roots.removeAll(uris.map {
             val str = it.toString()
             val docPos = str.indexOf("/document/")
-            str.substring(0, docPos)
+            str.take(docPos)
         })
         Settings.libraryFoldersRoots = roots
 
@@ -1278,5 +1281,41 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     fun clearSearchHistory(isGroup: Boolean) {
         dao.deleteAllSearchRecords(if (isGroup) SearchRecord.EntityType.GROUP else SearchRecord.EntityType.CONTENT)
         dao.cleanup()
+    }
+
+    fun archiveContent(
+        content: List<Content>,
+        onError: Consumer<Throwable>
+    ) {
+        val contentIds = content.map { it.id }
+
+        val params = ArchiveWorker.Params(
+            "",
+            1, // CBZ
+            0,
+            overwrite = false,
+            deleteOnSuccess = false,
+            archivePrimaryContent = true
+        )
+
+        val moshi = Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
+            .build()
+
+        val serializedParams = moshi.adapter(ArchiveWorker.Params::class.java).toJson(params)
+
+        val myData: Data = workDataOf(
+            "IDS" to contentIds,
+            "PARAMS" to serializedParams
+        )
+
+        val workManager = WorkManager.getInstance(application)
+        workManager.enqueueUniqueWork(
+            R.id.archive_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(ArchiveWorker::class.java)
+                .setInputData(myData)
+                .addTag(WORK_CLOSEABLE).build()
+        )
     }
 }

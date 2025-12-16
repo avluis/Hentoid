@@ -111,6 +111,7 @@
     <string name="menu_change_group">Move to group</string>
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
+    <string name="menu_storage_method">Storage method</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
     <string name="menu_stream">Switch to streaming</string>
     <string name="menu_download_streamed">Download</string>
@@ -216,6 +217,13 @@
     <string name="redl_scratch">Redownload from scratch</string>
     <string name="redl_refresh">Update metadata only</string>
     <string name="filter_by_source">Filter by source</string>
+    <string name="menu_change_storage">Change storage</string>
+    <string name="storage_folder">Folder</string>
+    <string name="storage_folder_description">Store books as images inside folders</string>
+    <string name="storage_archive">Archive (CBZ)</string>
+    <string name="storage_archive_description">Store books as images inside CBZ archives</string>
+    <string name="storage_streamed">Streamed</string>
+    <string name="storage_streamed_description">Don\'t store images on storage, stream them as you read</string>
 
     <!-- Import downloads -->
     <string name="import_downloads_title">Import downloads</string>
@@ -516,7 +524,7 @@
     <string name="redownload_limit">Cannot redownload more than 1000 books at once</string>
     <string name="stream_limit">Cannot stream more than 1000 books at once</string>
     <string name="transform_limit">Cannot transform more than 1000 books at once</string>
-    <string name="archive_limit">Cannot archive more than 1000 books at once</string>
+    <string name="process_limit">Cannot process more than 1000 books at once</string>
     <string name="new_group_name">Name of the new group\?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="book_edit_title">Edit book title</string>
@@ -1086,7 +1094,7 @@
     <string name="folder_device_downloads">Device\'s Downloads folder</string>
     <string name="folder_other">Choose folder…</string>
     <string name="archive_overwrite">Overwrite existing archives</string>
-    <string name="archive_delete_after_archiving">Delete books after successful archiving</string>
+    <string name="archive_delete_after_archiving">Delete books after successful export</string>
     <plurals name="create_archive">
         <item quantity="one">Create archive</item>
         <item quantity="other">Create archives</item>

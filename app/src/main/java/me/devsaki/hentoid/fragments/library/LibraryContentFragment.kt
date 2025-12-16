@@ -131,6 +131,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     RatingDialogFragment.Parent,
     LibraryTransformDialogFragment.Parent,
     SelectSiteDialogFragment.Parent,
+    ChangeStorageDialogFragment.Parent,
     PopupTextProvider,
     ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -483,13 +484,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 keepToolbar = true
             }
 
-            R.id.action_download -> {
-                askDownloadSelectedItems()
-                keepToolbar = true
-            }
-
-            R.id.action_stream -> {
-                askStreamSelectedItems()
+            R.id.action_storage_method -> {
+                val contents =
+                    selectExtension!!.selectedItems.mapNotNull { it.content }.map { it.id }
+                ChangeStorageDialogFragment.invoke(this, contents.toLongArray())
                 keepToolbar = true
             }
 
@@ -657,7 +655,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             val selectedItems: Set<ContentItem> = selectedItems
             val contents = selectedItems.mapNotNull { ci -> ci.content }
                 .filterNot { c -> c.storageUri.isEmpty() }
-            activity.get()?.askArchiveItems(contents, this)
+            activity.get()?.askExportItems(contents, this)
         } ?: run {
             requireContext().toast("Couldn't find selectExtension")
         }
@@ -708,7 +706,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun askRedownloadSelectedItemsScratch() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
         var externalContent = 0
-        val contents: MutableList<Content> = java.util.ArrayList()
+        val contents: MutableList<Content> = ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
             if (c.status == StatusContent.EXTERNAL) {
@@ -758,100 +756,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
     }
 
-    /**
-     * Callback for the "Download" action button (for streamed books)
-     */
-    private fun askDownloadSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        var nonOnlineContent = 0
-        val contents: MutableList<Content> = java.util.ArrayList()
-        for (ci in selectedItems) {
-            val c = ci.content ?: continue
-            if (DownloadMode.STREAM != c.downloadMode) {
-                nonOnlineContent++
-            } else {
-                contents.add(c)
-            }
-        }
-        var message = resources.getQuantityString(R.plurals.download_confirm, contents.size)
-        if (nonOnlineContent > 0) message = resources.getQuantityString(
-            R.plurals.download_non_streamed_content,
-            nonOnlineContent,
-            nonOnlineContent
-        )
-        MaterialAlertDialogBuilder(
-            requireContext(),
-            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
-        )
-            .setIcon(R.drawable.ic_warning)
-            .setCancelable(false)
-            .setTitle(R.string.app_name)
-            .setMessage(message)
-            .setPositiveButton(R.string.yes)
-            { dialog1, _ ->
-                dialog1.dismiss()
-                download(contents) { t -> onDownloadError(t) }
-                leaveSelectionMode()
-            }
-            .setNegativeButton(R.string.no)
-            { dialog12, _ -> dialog12.dismiss() }
-            .create()
-            .show()
-    }
-
-    private fun onDownloadError(t: Throwable) {
-        Timber.w(t)
-        snack(t.message ?: "")
-    }
-
-    /**
-     * Callback for the "Switch to streaming" action button
-     */
-    private fun askStreamSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        var streamedOrExternalContent = 0
-        val contents: MutableList<Content> = java.util.ArrayList()
-        for (ci in selectedItems) {
-            val c = ci.content ?: continue
-            if (c.downloadMode == DownloadMode.STREAM || c.status == StatusContent.EXTERNAL) {
-                streamedOrExternalContent++
-            } else {
-                contents.add(c)
-            }
-        }
-        if (contents.size > 1000) {
-            snack(R.string.stream_limit)
-            return
-        }
-        var message = resources.getQuantityString(R.plurals.stream_confirm, contents.size)
-        if (streamedOrExternalContent > 0) message = resources.getQuantityString(
-            R.plurals.stream_external_streamed_content,
-            streamedOrExternalContent,
-            streamedOrExternalContent
-        )
-        MaterialAlertDialogBuilder(
-            requireContext(),
-            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
-        )
-            .setIcon(R.drawable.ic_warning)
-            .setCancelable(false)
-            .setTitle(R.string.app_name)
-            .setMessage(message)
-            .setPositiveButton(
-                R.string.yes
-            ) { dialog1, _ ->
-                dialog1.dismiss()
-                leaveSelectionMode()
-                viewModel.streamContent(contents) { t: Throwable -> onStreamError(t) }
-            }
-            .setNegativeButton(
-                R.string.no
-            ) { dialog12, _ -> dialog12.dismiss() }
-            .create()
-            .show()
-    }
-
-    private fun onStreamError(t: Throwable) {
+    private fun onProcessError(t: Throwable) {
         Timber.w(t)
         snack(t.message ?: "")
     }
@@ -1694,6 +1599,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         viewModel.splitContent(content, chapters, deleteAfter)
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on delete, merge & split complete events
@@ -1722,6 +1628,37 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             )
         }
         refreshIfNeeded()
+    }
+
+    override fun onChangeStorageSuccess(storageMethod: DownloadMode) {
+        val selectedItems: Set<ContentItem> = selectExtension?.selectedItems ?: return
+        val toProcess: MutableList<Content> = ArrayList()
+        for (ci in selectedItems) {
+            val c = ci.content ?: continue
+            if (c.isPdf) continue
+            if (c.isArchive && storageMethod == DownloadMode.DOWNLOAD_ARCHIVE) continue
+            if (c.status == StatusContent.ONLINE && storageMethod == DownloadMode.STREAM) continue
+            if (storageMethod == DownloadMode.DOWNLOAD && c.status != StatusContent.ONLINE && !c.isArchive) continue
+            toProcess.add(c)
+        }
+        if (toProcess.size > 1000) {
+            snack(R.string.process_limit)
+            return
+        }
+        leaveSelectionMode()
+
+        when (storageMethod) {
+            DownloadMode.STREAM ->
+                viewModel.streamContent(toProcess) { onProcessError(it) }
+
+            DownloadMode.DOWNLOAD ->
+                download(toProcess) { onProcessError(it) }
+
+            DownloadMode.DOWNLOAD_ARCHIVE ->
+                viewModel.archiveContent(toProcess) { onProcessError(it) }
+
+            else -> {} // Nothing
+        }
     }
 
     /**

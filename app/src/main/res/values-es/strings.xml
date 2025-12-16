@@ -35,7 +35,6 @@
     <string name="app_lock_pin">Ingresar PIN</string>
     <string name="app_settings">Configuración de la aplicación </string>
     <string name="apply_final">Aplicar opciones</string>
-    <string name="archive_delete_after_archiving">Borrar libros después de archivar</string>
     <string name="archive_format">Formato de archivo</string>
     <string name="archive_limit">No se pueden archivar más de 1000 libros a la vez</string>
     <string name="archive_overwrite">Sobrescribir archivos existentes</string>

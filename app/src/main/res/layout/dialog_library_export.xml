@@ -67,8 +67,8 @@
             android:layout_width="match_parent"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_marginTop="8dp"
-            android:text="@string/create_generic"
-            app:icon="@drawable/ic_archive"
+            android:text="@string/menu_export"
+            app:icon="@drawable/ic_action_export"
             app:iconSize="24dp"
             app:layout_constraintTop_toBottomOf="@id/delete_switch" />
 

@@ -35,7 +35,6 @@
     <string name="app_lock_pin">Mata in PIN-kod</string>
     <string name="app_settings">Appinställningar</string>
     <string name="apply_final">Verkställ val</string>
-    <string name="archive_delete_after_archiving">Ta bort böcker efter lyckad arkivering</string>
     <string name="archive_format">Arkivformat</string>
     <string name="archive_limit">Kan inte arkivera fler än 1000 böcker samtidigt</string>
     <string name="archive_overwrite">Skriv över existerande arkiv</string>
