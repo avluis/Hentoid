@@ -1676,7 +1676,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     if (it.isNotEmpty()) download(it, true) { e -> onProcessError(e) }
                 }
                 toProcess.filter { canBeArchived(it) }.let {
-                    if (it.isNotEmpty()) viewModel.archiveContent(toProcess) { onProcessError(it) }
+                    if (it.isNotEmpty()) viewModel.archiveContent(toProcess) { e -> onProcessError(e) }
                 }
             }
 

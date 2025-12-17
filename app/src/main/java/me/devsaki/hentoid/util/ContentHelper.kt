@@ -700,31 +700,39 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     val newContentId = dao.insertContent(content)
     content.id = newContentId
 
-    // Extract the cover to the app's persistent folder if the book is an archive or a PDF
-    if (content.isArchive || content.isPdf) {
-        val targetFolder = context.filesDir
-        getPictureThumbCached(
-            context,
-            content.storageUri.toUri(),
-            libraryGridCardWidthDP,
-            null,
-            { fileName -> findFile(targetFolder, fileName)?.toUri() },
-            { fileName ->
-                val file = File(targetFolder, fileName)
-                if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
-                file.toUri()
-            }
-        )?.let { cachedThumbUri ->
-            Timber.i(">> Set cover for %s", content.title)
-            content.cover.fileUri = cachedThumbUri.toString()
-            content.cover.name = cachedThumbUri.lastPathSegment ?: ""
-            dao.replaceImageList(newContentId, content.imageList)
-        } ?: run {
-            Timber.w("Couldn't create thumb for ${content.storageUri}")
-        }
-    }
+    if (content.isArchive || content.isPdf) createArchivePdfCover(context, content, dao)
 
     return newContentId
+}
+
+/**
+ * Extract the cover to the app's persistent folder if the book is an archive or a PDF
+ */
+fun createArchivePdfCover(
+    context: Context,
+    content: Content,
+    dao: CollectionDAO
+) {
+    val targetFolder = context.filesDir
+    getPictureThumbCached(
+        context,
+        content.storageUri.toUri(),
+        libraryGridCardWidthDP,
+        null,
+        { fileName -> findFile(targetFolder, fileName)?.toUri() },
+        { fileName ->
+            val file = File(targetFolder, fileName)
+            if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
+            file.toUri()
+        }
+    )?.let { cachedThumbUri ->
+        Timber.i(">> Set cover for %s", content.title)
+        content.cover.fileUri = cachedThumbUri.toString()
+        content.cover.name = cachedThumbUri.lastPathSegment ?: ""
+        dao.replaceImageList(content.id, content.imageList)
+    } ?: run {
+        Timber.w("Couldn't create thumb for ${content.storageUri}")
+    }
 }
 
 fun getArchivePdfThumbFileName(archivePdfUri: Uri): String {

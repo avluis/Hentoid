@@ -1297,7 +1297,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         content: List<Content>,
         onError: Consumer<Throwable>
     ) {
-        val contentIds = content.map { it.id }
+        val contentIds = content.map { it.id }.toLongArray()
 
         val params = ArchiveWorker.Params(
             "",

@@ -23,6 +23,7 @@ import me.devsaki.hentoid.notification.archive.ArchiveStartNotification
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.canBeArchived
+import me.devsaki.hentoid.util.createArchivePdfCover
 import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
 import me.devsaki.hentoid.util.file.PdfManager
@@ -189,6 +190,10 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                 if (persistJson(context, content)) {
                     removeDocument(context, formerJsonLocation)
                     dao.insertContentCore(content)
+                    // Remove former location
+                    bookFolder.delete()
+                    // Create thumb
+                    createArchivePdfCover(context, content, dao)
                 }
             }
             if (params.deleteOnSuccess) removeContent(context, dao, content)
@@ -213,7 +218,8 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         // Identify target folder
         val targetFolderUri = params.targetFolderUri.ifEmpty {
             val location = selectDownloadLocation(context)
-            getOrCreateSiteDownloadDir(context, location, content.site).toString()
+            getOrCreateSiteDownloadDir(context, location, content.site)?.uri?.toString()
+                ?: throw IOException("Couldn't locate site folder")
         }
         return try {
             createTargetFile(targetFolderUri, destName, params.overwrite)
