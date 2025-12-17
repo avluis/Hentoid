@@ -11,7 +11,6 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.databinding.DialogLibraryStorageMethodBinding
-import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 
 /**
@@ -29,6 +28,7 @@ class ChangeStorageDialogFragment : BaseDialogFragment<ChangeStorageDialogFragme
     }
 
     private lateinit var contentIds: LongArray
+    private var initialCheckedId = -1
 
     private var binding: DialogLibraryStorageMethodBinding? = null
 
@@ -64,13 +64,13 @@ class ChangeStorageDialogFragment : BaseDialogFragment<ChangeStorageDialogFragme
 
             val onlyFolders = nbFolders == (contents.size - nbPdf)
             val onlyArchive = nbArchive == (contents.size - nbPdf)
-            val onlyStreamed = nbFolders == (contents.size - nbPdf)
+            val onlyStreamed = nbStreamed == (contents.size - nbPdf)
 
             binding?.apply {
                 selector.addOnButtonCheckedListener { _, checkedId, isChecked ->
                     if (!isChecked) return@addOnButtonCheckedListener
 
-                    description.isVisible = true
+                    actionButton.isVisible = (checkedId != initialCheckedId)
 
                     description.text = resources.getString(
                         when (checkedId) {
@@ -82,9 +82,12 @@ class ChangeStorageDialogFragment : BaseDialogFragment<ChangeStorageDialogFragme
                     )
                 }
 
-                if (onlyFolders) choiceFolder.isSelected = true
-                if (onlyArchive) choiceArchive.isSelected = true
-                if (onlyStreamed) choiceStreamed.isSelected = true
+                if (onlyStreamed || onlyFolders || onlyArchive) {
+                    initialCheckedId = if (onlyArchive) choiceArchive.id
+                    else if (onlyStreamed) choiceStreamed.id
+                    else choiceFolder.id
+                    selector.check(initialCheckedId)
+                }
 
                 // Item click listener
                 actionButton.setOnClickListener { onOkClick() }
