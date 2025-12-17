@@ -411,10 +411,10 @@ suspend fun createJson(context: Context, content: Content): DocumentFile? =
  * @param context Context to use
  * @param content Content to persist the JSON for
  */
-suspend fun persistJson(context: Context, content: Content) = withContext(Dispatchers.IO) {
+suspend fun persistJson(context: Context, content: Content): Boolean = withContext(Dispatchers.IO) {
     var result = false
     if (content.jsonUri.isNotEmpty()) result = updateJson(context, content)
-    if (!result) createJson(context, content)
+    return@withContext if (result) true else (createJson(context, content) != null)
 }
 
 /**

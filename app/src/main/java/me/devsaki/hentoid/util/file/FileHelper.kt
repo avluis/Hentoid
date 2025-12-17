@@ -349,6 +349,7 @@ fun getOutputStream(
  */
 @Throws(IOException::class)
 fun getOutputStream(context: Context, fileUri: Uri, append: Boolean = false): OutputStream? {
+    if (fileUri == Uri.EMPTY) throw IOException("Couldn't find document for Empty Uri")
     if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
         val path = fileUri.path
         if (null != path) return getOutputStream(File(path), append)
@@ -1068,38 +1069,38 @@ fun getDownloadsFolder(): File {
 }
 
 /**
- * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+ * Create a brand new file in the device's Downloads folder
  *
  * @param context  Context to use
  * @param fileName Name of the file to create
  * @param mimeType Mime-type of the file to create
- * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+ * @return Uri of a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
 // TODO document what happens when a file with the same name already exists there before the call
 @Throws(IOException::class)
-fun openNewDownloadOutputStream(
+fun createNewDownloadFile(
     context: Context,
     fileName: String,
     mimeType: String
-): OutputStream? {
+): Uri {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        openNewDownloadOutputStreamQ(context, fileName, mimeType)
+        createNewDownloadFileQ(context, fileName, mimeType)
     } else {
-        openNewDownloadOutputStreamLegacy(fileName)
+        createNewDownloadFileLegacy(fileName)
     }
 }
 
 /**
- * Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
- * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+ * Legacy (non-SAF, pre-Android 10) version of createNewDownloadFile
+ * Return the Uri of a brand new file created in the device's Downloads folder
  *
  * @param fileName Name of the file to create
- * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+ * @return Uri of a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
 @Throws(IOException::class)
-private fun openNewDownloadOutputStreamLegacy(fileName: String): OutputStream {
+private fun createNewDownloadFileLegacy(fileName: String): Uri {
     val downloadsFolder =
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             ?: throw IOException("Downloads folder not found")
@@ -1107,27 +1108,27 @@ private fun openNewDownloadOutputStreamLegacy(fileName: String): OutputStream {
     val target = File(downloadsFolder, fileName)
     if (!target.exists() && !target.createNewFile()) throw IOException("Could not create new file in downloads folder")
 
-    return getOutputStream(target)
+    return target.toUri()
 }
 
 /**
- * Android 10 version of openNewDownloadOutputStream
+ * Android 10 version of createNewDownloadFile
  * https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
- * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+ * Return the Uri of a brand new file created in the device's Downloads folder
  *
  * @param context  Context to use
  * @param fileName Name of the file to create
  * @param mimeType Mime-type of the file to create
- * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+ * @return Uri of a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
 @RequiresApi(29)
 @Throws(IOException::class)
-private fun openNewDownloadOutputStreamQ(
+private fun createNewDownloadFileQ(
     context: Context,
     fileName: String,
     mimeType: String
-): OutputStream? {
+): Uri {
     val values = ContentValues()
     // Make filename unique to avoid failures on certain devices when creating a file with the same name multiple times
     val fileExt = getExtension(fileName)
@@ -1139,10 +1140,8 @@ private fun openNewDownloadOutputStreamQ(
     values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
 
     val resolver = context.contentResolver
-    val targetFileUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+    return resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
         ?: throw IOException("Target URI could not be formed")
-
-    return resolver.openOutputStream(targetFileUri)
 }
 
 /**

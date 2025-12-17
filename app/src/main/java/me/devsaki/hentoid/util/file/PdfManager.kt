@@ -128,6 +128,7 @@ class PdfManager {
         return null
     }
 
+    // Blocking call
     fun convertImagesToPdf(
         context: Context,
         out: OutputStream,

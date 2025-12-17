@@ -397,6 +397,7 @@ private fun Context.addFile(
 
 /**
  * Archive the given files into the given output stream using the ZIP format
+ * NB : This is a blocking call
  *
  * @param files   List of the files to be archived
  * @param out     Output stream to write to

@@ -51,9 +51,10 @@ import me.devsaki.hentoid.util.file.getDownloadsFolder
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileName
+import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.openFile
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.file.createNewDownloadFile
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
@@ -630,10 +631,13 @@ fun exportToDownloadsFolder(
         ) + ".$ext"
 
     try {
-        openNewDownloadOutputStream(
+        getOutputStream(
             context,
-            targetFileName,
-            getMimeTypeFromFileName(fileName)
+            createNewDownloadFile(
+                context,
+                targetFileName,
+                getMimeTypeFromFileName(fileName)
+            )
         )?.use { newFile ->
             ByteArrayInputStream(data)
                 .use { input -> copy(input, newFile) }
