@@ -45,6 +45,7 @@ import me.devsaki.hentoid.util.removeContent
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.time.Instant
 
 
 class ArchiveWorker(context: Context, parameters: WorkerParameters) :
@@ -100,6 +101,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
+                dao.updateContentsProcessedFlagById(contentIds.toList(), true)
                 for (contentId in contentIds) {
                     if (isStopped) break
                     try {
@@ -107,6 +109,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                         content?.let {
                             if (canBeArchived(content)) archiveContent(content, params, dao)
                             else {
+                                dao.updateContentProcessedFlag(it.id, false)
                                 globalProgress.setProgress(contentId.toString(), 1f)
                                 nextKO()
                             }
@@ -187,13 +190,16 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
             if (params.archivePrimaryContent) {
                 content.storageUri = destFileUri.toString()
                 val formerJsonLocation = content.jsonUri.toUri()
+                content.jsonUri = ""
                 if (persistJson(context, content)) {
                     removeDocument(context, formerJsonLocation)
+                    content.lastEditDate = Instant.now().toEpochMilli()
                     dao.insertContentCore(content)
                     // Remove former location
                     bookFolder.delete()
                     // Create thumb
                     createArchivePdfCover(context, content, dao)
+                    dao.updateContentProcessedFlag(content.id, false)
                 }
             }
             if (params.deleteOnSuccess) removeContent(context, dao, content)
