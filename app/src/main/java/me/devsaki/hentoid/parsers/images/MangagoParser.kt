@@ -199,6 +199,6 @@ class MangagoParser : BaseChapteredImageListParser() {
             img.size = it.length()
         }
         result.add(img)
-        dlManager.processDownloadedFile(context, fileUri)
+        dlManager.processDownloadedFile(context, false, fileUri)
     }
 }

@@ -13,11 +13,13 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.file.ArchiveStreamer
 import me.devsaki.hentoid.util.file.MIME_TYPE_CBZ
+import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.file.tryCleanDirectory
 import me.devsaki.hentoid.util.formatFolderName
+import me.devsaki.hentoid.util.getArchivePdfThumbFileName
 import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
@@ -25,6 +27,7 @@ import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.persistJson
 import timber.log.Timber
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 
 class PrimaryDownloadManager {
     private var downloadMode: DownloadMode? = null
@@ -44,6 +47,8 @@ class PrimaryDownloadManager {
     private var downloadArchive: Uri? = null
 
     private var archiveStreamer: ArchiveStreamer? = null
+
+    private val coverMatch: MutableMap<String, String> = ConcurrentHashMap()
 
 
     /**
@@ -115,9 +120,18 @@ class PrimaryDownloadManager {
     /**
      * Process downloaded file
      */
-    fun processDownloadedFile(context: Context, uri: Uri) {
+    fun processDownloadedFile(context: Context, isCoverThumb: Boolean, uri: Uri) {
         if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
-            archiveStreamer?.addFile(context, uri)
+            if (isCoverThumb) {
+                // Copy thumb to thumb location
+                val coverUri = copyFile(
+                    context,
+                    uri,
+                    context.filesDir,
+                    getArchivePdfThumbFileName(downloadArchive!!)
+                )
+                coverMatch[uri.toString()] = coverUri.toString()
+            } else archiveStreamer?.addFile(context, uri)
         } else {
             // Nothing; file's already at the correct location (see getDownloadLocation)
         }
@@ -178,6 +192,13 @@ class PrimaryDownloadManager {
     ): Boolean {
         var hasChanges = false
         imageList.forEach { img ->
+            coverMatch[img.fileUri]?.let {
+                if (img.fileUri != it) {
+                    img.fileUri = it
+                    hasChanges = true
+                }
+            }
+
             streamer.mappedUris[img.fileUri]?.let {
                 if (img.fileUri != it) {
                     img.fileUri = it
@@ -194,5 +215,6 @@ class PrimaryDownloadManager {
         archiveStreamer?.close()
         archiveStreamer = null
         downloadFolder = null
+        coverMatch.clear()
     }
 }

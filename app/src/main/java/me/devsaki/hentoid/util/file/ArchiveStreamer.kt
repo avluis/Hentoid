@@ -12,9 +12,9 @@ import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.Hashtable
 import java.util.LinkedList
 import java.util.Queue
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.CRC32
 import java.util.zip.Checksum
@@ -27,7 +27,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
     private val stream = ZipOutputStream(getOutputStream(context, archiveUri, append))
     private val filesQueue: Queue<Uri> = LinkedList()
-    private val filesMatch: MutableMap<String, String> = Hashtable()
+    private val filesMatch: MutableMap<String, String> = ConcurrentHashMap()
 
     private val stop = AtomicBoolean(false)
 

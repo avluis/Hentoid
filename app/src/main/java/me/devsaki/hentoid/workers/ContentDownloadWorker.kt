@@ -1248,7 +1248,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val img = request.img
         img.size = fileSizeFromUri(applicationContext, fileUri)
         updateImageProperties(img, true, fileUri.toString())
-        dlManager.processDownloadedFile(applicationContext, fileUri)
+        dlManager.processDownloadedFile(applicationContext, request.img.isCover && !request.img.isReadable, fileUri)
     }
 
     private fun onRequestError(request: RequestOrder, error: NetworkError) {

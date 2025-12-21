@@ -328,7 +328,7 @@ abstract class BaseDeleteWorker(
                     // Create target folder for streaming
                     val location = selectDownloadLocation(context)
                     getOrCreateContentDownloadDir(context, content, location)?.let { f ->
-                        content.storageUri = f.toString()
+                        content.storageUri = f.uri.toString()
                         dao.insertContentCore(content)
                     } ?: throw IOException("Couldn't create book folder")
                 } else {

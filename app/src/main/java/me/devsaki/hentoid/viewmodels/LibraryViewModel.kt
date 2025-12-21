@@ -62,6 +62,7 @@ import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
@@ -70,7 +71,6 @@ import me.devsaki.hentoid.util.parseFromScratch
 import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.persistLocationCredentials
 import me.devsaki.hentoid.util.purgeContent
-import me.devsaki.hentoid.util.purgeFiles
 import me.devsaki.hentoid.util.reparseFromScratch
 import me.devsaki.hentoid.util.splitUniqueStr
 import me.devsaki.hentoid.util.updateGroupsJson
@@ -786,12 +786,21 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 dao.insertImageFiles(it.imageList)
                             }
 
+                            if (forceArchive) {
+                                // Delete download folder
+                                removeDocument(application, it.storageUri.toUri())
+                                // Delete previous references
+                                it.jsonUri = ""
+                                it.storageUri = ""
+                            }
+
                             dao.addContentToQueue(
                                 it, sourceImageStatus, targetImageStatus, position, -1, null,
                                 isQueueActive(getApplication())
                             )
-                            // Non-blocking performance bottleneck; run in a dedicated worker
-                            if (reparseImages) purgeContent(
+
+                            if (!forceArchive && reparseImages) purgeContent(
+                                // Non-blocking performance bottleneck; run in a dedicated worker
                                 getApplication(),
                                 it,
                                 keepCover = false
@@ -902,9 +911,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         workManager.enqueueUniqueWork(
             R.id.delete_service_stream.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(
-                DeleteWorker::class.java
-            ).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+                .setInputData(builder.data).build()
         )
     }
 
@@ -1361,6 +1369,9 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
      */
     private suspend fun doUnarchive(context: Context, content: Content) =
         withContext(Dispatchers.IO) {
+            val initialJsonUri = content.jsonUri.toUri()
+            val initialArchiveUri = content.storageUri.toUri()
+
             // Create target folder for streaming from scratch
             val location = selectDownloadLocation(context)
             getOrCreateContentDownloadDir(
@@ -1382,35 +1393,42 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                 // Unarchive the whole book inside target folder
                 val imgs = content.imageList
                 val isLocationInUri =
-                    imgs.all { it.isReadable && it.fileUri.startsWith(content.storageUri) }
-                val toExtract: List<Triple<String, Long, String>> = imgs.mapIndexed { i, e ->
-                    val path = if (isLocationInUri) e.fileUri else e.url
-                    path.replace(content.storageUri, "")
-                    Triple(path, i.toLong(), path.substring(path.indexOf('/') + 1))
-                }
+                    imgs.filter { it.isReadable }.all { it.fileUri.startsWith(content.storageUri) }
+                val toExtract: List<Triple<String, Long, String>> = imgs
+                    .filter { it.isReadable }
+                    .mapIndexed { i, e ->
+                        var path = if (isLocationInUri) e.fileUri else e.url
+                        path = path.replace(content.storageUri, "")
+                        path = path.substring(path.lastIndexOf('/') + 1)
+                        Triple(path, i.toLong(), path)
+                    }
                 val imgUris = context.extractArchiveEntriesBlocking(
                     content.storageUri.toUri(),
                     f.uri,
                     toExtract
                 )
-                content.storageUri = f.toString()
+                content.storageUri = f.uri.toString()
 
                 // Save core
                 dao.insertContentCore(content)
 
                 // Remap pictures
-                imgs.forEachIndexed { i, e ->
-                    if (imgUris.size <= i) return@forEachIndexed
-                    imgUris[i].toString().let {
-                        if (isLocationInUri) e.fileUri = it else e.url = it
+                imgs.filter { it.isReadable }
+                    .forEachIndexed { i, e ->
+                        if (imgUris.size <= i) return@forEachIndexed
+                        imgUris[i].toString().let {
+                            if (isLocationInUri) e.fileUri = it else e.url = it
+                        }
                     }
-                }
+
+                // Don't move thumb as it can keep being read from the archive cache folder
 
                 // Save pictures
                 dao.insertImageFiles(imgs)
-            } ?: throw IOException("Couldn't create book folder")
 
-            // Remove the initial archive
-            purgeFiles(context, content, removeJson = true, removeCover = true)
+                // Remove the initial archive and its JSON
+                removeDocument(context, initialJsonUri)
+                removeDocument(context, initialArchiveUri)
+            } ?: throw IOException("Couldn't create book folder")
         }
 }

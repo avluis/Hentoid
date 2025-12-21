@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.core.net.toUri
 import androidx.core.util.Consumer
 import kotlinx.coroutines.Dispatchers
@@ -131,9 +132,13 @@ suspend fun getIdxCoverBitmapFromContent(context: Context, content: Content): Bi
     withContext(Dispatchers.IO) {
         val uriStr = content.cover.fileUri
         if (uriStr.isEmpty()) return@withContext null
+        return@withContext getIdxCoverBitmap(context, uriStr.toUri())
+    }
 
+suspend fun getIdxCoverBitmap(context: Context, coverUri: Uri): Bitmap? =
+    withContext(Dispatchers.IO) {
         val isAnimated = try {
-            getInputStream(context, uriStr.toUri()).use {
+            getInputStream(context, coverUri).use {
                 val header = ByteArray(1000)
                 if (it.read(header) > 0) isImageAnimated(header)
                 else false
@@ -145,7 +150,7 @@ suspend fun getIdxCoverBitmapFromContent(context: Context, content: Content): Bi
 
         if (!isAnimated) {
             try {
-                getInputStream(context, content.cover.fileUri.toUri()).use {
+                getInputStream(context, coverUri).use {
                     return@withContext getCoverBitmapFromStream(it)
                 }
             } catch (e: IOException) {
