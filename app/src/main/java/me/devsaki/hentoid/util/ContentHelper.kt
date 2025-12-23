@@ -713,6 +713,9 @@ fun createArchivePdfCover(
     content: Content,
     dao: CollectionDAO
 ) {
+    val imgs = content.imageList
+    val cover = imgs.firstOrNull { it.isCover && !it.isReadable }
+
     val targetFolder = context.filesDir
     getPictureThumbCached(
         context,
@@ -726,10 +729,16 @@ fun createArchivePdfCover(
             file.toUri()
         }
     )?.let { cachedThumbUri ->
-        Timber.i(">> Set cover for %s", content.title)
-        content.cover.fileUri = cachedThumbUri.toString()
-        content.cover.name = cachedThumbUri.lastPathSegment ?: ""
-        dao.replaceImageList(content.id, content.imageList)
+        cover?.let {
+            // Only replace image properties if it is a thumb already
+            it.fileUri = cachedThumbUri.toString()
+            it.name = cachedThumbUri.lastPathSegment ?: ""
+            dao.replaceImageList(content.id, content.imageList)
+        } ?: run {
+            // If no dedicated thumb, replace content cover Uri
+            content.coverImageUrl = cachedThumbUri.toString()
+            dao.insertContentCore(content)
+        }
     } ?: run {
         Timber.w("Couldn't create thumb for ${content.storageUri}")
     }

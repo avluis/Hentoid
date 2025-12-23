@@ -255,27 +255,32 @@ data class ImageFile(
     val usableUri: String
         get() {
             var result = ""
-            if (isInLibrary(status)) result = fileUri
-            if (result.isEmpty()) result = url
+            if (isInLibrary(status) && !isArchivedOrPdf(fileUri)) result = fileUri
+            if (result.isEmpty() && !isArchivedOrPdf(url)) result = url
             if (result.isEmpty()) result = linkedContent?.coverImageUrl ?: ""
 
             return result
         }
 
     val isArchived: Boolean
-        get() {
-            val lowerUri = url.lowercase(Locale.getDefault())
-            for (ext in getSupportedExtensions()) {
-                if (lowerUri.contains("." + ext + File.separator)) return true
-            }
-            return false
-        }
+        get() = isContainedInFile(url, getSupportedExtensions())
 
     val isPdf: Boolean
-        get() {
-            val lowerUri = url.lowercase(Locale.getDefault())
-            return (lowerUri.contains(".pdf" + File.separator))
+        get() = isContainedInFile(url, setOf("pdf"))
+
+    fun isArchivedOrPdf(uri: String): Boolean {
+        val exts = getSupportedExtensions().toMutableSet()
+        exts.add("pdf")
+        return isContainedInFile(uri, exts)
+    }
+
+    private fun isContainedInFile(uri: String, exts: Set<String>): Boolean {
+        val lowerUri = uri.lowercase(Locale.getDefault())
+        for (ext in exts) {
+            if (lowerUri.contains("." + ext + File.separator)) return true
         }
+        return false
+    }
 
     val isOnline: Boolean
         get() {
