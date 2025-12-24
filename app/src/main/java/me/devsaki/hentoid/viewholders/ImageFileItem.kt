@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.isVisible
 import coil3.dispose
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IExpandable
@@ -107,9 +108,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             updateText(item)
 
             // Checkmark
-            if (item.isSelected) checkedIndicator.visibility =
-                View.VISIBLE else checkedIndicator.visibility =
-                View.GONE
+            checkedIndicator.isVisible = item.isSelected
 
             // Chapter overlay
             if (item.showChapter) {

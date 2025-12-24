@@ -70,7 +70,12 @@ data class LusciousBookMetadata(
         }
 
         content.url = info.url
-        info.created?.let { if (it.isNotEmpty()) content.uploadDate = it.toLong() * 1000 }
+        info.created?.let {
+            if (it.isNotEmpty()) {
+                val integerPart = it.split(".")[0]
+                content.uploadDate = integerPart.toLong() * 1000
+            }
+        }
         content.title = cleanup(info.title)
 
 //        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
