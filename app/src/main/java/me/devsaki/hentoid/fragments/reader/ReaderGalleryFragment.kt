@@ -609,6 +609,7 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
                             }
                     }
                 }
+                return true
             }
 
             else -> {
@@ -653,8 +654,8 @@ class ReaderGalleryFragment : Fragment(R.layout.fragment_reader_gallery), ItemTo
         binding?.apply {
             selectionToolbar.title = resources.getQuantityString(
                 R.plurals.items_selected,
-                selectedCount.toInt(),
-                selectedCount.toInt()
+                selectedCount,
+                selectedCount
             )
         }
     }
