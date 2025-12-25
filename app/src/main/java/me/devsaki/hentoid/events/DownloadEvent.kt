@@ -5,33 +5,28 @@ import me.devsaki.hentoid.database.domains.Content
 /**
  * Tracks downloads events for interested subscribers.
  */
-class DownloadEvent {
+class DownloadEvent(
+    val eventType: Type = Type.EV_NONE, // Event type (see constants EV_XXX above)
 
-    companion object {
-        /**
-         * Use for EV_PREPARATION event
-         *
-         * @param step    step code for the event
-         * @param content Content that is being downloaded; null if inapplicable
-         */
-        fun fromPreparationStep(step: Step, content: Content?): DownloadEvent {
-            return DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, content)
-        }
+    // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
+    val content: Content? = null,
 
-        /**
-         * Use for EV_PAUSE event
-         *
-         * @param motive motive code for the event
-         */
-        fun fromPauseMotive(motive: Motive): DownloadEvent {
-            return DownloadEvent(Type.EV_PAUSED, motive, Step.NONE, 0)
-        }
+    val pagesOK: Int = 0, // Number of pages that have been downloaded successfully for current book
 
-        fun fromPauseMotive(motive: Motive, spaceLeftBytes: Long): DownloadEvent {
-            return DownloadEvent(Type.EV_PAUSED, motive, Step.NONE, spaceLeftBytes)
-        }
-    }
+    val pagesKO: Int = 0, // Number of pages that have been downloaded with errors for current book
 
+    val pagesTotal: Int = 0, // Number of pages to download for current book
+
+    val downloadedSizeB: Long = 0, // Total size of downloaded content (bytes)
+
+    val fileDownloadProgress: Float = -1f, // File download progression, when downloading large files (e.g. archives)
+
+    val motive: Motive = Motive.NONE, // Motive for certain events (EV_PAUSE)
+
+    val step: Step = Step.NONE, // Step for EV_PREPARATION
+
+    val log: String = ""
+) {
     enum class Type {
         EV_NONE,
         EV_PROGRESS,    // Download progress of current book (always one book at a time)
@@ -73,161 +68,54 @@ class DownloadEvent {
         ENCODE_ANIMATION // Specific to Pixiv (ugoira -> animation)
     }
 
-    var eventType = Type.EV_NONE // Event type (see constants EV_XXX above)
+    constructor(eventType: Type) : this(content = null, eventType = eventType)
 
-    // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
-    var content: Content? = null
-
-    var pagesOK = 0 // Number of pages that have been downloaded successfully for current book
-
-    var pagesKO = 0 // Number of pages that have been downloaded with errors for current book
-
-    var pagesTotal = 0 // Number of pages to download for current book
-
-    var downloadedSizeB: Long = 0 // Total size of downloaded content (bytes)
-
-    var motive = Motive.NONE // Motive for certain events (EV_PAUSE)
-
-    var step = Step.NONE // Step for EV_PREPARATION
-
-    var log = ""
-
-    /**
-     * Use for EV_PROGRESS and EV_COMPLETE events
-     *
-     * @param content    progressing or completed content
-     * @param eventType  event type code (among DownloadEvent public static EV_ values)
-     * @param pagesOK    pages downloaded successfully
-     * @param pagesKO    pages downloaded with errors
-     * @param pagesTotal total pages to download
-     */
-    constructor(
-        content: Content,
-        eventType: Type,
-        pagesOK: Int,
-        pagesKO: Int,
-        pagesTotal: Int,
-        downloadedSizeB: Long
-    ) {
-        this.content = content
-        this.eventType = eventType
-        this.pagesOK = pagesOK
-        this.pagesKO = pagesKO
-        this.pagesTotal = pagesTotal
-        this.downloadedSizeB = downloadedSizeB
-        motive = Motive.NONE
-        step = Step.NONE
-    }
-
-    /**
-     * Use for EV_CANCEL events
-     *
-     * @param content   Canceled content
-     * @param eventType event type code (among DownloadEvent public static EV_ values)
-     */
-    constructor(content: Content, eventType: Type) {
-        this.content = content
-        this.eventType = eventType
-        pagesOK = 0
-        pagesKO = 0
-        pagesTotal = 0
-        downloadedSizeB = 0
-        motive = Motive.NONE
-        step = Step.NONE
-    }
-
-    /**
-     * Use for EV_PAUSE event
-     *
-     * @param eventType      event type code (among DownloadEvent public static EV_ values)
-     * @param motive         motive for the event
-     * @param step           step for the event
-     * @param spaceLeftBytes space left on device
-     */
-    constructor(
-        eventType: Type,
-        motive: Motive,
-        step: Step,
-        spaceLeftBytes: Long
-    ) {
-        content = null
-        this.eventType = eventType
-        pagesOK = 0
-        pagesKO = 0
-        pagesTotal = 0
-        downloadedSizeB = spaceLeftBytes
-        this.motive = motive
-        this.step = step
-    }
-
-    /**
-     * Use for EV_PREPARATION event
-     *
-     * @param eventType event type code (among DownloadEvent public static EV_ values)
-     * @param motive    motive for the event
-     * @param step      step for the event
-     * @param content   Content that is being downloaded; null if inapplicable
-     */
-    constructor(
-        eventType: Type,
-        motive: Motive,
-        step: Step,
-        content: Content?
-    ) {
-        this.content = content
-        this.eventType = eventType
-        pagesOK = 0
-        pagesKO = 0
-        pagesTotal = 0
-        downloadedSizeB = 0
-        this.motive = motive
-        this.step = step
-    }
-
-    /**
-     * Use for EV_PAUSE, EV_UNPAUSE and EV_SKIP events
-     *
-     * @param eventType event type code (among DownloadEvent public static EV_ values)
-     */
-    constructor(eventType: Type) {
-        content = null
-        this.eventType = eventType
-        pagesOK = 0
-        pagesKO = 0
-        pagesTotal = 0
-        downloadedSizeB = 0
-        motive = Motive.NONE
-        step = Step.NONE
-    }
-
-    constructor(commandEvent: DownloadCommandEvent) {
-        content = commandEvent.content
+    constructor(commandEvent: DownloadCommandEvent) : this(
+        content = commandEvent.content,
         eventType = fromCommandEventType(commandEvent.type)
-        pagesOK = 0
-        pagesKO = 0
-        pagesTotal = 0
-        downloadedSizeB = 0
-        motive = Motive.NONE
-        step = Step.NONE
-    }
-
-    private fun fromCommandEventType(code: DownloadCommandEvent.Type): Type {
-        return when (code) {
-            DownloadCommandEvent.Type.EV_PAUSE -> Type.EV_PAUSED
-            DownloadCommandEvent.Type.EV_UNPAUSE -> Type.EV_UNPAUSED
-            DownloadCommandEvent.Type.EV_CANCEL -> Type.EV_CANCELED
-            DownloadCommandEvent.Type.EV_SKIP -> Type.EV_SKIPPED
-            DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT -> Type.EV_CONTENT_INTERRUPTED
-            DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE -> Type.EV_NONE // Technical event; no use to inform user
-        }
-    }
+    )
 
     fun getNumberRetries(): Int {
         return content?.numberDownloadRetries ?: 0
     }
 
-    private fun setLog(log: String): DownloadEvent {
-        this.log = log
-        return this
+    companion object {
+        /**
+         * Use for EV_PREPARATION event
+         *
+         * @param step    step code for the event
+         * @param content Content that is being downloaded; null if inapplicable
+         */
+        fun fromPreparationStep(step: Step, content: Content? = null): DownloadEvent {
+            return DownloadEvent(
+                eventType = Type.EV_PREPARATION,
+                step = step,
+                content = content
+            )
+        }
+
+        /**
+         * Use for EV_PAUSE event
+         *
+         * @param motive motive code for the event
+         */
+        fun fromPauseMotive(motive: Motive, spaceLeftBytes: Long = 0): DownloadEvent {
+            return DownloadEvent(
+                eventType = Type.EV_PAUSED,
+                motive = motive,
+                downloadedSizeB = spaceLeftBytes
+            )
+        }
+
+        fun fromCommandEventType(code: DownloadCommandEvent.Type): Type {
+            return when (code) {
+                DownloadCommandEvent.Type.EV_PAUSE -> Type.EV_PAUSED
+                DownloadCommandEvent.Type.EV_UNPAUSE -> Type.EV_UNPAUSED
+                DownloadCommandEvent.Type.EV_CANCEL -> Type.EV_CANCELED
+                DownloadCommandEvent.Type.EV_SKIP -> Type.EV_SKIPPED
+                DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT -> Type.EV_CONTENT_INTERRUPTED
+                DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE -> Type.EV_NONE // Technical event; no use to inform user
+            }
+        }
     }
 }

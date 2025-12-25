@@ -302,12 +302,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("Content is already downloaded. Download aborted.")
             dao.deleteQueue(queueIdx)
             EventBus.getDefault()
-                .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
+                .post(DownloadEvent(content = content, eventType = DownloadEvent.Type.EV_COMPLETE))
             notificationManager.notify(DownloadErrorNotification(content))
             return Pair(QueuingResult.CONTENT_SKIPPED, null)
         }
         EventBus.getDefault()
-            .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
+            .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT))
 
         downloadCanceled.set(false)
         downloadSkipped.set(false)
@@ -449,7 +449,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (hasError) {
             moveToErrors(content.id)
             EventBus.getDefault()
-                .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
+                .post(DownloadEvent(content = content, eventType = DownloadEvent.Type.EV_COMPLETE))
             return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
@@ -827,12 +827,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             EventBus.getDefault().post(
                 DownloadEvent(
-                    content,
-                    DownloadEvent.Type.EV_PROGRESS,
-                    pagesOK,
-                    pagesKO,
-                    totalPages,
-                    downloadedBytes
+                    content = content,
+                    eventType = DownloadEvent.Type.EV_PROGRESS,
+                    pagesOK = pagesOK,
+                    pagesKO = pagesKO,
+                    pagesTotal = totalPages,
+                    downloadedSizeB = downloadedBytes
                 )
             )
 
@@ -1088,12 +1088,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO)
             EventBus.getDefault().post(
                 DownloadEvent(
-                    content,
-                    DownloadEvent.Type.EV_COMPLETE,
-                    pagesOK,
-                    pagesKO,
-                    nbImages,
-                    sizeDownloadedBytes
+                    content = content,
+                    eventType = DownloadEvent.Type.EV_COMPLETE,
+                    pagesOK = pagesOK,
+                    pagesKO = pagesKO,
+                    pagesTotal = nbImages,
+                    downloadedSizeB = sizeDownloadedBytes
                 )
             )
             val context = applicationContext
@@ -1238,7 +1238,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             img.name,
             img.order,
             backupUrlFinal,
-            img
+            img,
+            content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE
         )
     }
 

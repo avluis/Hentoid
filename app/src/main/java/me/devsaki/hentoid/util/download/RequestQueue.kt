@@ -5,12 +5,15 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.enums.Site
+import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HEADER_ACCEPT_KEY
 import me.devsaki.hentoid.util.network.webkitRequestHeadersToOkHttpHeaders
+import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.FileNotFoundException
 import java.util.Queue
@@ -49,6 +52,15 @@ class RequestQueue(
 
         downloadsQueue.add(requestOrder)
         try {
+            val notifyProgress: Consumer<Float>? =
+                if (requestOrder.shouldReportIndividualProgress) { f ->
+                    EventBus.getDefault().post(
+                        DownloadEvent(
+                            eventType = DownloadEvent.Type.EV_PROGRESS,
+                            fileDownloadProgress = f
+                        )
+                    )
+                } else null
             val res = withContext(Dispatchers.IO) {
                 downloadPic(
                     context,
@@ -58,7 +70,8 @@ class RequestQueue(
                     requestOrder.targetDir,
                     requestOrder.fileName,
                     requestOrder.pageIndex,
-                    requestOrder.killSwitch
+                    requestOrder.killSwitch,
+                    notifyProgress
                 )
             }
             handleSuccess(requestOrder, res)
@@ -135,7 +148,8 @@ class RequestQueue(
         targetFolder: Uri,
         targetFileNameNoExt: String,
         pageIndex: Int,
-        killSwitch: AtomicBoolean
+        killSwitch: AtomicBoolean,
+        notifyProgress: Consumer<Float>? = null
     ): Pair<Int, Uri> {
         val requestHeaders =
             webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
@@ -156,7 +170,8 @@ class RequestQueue(
             targetFileNameNoExt,
             killSwitch,
             pageIndex,
-            failFast = false
+            failFast = false,
+            notifyProgress = notifyProgress
         )
         if (null == result) throw ParseException("Resource not available")
 

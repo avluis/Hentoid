@@ -15,7 +15,8 @@ data class RequestOrder(
     val fileName: String,
     val pageIndex: Int,
     val backupUrl: String,
-    val img: ImageFile
+    val img: ImageFile,
+    val shouldReportIndividualProgress: Boolean = false
 ) {
     val killSwitch: AtomicBoolean = AtomicBoolean(false)
     val id: UUID = UUID.randomUUID()
