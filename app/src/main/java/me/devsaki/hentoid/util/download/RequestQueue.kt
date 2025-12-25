@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.core.BiConsumer
 import me.devsaki.hentoid.enums.Site
-import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
 import me.devsaki.hentoid.util.exception.ParseException
@@ -24,6 +23,7 @@ class RequestQueue(
 ) {
     var active: Boolean = false
         private set
+
     private val downloadsQueue: Queue<RequestOrder> = ConcurrentLinkedQueue()
 
     fun start() {
@@ -137,8 +137,6 @@ class RequestQueue(
         pageIndex: Int,
         killSwitch: AtomicBoolean
     ): Pair<Int, Uri> {
-        assertNonUiThread()
-
         val requestHeaders =
             webkitRequestHeadersToOkHttpHeaders(headers, url).toMutableList()
         requestHeaders.add(

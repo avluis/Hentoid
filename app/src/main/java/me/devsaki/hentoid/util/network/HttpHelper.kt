@@ -931,6 +931,8 @@ class UriParts(uri: String, lowercase: Boolean = false) {
     val pathFull: String
         get() = "$path/$fileNameFull"
 
+    constructor(uri: Uri, lowercase: Boolean = false) : this(uri.toString(), lowercase)
+
     init {
         var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri
         val fragmentIndex = uriNoParams.lastIndexOf('#')

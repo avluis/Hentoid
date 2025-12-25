@@ -1235,7 +1235,7 @@ private fun loadAsChapters(
         chapter.setImageFiles(c.imageList.filter { i -> i.isReadable })
         chapter.imageList.forEachIndexed { iidx, img ->
             img.order = chapterOffset + iidx + 1
-            img.computeName(5)
+            img.computeName(chapterOffset + chapter.imageList.size)
             img.setChapter(chapter)
         }
         chapters.add(chapter)

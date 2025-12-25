@@ -1954,7 +1954,6 @@ suspend fun mergeContents(
 
         // Renumber all picture files and dispatch chapters
         val nbImages = contentList.flatMap { it.imageList }.count { it.isReadable }
-        val nbMaxDigits = (floor(log10(nbImages.toDouble())) + 1).toInt()
 
         val mergedImages: MutableList<ImageFile> = ArrayList()
         val mergedChapters: MutableList<Chapter> = ArrayList()
@@ -2055,7 +2054,7 @@ suspend fun mergeContents(
                     newImg.fileUri = "" // Clear initial URI
                     if (newImg.isReadable) {
                         newImg.order = pictureOrder++
-                        newImg.computeName(nbMaxDigits)
+                        newImg.computeName(nbImages)
                     } else {
                         newImg.isCover = true
                         newImg.order = 0

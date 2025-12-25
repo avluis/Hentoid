@@ -353,14 +353,13 @@ abstract class BaseSplitMergeWorker(
         var images: List<ImageFile>? = chapter.imageFiles
         if (images != null) {
             images = chapter.imageList.sortedBy { it.order }
-            val nbMaxDigits = floor(log10(images.size.toDouble()) + 1).toInt()
             for ((position, img) in images.withIndex()) {
                 img.id = 0 // Force working on a new picture
                 img.setChapter(null)
                 img.content.target = null // Clear content
                 img.isCover = (0 == position)
                 img.order = position
-                img.computeName(nbMaxDigits)
+                img.computeName(images.size)
             }
             splitContent.setImageFiles(images)
             splitContent.setChapters(null)
@@ -395,14 +394,12 @@ abstract class BaseSplitMergeWorker(
             chapters.flatMap { it.imageList }.filter { it.isReadable }
         require(orderedImages.isNotEmpty()) { "No images found" }
 
-        // Keep existing formatting
-        val nbMaxDigits = orderedImages.maxOf { it.name.length }
         // Key = source Uri
         // Value = operation
         val operations = HashMap<String, FileOperation>()
         orderedImages.forEachIndexed { index, img ->
             img.order = index + 1
-            img.computeName(nbMaxDigits)
+            img.computeName(orderedImages.size)
 
             val uriParts = UriParts(Uri.decode(img.fileUri))
             val sourceFileName = uriParts.fileNameFull

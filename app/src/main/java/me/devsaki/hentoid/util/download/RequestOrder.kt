@@ -20,6 +20,7 @@ data class RequestOrder(
     val killSwitch: AtomicBoolean = AtomicBoolean(false)
     val id: UUID = UUID.randomUUID()
 
+    @Suppress("unused")
     enum class HttpMethod {
         GET, POST, OPTIONS
     }

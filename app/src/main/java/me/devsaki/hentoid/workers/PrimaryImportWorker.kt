@@ -85,8 +85,6 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.time.Instant
-import kotlin.math.floor
-import kotlin.math.log10
 import kotlin.math.max
 
 
@@ -1042,13 +1040,12 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         var naturalOrder = 0
         var nbRenumbered = 0
         val orderedImages = contentImages.sortedBy { it.order }.filter { it.isReadable }
-        val nbMaxDigits = (floor(log10(orderedImages.size.toDouble())) + 1).toInt()
         for (img in orderedImages) {
             naturalOrder++
             if (img.order != naturalOrder) {
                 nbRenumbered++
                 img.order = naturalOrder
-                img.computeName(nbMaxDigits)
+                img.computeName(orderedImages.size)
                 val file = getDocumentFromTreeUriString(context, img.fileUri)
                 if (file != null) {
                     val extension = getExtension(file.name ?: "")

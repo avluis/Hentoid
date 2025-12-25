@@ -465,6 +465,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDownloadEvent(event: DownloadEvent) {
         Timber.v("Event received : %s.%s", event.eventType, event.step)
@@ -596,8 +597,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPrepDownloadEvent(event: DownloadPreparationEvent) {
+    fun onDownloadPreparationEvent(event: DownloadPreparationEvent) {
         bottomBarBinding?.queueDownloadPreparationProgressBar?.apply {
             if (!isShown && !event.isCompleted() && !isPaused() && !isEmpty()) {
                 visibility = View.VISIBLE
@@ -612,6 +614,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onActivityEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.QUEUE && event.recipient != CommunicationEvent.Recipient.ALL) return
@@ -646,6 +649,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.download_service) return

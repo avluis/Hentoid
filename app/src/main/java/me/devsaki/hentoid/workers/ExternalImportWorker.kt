@@ -58,10 +58,7 @@ import me.devsaki.hentoid.workers.data.ExternalImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
-import java.net.URLDecoder
 import java.time.Instant
-import kotlin.math.floor
-import kotlin.math.log10
 import kotlin.math.roundToInt
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
@@ -509,10 +506,9 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         // Rebuild order
         var idx = 1
-        val nbMaxChars = floor(log10(targetImgs.size.toDouble()) + 1).toInt()
         targetImgs.forEach {
             it.order = if (it.isCover) 0 else idx++
-            it.computeName(nbMaxChars)
+            it.computeName(targetImgs.size)
         }
 
         content.setImageFiles(targetImgs)

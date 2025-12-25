@@ -75,8 +75,8 @@ class DownloadEvent {
 
     var eventType = Type.EV_NONE // Event type (see constants EV_XXX above)
 
-    var content: Content? =
-        null // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
+    // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
+    var content: Content? = null
 
     var pagesOK = 0 // Number of pages that have been downloaded successfully for current book
 

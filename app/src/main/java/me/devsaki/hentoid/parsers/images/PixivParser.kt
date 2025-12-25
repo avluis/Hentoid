@@ -126,7 +126,7 @@ class PixivParser : BaseImageListParser() {
             onlineContent.uniqueSiteId.split("/")
         var seriesId = seriesIdParts[seriesIdParts.size - 1]
         if (seriesId.contains("?")) {
-            seriesId = seriesId.substring(0, seriesId.indexOf("?"))
+            seriesId = seriesId.take(seriesId.indexOf("?"))
         }
 
         // Retrieve the number of Illusts
@@ -197,11 +197,13 @@ class PixivParser : BaseImageListParser() {
             for (img in chapterImages) {
                 img.order = imgOffset++
                 img.setChapter(ch)
-                img.computeName(4)
             }
             result.addAll(chapterImages)
             progressPlus((index + 1f) / extraChapters.size)
-        }
+        } // extraChapters
+
+        result.forEach { it.computeName(result.size) }
+
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
         onlineContent.putAttributes(attrs)
@@ -319,11 +321,13 @@ class PixivParser : BaseImageListParser() {
             for (img in chapterImages) {
                 img.order = imgOffset++
                 img.setChapter(chp)
-                img.computeName(4)
             }
             result.addAll(chapterImages)
             progressPlus((index + 1f) / illustIds.size)
-        }
+        } // IllustIds
+
+        result.forEach { it.computeName(result.size) }
+
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw PreparationInterruptedException()
         onlineContent.putAttributes(attrs)

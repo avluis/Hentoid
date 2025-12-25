@@ -795,7 +795,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                             }
 
                             dao.addContentToQueue(
-                                it, sourceImageStatus, targetImageStatus, position, -1, null,
+                                it, sourceImageStatus, targetImageStatus, position, -1, null,null,
                                 isQueueActive(getApplication())
                             )
 

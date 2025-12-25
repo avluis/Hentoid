@@ -180,8 +180,7 @@ data class ImageFile(
             name: String?
         ) {
             if (name.isNullOrEmpty()) {
-                val nbMaxDigits = (floor(log10(maxPages.toDouble())) + 1).toInt()
-                imgFile.computeName(nbMaxDigits)
+                imgFile.computeName(maxPages)
             } else {
                 imgFile.name = name
             }
@@ -242,7 +241,11 @@ data class ImageFile(
         uniqueHash = 0
     }
 
-    fun computeName(nbMaxDigits: Int): ImageFile {
+    fun computeName(maxPages: Int): ImageFile {
+        return computeNameDigits((floor(log10(maxPages.toDouble()))).toInt() + 1)
+    }
+
+    private fun computeNameDigits(nbMaxDigits: Int): ImageFile {
         name = String.format(Locale.ENGLISH, "%0${nbMaxDigits}d", order)
         return this
     }

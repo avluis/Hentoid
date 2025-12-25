@@ -154,6 +154,7 @@ class DownloadsImportWorker(
                     queuePosition,
                     -1,
                     null,
+                    null,
                     isQueueActive(applicationContext)
                 )
                 nextOK()

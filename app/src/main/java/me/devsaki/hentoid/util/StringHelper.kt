@@ -39,7 +39,7 @@ fun formatIntAsStr(value: Int, length: Int): String {
     var result = value.toString()
 
     if (result.length > length) {
-        result = result.substring(0, length)
+        result = result.take(length)
     } else if (result.length < length) {
         result = String.format("%1$" + length + "s", result).replace(' ', '0')
     }

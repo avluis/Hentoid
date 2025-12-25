@@ -102,8 +102,6 @@ import java.time.Instant
 import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.log10
 
 // Should be higher than the connect + I/O timeout defined in RequestQueueManager
 private const val IDLE_THRESHOLD_S = 20 // Seconds
@@ -646,7 +644,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             result.forEachIndexed { idx, img ->
                 img.order = idx + 1
                 if (img.isReadable) {
-                    img.computeName(floor(log10(result.size.toDouble()) + 1).toInt())
+                    img.computeName(result.size)
                 } else if (img.isCover) {
                     img.status = StatusContent.SAVED
                     if (0 == coverIndex++) {
@@ -1248,7 +1246,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val img = request.img
         img.size = fileSizeFromUri(applicationContext, fileUri)
         updateImageProperties(img, true, fileUri.toString())
-        dlManager.processDownloadedFile(applicationContext, request.img.isCover && !request.img.isReadable, fileUri)
+        dlManager.processDownloadedFile(
+            applicationContext,
+            request.img.isCover && !request.img.isReadable,
+            fileUri
+        )
     }
 
     private fun onRequestError(request: RequestOrder, error: NetworkError) {

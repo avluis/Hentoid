@@ -25,8 +25,6 @@ import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
-import kotlin.math.floor
-import kotlin.math.log10
 
 private val SQUARE_BRACKETS by lazy { Pattern.compile("\\[[^]]*\\]") }
 
@@ -249,8 +247,7 @@ fun urlToImageFile(
     chapter: Chapter? = null
 ): ImageFile {
     val result = ImageFile(dbOrder = order, dbUrl = imgUrl, status = status)
-    val nbMaxDigits = (floor(log10(totalBookPages.toDouble())) + 1).toInt()
-    result.computeName(nbMaxDigits)
+    result.computeName(totalBookPages)
     if (chapter != null) result.setChapter(chapter)
     return result
 }

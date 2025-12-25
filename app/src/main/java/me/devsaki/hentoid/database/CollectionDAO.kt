@@ -268,6 +268,7 @@ interface CollectionDAO {
         position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
+        archiveUrl : String?,
         isQueueActive: Boolean
     )
 

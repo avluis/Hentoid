@@ -808,6 +808,7 @@ object Settings {
         const val DL_ACTION_STREAM = 1
         const val DL_ACTION_ASK = 2
         const val DL_ACTION_DL_ARCHIVE_PAGES = 3
+        const val DL_ACTION_DL_ARCHIVE_FILE = 4
 
         const val QUEUE_NEW_DOWNLOADS_POSITION_TOP = 0
         const val QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM = 1

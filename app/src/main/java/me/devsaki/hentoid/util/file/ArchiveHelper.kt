@@ -39,7 +39,10 @@ import java.util.zip.ZipOutputStream
  * Archive / unarchive helper for formats supported by 7Z
  */
 const val MIME_TYPE_ZIP = "application/zip"
+const val MIME_TYPE_RAR = "application/x-rar-compressed"
+const val MIME_TYPE_7Z = "application/x-7z-compressed"
 const val MIME_TYPE_CBZ = "application/x-cbz"
+const val MIME_TYPE_CBR = "application/x-cbr"
 
 private val SUPPORTED_EXTENSIONS = setOf("zip", "epub", "cbz", "cbr", "cb7", "7z", "rar")
 
@@ -97,6 +100,21 @@ private fun isArchiveExtensionSupported(extension: String): Boolean {
  */
 fun isSupportedArchive(fileName: String): Boolean {
     return isArchiveExtensionSupported(getExtension(fileName))
+}
+
+/**
+ * Determine if the given image MIME type is supported by the app
+ *
+ * @param mimeType MIME type to test
+ * @return True if the app supports the reading of archives with the given MIME type; false if not
+ */
+fun isMimeTypeSupported(mimeType: String): Boolean {
+    return (mimeType.equals(MIME_TYPE_ZIP, ignoreCase = true)
+            || mimeType.equals(MIME_TYPE_RAR, ignoreCase = true)
+            || mimeType.equals(MIME_TYPE_7Z, ignoreCase = true)
+            || mimeType.equals(MIME_TYPE_CBZ, ignoreCase = true)
+            || mimeType.equals(MIME_TYPE_CBR, ignoreCase = true)
+            )
 }
 
 /**

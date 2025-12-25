@@ -12,8 +12,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
-import androidx.lifecycle.findViewTreeLifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +35,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.getAssetAsString
+import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.getRandomInt
@@ -48,6 +47,7 @@ import me.devsaki.hentoid.util.isPresentAsWord
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.cleanContentType
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getChromeVersion
@@ -155,7 +155,7 @@ open class CustomWebViewClient : WebViewClient {
     // Communication between XHR intercept and POST rewrite
     //   Key : URL
     //   Value : POST Body
-    private val postQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
+    private val xhrPostQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
 
 
     companion object {
@@ -370,7 +370,7 @@ open class CustomWebViewClient : WebViewClient {
      * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
      */
     private fun canUseSingleOkHttpRequest(): Boolean {
-        return (Settings.isBrowserAugmented(site) && (getChromeVersion() < 45 || getChromeVersion() > 71))
+        return (Settings.isBrowserAugmented(site) && (getChromeVersion() !in 45..71))
     }
 
     override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
@@ -392,7 +392,7 @@ open class CustomWebViewClient : WebViewClient {
         // NB : Opening the URL itself won't work when the tracker is private
         // as the 3rd party torrent app doesn't have access to it
         if (getExtensionFromUri(url) == "torrent") {
-            view.findViewTreeLifecycleOwner()?.lifecycleScope?.launch {
+            scope.launch {
                 try {
                     val uri = withContext(Dispatchers.IO) {
                         downloadFile(view.context, url, headers)
@@ -404,6 +404,11 @@ open class CustomWebViewClient : WebViewClient {
                 }
             }
         }
+
+        // Queue archives as archive direct downloads
+        if (isSupportedArchive(UriParts(url).fileNameFull) && isMainPage)
+            activity?.downloadContentArchive(url)
+
         val host = url.toUri().host
         return host != null && isHostNotInRestrictedDomains(host)
     }
@@ -480,7 +485,7 @@ open class CustomWebViewClient : WebViewClient {
             Timber.v("[$url] ignored by interceptor; method = ${request.method}")
             var postBody = ""
             // Try to retrieve POST body from previously intercepted XHR
-            postQueue[url]?.let { queue ->
+            xhrPostQueue[url]?.let { queue ->
                 queue.poll()?.let { body ->
                     postBody = body
                 }
@@ -600,10 +605,10 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun recordDynamicPostRequests(url: String, body: String) {
-        val queue = if (postQueue.contains(url)) postQueue[url]
+        val queue = if (xhrPostQueue.contains(url)) xhrPostQueue[url]
         else {
             val q = ConcurrentLinkedQueue<String>()
-            postQueue[url] = q
+            xhrPostQueue[url] = q
             q
         }
         queue?.add(body)
@@ -1090,7 +1095,17 @@ open class CustomWebViewClient : WebViewClient {
 
     interface BrowserActivity : WebResultConsumer {
         // ACTIONS
+
+        /**
+         * Load the given URL on the browser
+         */
         fun loadUrl(url: String)
+
+        /**
+         * Download the given archive URL as a Content
+         */
+        fun downloadContentArchive(url: String)
+
 
         // CALLBACKS
         fun onPageStarted(

@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.ObjectBoxRandomDataSource.RandomDataSourceFac
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -1117,6 +1118,7 @@ class ObjectBoxDAO : CollectionDAO {
         position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
+        archiveUrl: String?,
         isQueueActive: Boolean
     ) {
         if (targetImageStatus != null) ObjectBoxDB.updateImageContentStatus(
@@ -1128,6 +1130,16 @@ class ObjectBoxDAO : CollectionDAO {
         content.isBeingProcessed = false // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId)
         content.replacementTitle = replacementTitle ?: ""
+
+        // Archive download - Replace all images by the archive to download
+        archiveUrl?.let {
+            val imgs = listOf(ImageFile.fromImageUrl(0, it, StatusContent.SAVED, 9999))
+            replaceImageList(content.id, imgs)
+            content.setImageFiles(imgs)
+            content.downloadMode = DownloadMode.DOWNLOAD_ARCHIVE_FILE
+            content.qtyPages = 1
+        }
+
         insertContent(content)
         if (!ObjectBoxDB.isContentInQueue(content)) {
             val targetPosition: Int =

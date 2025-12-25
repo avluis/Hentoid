@@ -192,7 +192,7 @@ class MangagoParser : BaseChapteredImageListParser() {
             fileUri = fileUri.toString()
         )
         Timber.v("%d IMG result : %s", order, pageUrl)
-        img.computeName(5)
+        img.computeName(11111)
         img.setChapter(chp)
         // Enrich physical properties
         getFileFromSingleUri(context, fileUri)?.let {

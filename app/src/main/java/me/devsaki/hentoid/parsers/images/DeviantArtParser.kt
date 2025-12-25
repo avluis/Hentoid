@@ -12,8 +12,6 @@ import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getOnlineDocument
 import org.jsoup.nodes.Element
 import timber.log.Timber
-import kotlin.math.floor
-import kotlin.math.log10
 
 class DeviantArtParser : BaseImageListParser() {
     companion object {
@@ -126,7 +124,7 @@ class DeviantArtParser : BaseImageListParser() {
             result.forEach { imageFile ->
                 if (!imageFile.isCover) {
                     imageFile.order = idx++
-                    imageFile.computeName(floor(log10(result.size.toDouble()) + 1).toInt())
+                    imageFile.computeName(result.size)
                 }
             }
 

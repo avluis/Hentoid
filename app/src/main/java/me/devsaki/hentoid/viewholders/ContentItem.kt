@@ -216,7 +216,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 if (content.getBookSizeEstimate() > 0 && tvPages != null && View.VISIBLE == tvPages.visibility) {
                     var pagesText = tvPages.text.toString()
                     val separator = pagesText.indexOf(";")
-                    if (separator > -1) pagesText = pagesText.substring(0, separator)
+                    if (separator > -1) pagesText = pagesText.take(separator)
                     pagesText = "$pagesText; " + pb.context.resources.getString(
                         R.string.queue_content_size_estimate,
                         content.getBookSizeEstimate() / (1024 * 1024)

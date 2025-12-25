@@ -926,6 +926,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         webView.loadUrl(url)
     }
 
+    override fun downloadContentArchive(url: String) {
+        currentContent?.let { processDownload(it, archiveUrl = url) }
+    }
+
     override fun updateBookmarkButton(newValue: Boolean) {
         if (newValue) bookmarkMenu?.setIcon(R.drawable.ic_bookmark_full)
         else bookmarkMenu?.setIcon(R.drawable.ic_bookmark)
@@ -953,12 +957,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                     currentContent!!.qtyPages,
                     duplicateSimilarity,
                     false
-                ) else processDownload(
-                    theContent,
-                    quickDownload = false,
-                    isDownloadPlus = false,
-                    isReplaceDuplicate = false
-                )
+                ) else processDownload(theContent)
             }
 
             ActionMode.DOWNLOAD_PLUS -> {
@@ -968,12 +967,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                     currentContent!!.qtyPages,
                     duplicateSimilarity,
                     true
-                ) else processDownload(
-                    theContent,
-                    quickDownload = false,
-                    isDownloadPlus = true,
-                    isReplaceDuplicate = false
-                )
+                ) else processDownload(theContent, isDownloadPlus = true)
             }
 
             ActionMode.VIEW_QUEUE -> goToQueue()
@@ -1067,16 +1061,17 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * (which means we're not on a book gallery page but on the book list page)
      * @param isDownloadPlus     True if the action has been triggered by a "download extra pages" action
      * @param isReplaceDuplicate True if the action has been triggered by a "download and replace existing duplicate book" action
+     * @param archiveUrl         Not null if the current content should be downloaded as an archive with the given Url
      */
     fun processDownload(
-        content: Content?,
-        quickDownload: Boolean,
-        isDownloadPlus: Boolean,
-        isReplaceDuplicate: Boolean
+        content: Content,
+        quickDownload: Boolean = false,
+        isDownloadPlus: Boolean = false,
+        isReplaceDuplicate: Boolean = false,
+        archiveUrl: String? = null
     ) {
         val dao: CollectionDAO = ObjectBoxDAO()
-        var theContent =
-            if (content != null && content.id > 0) dao.selectContent(content.id) else currentContent!!
+        var theContent = if (content.id > 0) dao.selectContent(content.id) else currentContent
         if (null == theContent) return
         if (!isDownloadPlus && StatusContent.DOWNLOADED == theContent.status) {
             toast(R.string.already_downloaded)
@@ -1176,7 +1171,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             if (0 == position1) QueuePosition.TOP else QueuePosition.BOTTOM,
                             DownloadMode.fromValue(item.tag as Int),
                             isReplaceDuplicate,
-                            replacementTitleFinal
+                            replacementTitleFinal,
+                            archiveUrl
                         )
                     }, null
                 )
@@ -1188,7 +1184,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                     if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
                     Settings.getBrowserDlAction(),
                     isReplaceDuplicate,
-                    replacementTitleFinal
+                    replacementTitleFinal,
+                    archiveUrl
                 )
             }
         } else if (Settings.getBrowserDlAction() == DownloadMode.ASK) {
@@ -1199,7 +1196,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                         QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                         DownloadMode.fromValue(item.tag as Int),
                         isReplaceDuplicate,
-                        replacementTitleFinal
+                        replacementTitleFinal,
+                        archiveUrl
                     )
                 }, null
             )
@@ -1209,25 +1207,29 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 QueuePosition.entries.first { it.value == Settings.queueNewDownloadPosition },
                 Settings.getBrowserDlAction(),
                 isReplaceDuplicate,
-                replacementTitleFinal
+                replacementTitleFinal,
+                archiveUrl
             )
         }
         dao.cleanup()
     }
 
     /**
-     * Add current content to the downloads queue
-     *
+     * Add the given content to the downloads queue
+     * @param content            Content to add to the queue
      * @param position           Target position in the queue (top or bottom)
      * @param downloadMode       Download mode for this content
      * @param isReplaceDuplicate True if existing duplicate book has to be replaced upon download completion
+     * @param replacementTitle   Replacement title to apply to the new download
+     * @param archiveUrl         Not null if the current content should be downloaded as an archive with the given Url
      */
     private fun addToQueue(
         content: Content,
         position: QueuePosition,
         downloadMode: DownloadMode,
         isReplaceDuplicate: Boolean,
-        replacementTitle: String?
+        replacementTitle: String? = null,
+        archiveUrl: String? = null
     ) {
         Timber.i("Adding to queue  ${content.url} ${content.galleryUrl}")
         binding?.apply {
@@ -1263,6 +1265,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 position,
                 if (isReplaceDuplicate) duplicateId else -1,
                 replacementTitle,
+                archiveUrl,
                 isQueueActive(this)
             )
         } finally {
@@ -1297,6 +1300,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * Display webview controls according to designated content
      *
      * @param onlineContent Currently displayed content
+     * @param quickDownload True if the action has been triggered by a quick download (long tap)
+     *
      * @return The status of the Content after being processed
      */
     private suspend fun processContent(
@@ -1429,12 +1434,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                         content.qtyPages,
                         duplicateSimilarity,
                         false
-                    ) else processDownload(
-                        content,
-                        quickDownload = true,
-                        isDownloadPlus = false,
-                        isReplaceDuplicate = false
-                    )
+                    ) else processDownload(content, quickDownload = true)
                 } else lifecycleScope.launch { setActionMode(ActionMode.DOWNLOAD) }
             }
 
@@ -1683,6 +1683,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      *
      * @param event Event fired by the download engine
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDownloadEvent(event: DownloadEvent) {
         if (event.eventType === DownloadEvent.Type.EV_COMPLETE) {
@@ -1710,9 +1711,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         currentContent?.let { cc ->
             processDownload(
                 cc,
-                false,
-                actionMode == DuplicateDialogFragment.ActionMode.DOWNLOAD_PLUS,
-                actionMode == DuplicateDialogFragment.ActionMode.REPLACE
+                isDownloadPlus = actionMode == DuplicateDialogFragment.ActionMode.DOWNLOAD_PLUS,
+                isReplaceDuplicate = actionMode == DuplicateDialogFragment.ActionMode.REPLACE
             )
         }
     }

@@ -880,6 +880,8 @@ fun getMimeTypeFromPicData(
         if (contentType.contains("text/")) {
             val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
             throw UnsupportedContentException("Message received from $url : $message")
+        } else if (me.devsaki.hentoid.util.file.isMimeTypeSupported(contentType)) {
+            return contentType
         }
         throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
     }

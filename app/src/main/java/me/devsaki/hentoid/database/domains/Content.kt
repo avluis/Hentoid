@@ -67,8 +67,9 @@ import java.util.Objects
 import kotlin.math.max
 
 enum class DownloadMode(val value: Int) {
-    DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images
-    DOWNLOAD_ARCHIVE(Settings.Value.DL_ACTION_DL_ARCHIVE_PAGES), // Download images
+    DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images to a folder
+    DOWNLOAD_ARCHIVE(Settings.Value.DL_ACTION_DL_ARCHIVE_PAGES), // Download images to an archive
+    DOWNLOAD_ARCHIVE_FILE(Settings.Value.DL_ACTION_DL_ARCHIVE_FILE), // Download a single archive file
     STREAM(Settings.Value.DL_ACTION_STREAM), // Saves the book for on-demand viewing
     ASK(Settings.Value.DL_ACTION_ASK); // Saves the book for on-demand viewing)
 
