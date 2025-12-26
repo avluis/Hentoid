@@ -6,6 +6,7 @@ import me.devsaki.hentoid.json.sources.pixiv.PixivIllustMetadata
 import me.devsaki.hentoid.json.sources.pixiv.PixivIllustPagesMetadata
 import me.devsaki.hentoid.json.sources.pixiv.PixivSeriesIllustMetadata
 import me.devsaki.hentoid.json.sources.pixiv.PixivSeriesMetadata
+import me.devsaki.hentoid.json.sources.pixiv.PixivUserBookmarksMetadata
 import me.devsaki.hentoid.json.sources.pixiv.PixivUserIllustMetadata
 import me.devsaki.hentoid.json.sources.pixiv.PixivUserMetadata
 import me.devsaki.hentoid.util.network.OkHttpClientManager
@@ -92,5 +93,13 @@ object PixivServer {
             @Header("accept") accept: String,
             @Header("user-agent") userAgent: String
         ): Call<PixivUserMetadata>
+
+        @GET("touch/ajax/user/bookmarks")
+        fun getUserBookmarks(
+            @Query("id") id: String,
+            @Header("cookie") cookies: String,
+            @Header("accept") accept: String,
+            @Header("user-agent") userAgent: String
+        ): Call<PixivUserBookmarksMetadata>
     }
 }

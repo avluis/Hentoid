@@ -71,6 +71,12 @@ class PixivParser : BaseImageListParser() {
                 cookieStr,
                 ACCEPT_ALL,
                 userAgent
+            ) else if (onlineContent.url.contains("/bookmarks/")) return parseBookmarks(
+                onlineContent,
+                storedContent,
+                cookieStr,
+                ACCEPT_ALL,
+                userAgent
             ) else if (onlineContent.url.contains("/artworks/")) return parseIllust(
                 onlineContent,
                 cookieStr,
@@ -296,6 +302,133 @@ class PixivParser : BaseImageListParser() {
             require(illustResp.code() < 400) {
                 String.format(
                     "Unreachable illust : code=%s (%s) [%d - %d]",
+                    illustResp.code(),
+                    illustResp.message(),
+                    index,
+                    waited
+                )
+            }
+            val illustMetadata = illustResp.body()
+            if (null == illustMetadata || illustMetadata.error) {
+                val message: String? =
+                    if (illustMetadata != null) illustMetadata.message else "no metadata"
+                throw IllegalArgumentException(String.format("Unreachable illust : %s", message))
+            }
+            val chapterAttrs = illustMetadata.getAttributes()
+            attrs.addAll(chapterAttrs)
+            val chp = Chapter(
+                order = chpOffset++,
+                url = illustMetadata.getUrl(),
+                name = illustMetadata.getTitle(),
+                uniqueId = illustMetadata.getId()
+            )
+            chp.setContentId(onlineContent.id)
+            val chapterImages = illustMetadata.getImageFiles()
+            for (img in chapterImages) {
+                img.order = imgOffset++
+                img.setChapter(chp)
+            }
+            result.addAll(chapterImages)
+            progressPlus((index + 1f) / illustIds.size)
+        } // IllustIds
+
+        result.forEach { it.computeName(result.size) }
+
+        // If the process has been halted manually, the result is incomplete and should not be returned as is
+        if (processHalted.get()) throw PreparationInterruptedException()
+        onlineContent.putAttributes(attrs)
+        onlineContent.putAttributes(attrs)
+        progressComplete()
+        return result
+    }
+
+    // TODO refactor that part as it is 80% similar as parseUser
+    @Throws(Exception::class)
+    private fun parseBookmarks(
+        onlineContent: Content,
+        storedContent: Content?,
+        cookieStr: String,
+        acceptAll: String,
+        userAgent: String
+    ): List<ImageFile> {
+        val userIdParts =
+            onlineContent.uniqueSiteId.split("/")
+        var userId = userIdParts[userIdParts.size - 1]
+        if (userId.contains("?")) {
+            userId = userId.take(userId.indexOf("?"))
+        }
+
+        // Retrieve the list of bookmarks (=chapters)
+        var waited = 0
+        take()
+        var bookmarksResp =
+            PixivServer.api.getUserBookmarks(userId, cookieStr, acceptAll, userAgent).execute()
+        if (waitBlocking429(
+                bookmarksResp,
+                Settings.http429DefaultDelaySecs * 1000
+            )
+        ) {
+            waited++
+            bookmarksResp =
+                PixivServer.api.getUserBookmarks(userId, cookieStr, acceptAll, userAgent).execute()
+        }
+        require(bookmarksResp.code() < 400) {
+            String.format(
+                "Unreachable bookmarks : code=%s (%s) [%d]",
+                bookmarksResp.code(),
+                bookmarksResp.message(),
+                waited
+            )
+        }
+
+        val bookmarksMetadata = bookmarksResp.body()
+        if (null == bookmarksMetadata || bookmarksMetadata.isError()) {
+            var message: String? = "Unreachable bookmarks"
+            if (bookmarksMetadata != null) message = bookmarksMetadata.getMessage()
+            throw IllegalArgumentException(message)
+        }
+
+        // Detect extra chapters
+        var illustIds = bookmarksMetadata.getIllustIds()
+        var storedChapters: List<Chapter>? = null
+        if (storedContent != null) {
+            storedChapters = storedContent.chapters
+            storedChapters = storedChapters.toMutableList()
+        }
+        if (null == storedChapters) storedChapters = emptyList()
+        else illustIds = getExtraChaptersbyId(storedChapters, illustIds)
+
+        // Work on detected extra chapters
+        progressStart(onlineContent, storedContent)
+
+        // Start numbering extra images & chapters right after the last position of stored and chaptered images & chapters
+        var imgOffset = getMaxImageOrder(storedChapters) + 1
+        var chpOffset = getMaxChapterOrder(storedChapters) + 1
+
+        // Cycle through all Illusts
+        val result: MutableList<ImageFile> = ArrayList()
+        result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
+        val attrs: MutableSet<Attribute> = HashSet()
+        illustIds.forEachIndexed { index, illustId ->
+            waited = 0
+            take()
+            if (processHalted.get()) return@forEachIndexed
+            var illustResp =
+                PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
+                    .execute()
+            while (waitBlocking429(
+                    illustResp,
+                    Settings.http429DefaultDelaySecs * 1000
+                ) && waited < 2
+            ) {
+                waited++
+                illustResp =
+                    PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
+                        .execute()
+            }
+            require(illustResp.code() < 400) {
+                String.format(
+                    "Unreachable illust $illustId : code=%s (%s) [%d - %d]",
                     illustResp.code(),
                     illustResp.message(),
                     index,

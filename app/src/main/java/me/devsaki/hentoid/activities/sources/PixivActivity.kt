@@ -27,9 +27,11 @@ class PixivActivity : BaseBrowserActivity() {
             "pixiv.net/touch/ajax/illust/details\\?",  // Illustrations page (single gallery) / load using fetch call
             "pixiv.net/touch/ajax/illust/series_content/",  // Manga/series page (anthology) / load using fetch call
             "pixiv.net/touch/ajax/user/details\\?",  // User page / load using fetch call
+            "pixiv.net/touch/ajax/user/bookmarks",  // Bookmarks page / load using fetch call
             "pixiv.net/[\\w\\-]+/artworks/[0-9]+$",  // Illustrations page (single gallery)
             "pixiv.net/user/[0-9]+/series/[0-9]+$",  // Manga/series page (anthology)
-            "pixiv.net/users/[0-9]+$" // User page
+            "pixiv.net/users/[0-9]+$", // User page
+            "pixiv.net/users/[0-9]+/bookmarks/" // Bookmarks page
         )
         private val BLOCKED_CONTENT = arrayOf("ads-pixiv.net")
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
