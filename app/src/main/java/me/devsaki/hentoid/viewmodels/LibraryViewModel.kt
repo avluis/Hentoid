@@ -774,7 +774,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 if (!isDownloadable) msg += " (pages unreachable)"
                                 Timber.d(msg)
                                 // Reparse content itself
-                                res = reparseFromScratch(c, reparseImages)
+                                res = reparseFromScratch(c, keepUris = !reparseImages, updateImages = reparseImages)
                             }
                         }
 

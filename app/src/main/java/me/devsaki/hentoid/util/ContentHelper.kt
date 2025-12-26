@@ -121,8 +121,6 @@ import java.time.Instant
 import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.log10
 
 
 // == Used for queue management
@@ -1299,10 +1297,16 @@ fun getBlockedTags(id: Long, dao: CollectionDAO): List<String> {
  */
 suspend fun reparseFromScratch(
     content: Content,
-    keepUris: Boolean = false
+    keepUris: Boolean = false,
+    updateImages: Boolean = true
 ): Content? = withContext(Dispatchers.IO) {
     try {
-        return@withContext reparseFromScratch(content.galleryUrl, content, keepUris)
+        return@withContext reparseFromScratch(
+            content.galleryUrl,
+            content,
+            keepUris = keepUris,
+            updateImages = updateImages
+        )
     } catch (e: IOException) {
         Timber.w(e)
     } catch (e: CloudflareProtectedException) {
@@ -1320,7 +1324,7 @@ suspend fun reparseFromScratch(
  */
 @Throws(IOException::class, CloudflareProtectedException::class)
 suspend fun parseFromScratch(url: String): Content? {
-    return reparseFromScratch(url, null)
+    return reparseFromScratch(url)
 }
 
 /**
@@ -1335,8 +1339,9 @@ suspend fun parseFromScratch(url: String): Content? {
 @Throws(IOException::class, CloudflareProtectedException::class)
 private suspend fun reparseFromScratch(
     url: String,
-    content: Content?,
-    keepUris: Boolean = false
+    content: Content? = null,
+    keepUris: Boolean = false,
+    updateImages: Boolean = true
 ): Content? = withContext(Dispatchers.IO) {
     val urlToLoad: String
     val site: Site?
@@ -1359,7 +1364,7 @@ private suspend fun reparseFromScratch(
         val contentParser =
             htmlAdapter.fromInputStream(body.byteStream(), URL(urlToLoad))
         val newContent = if (null == content) contentParser.toContent(urlToLoad)
-        else contentParser.update(content, urlToLoad, true)
+        else contentParser.update(content, urlToLoad, updateImages)
 
         if (!keepUris) {
             newContent.jsonUri = ""
@@ -1371,12 +1376,12 @@ private suspend fun reparseFromScratch(
             val canonicalUrl = contentParser.canonicalUrl
             return@withContext if (canonicalUrl.isNotEmpty()
                 && !canonicalUrl.equals(urlToLoad, ignoreCase = true)
-            ) reparseFromScratch(canonicalUrl, content)
+            ) reparseFromScratch(canonicalUrl, content, keepUris, updateImages)
             else null
         }
 
         // Clear existing chapters to avoid issues with extra chapter detection
-        newContent.clearChapters()
+        if (updateImages) newContent.clearChapters()
 
         // Save cookies for future calls during download
         val params: MutableMap<String, String> = HashMap()

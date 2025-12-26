@@ -1595,7 +1595,8 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val c = reparseFromScratch(theContent, true) ?: throw EmptyResultException()
+                    val c = reparseFromScratch(theContent, true, updateImages = true)
+                        ?: throw EmptyResultException()
                     dao.addContentToQueue(
                         c,
                         null,
