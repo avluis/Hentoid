@@ -143,8 +143,12 @@ class NhentaiParser : BaseImageListParser() {
             progressComplete()
 
             // Renumber all pages
+            var foundCover = false
             result.forEachIndexed { i, p ->
-                p.order = if (p.isCover && !p.isReadable) 0 else i + 1
+                p.order = if (p.isCover && !p.isReadable && !foundCover) {
+                    foundCover = true
+                    0
+                } else i + 1
                 p.computeName(result.size)
             }
         } finally {
