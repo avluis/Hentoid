@@ -91,6 +91,8 @@ class NhentaiParser : BaseImageListParser() {
         val headers = fetchHeaders(onlineContent)
         Timber.d("Gallery URL: $FAV_URL")
         EventBus.getDefault().register(this)
+
+        val chapters: MutableList<Chapter> = ArrayList()
         val result: MutableList<ImageFile> = ArrayList()
         try {
             val doc = getOnlineDocument(
@@ -134,6 +136,7 @@ class NhentaiParser : BaseImageListParser() {
                         if (processHalted.get()) return@forEachIndexed
                         val gUrl = Content.getGalleryUrlFromId(Site.NHENTAI, b.first)
                         val chap = Chapter((25 * (i - 1)) + idx + 1, gUrl, b.second)
+                        chapters.add(chap)
                         val imgs = parseGallery(gUrl, chap)
                         result.addAll(imgs)
                     }
@@ -151,6 +154,8 @@ class NhentaiParser : BaseImageListParser() {
                 } else i + 1
                 p.computeName(result.size)
             }
+
+            onlineContent.setChapters(chapters)
         } finally {
             EventBus.getDefault().unregister(this)
         }
