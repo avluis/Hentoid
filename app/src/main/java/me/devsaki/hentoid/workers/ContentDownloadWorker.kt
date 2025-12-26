@@ -63,14 +63,11 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.fetchImageURLs
 import me.devsaki.hentoid.util.file.MIME_TYPE_ZIP
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
-import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntries
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
 import me.devsaki.hentoid.util.getContainingFolder
-import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
 import me.devsaki.hentoid.util.image.assembleGif
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.moveContentToCustomGroup
@@ -570,14 +567,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
                 GlobalScope.launch(Dispatchers.IO) {
-                    EventBus.getDefault().post(
-                        DownloadEvent.fromPreparationStep(
-                            DownloadEvent.Step.ENCODE_ANIMATION,
-                            content
-                        )
-                    )
                     ugoirasToDownload.forEach {
-                        downloadAndUnzipUgoira(it, downloadFolder, content.site)
+                        downloadAndUnzipUgoira(content, it, downloadFolder, content.site)
                     }
                 }
             }
@@ -1356,13 +1347,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * Download and unzip the given Ugoira to the given folder as an animated GIF file
      * NB : Ugoiuras are Pixiv's own animated pictures
      *
-     * @param img  Link to the Ugoira file
-     * @param targetUri  Folder to save the picture to
-     * @param site Correponding site
+     * @param img             Link to the Ugoira file
+     * @param site            Correponding site
      */
     private suspend fun downloadAndUnzipUgoira(
+        content: Content,
         img: ImageFile,
-        targetUri: Uri,
+        downloadFolder: Uri,
         site: Site
     ) {
         var isError = false
@@ -1389,7 +1380,16 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 targetFileName,
                 downloadInterrupted,
                 img.order,
-                MIME_TYPE_ZIP
+                MIME_TYPE_ZIP,
+                notifyProgress = { f ->
+                    EventBus.getDefault().post(
+                        DownloadEvent(
+                            content = content,
+                            eventType = DownloadEvent.Type.EV_PROGRESS,
+                            fileDownloadProgress = f
+                        )
+                    )
+                }
             )
 
             val targetFileUri = result
@@ -1426,41 +1426,30 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
+            EventBus.getDefault().post(
+                DownloadEvent.fromPreparationStep(
+                    DownloadEvent.Step.ENCODE_ANIMATION,
+                    content
+                )
+            )
+
             // Assemble the GIF
             val ugoiraGifFile = assembleGif(
                 applicationContext,
-                ugoiraCacheFolder,
+                downloadFolder,
+                img.name,
                 frames,
                 downloadInterrupted
             ) ?: throw IOException("Couldn't assemble ugoira file")
 
-            // Save it to the book folder
-            val targetFolder = getDocumentFromTreeUri(
-                applicationContext, targetUri
-            ) ?: throw IOException("Couldn't reach target folder")
+            img.size = fileSizeFromUri(applicationContext, ugoiraGifFile)
+            updateImageProperties(img, true, ugoiraGifFile.toString())
 
-            val finalImgUri = copyFile(
-                applicationContext,
-                ugoiraGifFile,
-                targetFolder,
-                MIME_IMAGE_GIF,
-                img.name + ".gif"
-            ) ?: throw IOException("Couldn't copy result ugoira file")
-
-            img.size = fileSizeFromUri(
-                applicationContext,
-                ugoiraGifFile
-            )
-            updateImageProperties(img, true, finalImgUri.toString())
+            dlManager.processDownloadedFile(applicationContext, false, ugoiraGifFile)
         } catch (e: Exception) {
             Timber.w(e)
             isError = true
             errorMsg = e.message ?: ""
-        } finally {
-            if (!ugoiraCacheFolder.delete()) Timber.w(
-                "Couldn't delete ugoira folder %s",
-                ugoiraCacheFolder.absolutePath
-            )
         }
         if (isError) {
             updateImageProperties(img, false, "")

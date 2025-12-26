@@ -20,17 +20,18 @@ import androidx.documentfile.provider.DocumentFile
 import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.io.files.Path
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.findSequencePosition
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.network.getExtensionFromUri
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -379,7 +380,8 @@ fun decodeSampledBitmapFromStream(
 @Throws(IOException::class, IllegalArgumentException::class)
 fun assembleGif(
     context: Context,
-    folder: File,  // GIF encoder only work with paths...
+    folder: Uri,
+    name: String,
     frames: List<Pair<Uri, Int>>,
     killSwitch: AtomicBoolean
 ): Uri? {
@@ -395,41 +397,42 @@ fun assembleGif(
     val options = BitmapFactory.Options()
     options.inPreferredConfig = Bitmap.Config.ARGB_8888
 
-    val tempFile = File(folder, "tmp.gif")
-    val path = tempFile.absolutePath
-    val gifEncoderBuilder = GifEncoder.builder(Path(path))
-    gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
+    val tempFile = createFile(context, folder, "$name.gif", MIME_IMAGE_GIF)
+    getOutputStream(context, tempFile)?.use { out ->
+        val gifEncoderBuilder = GifEncoder.builder(out)
+        gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
 
-    val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
-        Timber.d("framesWritten=$framesWritten writtenDuration=$writtenDuration")
-    }
-    gifEncoder.use {
-        frames.forEachIndexed { idx, frame ->
-            if (killSwitch.get()) return@forEachIndexed
-            Timber.d("encoding frame $idx [duration ${frame.second} ms]")
-            getInputStream(context, frame.first).use { input ->
-                BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
-                    bmp.getPixels(buffer, 0, dims.x, 0, 0, dims.x, dims.y)
-                    try {
-                        gifEncoder.writeFrame(
-                            buffer,
-                            dims.x,
-                            dims.y,
-                            // Warning : if frame.second is <= 1ms, GIFs will be read slower on most readers
-                            // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
-                            frame.second.toDuration(DurationUnit.MILLISECONDS)
-                        )
-                    } finally {
-                        bmp.recycle()
+        val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
+            Timber.d("framesWritten=$framesWritten writtenDuration=$writtenDuration")
+        }
+        gifEncoder.use {
+            frames.forEachIndexed { idx, frame ->
+                if (killSwitch.get()) return@forEachIndexed
+                Timber.d("encoding frame $idx [duration ${frame.second} ms]")
+                getInputStream(context, frame.first).use { input ->
+                    BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
+                        bmp.getPixels(buffer, 0, dims.x, 0, 0, dims.x, dims.y)
+                        try {
+                            gifEncoder.writeFrame(
+                                buffer,
+                                dims.x,
+                                dims.y,
+                                // Warning : if frame.second is <= 1ms, GIFs will be read slower on most readers
+                                // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
+                                frame.second.toDuration(DurationUnit.MILLISECONDS)
+                            )
+                        } finally {
+                            bmp.recycle()
+                        }
                     }
                 }
             }
         }
     }
     if (killSwitch.get()) {
-        tempFile.delete()
+        removeFile(context, tempFile)
         return null
-    } else return Uri.fromFile(File(path))
+    } else return tempFile
 }
 
 /**

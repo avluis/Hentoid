@@ -1525,8 +1525,8 @@ private fun purgeFolderFiles(
                             context,
                             Uri.fromFile(file),
                             bookFolder,
-                            mimeType,
-                            file.name
+                            file.name,
+                            mimeType
                         )
                         if (newUri != null && name.endsWith("json"))
                             content.jsonUri = newUri.toString()
@@ -2094,8 +2094,8 @@ suspend fun mergeContents(
                             context,
                             img.fileUri.toUri(),
                             targetFolder,
-                            getMimeTypeFromExtension(referenceExt),
                             newImg.name + "." + referenceExt,
+                            getMimeTypeFromExtension(referenceExt),
                             true
                         )
                         if (newUri != null) {

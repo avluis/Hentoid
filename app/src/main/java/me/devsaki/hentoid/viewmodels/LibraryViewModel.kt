@@ -1385,8 +1385,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     context,
                     content.jsonUri.toUri(),
                     f,
-                    JSON_MIME_TYPE,
-                    JSON_FILE_NAME_V2
+                    JSON_FILE_NAME_V2,
+                    JSON_MIME_TYPE
                 )?.let { content.jsonUri = it.toString() }
                     ?: throw IOException("Couldn't copy JSON file")
 

@@ -153,7 +153,7 @@
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading <x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
-    <string name="queue_dl_single_file">Downloading file</string>
+    <string name="queue_dl_single_file">Downloading large file</string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
     <string name="err_no_content">Book does not exist yet</string>

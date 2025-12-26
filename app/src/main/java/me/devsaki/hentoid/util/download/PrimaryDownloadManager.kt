@@ -21,6 +21,7 @@ import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.file.tryCleanDirectory
 import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getArchivePdfThumbFileName
@@ -54,7 +55,7 @@ class PrimaryDownloadManager {
 
     private var archiveStreamer: ArchiveStreamer? = null
 
-    private val coverMatch: MutableMap<String, String> = ConcurrentHashMap()
+    private val localMatch: MutableMap<String, String> = ConcurrentHashMap()
 
 
     /**
@@ -138,10 +139,29 @@ class PrimaryDownloadManager {
                     context.filesDir,
                     getArchivePdfThumbFileName(downloadArchive!!)
                 )
-                coverMatch[uri.toString()] = coverUri.toString()
+                localMatch[uri.toString()] = coverUri.toString()
             } else archiveStreamer?.addFile(context, uri)
         } else {
-            // Nothing; file's already at the correct location (see getDownloadLocation)
+            downloadFolder?.let { dlFolder ->
+                // Check if the downloaded file is indeed inside the download folder...
+                val dlFolderPath = dlFolder.uri.path ?: return
+                val filePath = uri.path ?: return
+
+                if (filePath.startsWith(dlFolderPath, true)) return
+
+                Timber.i("Moving downloaded file to the target download folder")
+                // ...if it's not (e.g. Ugoira assembled inside temp folder), move it
+                val finalUri = copyFile(
+                    context,
+                    uri,
+                    dlFolder,
+                    uri.lastPathSegment ?: "",
+                    forceCreate = true
+                ) ?: throw IOException("Couldn't copy result ugoira file")
+                localMatch[uri.toString()] = finalUri.toString()
+
+                removeFile(context, uri)
+            }
         }
     }
 
@@ -229,7 +249,7 @@ class PrimaryDownloadManager {
     ): Boolean {
         var hasChanges = false
         imageList.forEach { img ->
-            coverMatch[img.fileUri]?.let {
+            localMatch[img.fileUri]?.let {
                 if (img.fileUri != it) {
                     img.fileUri = it
                     hasChanges = true
@@ -252,6 +272,6 @@ class PrimaryDownloadManager {
         archiveStreamer?.close()
         archiveStreamer = null
         downloadFolder = null
-        coverMatch.clear()
+        localMatch.clear()
     }
 }

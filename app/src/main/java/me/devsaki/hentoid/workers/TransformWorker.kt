@@ -181,8 +181,8 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
                     ctx,
                     img.fileUri.toUri(),
                     targetFolder,
-                    getMimeTypeFromFileName(name),
-                    name
+                    name,
+                    getMimeTypeFromFileName(name)
                 )?.let { newUri ->
                     img.fileUri = newUri.toString()
                     transformedImages.add(img)

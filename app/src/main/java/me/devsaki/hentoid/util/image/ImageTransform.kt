@@ -380,8 +380,8 @@ suspend fun transformManhwaChapter(
                         context,
                         img.fileUri.toUri(),
                         targetFolderDoc,
-                        getMimeTypeFromFileName(uriParts.fileNameFull),
-                        uriParts.fileNameFull
+                        uriParts.fileNameFull,
+                        getMimeTypeFromFileName(uriParts.fileNameFull)
                     )?.let { newUri ->
                         newImg.fileUri = newUri.toString()
                         newImg.name =

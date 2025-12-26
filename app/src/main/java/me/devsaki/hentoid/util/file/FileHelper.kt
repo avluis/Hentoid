@@ -1043,16 +1043,26 @@ fun copyFile(
     context: Context,
     sourceFileUri: Uri,
     targetFolder: DocumentFile,
-    mimeType: String,
     newName: String,
+    mimeType: String? = null,
     forceCreate: Boolean = false
 ): Uri? {
-    if (!targetFolder.exists()) return null
-    if (!fileExists(context, sourceFileUri)) return null
+    if (!targetFolder.exists()) {
+        Timber.w("Target folder doesn't exist : ${targetFolder.uri}")
+        return null
+    }
+    if (!fileExists(context, sourceFileUri)) {
+        Timber.w("Source file doesn't exist : $sourceFileUri")
+        return null
+    }
 
-    val targetFile = if (forceCreate) targetFolder.createFile(mimeType, newName)
+    val mime = mimeType ?: getMimeTypeFromFileUri(sourceFileUri.toString())
+    val targetFile = if (forceCreate) targetFolder.createFile(mime, newName)
     else findOrCreateDocumentFile(context, targetFolder, mimeType, newName)
-    if (null == targetFile || !targetFile.exists()) return null
+    if (null == targetFile || !targetFile.exists()) {
+        Timber.w("Target fome doesn't exist")
+        return null
+    }
 
     getOutputStream(context, targetFile.uri)?.use { output ->
         getInputStream(context, sourceFileUri)
