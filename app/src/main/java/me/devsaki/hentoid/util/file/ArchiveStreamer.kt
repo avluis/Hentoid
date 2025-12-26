@@ -20,6 +20,7 @@ import java.util.zip.CRC32
 import java.util.zip.Checksum
 import java.util.zip.ZipEntry
 import java.util.zip.ZipEntry.STORED
+import java.util.zip.ZipException
 import java.util.zip.ZipOutputStream
 
 
@@ -78,28 +79,37 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
-                var uri = filesQueue.poll()
+                var uri = filesQueue.peek()
                 while (uri != null && !stop.get()) {
-                    isQueueActive.set(true)
-                    getDocumentProperties(context, uri)?.let { doc ->
-                        Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
-                        val name = doc.name
-                        val entry = ZipEntry(name)
-                        entry.size = doc.size
-                        entry.method = STORED
-                        getInputStream(context, uri).use {
-                            entry.crc = getChecksumValue(CRC32(), it)
+                    try {
+                        isQueueActive.set(true)
+                        getDocumentProperties(context, uri)?.let { doc ->
+                            Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
+                            val name = doc.name
+                            val entry = ZipEntry(name)
+                            entry.size = doc.size
+                            entry.method = STORED
+                            getInputStream(context, uri).use {
+                                entry.crc = getChecksumValue(CRC32(), it)
+                            }
+                            stream.putNextEntry(entry)
+                            getInputStream(context, uri).use {
+                                copy(it, stream)
+                            }
+                            stream.closeEntry()
+                            filesMatch[uri.toString()] =
+                                archiveUri.toString() + File.separator + name
                         }
-                        // TODO retry when CRC32 fails (ZipException)
-                        stream.putNextEntry(entry)
-                        getInputStream(context, uri).use {
-                            copy(it, stream)
-                        }
-                        stream.closeEntry()
-                        filesMatch[uri.toString()] = archiveUri.toString() + File.separator + name
+                        removeFile(context, uri)
+                        // Only remove from queue if all above has succeeded
+                        filesQueue.remove(uri)
+                        uri = filesQueue.peek()
+                    } catch (z: ZipException) {
+                        Timber.d(z)
+                        if (z.message?.contains("duplicate entry") ?: false)
+                            throw IOException(z)
+                        // Retry directly inside the loop
                     }
-                    removeFile(context, uri)
-                    uri = filesQueue.poll()
                 }
                 Timber.d("Archive queue : nothing more to process")
             } catch (e: Exception) {
