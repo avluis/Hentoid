@@ -52,6 +52,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
+import me.devsaki.hentoid.events.DownloadEvent.Step
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
@@ -487,6 +488,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 event.pagesTotal,
                 event.getNumberRetries(),
                 event.downloadedSizeB,
+                event.step,
                 event.fileDownloadProgress
             )
 
@@ -676,6 +678,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         totalPages: Int,
         numberRetries: Int,
         downloadedSizeB: Long,
+        step: Step = Step.NONE,
         fileProgress: Float = -1f,
         forceDisplay: Boolean = false
     ) {
@@ -683,12 +686,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
 
             // Display file progress when explicitly asked to
             if (fileProgress > -1) {
-                bottomBarBinding?.queueStatus?.text =
-                    resources.getString(R.string.queue_dl_single_file)
+                val res = if (step == Step.ENCODE_ANIMATION) R.string.step_encode_animation
+                else R.string.queue_dl_single_file
+                bottomBarBinding?.queueStatus?.text = resources.getString(res)
 
                 bottomBarBinding?.queueInfo?.text = String.format(
                     Locale.getDefault(),
-                    "%.2f%%",
+                    "%.0f%%",
                     fileProgress
                 )
                 isPreparingDownload = false

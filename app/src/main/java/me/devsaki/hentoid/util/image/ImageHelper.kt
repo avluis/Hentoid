@@ -21,6 +21,8 @@ import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.events.DownloadEvent
+import me.devsaki.hentoid.events.DownloadEvent.Step
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.createFile
@@ -31,6 +33,7 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.network.getExtensionFromUri
+import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
@@ -383,7 +386,8 @@ fun assembleGif(
     folder: Uri,
     name: String,
     frames: List<Pair<Uri, Int>>,
-    killSwitch: AtomicBoolean
+    killSwitch: AtomicBoolean,
+    onProgress: ((Float) -> Unit)? = null
 ): Uri? {
     require(frames.isNotEmpty()) { "No frames given" }
     require(!killSwitch.get())
@@ -426,6 +430,7 @@ fun assembleGif(
                         }
                     }
                 }
+                onProgress?.invoke(idx / frames.size.toFloat())
             }
         }
     }

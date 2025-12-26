@@ -28,6 +28,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
+import me.devsaki.hentoid.events.DownloadEvent.Step
 import me.devsaki.hentoid.events.DownloadReviveEvent
 import me.devsaki.hentoid.json.sources.pixiv.UGOIRA_FRAMES_TYPE
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification
@@ -1440,7 +1441,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 img.name,
                 frames,
                 downloadInterrupted
-            ) ?: throw IOException("Couldn't assemble ugoira file")
+            ) { f ->
+                EventBus.getDefault().post(
+                    DownloadEvent(
+                        eventType = DownloadEvent.Type.EV_PROGRESS,
+                        step = Step.ENCODE_ANIMATION,
+                        fileDownloadProgress = f * 100
+                    )
+                )
+            } ?: throw IOException("Couldn't assemble ugoira file")
 
             img.size = fileSizeFromUri(applicationContext, ugoiraGifFile)
             updateImageProperties(img, true, ugoiraGifFile.toString())
