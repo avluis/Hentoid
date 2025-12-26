@@ -458,6 +458,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     }
 
     override fun onPause() {
+        super.onPause()
         if (WebkitPackageHelper.getWebViewAvailable()) {
             webView.url?.let {
                 val parts = UriParts(it)
@@ -466,7 +467,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 viewModel.saveCurrentUrl(getStartSite(), it)
             }
         }
-        super.onPause()
     }
 
     /**
