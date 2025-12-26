@@ -1430,7 +1430,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             val ugoiraGifFile = assembleGif(
                 applicationContext,
                 ugoiraCacheFolder,
-                frames
+                frames,
+                downloadInterrupted
             ) ?: throw IOException("Couldn't assemble ugoira file")
 
             // Save it to the book folder

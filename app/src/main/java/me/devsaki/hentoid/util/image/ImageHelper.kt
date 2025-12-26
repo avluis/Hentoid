@@ -9,7 +9,6 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.media.MediaMetadataRetriever
-import android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC
 import android.net.Uri
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -35,6 +34,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
@@ -380,9 +380,12 @@ fun decodeSampledBitmapFromStream(
 fun assembleGif(
     context: Context,
     folder: File,  // GIF encoder only work with paths...
-    frames: List<Pair<Uri, Int>>
+    frames: List<Pair<Uri, Int>>,
+    killSwitch: AtomicBoolean
 ): Uri? {
     require(frames.isNotEmpty()) { "No frames given" }
+    require(!killSwitch.get())
+
     val dims = getInputStream(context, frames[0].first).let { input ->
         BitmapFactory.decodeStream(input).let {
             Point(it.width, it.height)
@@ -392,7 +395,8 @@ fun assembleGif(
     val options = BitmapFactory.Options()
     options.inPreferredConfig = Bitmap.Config.ARGB_8888
 
-    val path = File(folder, "tmp.gif").absolutePath
+    val tempFile = File(folder, "tmp.gif")
+    val path = tempFile.absolutePath
     val gifEncoderBuilder = GifEncoder.builder(Path(path))
     gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
 
@@ -401,6 +405,7 @@ fun assembleGif(
     }
     gifEncoder.use {
         frames.forEachIndexed { idx, frame ->
+            if (killSwitch.get()) return@forEachIndexed
             Timber.d("encoding frame $idx [duration ${frame.second} ms]")
             getInputStream(context, frame.first).use { input ->
                 BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
@@ -421,7 +426,10 @@ fun assembleGif(
             }
         }
     }
-    return Uri.fromFile(File(path))
+    if (killSwitch.get()) {
+        tempFile.delete()
+        return null
+    } else return Uri.fromFile(File(path))
 }
 
 /**
