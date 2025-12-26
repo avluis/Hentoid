@@ -16,9 +16,7 @@ class PixivContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         val urlParts = url.split("/")
         var id = urlParts[urlParts.size - 1]
-        if (id.contains("?")) {
-            id = id.substring(0, id.indexOf("?"))
-        }
+        if (id.contains("?")) id = id.take(id.indexOf("?"))
         val entity = urlParts[urlParts.size - 2]
         val uri = url.toUri()
         when (entity) {

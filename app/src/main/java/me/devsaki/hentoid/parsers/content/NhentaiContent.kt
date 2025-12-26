@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content
 
+import me.devsaki.hentoid.activities.sources.NhentaiActivity.Companion.FAVS_FILTER
 import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
@@ -8,8 +9,11 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.cleanup
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.images.NhentaiParser
+import me.devsaki.hentoid.parsers.images.NhentaiParser.Companion.COVER_SELECTOR
+import me.devsaki.hentoid.parsers.images.NhentaiParser.Companion.THUMBS_SELECTOR
 import me.devsaki.hentoid.parsers.parseAttributes
 import me.devsaki.hentoid.parsers.urlsToImageFiles
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.parseDatetimeToEpoch
 import org.jsoup.nodes.Element
 import pl.droidsonroids.jspoon.annotation.Selector
@@ -18,7 +22,7 @@ class NhentaiContent : BaseContentParser() {
     @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private lateinit var galleryUrl: String
 
-    @Selector(value = "#cover img")
+    @Selector(value = COVER_SELECTOR)
     private var cover: Element? = null
 
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
@@ -52,30 +56,39 @@ class NhentaiContent : BaseContentParser() {
     @Selector(value = "#info a[href*='/category']")
     private var categories: List<Element>? = null
 
-    @Selector(value = "#thumbnail-container img[data-src]")
+    @Selector(value = THUMBS_SELECTOR)
     private var thumbs: List<Element>? = null
 
 
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
         content.site = Site.NHENTAI
         val theUrl = galleryUrl.ifEmpty { url }
+        if (theUrl.isEmpty()) return Content(status = StatusContent.IGNORED)
+        content.setRawUrl(url)
 
-        var isError = false
-        isError = isError || theUrl.isEmpty()
-        thumbs?.let {
-            isError = isError || it.isEmpty()
-        } ?: run {
-            isError = true
+        return if (url.contains(FAVS_FILTER)) updateFavs(content, theUrl, updateImages)
+        else updateGallery(content, theUrl, updateImages)
+    }
+
+    private fun updateFavs(content: Content, url: String, updateImages: Boolean): Content {
+        content.title = "NHentai favourites"
+
+        if (updateImages) {
+            content.setImageFiles(emptyList())
+            content.qtyPages = 0
         }
-        isError = isError || theUrl.endsWith("favorite") // Fav button
+
+        return content
+    }
+
+    private fun updateGallery(content: Content, url: String, updateImages: Boolean): Content {
+        var isError = false
+        thumbs?.apply { isError = isEmpty() } ?: run { isError = true }
+        isError = isError || url.endsWith("favorite") // Fav button
         if (isError) return Content(status = StatusContent.IGNORED)
 
-
-        content.setRawUrl(theUrl)
         cover?.let {
-            content.coverImageUrl = getImgSrc(it)
-            if (!content.coverImageUrl.startsWith("http"))
-                content.coverImageUrl = "https:" + content.coverImageUrl
+            content.coverImageUrl = fixUrl(getImgSrc(it), Site.NHENTAI.url)
         }
         var titleDef = title.trim()
         if (titleDef.isEmpty()) titleDef = titleAlt.trim()
@@ -144,7 +157,7 @@ class NhentaiContent : BaseContentParser() {
         if (updateImages) {
             thumbs?.let {
                 val images = urlsToImageFiles(
-                    NhentaiParser.parseImages(content, it),
+                    NhentaiParser.parseImages(content.coverImageUrl, it),
                     content.coverImageUrl,
                     StatusContent.SAVED
                 )

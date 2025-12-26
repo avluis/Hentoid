@@ -173,7 +173,7 @@ class KemonoParser : BaseImageListParser() {
                     return content
                 }
 
-                // One result = one chapter, if it contains at least an usable picture (i.e. not exclusively MEGA links)
+                // One result = one chapter, if it contains at least an usable picture (i.e. not exclusively MEGA links or PSD files)
                 val chapters = ArrayList<Chapter>()
                 val chapterOrder = AtomicInteger(1)
                 val pageOrder = AtomicInteger(1)

@@ -533,7 +533,7 @@ fun fixUrl(url: String?, baseUrl: String): String {
     if (url.startsWith("//")) return "https:$url"
     return if (!url.startsWith("http")) {
         var sourceUrl = baseUrl
-        if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.substring(0, sourceUrl.length - 1)
+        if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.take(sourceUrl.length - 1)
         if (url.startsWith("/")) sourceUrl + url else "$sourceUrl/$url"
     } else url
 }

@@ -446,8 +446,11 @@ data class Content(
                 else galleryConst = "/gallery"
 
                 Site.HITOMI -> galleryConst = "/galleries"
-                Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.NHENTAI, Site.ANCHIRA -> galleryConst =
-                    "/g"
+                Site.NHENTAI -> if (url.contains("/favorites/")) return url
+                else galleryConst = "/g"
+
+                Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.ANCHIRA
+                    -> galleryConst = "/g"
 
                 Site.TSUMINO -> galleryConst = "/entry"
                 Site.FAKKU2 -> galleryConst = "/hentai/"

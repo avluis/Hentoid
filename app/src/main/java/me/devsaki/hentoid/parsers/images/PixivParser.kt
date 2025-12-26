@@ -223,7 +223,7 @@ class PixivParser : BaseImageListParser() {
             onlineContent.uniqueSiteId.split("/")
         var userId = userIdParts[userIdParts.size - 1]
         if (userId.contains("?")) {
-            userId = userId.substring(0, userId.indexOf("?"))
+            userId = userId.take(userId.indexOf("?"))
         }
 
         // Retrieve the list of Illusts IDs (=chapters)

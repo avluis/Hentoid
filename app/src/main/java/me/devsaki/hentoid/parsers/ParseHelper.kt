@@ -38,7 +38,7 @@ fun removeBrackets(s: String?): String {
     if (s.isNullOrEmpty()) return ""
     var bracketPos = s.lastIndexOf('(')
     if (bracketPos > 1 && ' ' == s[bracketPos - 1]) bracketPos--
-    return if (bracketPos > -1) s.substring(0, bracketPos)
+    return if (bracketPos > -1) s.take(bracketPos)
     else s
 }
 
@@ -50,6 +50,7 @@ fun removeBrackets(s: String?): String {
  * @param s String to clean up
  * @return String with removed terms
  */
+@Suppress("KDocUnresolvedReference")
 fun removeTextualTags(s: String?): String {
     if (s.isNullOrEmpty()) return ""
     val m = SQUARE_BRACKETS.matcher(s)
@@ -114,7 +115,7 @@ fun parseAttribute(
     removeTrailingNumbers: Boolean,
     site: Site
 ) {
-    parseAttribute(element, map, type, site, "", removeTrailingNumbers, null)
+    parseAttribute(element, map, type, site, removeTrailingNumbers, null)
 }
 
 /**
@@ -128,7 +129,7 @@ private fun parseAttribute(
     childElementClass: String,
     site: Site
 ) {
-    parseAttribute(element, map, type, site, "", removeTrailingNumbers, childElementClass)
+    parseAttribute(element, map, type, site, removeTrailingNumbers, childElementClass)
 }
 
 /**
@@ -139,7 +140,6 @@ private fun parseAttribute(
  * @param map                   Output map where the detected attributes will be put
  * @param type                  AttributeType to give to the detected Attributes
  * @param site                  Site to give to the detected Attributes
- * @param prefix                If set, detected attributes will have this prefix added to their name
  * @param removeTrailingNumbers If true trailing numbers will be removed from the attribute name
  * @param childElementClass     If set, the parser will look for sub-elements of the given class
  */
@@ -148,7 +148,6 @@ private fun parseAttribute(
     map: AttributeMap,
     type: AttributeType,
     site: Site,
-    prefix: String,
     removeTrailingNumbers: Boolean,
     childElementClass: String?
 ) {
@@ -163,7 +162,6 @@ private fun parseAttribute(
     name = removeBrackets(name)
     if (removeTrailingNumbers) name = removeTrailingNumbers(name)
     if (name.isEmpty() || name == "-" || name == "/") return
-    if (prefix.isNotEmpty()) name = "$prefix:$name"
     val attribute = Attribute(type, name, element.attr("href"), site)
     map.add(attribute)
 }
@@ -334,17 +332,6 @@ fun getExtensionFromFormat(imgFormat: Map<String, String>, i: Int): String {
  *
  * @param chapterLinks List of HTML links to extract Chapters from
  * @param contentId    Content ID to associate with all extracted Chapters
- * @return Chapters detected from the given list of links, associated with the given Content ID
- */
-fun getChaptersFromLinks(chapterLinks: List<Element>, contentId: Long): List<Chapter> {
-    return getChaptersFromLinks(chapterLinks, contentId, null, null)
-}
-
-/**
- * Extract a list of Chapters from the given list of links, for the given Content ID
- *
- * @param chapterLinks List of HTML links to extract Chapters from
- * @param contentId    Content ID to associate with all extracted Chapters
  * @param dateCssQuery CSS query to select the chapter upload date (optional)
  * @param datePattern  Pattern to parse the chapter upload date (optional)
  * @return Chapters detected from the given list of links, associated with the given Content ID
@@ -352,8 +339,8 @@ fun getChaptersFromLinks(chapterLinks: List<Element>, contentId: Long): List<Cha
 fun getChaptersFromLinks(
     chapterLinks: List<Element>,
     contentId: Long,
-    dateCssQuery: String?,
-    datePattern: String?
+    dateCssQuery: String? = null,
+    datePattern: String? = null
 ): List<Chapter> {
     val result: MutableList<Chapter> = ArrayList()
     val urls: MutableSet<String> = HashSet()
@@ -400,7 +387,7 @@ fun getChaptersFromLinks(
  */
 private fun getLastPathPart(url: String, index: Int = 0): String {
     var workUrl = url.trim()
-    if (workUrl.endsWith("/")) workUrl = workUrl.substring(0, workUrl.length - 1)
+    if (workUrl.endsWith("/")) workUrl = workUrl.dropLast(1)
     val parts = workUrl.split("/")
     if (index > parts.size - 1) return workUrl
     return parts[parts.size - 1 - index]
@@ -428,18 +415,18 @@ fun getExtraChaptersbyUrl(
     }
 
     // Only keep the latest contiguous chapters (no in-between chapters)
-    tmpList = tmpList.sortedBy { c -> c.order }.toMutableList()
+    tmpList = tmpList.sortedBy { it.order }.toMutableList()
 
-    val lastStoredUrl = storedChapters.sortedBy { c -> c.order }
-        .map { c -> getLastPathPart(c.url) }.lastOrNull() ?: return tmpList
+    val lastStoredUrl = storedChapters.sortedBy { it.order }
+        .map { getLastPathPart(it.url) }.lastOrNull() ?: return tmpList
 
     val lastStoredOnlineOrder = detectedChapters
-        .filter { c -> getLastPathPart(c.url) == lastStoredUrl }
-        .map { obj: Chapter -> obj.order }
+        .filter { getLastPathPart(it.url) == lastStoredUrl }
+        .map { it.order }
         .lastOrNull()
 
     return if (null == lastStoredOnlineOrder) tmpList
-    else tmpList.filter { c -> c.order > lastStoredOnlineOrder }
+    else tmpList.filter { it.order > lastStoredOnlineOrder }
 }
 
 /**
