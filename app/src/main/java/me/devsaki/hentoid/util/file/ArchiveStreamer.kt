@@ -72,6 +72,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
+    @Synchronized
     private fun processQueue(context: Context) {
         if (isQueueActive.get()) return
 
