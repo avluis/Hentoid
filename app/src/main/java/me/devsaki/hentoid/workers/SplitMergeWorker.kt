@@ -181,8 +181,9 @@ abstract class BaseSplitMergeWorker(
                         val nbMaxDigits =
                             (floor(log10(splitContentImages.size.toDouble())) + 1).toInt()
                         val extractInstructions = splitContentImages.map {
+                            val uri = if (it.url.startsWith(content.storageUri)) it.url else it.fileUri
                             Triple(
-                                it.url.replace(content.storageUri + File.separator, ""),
+                                uri.replace(content.storageUri + File.separator, ""),
                                 it.order.toLong(),
                                 String.format(
                                     Locale.ENGLISH,
