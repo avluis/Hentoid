@@ -515,13 +515,23 @@ object ObjectBoxDB {
         }
     }
 
+    private fun selectContentIdsByChapterUniqueId(id: String): LongArray {
+        if (id.isEmpty()) return LongArray(0)
+        store.boxFor(Chapter::class.java).query(
+            Chapter_.uniqueId.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(Chapter_.uniqueId.equal(id, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+        ).build().use { cq ->
+            return cq.property(Chapter_.contentId).findLongs()
+        }
+    }
+
     // Find any book that has the given content URL _or_ a chapter with the given content URL _or_ has a cover starting with the given cover URL
     fun selectContentByUrlOrCover(
         site: Site,
         contentUrl: String,
-        coverUrlStart: String,
+        coverUrlStart: String = "",
         searchChapters: Boolean = true
-    ): Content? {
+    ): List<Content> {
         val contentUrlCondition =
             Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 .and(
@@ -550,26 +560,10 @@ object ObjectBoxDB {
                     .and(Content_.site.equal(site.code))
 
             store.boxFor(Content::class.java).query(urlCondition.or(coverCondition))
-                .order(Content_.id).safeFindFirst()
+                .order(Content_.id).safeFind()
         } else
             store.boxFor(Content::class.java).query(urlCondition)
-                .order(Content_.id).safeFindFirst()
-    }
-
-    // Find all books that have the given content URL
-    fun selectContentByUrl(site: Site, contentUrl: String): Set<Content> {
-        val contentUrlCondition =
-            Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(
-                    Content_.dbUrl.equal(
-                        contentUrl,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                )
-                .and(Content_.site.equal(site.code))
-
-        return store.boxFor(Content::class.java).query(contentUrlCondition)
-            .order(Content_.id).safeFind().toSet()
+                .order(Content_.id).safeFind()
     }
 
     fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
@@ -578,6 +572,27 @@ object ObjectBoxDB {
                 .and(Content_.qtyPages.equal(qtyPage))
 
         return store.boxFor(Content::class.java).query(contentUrlCondition)
+            .order(Content_.id).safeFind().toSet()
+    }
+
+    fun selectContentsByUniqueId(site: Site, id: String): Set<Content> {
+        val contentIdCondition =
+            Content_.uniqueSiteId.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(
+                    Content_.uniqueSiteId.equal(
+                        id,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    )
+                )
+                .and(Content_.site.equal(site.code))
+
+        val chapterIdCondition: QueryCondition<Content> =
+            Content_.id.oneOf(selectContentIdsByChapterUniqueId(id))
+                .and(Content_.site.equal(site.code))
+
+        val idCondition = contentIdCondition.or(chapterIdCondition)
+
+        return store.boxFor(Content::class.java).query(idCondition)
             .order(Content_.id).safeFind().toSet()
     }
 

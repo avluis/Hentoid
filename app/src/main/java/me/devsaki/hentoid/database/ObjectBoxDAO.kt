@@ -350,7 +350,7 @@ class ObjectBoxDAO : CollectionDAO {
             contentUrl,
             coverUrlStart,
             searchChapters
-        )
+        ).firstOrNull()
     }
 
     // Find any book that has the given content URL _and_ has a cover starting with the given cover URL
@@ -358,12 +358,16 @@ class ObjectBoxDAO : CollectionDAO {
         site: Site,
         contentUrl: String
     ): Set<Content> {
-        return ObjectBoxDB.selectContentByUrl(site, contentUrl)
+        return ObjectBoxDB.selectContentByUrlOrCover(site, contentUrl).toSet()
     }
 
     // Find any book that has the given quality of pages _and_ size
     override fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
         return ObjectBoxDB.selectContentsByQtyPageAndSize(qtyPage, size)
+    }
+
+    override fun selectContentByUniqueId(site : Site, id: String): Set<Content> {
+        return ObjectBoxDB.selectContentsByUniqueId(site, id)
     }
 
     override fun selectAllSourceUrls(site: Site): Set<String> {

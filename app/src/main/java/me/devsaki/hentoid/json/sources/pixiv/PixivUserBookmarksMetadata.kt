@@ -43,8 +43,7 @@ data class PixivUserBookmarksMetadata(
 
     fun getIllustIds(): List<String> {
         if (null == body || null == body.bookmarks) return emptyList()
-        return body.bookmarks.filter { it.visible }
-            .map { it.id }
+        return body.bookmarks.filter { it.visible }.map { it.id }
     }
 
     fun isError(): Boolean {

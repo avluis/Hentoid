@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.images
 
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
@@ -25,6 +26,8 @@ import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.waitBlocking429
 import me.devsaki.hentoid.util.parseDownloadParams
 import org.greenrobot.eventbus.EventBus
+import retrofit2.Call
+import retrofit2.Response
 import timber.log.Timber
 
 private const val MAX_QUERY_WINDOW = 30
@@ -226,24 +229,10 @@ class PixivParser : BaseImageListParser() {
         }
 
         // Retrieve the list of Illusts IDs (=chapters)
-        var waited = 0
-        take()
-        var userIllustResp =
-            PixivServer.api.getUserIllusts(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
-        if (waitBlocking429(
-                userIllustResp,
-                Settings.http429DefaultDelaySecs * 1000
-            )
-        ) {
-            waited++
-            userIllustResp =
-                PixivServer.api.getUserIllusts(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
-        }
-        require(userIllustResp.code() < 400) {
-            String.format(
-                "Unreachable user illusts : code=${userIllustResp.code()} (${userIllustResp.message()}) [$waited]",
-            )
-        }
+        val userIllustResp = call429(
+            call = { PixivServer.api.getUserIllusts(userId, cookieStr, ACCEPT_ALL, userAgent) }
+        )
+
         val userIllustsMetadata = userIllustResp.body()
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
             var message = "Unreachable user illusts"
@@ -253,13 +242,8 @@ class PixivParser : BaseImageListParser() {
 
         // Detect extra chapters
         var illustIds = userIllustsMetadata.getIllustIds()
-        var storedChapters: List<Chapter>? = null
-        if (storedContent != null) {
-            storedChapters = storedContent.chapters
-            storedChapters = storedChapters.toMutableList()
-        }
-        if (null == storedChapters) storedChapters = emptyList()
-        else illustIds = getExtraChaptersbyId(storedChapters, illustIds)
+        val storedChapters = storedContent?.chaptersList ?: emptyList()
+        if (storedChapters.isNotEmpty()) illustIds = getExtraChaptersbyId(storedChapters, illustIds)
 
         // Work on detected extra chapters
         progressStart(onlineContent, storedContent)
@@ -273,27 +257,13 @@ class PixivParser : BaseImageListParser() {
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
         val attrs: MutableSet<Attribute> = HashSet()
         illustIds.forEachIndexed { index, illustId ->
-            waited = 0
-            take()
             if (processHalted.get()) return@forEachIndexed
-            var illustResp =
-                PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
-                    .execute()
-            while (waitBlocking429(
-                    illustResp,
-                    Settings.http429DefaultDelaySecs * 1000
-                ) && waited < 2
-            ) {
-                waited++
-                illustResp =
+            val illustResp = call429(
+                id = illustId,
+                call = {
                     PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
-                        .execute()
-            }
-            require(illustResp.code() < 400) {
-                String.format(
-                    "Unreachable illust : code=${illustResp.code()} (${illustResp.message()}) [$index - $waited]",
-                )
-            }
+                }
+            )
             val illustMetadata = illustResp.body()
             if (null == illustMetadata || illustMetadata.error) {
                 val message: String? =
@@ -344,25 +314,9 @@ class PixivParser : BaseImageListParser() {
         }
 
         // Retrieve the list of bookmarks (=chapters)
-        var waited = 0
-        take()
-        var bookmarksResp =
-            PixivServer.api.getUserBookmarks(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
-        if (waitBlocking429(
-                bookmarksResp,
-                Settings.http429DefaultDelaySecs * 1000
-            )
-        ) {
-            waited++
-            bookmarksResp =
-                PixivServer.api.getUserBookmarks(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
-        }
-        require(bookmarksResp.code() < 400) {
-            String.format(
-                "Unreachable user illusts : code=${bookmarksResp.code()} (${bookmarksResp.message()}) [$waited]",
-            )
-        }
-
+        val bookmarksResp = call429(
+            call = { PixivServer.api.getUserBookmarks(userId, cookieStr, ACCEPT_ALL, userAgent) }
+        )
         val bookmarksMetadata = bookmarksResp.body()
         if (null == bookmarksMetadata || bookmarksMetadata.isError()) {
             var message: String? = "Unreachable bookmarks"
@@ -370,15 +324,19 @@ class PixivParser : BaseImageListParser() {
             throw IllegalArgumentException(message)
         }
 
-        // Detect extra chapters
-        var illustIds = bookmarksMetadata.getIllustIds()
-        var storedChapters: List<Chapter>? = null
-        if (storedContent != null) {
-            storedChapters = storedContent.chapters
-            storedChapters = storedChapters.toMutableList()
+        // Ignore downloaded or queued Content
+        // TODO refactor not to instanciate a DAO inside an ImageListParser
+        val dao = ObjectBoxDAO()
+        var illustIds = try {
+            bookmarksMetadata.getIllustIds()
+                .filterNot { dao.selectContentByUniqueId(Site.PIXIV, it).isNotEmpty() }
+        } finally {
+            dao.cleanup()
         }
-        if (null == storedChapters) storedChapters = emptyList()
-        else illustIds = getExtraChaptersbyId(storedChapters, illustIds)
+
+        // Detect extra chapters
+        val storedChapters = storedContent?.chaptersList ?: emptyList()
+        if (storedChapters.isNotEmpty()) illustIds = getExtraChaptersbyId(storedChapters, illustIds)
 
         // Work on detected extra chapters
         progressStart(onlineContent, storedContent)
@@ -392,27 +350,13 @@ class PixivParser : BaseImageListParser() {
         result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
         val attrs: MutableSet<Attribute> = HashSet()
         illustIds.forEachIndexed { index, illustId ->
-            waited = 0
-            take()
             if (processHalted.get()) return@forEachIndexed
-            var illustResp =
-                PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
-                    .execute()
-            while (waitBlocking429(
-                    illustResp,
-                    Settings.http429DefaultDelaySecs * 1000
-                ) && waited < 2
-            ) {
-                waited++
-                illustResp =
+            val illustResp = call429(
+                id = illustId,
+                call = {
                     PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
-                        .execute()
-            }
-            require(illustResp.code() < 400) {
-                String.format(
-                    "Unreachable illust : code=${illustResp.code()} (${illustResp.message()}) [$index - $waited]",
-                )
-            }
+                }
+            )
             val illustMetadata = illustResp.body()
             if (null == illustMetadata || illustMetadata.error) {
                 val message: String? =
@@ -445,5 +389,25 @@ class PixivParser : BaseImageListParser() {
         onlineContent.putAttributes(attrs)
         progressComplete()
         return result
+    }
+
+    private fun <T> call429(call: () -> Call<T>, id: String = ""): Response<T> {
+        var waited = 0
+        take()
+        var resp = call.invoke().execute()
+        while (
+            waitBlocking429(resp, Settings.http429DefaultDelaySecs * 1000)
+            && waited < 2
+        ) {
+            waited++
+            take()
+            resp = call.invoke().execute()
+        }
+        require(resp.code() < 400) {
+            String.format(
+                "Unreachable illust : code=${resp.code()} (${resp.message()}) [$id - $waited]",
+            )
+        }
+        return resp
     }
 }

@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.parsers.images
 
+import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.Content.Companion.transformRawUrl
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
@@ -94,6 +96,8 @@ class NhentaiParser : BaseImageListParser() {
 
         val chapters: MutableList<Chapter> = ArrayList()
         val result: MutableList<ImageFile> = ArrayList()
+        // TODO refactor not to instanciate a DAO inside an ImageListParser
+        val dao = ObjectBoxDAO()
         try {
             val doc = getOnlineDocument(
                 FAV_URL,
@@ -135,10 +139,19 @@ class NhentaiParser : BaseImageListParser() {
                         progressPlus(idx / books.size.toFloat())
                         if (processHalted.get()) return@forEachIndexed
                         val gUrl = Content.getGalleryUrlFromId(Site.NHENTAI, b.first)
-                        val chap = Chapter((25 * (i - 1)) + idx + 1, gUrl, b.second)
-                        chapters.add(chap)
-                        val imgs = parseGallery(gUrl, chap)
-                        result.addAll(imgs)
+                        if (dao.selectContentsByUrl(
+                                Site.NHENTAI,
+                                transformRawUrl(Site.NHENTAI, gUrl)
+                            ).isEmpty()
+                        ) {
+                            val chap = Chapter((25 * (i - 1)) + idx + 1, gUrl, b.second)
+                            chap.uniqueId = b.first
+                            chapters.add(chap)
+                            val imgs = parseGallery(gUrl, chap)
+                            result.addAll(imgs)
+                        } else {
+                            Timber.i("Duplicate found : $gUrl")
+                        }
                     }
                 }
                 progressNext()
@@ -158,6 +171,7 @@ class NhentaiParser : BaseImageListParser() {
             onlineContent.setChapters(chapters)
         } finally {
             EventBus.getDefault().unregister(this)
+            dao.cleanup()
         }
         return result
     }

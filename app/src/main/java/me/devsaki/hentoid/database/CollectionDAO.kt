@@ -51,6 +51,8 @@ interface CollectionDAO {
 
     fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content>
 
+    fun selectContentByUniqueId(site: Site, id: String): Set<Content>
+
     fun selectAllSourceUrls(site: Site): Set<String>
 
     fun selectAllMergedUrls(site: Site): Set<String>
@@ -268,7 +270,7 @@ interface CollectionDAO {
         position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
-        archiveUrl : String?,
+        archiveUrl: String?,
         isQueueActive: Boolean
     )
 
