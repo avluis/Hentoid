@@ -161,7 +161,7 @@
     <string name="pref_memory_usage_title">Lagringsmängd</string>
     <string name="pref_misc">Diverse</string>
     <string name="pref_navigation_nostalgia_mode">Nostalgiläge</string>
-    <string name="pref_next_schedule">Schemalägg nästa körning om %. antal minuter</string>
+    <string name="pref_next_schedule">Schemalägg nästa körning om %.0f antal minuter</string>
     <string name="pref_nostalgia_summary_off">Navigationslådan visar inte aktiva sidor</string>
     <string name="pref_nostalgia_summary_on">Navigationslådan visar aktiva sidor</string>
     <string name="pref_plug_reactions">Pluggreaktioner</string>
