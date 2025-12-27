@@ -59,6 +59,7 @@ import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.UriParts
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getHttpProtocol
 import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
@@ -446,7 +447,7 @@ data class Content(
                 else galleryConst = "/gallery"
 
                 Site.HITOMI -> galleryConst = "/galleries"
-                Site.NHENTAI -> if (url.contains("/favorites/")) return url
+                Site.NHENTAI -> if (url.contains("/favorites/")) return fixUrl(url, site.url)
                 else galleryConst = "/g"
 
                 Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.ANCHIRA

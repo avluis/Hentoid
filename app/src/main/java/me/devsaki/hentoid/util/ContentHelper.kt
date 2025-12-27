@@ -322,7 +322,6 @@ fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean)
     if (content.site == Site.NONE) return
     if (!content.site.isVisible) return  // Support is dropped
 
-
     if (!getWebViewAvailable()) {
         if (getWebViewUpdating()) context.toast(R.string.error_updating_webview)
         else context.toast(R.string.error_missing_webview)
