@@ -185,8 +185,10 @@ private fun Context.getArchiveEntries(format: ArchiveFormat, uri: Uri): List<Arc
             SevenZip.openInArchive(format, stream, callback).use { inArchive ->
                 val itemCount = inArchive.numberOfItems
                 for (i in 0 until itemCount) {
+                    val isFolder = inArchive.getStringProperty(i, PropID.IS_FOLDER)
                     result.add(
                         ArchiveEntry(
+                            isFolder.equals("+") || isFolder.toBoolean(),
                             inArchive.getStringProperty(i, PropID.PATH),
                             inArchive.getStringProperty(i, PropID.SIZE).toLong()
                         )
@@ -456,7 +458,7 @@ fun Context.zipFiles(
  * @property path Asbolute path, extension included
  * @property size Size in bytes
  */
-data class ArchiveEntry(val path: String, val size: Long)
+data class ArchiveEntry(val isFolder : Boolean, val path: String, val size: Long)
 
 private class ArchiveOpenCallback : IArchiveOpenCallback {
     override fun setTotal(files: Long?, bytes: Long?) {

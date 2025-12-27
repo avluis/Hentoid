@@ -210,6 +210,7 @@ class PrimaryDownloadManager {
                     }
                 }
                 val imgs = context.getArchiveEntries(uri)
+                    .filter { !it.isFolder }
                     .sortedWith(InnerNameNumberArchiveComparator())
                     .mapIndexed { i, e ->
                         ImageFile(

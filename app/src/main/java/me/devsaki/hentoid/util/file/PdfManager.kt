@@ -362,7 +362,7 @@ class PdfManager {
         getInputStream(context, doc).use { input ->
             PdfDocument(PdfReader(input)).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(null)
-                { name, data, id -> result.add(ArchiveEntry(name, data.size.toLong())) }
+                { name, data, _ -> result.add(ArchiveEntry(false, name, data.size.toLong())) }
                 val parser = PdfCanvasProcessor(listener)
                 for (i in 1..pdfDoc.numberOfPages) {
                     currentPageIndex.set(i)

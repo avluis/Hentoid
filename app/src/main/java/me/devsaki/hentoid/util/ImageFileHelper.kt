@@ -67,7 +67,7 @@ fun createImageListFromFolder(
  * @param files Files to find images into
  * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
  */
-fun createImageListFromFiles(files: List<DocumentFile>, setCover : Boolean = true): List<ImageFile> {
+fun createImageListFromFiles(files: List<DocumentFile>, setCover: Boolean = true): List<ImageFile> {
     return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "", setCover)
 }
 
@@ -134,17 +134,17 @@ fun createImageListFromArchiveEntries(
     var order = startingOrder
     // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
     val fileList = files.sortedWith(InnerNameNumberArchiveComparator())
-    for ((name, size) in fileList) {
-        val path = archiveFileUri.toString() + File.separator + name
+    fileList.forEach {
+        val path = archiveFileUri.toString() + File.separator + it.path
         val img = ImageFile()
-        if (name.startsWith(THUMB_FILE_NAME)) img.isCover = true
+        if (it.path.startsWith(THUMB_FILE_NAME)) img.isCover = true
         else order++
-        img.name = getFileNameWithoutExtension(name)
+        img.name = getFileNameWithoutExtension(it.path)
         img.order = order
         img.url = path
         img.status = targetStatus
         img.fileUri = path
-        img.size = size
+        img.size = it.size
         result.add(img)
     }
     return result
