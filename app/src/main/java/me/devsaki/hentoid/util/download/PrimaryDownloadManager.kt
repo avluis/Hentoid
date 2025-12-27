@@ -28,6 +28,7 @@ import me.devsaki.hentoid.util.getArchivePdfThumbFileName
 import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
+import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.persistJson
@@ -210,7 +211,7 @@ class PrimaryDownloadManager {
                     }
                 }
                 val imgs = context.getArchiveEntries(uri)
-                    .filter { !it.isFolder }
+                    .filter { !it.isFolder && isSupportedImage(it.path) }
                     .sortedWith(InnerNameNumberArchiveComparator())
                     .mapIndexed { i, e ->
                         ImageFile(
