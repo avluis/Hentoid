@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.LIBRARY_DISPLAY_GROUP_SIZE
 import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -366,7 +367,7 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.selectContentsByQtyPageAndSize(qtyPage, size)
     }
 
-    override fun selectContentByUniqueId(site : Site, id: String): Set<Content> {
+    override fun selectContentByUniqueId(site: Site, id: String): Set<Content> {
         return ObjectBoxDB.selectContentsByUniqueId(site, id)
     }
 
@@ -1137,7 +1138,9 @@ class ObjectBoxDAO : CollectionDAO {
 
         // Archive download - Replace all images by the archive to download
         archiveUrl?.let {
-            val imgs = listOf(ImageFile.fromImageUrl(0, it, StatusContent.SAVED, 9999))
+            val singleImage = ImageFile.fromImageUrl(0, it, StatusContent.SAVED, 9999)
+            singleImage.name = formatFolderName(content).first
+            val imgs = listOf(singleImage)
             replaceImageList(content.id, imgs)
             content.setImageFiles(imgs)
             content.downloadMode = DownloadMode.DOWNLOAD_ARCHIVE_FILE

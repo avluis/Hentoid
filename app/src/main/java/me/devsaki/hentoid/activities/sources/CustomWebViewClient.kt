@@ -47,7 +47,6 @@ import me.devsaki.hentoid.util.isPresentAsWord
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
-import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.cleanContentType
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getChromeVersion
@@ -394,10 +393,10 @@ open class CustomWebViewClient : WebViewClient {
         if (getExtensionFromUri(url) == "torrent") {
             scope.launch {
                 try {
-                    val uri = withContext(Dispatchers.IO) {
+                    val file = withContext(Dispatchers.IO) {
                         downloadFile(view.context, url, headers)
                     }
-                    openFile(view.context, uri)
+                    openFile(view.context, file)
                 } catch (t: Throwable) {
                     view.context.toast(R.string.torrent_dl_fail, t.message ?: "")
                     Timber.w(t)
@@ -406,10 +405,16 @@ open class CustomWebViewClient : WebViewClient {
         }
 
         // Queue archives as archive direct downloads
-        if (isSupportedArchive(UriParts(url).fileNameFull) && isMainPage)
+        val uri = url.toUri()
+        if (isSupportedArchive(uri.lastPathSegment ?: "")
+            // Specific to Kemono - target file name is inside the f parameter
+            || isSupportedArchive(uri.getQueryParameter("f") ?: "")
+            && isMainPage
+        ) {
             activity?.downloadContentArchive(url)
+        }
 
-        val host = url.toUri().host
+        val host = uri.host
         return host != null && isHostNotInRestrictedDomains(host)
     }
 

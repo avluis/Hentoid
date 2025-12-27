@@ -65,7 +65,7 @@ const val AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider"
 private const val PRIMARY_VOLUME_NAME = "primary" // DocumentsContract.PRIMARY_VOLUME_NAME
 private const val NOMEDIA_FILE_NAME = ".nomedia"
 private const val TEST_FILE_NAME = "delete.me"
-const val DEFAULT_MIME_TYPE = "application/octet-steam"
+const val DEFAULT_MIME_TYPE = "application/octet-stream"
 
 // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 private val ILLEGAL_FILENAME_CHARS by lazy { "[\"*/:<>\\?\\\\|]".toRegex() }
@@ -857,18 +857,18 @@ fun getMimeTypeFromFileUri(uri: String): String {
 }
 
 /**
- * Detect mime type from picture data if supported
+ * Detect mime-type from given data if supported by the app
  * Returns an exception if not
  *
  * @param buffer        Data to read from
  * @param bufLength     Number of bytes to read from `buffer`
  * @param contentType   Content type declared in HTTP response header
- * @param url           Image URL (for display)
- * @param size          Image size (for display)
+ * @param url           Resource URL (for display)
+ * @param size          Resource size (for display)
  * @return  Mime-type
  */
 @Throws(UnsupportedContentException::class)
-fun getMimeTypeFromPicData(
+fun getMimeTypeFromData(
     buffer: ByteArray,
     bufLength: Int,
     contentType: String,
@@ -882,6 +882,9 @@ fun getMimeTypeFromPicData(
             throw UnsupportedContentException("Message received from $url : $message")
         } else if (me.devsaki.hentoid.util.file.isMimeTypeSupported(contentType)) {
             return contentType
+        } else {
+            val archiveMime = getMimeTypeFromArchiveHeader(buffer)
+            if (archiveMime.isNotEmpty()) return archiveMime
         }
         throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
     }

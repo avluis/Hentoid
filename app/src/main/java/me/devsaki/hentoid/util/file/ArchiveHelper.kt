@@ -144,6 +144,15 @@ private fun getTypeFromArchiveHeader(binary: ByteArray): ArchiveFormat? {
     else null
 }
 
+fun getMimeTypeFromArchiveHeader(binary: ByteArray): String {
+    return when (getTypeFromArchiveHeader(binary)) {
+        ArchiveFormat.ZIP -> MIME_TYPE_ZIP
+        ArchiveFormat.SEVEN_ZIP -> MIME_TYPE_7Z
+        ArchiveFormat.RAR, ArchiveFormat.RAR5 -> MIME_TYPE_RAR
+        else -> ""
+    }
+}
+
 /**
  * Get the entries of the given archive file
  *
