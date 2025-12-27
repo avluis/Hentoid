@@ -285,7 +285,7 @@ class ReaderViewModel(
 
     private suspend fun loadContentFromFile(uri: Uri, rootUri: Uri) = withContext(Dispatchers.IO) {
         // Content has already been loaded from storage once
-        folderContentsCache.get(uri)?.let {
+        folderContentsCache[uri]?.let {
             try {
                 dao.selectContent(it)?.let { c ->
                     loadContent(c)
@@ -1579,9 +1579,8 @@ class ReaderViewModel(
             img,
             pageIndex,
             null,
-            this@ReaderViewModel::notifyDownloadProgress,
-            stopDownload
-        )
+            this@ReaderViewModel::notifyDownloadProgress
+        ) { stopDownload.get() }
     }
 
     /**

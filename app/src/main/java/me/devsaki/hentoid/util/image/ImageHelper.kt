@@ -21,8 +21,6 @@ import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.enums.PictureEncoder
-import me.devsaki.hentoid.events.DownloadEvent
-import me.devsaki.hentoid.events.DownloadEvent.Step
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.createFile
@@ -33,12 +31,10 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.network.getExtensionFromUri
-import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
@@ -386,11 +382,11 @@ fun assembleGif(
     folder: Uri,
     name: String,
     frames: List<Pair<Uri, Int>>,
-    killSwitch: AtomicBoolean,
+    isCanceled: () -> Boolean,
     onProgress: ((Float) -> Unit)? = null
 ): Uri? {
     require(frames.isNotEmpty()) { "No frames given" }
-    require(!killSwitch.get())
+    require(!isCanceled.invoke())
 
     val dims = getInputStream(context, frames[0].first).let { input ->
         BitmapFactory.decodeStream(input).let {
@@ -411,7 +407,7 @@ fun assembleGif(
         }
         gifEncoder.use {
             frames.forEachIndexed { idx, frame ->
-                if (killSwitch.get()) return@forEachIndexed
+                if (isCanceled.invoke()) return@forEachIndexed
                 Timber.d("encoding frame $idx [duration ${frame.second} ms]")
                 getInputStream(context, frame.first).use { input ->
                     BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
@@ -434,7 +430,7 @@ fun assembleGif(
             }
         }
     }
-    if (killSwitch.get()) {
+    if (isCanceled.invoke()) {
         removeFile(context, tempFile)
         return null
     } else return tempFile

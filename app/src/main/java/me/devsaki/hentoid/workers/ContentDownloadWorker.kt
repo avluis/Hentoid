@@ -129,8 +129,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     // True if a Skip event has been processed; false by default
     private val downloadSkipped = AtomicBoolean(false)
 
-    // downloadCanceled || downloadSkipped
+    // True if the download has been interrupted by an exception
     private val downloadInterrupted = AtomicBoolean(false)
+
+    private val downloadProcessStopped: Boolean
+        get() = downloadCanceled.get() || downloadSkipped.get() || downloadInterrupted.get()
+
     private val requestQueueManager =
         RequestQueueManager(context, this::onRequestSuccess, this::onRequestError)
 
@@ -181,7 +185,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     override fun onInterrupt() {
         requestQueueManager.cancelQueue()
         downloadCanceled.set(true)
-        downloadInterrupted.set(true)
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
@@ -453,7 +456,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadInterrupted.get()) return Pair(QueuingResult.CONTENT_SKIPPED, null)
+        if (downloadProcessStopped) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content))
 
@@ -491,9 +494,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             content = dao.selectContent(content.id)
             if (null == content) return Pair(QueuingResult.CONTENT_SKIPPED, null)
             pause(1000)
-            if (downloadInterrupted.get()) break
+            if (downloadProcessStopped) break
         }
-        if (isBeingDeleted && !downloadInterrupted.get()) Timber.d("Purge completed; resuming download")
+        if (isBeingDeleted && !downloadProcessStopped) Timber.d("Purge completed; resuming download")
 
 
         // == DOWNLOAD PHASE ==
@@ -517,7 +520,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadInterrupted.get()) return Pair(QueuingResult.CONTENT_SKIPPED, null)
+        if (downloadProcessStopped) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         val pagesToParse: MutableList<ImageFile> = ArrayList()
         val ugoirasToDownload: MutableList<ImageFile> = ArrayList()
 
@@ -849,9 +852,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             pause(refreshDelayMs)
-        } while (!isDone && !downloadInterrupted.get() && !ContentQueueManager.isQueuePaused && !isScheduledTimeOver)
+        } while (!isDone && !downloadProcessStopped && !ContentQueueManager.isQueuePaused && !isScheduledTimeOver)
 
-        if (isDone && !downloadInterrupted.get()) {
+        if (isDone && !downloadProcessStopped) {
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.id, content.title, pagesOK, pagesKO, downloadedBytes)
         } else if (isScheduledTimeOver) {
@@ -886,7 +889,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         )
 
         val context = applicationContext
-        if (!downloadInterrupted.get()) {
+        if (!downloadProcessStopped) {
             val images: List<ImageFile> = content.imageList
             val nbImages = images.count { !it.isCover } // Don't count the cover
             var hasError = false
@@ -1357,6 +1360,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         downloadFolder: Uri,
         site: Site
     ) {
+        if (this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return
+
         var isError = false
         var errorMsg = ""
         val ugoiraCacheFolder = getOrCreateCacheFolder(
@@ -1379,7 +1384,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 ),
                 Uri.fromFile(ugoiraCacheFolder),
                 targetFileName,
-                downloadInterrupted,
+                isCanceled = { this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused },
                 img.order,
                 MIME_TYPE_ZIP,
                 notifyProgress = { f ->
@@ -1401,7 +1406,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 targetFileUri,
                 ugoiraCacheFolder,
                 null,  // Extract everything; keep original names
-                { downloadInterrupted.get() }
+                { this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused }
             )
 
             // == Build the GIF using download params and extracted pics
@@ -1428,10 +1433,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             EventBus.getDefault().post(
-                DownloadEvent.fromPreparationStep(
-                    DownloadEvent.Step.ENCODE_ANIMATION,
-                    content
-                )
+                DownloadEvent.fromPreparationStep(Step.ENCODE_ANIMATION, content)
             )
 
             // Assemble the GIF
@@ -1440,7 +1442,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 downloadFolder,
                 img.name,
                 frames,
-                downloadInterrupted
+                isCanceled = {
+                    this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused
+                }
             ) { f ->
                 EventBus.getDefault().post(
                     DownloadEvent(
@@ -1507,14 +1511,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             DownloadCommandEvent.Type.EV_CANCEL -> {
                 requestQueueManager.cancelQueue()
                 downloadCanceled.set(true)
-                downloadInterrupted.set(true)
             }
 
             DownloadCommandEvent.Type.EV_SKIP -> {
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED)
                 requestQueueManager.cancelQueue()
                 downloadSkipped.set(true)
-                downloadInterrupted.set(true)
             }
 
             DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE ->

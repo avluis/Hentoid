@@ -168,7 +168,7 @@ class RequestQueue(
             requestHeaders,
             targetFolder,
             targetFileNameNoExt,
-            killSwitch,
+            isCanceled = { killSwitch.get() },
             pageIndex,
             failFast = false,
             notifyProgress = notifyProgress
