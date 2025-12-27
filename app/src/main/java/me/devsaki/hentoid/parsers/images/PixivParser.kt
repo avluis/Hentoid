@@ -69,24 +69,20 @@ class PixivParser : BaseImageListParser() {
                 onlineContent,
                 storedContent,
                 cookieStr,
-                ACCEPT_ALL,
                 userAgent
             ) else if (onlineContent.url.contains("/bookmarks/")) return parseBookmarks(
                 onlineContent,
                 storedContent,
                 cookieStr,
-                ACCEPT_ALL,
                 userAgent
             ) else if (onlineContent.url.contains("/artworks/")) return parseIllust(
                 onlineContent,
                 cookieStr,
-                ACCEPT_ALL,
                 userAgent
             ) else if (onlineContent.url.contains("users/")) return parseUser(
                 onlineContent,
                 storedContent,
                 cookieStr,
-                ACCEPT_ALL,
                 userAgent
             )
         } catch (e: Exception) {
@@ -101,12 +97,11 @@ class PixivParser : BaseImageListParser() {
     private fun parseIllust(
         content: Content,
         cookieStr: String,
-        acceptAll: String,
         userAgent: String
     ): List<ImageFile> {
         take()
         val galleryMetadata =
-            PixivServer.api.getIllustPages(content.uniqueSiteId, cookieStr, acceptAll, userAgent)
+            PixivServer.api.getIllustPages(content.uniqueSiteId, cookieStr, ACCEPT_ALL, userAgent)
                 .execute().body()
         if (null == galleryMetadata || galleryMetadata.error == true) {
             var message = ""
@@ -125,7 +120,6 @@ class PixivParser : BaseImageListParser() {
         onlineContent: Content,
         storedContent: Content?,
         cookieStr: String,
-        acceptAll: String,
         userAgent: String
     ): List<ImageFile> {
         val seriesIdParts =
@@ -153,7 +147,7 @@ class PixivParser : BaseImageListParser() {
                 chaptersToRead,
                 chapters.size,
                 cookieStr,
-                acceptAll,
+                ACCEPT_ALL,
                 userAgent
             ).execute().body()
             if (null == seriesContentMetadata || true == seriesContentMetadata.error) {
@@ -190,7 +184,7 @@ class PixivParser : BaseImageListParser() {
             if (processHalted.get()) return@forEachIndexed
             take()
             val illustMetadata =
-                PixivServer.api.getIllustMetadata(ch.uniqueId, cookieStr, acceptAll, userAgent)
+                PixivServer.api.getIllustMetadata(ch.uniqueId, cookieStr, ACCEPT_ALL, userAgent)
                     .execute().body()
             if (null == illustMetadata || illustMetadata.error) {
                 var message: String? = "Unreachable illust"
@@ -222,7 +216,6 @@ class PixivParser : BaseImageListParser() {
         onlineContent: Content,
         storedContent: Content?,
         cookieStr: String,
-        acceptAll: String,
         userAgent: String
     ): List<ImageFile> {
         val userIdParts =
@@ -236,7 +229,7 @@ class PixivParser : BaseImageListParser() {
         var waited = 0
         take()
         var userIllustResp =
-            PixivServer.api.getUserIllusts(userId, cookieStr, acceptAll, userAgent).execute()
+            PixivServer.api.getUserIllusts(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
         if (waitBlocking429(
                 userIllustResp,
                 Settings.http429DefaultDelaySecs * 1000
@@ -244,19 +237,16 @@ class PixivParser : BaseImageListParser() {
         ) {
             waited++
             userIllustResp =
-                PixivServer.api.getUserIllusts(userId, cookieStr, acceptAll, userAgent).execute()
+                PixivServer.api.getUserIllusts(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
         }
         require(userIllustResp.code() < 400) {
             String.format(
-                "Unreachable user illusts : code=%s (%s) [%d]",
-                userIllustResp.code(),
-                userIllustResp.message(),
-                waited
+                "Unreachable user illusts : code=${userIllustResp.code()} (${userIllustResp.message()}) [$waited]",
             )
         }
         val userIllustsMetadata = userIllustResp.body()
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
-            var message: String? = "Unreachable user illusts"
+            var message = "Unreachable user illusts"
             if (userIllustsMetadata != null) message = userIllustsMetadata.getMessage()
             throw IllegalArgumentException(message)
         }
@@ -287,7 +277,7 @@ class PixivParser : BaseImageListParser() {
             take()
             if (processHalted.get()) return@forEachIndexed
             var illustResp =
-                PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
+                PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
                     .execute()
             while (waitBlocking429(
                     illustResp,
@@ -296,16 +286,12 @@ class PixivParser : BaseImageListParser() {
             ) {
                 waited++
                 illustResp =
-                    PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
+                    PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
                         .execute()
             }
             require(illustResp.code() < 400) {
                 String.format(
-                    "Unreachable illust : code=%s (%s) [%d - %d]",
-                    illustResp.code(),
-                    illustResp.message(),
-                    index,
-                    waited
+                    "Unreachable illust : code=${illustResp.code()} (${illustResp.message()}) [$index - $waited]",
                 )
             }
             val illustMetadata = illustResp.body()
@@ -348,7 +334,6 @@ class PixivParser : BaseImageListParser() {
         onlineContent: Content,
         storedContent: Content?,
         cookieStr: String,
-        acceptAll: String,
         userAgent: String
     ): List<ImageFile> {
         val userIdParts =
@@ -362,7 +347,7 @@ class PixivParser : BaseImageListParser() {
         var waited = 0
         take()
         var bookmarksResp =
-            PixivServer.api.getUserBookmarks(userId, cookieStr, acceptAll, userAgent).execute()
+            PixivServer.api.getUserBookmarks(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
         if (waitBlocking429(
                 bookmarksResp,
                 Settings.http429DefaultDelaySecs * 1000
@@ -370,14 +355,11 @@ class PixivParser : BaseImageListParser() {
         ) {
             waited++
             bookmarksResp =
-                PixivServer.api.getUserBookmarks(userId, cookieStr, acceptAll, userAgent).execute()
+                PixivServer.api.getUserBookmarks(userId, cookieStr, ACCEPT_ALL, userAgent).execute()
         }
         require(bookmarksResp.code() < 400) {
             String.format(
-                "Unreachable bookmarks : code=%s (%s) [%d]",
-                bookmarksResp.code(),
-                bookmarksResp.message(),
-                waited
+                "Unreachable user illusts : code=${bookmarksResp.code()} (${bookmarksResp.message()}) [$waited]",
             )
         }
 
@@ -414,7 +396,7 @@ class PixivParser : BaseImageListParser() {
             take()
             if (processHalted.get()) return@forEachIndexed
             var illustResp =
-                PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
+                PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
                     .execute()
             while (waitBlocking429(
                     illustResp,
@@ -423,16 +405,12 @@ class PixivParser : BaseImageListParser() {
             ) {
                 waited++
                 illustResp =
-                    PixivServer.api.getIllustMetadata(illustId, cookieStr, acceptAll, userAgent)
+                    PixivServer.api.getIllustMetadata(illustId, cookieStr, ACCEPT_ALL, userAgent)
                         .execute()
             }
             require(illustResp.code() < 400) {
                 String.format(
-                    "Unreachable illust $illustId : code=%s (%s) [%d - %d]",
-                    illustResp.code(),
-                    illustResp.message(),
-                    index,
-                    waited
+                    "Unreachable illust : code=${illustResp.code()} (${illustResp.message()}) [$index - $waited]",
                 )
             }
             val illustMetadata = illustResp.body()
