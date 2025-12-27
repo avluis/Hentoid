@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
+        <item>[maskerad]</item>
         <item>konst i en app</item>
         <item>Den vanliga boken?</item>
         <item>Träningsapp avsedd för en hand</item>
