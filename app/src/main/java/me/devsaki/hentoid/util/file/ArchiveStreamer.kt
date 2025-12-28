@@ -37,7 +37,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
     private var queueFailMsg = ""
 
     init {
-        Timber.d("Archive streamer : Init @ $archiveUri")
+        Timber.d("Archive streamer : Init @ $archiveUri (append $append)")
         stream.setMethod(STORED)
     }
 
@@ -101,7 +101,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
                             stream.closeEntry()
                             filesMatch[uri.toString()] =
                                 archiveUri.toString() + File.separator + name
-                        }
+                        } ?: throw IOException("Document not found : $uri")
                         Timber.d("Processing archive queue END : $uri")
                         removeFile(context, uri)
                         // Only remove from queue if all above has succeeded
@@ -111,7 +111,8 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
                         Timber.d(z)
                         if (z.message?.contains("duplicate entry") ?: false)
                             throw IOException(z)
-                        // Retry directly inside the loop
+                        // Retry directly inside the loop (e.g. CRC failed)
+                        Timber.v(z, "Archive queue glitched; retrying")
                     }
                 }
                 Timber.d("Archive queue : nothing more to process")
