@@ -406,6 +406,29 @@ object ObjectBoxDB {
         }
     }
 
+    /**
+     * Cleanup all Chapters that aren't linked to any Content
+     */
+    fun cleanupOrphanChapters() {
+        val chapterBox = store.boxFor(Chapter::class.java)
+        // NB : QueryContent.relationCount doesn't work properly even for toOne relations
+        val allChaps = chapterBox.query().safeFindIds().toMutableSet()
+
+        val linkedChapsQb = chapterBox.query()
+        linkedChapsQb.link(Chapter_.content)
+        val linkedChaps = linkedChapsQb.build().safeFindIds().toSet()
+
+        allChaps.removeAll(linkedChaps)
+        if (allChaps.isEmpty()) return
+
+        // Clean the chapters
+        val toRemove = chapterBox.get(allChaps.toLongArray())
+        for (chp in toRemove) {
+            Timber.v(">> Found empty chapter : ${chp.name}")
+            chapterBox.remove(chp)
+        }
+    }
+
     fun selectQueueContents(): List<Content> {
         val result: MutableList<Content> = ArrayList()
         val queueRecords = selectQueueRecordsQ().safeFind()
