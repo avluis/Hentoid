@@ -172,11 +172,11 @@ class PrimaryDownloadManager {
      *
      * @return true if at least one value has been updated; false if nothing changed
      */
-    fun refreshLocation(imageList: Collection<ImageFile>): Boolean {
+    fun refreshLocation(imageList: Collection<ImageFile>): Map<Long, String> {
         if (downloadMode == DownloadMode.DOWNLOAD_ARCHIVE) {
             archiveStreamer?.let { return refreshLocation(imageList, it) }
         }
-        return false
+        return emptyMap()
     }
 
     /**
@@ -193,8 +193,15 @@ class PrimaryDownloadManager {
                 if (streamer.queueFailed)
                     throw ArchiveException(streamer.queueFailMessage)
 
-                val imgList = content.imageList
-                if (refreshLocation(imgList, streamer)) content.setImageFiles(imgList)
+                var imgList = content.imageList
+                val newLocations = refreshLocation(imgList, streamer)
+                if (newLocations.isNotEmpty()) {
+                    imgList = imgList.map { img ->
+                        newLocations[img.id]?.let { img.fileUri = it }
+                        img
+                    }
+                    content.setImageFiles(imgList)
+                }
             }
         }
 
@@ -248,24 +255,17 @@ class PrimaryDownloadManager {
     private fun refreshLocation(
         imageList: Collection<ImageFile>,
         streamer: ArchiveStreamer
-    ): Boolean {
-        var hasChanges = false
+    ): Map<Long, String> {
+        val result = HashMap<Long, String>()
         imageList.forEach { img ->
             localMatch[img.fileUri]?.let {
-                if (img.fileUri != it) {
-                    img.fileUri = it
-                    hasChanges = true
-                }
+                if (img.fileUri != it) result[img.id] = it
             }
-
             streamer.mappedUris[img.fileUri]?.let {
-                if (img.fileUri != it) {
-                    img.fileUri = it
-                    hasChanges = true
-                }
+                if (img.fileUri != it) result[img.id] = it
             }
         }
-        return hasChanges
+        return result
     }
 
     fun clear() {

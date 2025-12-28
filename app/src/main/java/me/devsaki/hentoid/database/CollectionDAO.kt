@@ -229,6 +229,8 @@ interface CollectionDAO {
 
     fun updateImageFileStatusParamsMimeTypeUriSize(image: ImageFile)
 
+    fun updateImageLocations(locations : Map<Long, String>)
+
     fun deleteImageFiles(imgs: List<ImageFile>)
 
     fun selectImageFile(id: Long): ImageFile?

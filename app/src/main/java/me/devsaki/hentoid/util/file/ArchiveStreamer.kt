@@ -12,9 +12,9 @@ import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.LinkedList
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.CRC32
 import java.util.zip.Checksum
@@ -27,7 +27,7 @@ import java.util.zip.ZipOutputStream
 class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
     private val stream = ZipOutputStream(getOutputStream(context, archiveUri, append))
-    private val filesQueue: Queue<Uri> = LinkedList()
+    private val filesQueue: Queue<Uri> = ConcurrentLinkedQueue()
     private val filesMatch: MutableMap<String, String> = ConcurrentHashMap()
 
     private val stop = AtomicBoolean(false)
@@ -72,20 +72,21 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
-    @Synchronized
     private fun processQueue(context: Context) {
-        if (isQueueActive.get()) return
+        synchronized(isQueueActive) {
+            if (isQueueActive.get()) return
 
-        Timber.d("Archive queue : activating")
+            Timber.d("Archive queue : activating")
+            isQueueActive.set(true)
+        }
 
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 var uri = filesQueue.peek()
                 while (uri != null && !stop.get()) {
                     try {
-                        isQueueActive.set(true)
                         getDocumentProperties(context, uri)?.let { doc ->
-                            Timber.d("Processing archive queue (${filesQueue.size}) : $uri")
+                            Timber.d("Processing archive queue BEGIN (${filesQueue.size}) : $uri")
                             val name = doc.name
                             val entry = ZipEntry(name)
                             entry.size = doc.size
@@ -101,6 +102,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
                             filesMatch[uri.toString()] =
                                 archiveUri.toString() + File.separator + name
                         }
+                        Timber.d("Processing archive queue END : $uri")
                         removeFile(context, uri)
                         // Only remove from queue if all above has succeeded
                         filesQueue.remove(uri)

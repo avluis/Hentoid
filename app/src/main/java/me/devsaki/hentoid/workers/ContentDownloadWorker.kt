@@ -28,7 +28,6 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
-import me.devsaki.hentoid.events.DownloadEvent.Step
 import me.devsaki.hentoid.events.DownloadReviveEvent
 import me.devsaki.hentoid.json.sources.pixiv.UGOIRA_FRAMES_TYPE
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification
@@ -847,9 +846,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Refresh image locations when an archive download is in progress
-            if (dlManager.refreshLocation(images)) {
-                if (content.id > 0) dao.replaceImageList(content.id, images)
-            }
+            // NB : Should be done like that to avoid threading issues while the same images may be updated by onRequestSuccess
+            val newLocations = dlManager.refreshLocation(images)
+            if (newLocations.isNotEmpty() && content.id > 0) dao.updateImageLocations(newLocations)
 
             pause(refreshDelayMs)
         } while (!isDone && !downloadProcessStopped && !ContentQueueManager.isQueuePaused && !isScheduledTimeOver)
@@ -1145,7 +1144,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content))
         } catch (e: UnsupportedOperationException) {
             Timber.i(e, "Could not read image from page %s", img.pageUrl)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.PARSING,
@@ -1155,7 +1154,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (e: IllegalArgumentException) {
             Timber.i(e, "Could not read image from page %s", img.pageUrl)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.PARSING,
@@ -1165,7 +1164,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (ioe: IOException) {
             Timber.i(ioe, "Could not read page data from %s", img.pageUrl)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.IO,
@@ -1180,7 +1179,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 lre.message
             )
             Timber.i(lre, description)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.SITE_LIMIT,
@@ -1190,7 +1189,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (ere: EmptyResultException) {
             Timber.i(ere, "No images have been found while parsing %s", content.title)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.PARSING,
@@ -1200,7 +1199,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (e: Exception) { // Where "the rest" is caught
             Timber.i(e, "An unexpected error occured while parsing %s", content.title)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.UNDEFINED,
@@ -1240,8 +1239,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private fun onRequestSuccess(request: RequestOrder, fileUri: Uri) {
         val img = request.img
-        img.size = fileSizeFromUri(applicationContext, fileUri)
-        updateImageProperties(img, true, fileUri.toString())
+        updateImageProperties(img, true, fileUri)
         dlManager.processDownloadedFile(
             applicationContext,
             request.img.isCover && !request.img.isReadable,
@@ -1266,7 +1264,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (error.type === RequestOrder.NetworkErrorType.FILE_IO) cause = "File I/O"
         else if (error.type === RequestOrder.NetworkErrorType.PARSE) cause = "Parsing"
         Timber.d("$message $cause")
-        updateImageProperties(img, false, "")
+        updateImageProperties(img, false)
         logErrorRecord(
             contentId, ErrorType.NETWORKING, img.url, img.name,
             "$cause; HTTP statusCode=$statusCode; message=$message"
@@ -1307,7 +1305,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
             processBackupImage(backupImg, img, dir, content)
         } catch (e: Exception) {
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 img.content.targetId,
                 ErrorType.NETWORKING,
@@ -1433,7 +1431,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             EventBus.getDefault().post(
-                DownloadEvent.fromPreparationStep(Step.ENCODE_ANIMATION, content)
+                DownloadEvent.fromPreparationStep(DownloadEvent.Step.ENCODE_ANIMATION, content)
             )
 
             // Assemble the GIF
@@ -1449,14 +1447,13 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 EventBus.getDefault().post(
                     DownloadEvent(
                         eventType = DownloadEvent.Type.EV_PROGRESS,
-                        step = Step.ENCODE_ANIMATION,
+                        step = DownloadEvent.Step.ENCODE_ANIMATION,
                         fileDownloadProgress = f * 100
                     )
                 )
             } ?: throw IOException("Couldn't assemble ugoira file")
 
-            img.size = fileSizeFromUri(applicationContext, ugoiraGifFile)
-            updateImageProperties(img, true, ugoiraGifFile.toString())
+            updateImageProperties(img, true, ugoiraGifFile)
 
             dlManager.processDownloadedFile(applicationContext, false, ugoiraGifFile)
         } catch (e: Exception) {
@@ -1465,7 +1462,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             errorMsg = e.message ?: ""
         }
         if (isError) {
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 img.content.targetId,
                 ErrorType.IMG_PROCESSING,
@@ -1483,11 +1480,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * @param success True if download is successful; false if download failed
      */
     private fun updateImageProperties(
-        img: ImageFile, success: Boolean,
-        uriStr: String
+        img: ImageFile,
+        success: Boolean,
+        uri: Uri = Uri.EMPTY
     ) {
         img.status = if (success) StatusContent.DOWNLOADED else StatusContent.ERROR
-        img.fileUri = uriStr
+        if (uri != Uri.EMPTY) {
+            img.size = fileSizeFromUri(applicationContext, uri)
+            img.fileUri = uri.toString()
+        } else {
+            img.size = 0
+            img.fileUri = ""
+        }
         if (success) img.downloadParams = ""
         if (img.id > 0) dao.updateImageFileStatusParamsMimeTypeUriSize(img) // because thumb image isn't in the DB
     }

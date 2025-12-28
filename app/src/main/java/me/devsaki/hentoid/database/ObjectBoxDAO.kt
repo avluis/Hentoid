@@ -1040,6 +1040,10 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.updateImageFileStatusParamsMimeTypeUriSize(image)
     }
 
+    override fun updateImageLocations(locations : Map<Long, String>) {
+        ObjectBoxDB.updateImageFileUri(locations)
+    }
+
     override fun deleteImageFiles(imgs: List<ImageFile>) {
         // Delete the page
         ObjectBoxDB.deleteImageFiles(imgs)

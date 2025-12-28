@@ -1640,6 +1640,17 @@ object ObjectBoxDB {
         }
     }
 
+    fun updateImageFileUri(locations : Map<Long, String>) {
+        val imgBox = store.boxFor(ImageFile::class.java)
+        store.runInTx {
+            val imgs = imgBox[locations.keys].map { img ->
+                locations[img.id]?.let { img.fileUri = it }
+                img
+            }
+            imgBox.put(imgs)
+        }
+    }
+
     fun selectAllFavouritePagesQ(): Query<ImageFile> {
         return store.boxFor(ImageFile::class.java).query()
             .equal(ImageFile_.favourite, true)
