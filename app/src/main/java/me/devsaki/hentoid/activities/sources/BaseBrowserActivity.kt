@@ -459,28 +459,30 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
     override fun onPause() {
         super.onPause()
-        if (WebkitPackageHelper.getWebViewAvailable()) {
-            webView.url?.let {
-                val parts = UriParts(it)
-                val usefulData = parts.pathFull.substring(parts.host.length).replace("/", "")
-                if (usefulData.length < 8) return // Don't record useless locations (e.g. /en/, /artists/, /search/...)
-                viewModel.saveCurrentUrl(getStartSite(), it)
-            }
+        if (!WebkitPackageHelper.getWebViewAvailable()) return
+        Timber.i("onPause")
+        webView.url?.let {
+            val parts = UriParts(it)
+            val usefulData = parts.pathFull.substring(parts.host.length).replace("/", "") + parts.query
+            if (usefulData.length < 8) return // Don't record useless locations (e.g. /en/, /artists/, /search/...)
+            viewModel.saveCurrentUrl(getStartSite(), it)
         }
     }
 
     /**
      * Determine the URL the browser will load at startup
      * - Either an URL specifically given to the activity (e.g. "view source" action)
-     * - Or the last viewed page, if the option is enabled
+     * - Or the last viewed page, if the setting is enabled
      * - If neither of the previous cases, the default URL of the site
+     *
+     * @param forceHomepage Force the URL to be the current site's homepage
      *
      * @return URL to load at startup
      */
-    private fun getStartUrl(homepageOnly: Boolean = false): String {
+    private fun getStartUrl(forceHomepage: Boolean = false): String {
         val dao: CollectionDAO = ObjectBoxDAO()
         try {
-            if (!homepageOnly) {
+            if (!forceHomepage) {
                 // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
                 if (intent.extras != null) {
                     val bundle = BaseBrowserActivityBundle(intent.extras!!)
@@ -488,14 +490,14 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                     if (intentUrl.isNotEmpty()) return intentUrl
                 }
 
-                // Priority 2 : Last viewed position, if option enabled
+                // Priority 2 : Last viewed position, if setting enabled
                 if (Settings.isBrowserResumeLast) {
                     val siteHistory = dao.selectHistory(getStartSite())
                     if (siteHistory.url.isNotEmpty()) return siteHistory.url
                 }
             }
 
-            // Priority 3 : Homepage, if manually set through bookmarks
+            // Priority 3 : Homepage (manually set through bookmarks or default)
             val welcomePage = dao.selectHomepage(getStartSite())
             return welcomePage?.url ?: getStartSite().url
 
@@ -1689,7 +1691,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         if (event.eventType === DownloadEvent.Type.EV_COMPLETE) {
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls()
             if (webClient.isMarkQueued()) updateQueuedBooksUrls()
-            if (event.content != null && event.content == currentContent && event.content!!.status == StatusContent.DOWNLOADED) {
+            if (event.content != null && event.content == currentContent && event.content.status == StatusContent.DOWNLOADED) {
                 lifecycleScope.launch { setActionMode(ActionMode.READ) }
             }
         }
