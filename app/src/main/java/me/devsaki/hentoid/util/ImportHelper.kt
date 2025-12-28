@@ -955,7 +955,12 @@ fun scanChapterFolders(
             result.imageList,
             images.maxOfOrNull { it.order } ?: 0
         )
-        val chp = Chapter(idx, chapterFolder.uri.toString(), chapterFolder.name ?: "")
+        val chp = Chapter(
+            idx,
+            chapterFolder.uri.toString(),
+            chapterFolder.name ?: "",
+            ""
+        )
         chp.setContent(result)
         chp.setImageFiles(imgs)
         imgs.forEach { it.setChapter(chp) }
@@ -1230,7 +1235,12 @@ private fun loadAsChapters(
     val chapters: MutableList<Chapter> = ArrayList()
     val images: MutableList<ImageFile> = ArrayList()
     contentList.forEachIndexed { cidx, c ->
-        val chapter = Chapter(cidx + 1, c.parentStorageUri ?: "", chapterStr + " " + (cidx + 1))
+        val chapter = Chapter(
+            cidx + 1,
+            c.parentStorageUri ?: "",
+            chapterStr + " " + (cidx + 1),
+            ""
+        )
         chapter.setContent(content)
         chapter.setImageFiles(c.imageList.filter { i -> i.isReadable })
         chapter.imageList.forEachIndexed { iidx, img ->

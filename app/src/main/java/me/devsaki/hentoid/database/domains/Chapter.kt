@@ -24,8 +24,8 @@ data class Chapter(
     @Backlink(to = "chapter")
     lateinit var imageFiles: ToMany<ImageFile>
 
-    constructor(order: Int, url: String, name: String) : this(
-        id = 0, order = order, url = url, name = name
+    constructor(order: Int, url: String, name: String, uniqueId : String) : this(
+        id = 0, order = order, url = url, name = name, uniqueId = uniqueId
     )
 
     constructor(chapter: Chapter) : this(

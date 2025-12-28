@@ -14,6 +14,7 @@ import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
 import me.devsaki.hentoid.util.ongoingStr
@@ -212,7 +213,7 @@ fun urlsToImageFiles(
     val result: MutableList<ImageFile> = ArrayList()
     var order = initialOrder
     // Remove duplicates and MACOSX indexes (yes, it does happen!) before creating the ImageFiles
-    val imgUrlsUnique = imgUrls.distinct().filterNot { it.contains("__MACOSX") }
+    val imgUrlsUnique = imgUrls.distinct().filterNot { it.contains("__MACOSX") || it.isEmpty() }
     for (s in imgUrlsUnique) result.add(
         urlToImageFile(
             s.trim(),
@@ -328,6 +329,7 @@ fun getExtensionFromFormat(imgFormat: Map<String, String>, i: Int): String {
 /**
  * Extract a list of Chapters from the given list of links, for the given Content ID
  *
+ * @param site         Site for which the URLs are processed
  * @param chapterLinks List of HTML links to extract Chapters from
  * @param contentId    Content ID to associate with all extracted Chapters
  * @param dateCssQuery CSS query to select the chapter upload date (optional)
@@ -335,6 +337,7 @@ fun getExtensionFromFormat(imgFormat: Map<String, String>, i: Int): String {
  * @return Chapters detected from the given list of links, associated with the given Content ID
  */
 fun getChaptersFromLinks(
+    site: Site,
     chapterLinks: List<Element>,
     contentId: Long,
     dateCssQuery: String? = null,
@@ -346,7 +349,7 @@ fun getChaptersFromLinks(
     // First extract data and filter URL duplicates
     val chapterData: MutableList<Triple<String, String, Long>> = ArrayList()
     for (e in chapterLinks) {
-        val url = e.attr("href").trim()
+        val url = fixUrl(e.attr("href").trim(), site.url)
         var name = e.attr("title").trim()
         if (name.isEmpty()) name = cleanup(e.ownText()).trim()
         var epoch = 0L
@@ -365,8 +368,13 @@ fun getChaptersFromLinks(
     chapterData.reverse() // Put unique results in their chronological order
     // Build the final list
     for ((order, chapter) in chapterData.withIndex()) {
-        val chp = Chapter(order, chapter.first, chapter.second)
-        chp.uploadDate = chapter.third
+        val chp = Chapter(
+            order = order,
+            url = chapter.first,
+            name = chapter.second,
+            uploadDate = chapter.third
+            // TODO uniqueId?
+        )
         chp.setContentId(contentId)
         result.add(chp)
     }

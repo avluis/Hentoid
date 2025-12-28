@@ -1784,7 +1784,7 @@ class ReaderViewModel(
         var selectedChapter = selectedPage.linkedChapter
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == selectedChapter) {
-            selectedChapter = Chapter(1, "", "$chapterStr 1")
+            selectedChapter = Chapter(1, "", "$chapterStr 1", "")
             theContent.imageFiles.let { workingList ->
                 selectedChapter.setImageFiles(workingList)
                 // Link images the other way around so that what follows works properly
@@ -1844,7 +1844,7 @@ class ReaderViewModel(
         chapterImgs: List<ImageFile>
     ) {
         val newChapterOrder = currentChapter.order + 1
-        val newChapter = Chapter(newChapterOrder, "", "$chapterStr $newChapterOrder")
+        val newChapter = Chapter(newChapterOrder, "", "$chapterStr $newChapterOrder", "")
         newChapter.setContent(content)
 
         // Sort by order

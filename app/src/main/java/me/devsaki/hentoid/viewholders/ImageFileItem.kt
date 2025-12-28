@@ -27,7 +27,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
     IExpandable<ImageFileItem.ViewHolder>,
     INestedItem<ImageFileItem.ViewHolder> {
     private val chapter: Chapter =
-        image.linkedChapter ?: Chapter(1, "", "") // Default display when nothing is set
+        image.linkedChapter ?: Chapter(1, "", "", "") // Default display when nothing is set
     private var isCurrent = false
     private val expanded = false
 

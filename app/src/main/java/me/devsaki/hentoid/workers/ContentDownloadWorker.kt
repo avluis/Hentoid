@@ -543,7 +543,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
                     // Set the next image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
                     // NB : Per convention, cover is always the 1st picture of a given set
-                    if (img.isCover) {
+                    if (img.isCover && !img.url.isEmpty()) {
                         if (images.size > idx + 1) img.backupUrl = images[idx + 1].url
                         covers.add(img)
                     }

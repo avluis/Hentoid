@@ -45,7 +45,7 @@ class Hentai2ReadParser : BaseChapteredImageListParser() {
     }
 
     override fun getChapterSelector(): ChapterSelector {
-        return ChapterSelector(listOf(".nav-chapters a[href^=\$galleryUrl]"))
+        return ChapterSelector(listOf(".nav-chapters a[href^=$GALLERY_URL_PLACEHOLDER]"))
     }
 
     @Throws(Exception::class)

@@ -18,6 +18,8 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import timber.log.Timber
 
+const val GALLERY_URL_PLACEHOLDER = $$"$galleryUrl"
+
 abstract class BaseChapteredImageListParser : BaseImageListParser() {
 
     protected abstract fun isChapterUrl(url: String): Boolean
@@ -71,7 +73,6 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         val headers = fetchHeaders(onlineContent)
 
         // 1. Scan the gallery page for chapter URLs
-        val chapters: List<Chapter>
         val doc = getOnlineDocument(
             onlineContent.galleryUrl,
             headers,
@@ -79,13 +80,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
             onlineContent.site.useWebviewAgent
         ) ?: return result
 
-        val selector = getChapterSelector()
-        chapters = getChaptersFromLinks(
-            getChapterLinks(doc, onlineContent, selector),
-            onlineContent.id,
-            selector.dateCssQuery,
-            selector.datePattern
-        )
+        val chapters = getChapters(onlineContent, doc)
 
         // If the stored content has chapters already, save them for comparison
         val storedChapters = storedContent?.chaptersList?.toMutableList() ?: emptyList()
@@ -122,9 +117,8 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
         if (minEpoch > 0 && minEpoch < Long.MAX_VALUE) onlineContent.uploadDate = minEpoch
 
         // Add cover if it's a first download
-        if (storedChapters.isEmpty()) result.add(
-            ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED)
-        )
+        if (storedChapters.isEmpty() && onlineContent.coverImageUrl.isNotEmpty())
+            result.add(ImageFile.newCover(onlineContent.coverImageUrl, StatusContent.SAVED))
 
         return result
     }
@@ -150,6 +144,17 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
 
     // == UTILS
 
+    protected open fun getChapters(content: Content, galleryPage: Document): List<Chapter> {
+        val selector = getChapterSelector()
+        return getChaptersFromLinks(
+            content.site,
+            getChapterLinks(galleryPage, content, selector),
+            content.id,
+            selector.dateCssQuery,
+            selector.datePattern
+        )
+    }
+
     @Throws(EmptyResultException::class)
     protected open fun getChapterLinks(
         doc: Document,
@@ -158,7 +163,7 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
     ): List<Element> {
         val selectors =
             selector.selectors.map {
-                it.replace("\$galleryUrl", onlineContent.galleryUrl)
+                it.replace(GALLERY_URL_PLACEHOLDER, onlineContent.galleryUrl)
             }
         val result = parseChapterLinks(doc, selectors)
         if (result.isEmpty()) throw EmptyResultException("No chapters found")

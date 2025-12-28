@@ -1978,8 +1978,13 @@ suspend fun mergeContents(
                 contentIdx++
                 var newChapter: Chapter? = null
                 // Create a default "content chapter" that represents the original book before merging
-                val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
-                contentChapter.uniqueId = c.uniqueSiteId + "-" + contentChapter.order
+                chapterOrder++
+                val contentChapter = Chapter(
+                    chapterOrder,
+                    c.galleryUrl,
+                    c.title,
+                    c.uniqueSiteId + "-" + chapterOrder
+                )
 
                 val imgs = c.imageList.sortedBy { it.order }
                 val firstImageIsCover = !imgs.any { it.isCover }
