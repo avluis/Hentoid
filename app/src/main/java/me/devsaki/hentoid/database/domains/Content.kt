@@ -238,10 +238,7 @@ data class Content(
                 Site.NHENTAI, Site.ASMHENTAI, Site.ASMHENTAI_COMICS -> site.url + "/g/" + id + "/"
                 Site.IMHENTAI, Site.HENTAIFOX -> site.url + "/gallery/" + id + "/"
                 Site.HENTAICAFE -> site.url + "/hc.fyi/" + id
-                Site.TSUMINO -> site.url + "/entry/" + id
-                Site.NEXUS -> site.url + "/view/" + id
                 Site.LUSCIOUS -> site.url.replace("manga", "albums") + id + "/"
-                Site.HBROWSE -> site.url + id + "/c00001"
                 Site.PIXIV -> if (1 == altCode) site.url + "users/" + id
                 else site.url + "artworks/" + id
 
@@ -277,7 +274,6 @@ data class Content(
 
         fun transformRawUrl(site: Site, url: String): String {
             when (site) {
-                Site.TSUMINO -> return url.replace("/Read/Index", "")
                 Site.PURURIN -> {
                     if (url.contains("/collection/")) return url
                     return url.replace(getHttpProtocol(url) + "://pururin.me/gallery", "")
@@ -381,7 +377,7 @@ data class Content(
                 return if ((paths.size > 1)) paths[1] else paths[0]
             }
 
-            Site.MRM, Site.HBROWSE -> return url.split("/")[0]
+            Site.MRM -> return url.split("/")[0]
 
             Site.HITOMI -> {
                 paths = url.split("/")
@@ -389,8 +385,7 @@ data class Content(
                 return expression.replace(".html", "")
             }
 
-            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI, Site.PANDA, Site.TSUMINO
-                -> return url.replace("/", "")
+            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI -> return url.replace("/", "")
 
             Site.MUSES -> return url.replace("/comics/album/", "").replace("/", ".")
             Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART, Site.HIPERDEX, Site.NOVELCROW, Site.TMO -> {
@@ -453,7 +448,6 @@ data class Content(
                 Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.ANCHIRA
                     -> galleryConst = "/g"
 
-                Site.TSUMINO -> galleryConst = "/entry"
                 Site.FAKKU2 -> galleryConst = "/hentai/"
                 Site.EDOUJIN, Site.LUSCIOUS -> return site.url.replace("/manga/", "") + url
                 Site.PORNCOMIX -> return url
@@ -474,7 +468,6 @@ data class Content(
         get() {
             when (site) {
                 Site.HITOMI -> return site.url + "/reader" + url
-                Site.TSUMINO -> return site.url + "/Read/Index" + url
                 Site.ASMHENTAI -> return site.url + "/gallery" + url + "1/"
                 Site.ASMHENTAI_COMICS -> return site.url + "/gallery" + url
                 Site.PURURIN -> {
