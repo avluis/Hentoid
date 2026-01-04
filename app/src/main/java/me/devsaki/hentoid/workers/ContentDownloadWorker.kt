@@ -224,6 +224,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         while (result.first != QueuingResult.QUEUE_END) {
             if (result.first == QueuingResult.CONTENT_FOUND)
                 result = watchProgress(result.second!!)
+            dlManager.clear()
+
             if (result.first != QueuingResult.QUEUE_END) result = downloadFirstInQueue()
             dao.cleanup()
         }
@@ -854,9 +856,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         } while (!isDone && !downloadProcessStopped && !ContentQueueManager.isQueuePaused && !isScheduledTimeOver)
 
         if (isDone && !downloadProcessStopped) {
+            Timber.d("Content download completed : %s [%s]", content.title, content.id)
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.id, content.title, pagesOK, pagesKO, downloadedBytes)
         } else if (isScheduledTimeOver) {
+            Timber.d("Content download paused (scheduled time over) : %s [%s]", content.title, content.id)
             pauseQueue()
             return Pair(QueuingResult.QUEUE_END, null)
         } else {

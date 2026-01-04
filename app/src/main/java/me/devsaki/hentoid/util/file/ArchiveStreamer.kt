@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.io.IOException
-import me.devsaki.hentoid.util.copy
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
@@ -18,15 +17,12 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.CRC32
 import java.util.zip.Checksum
-import java.util.zip.ZipEntry
-import java.util.zip.ZipEntry.STORED
 import java.util.zip.ZipException
-import java.util.zip.ZipOutputStream
 
 
 class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
-    private val stream = ZipOutputStream(getOutputStream(context, archiveUri, append))
+    private val stream = ZipStream(context, archiveUri)
     private val filesQueue: Queue<Uri> = ConcurrentLinkedQueue()
     private val filesMatch: MutableMap<String, String> = ConcurrentHashMap()
 
@@ -38,7 +34,6 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
     init {
         Timber.d("Archive streamer : Init @ $archiveUri (append $append)")
-        stream.setMethod(STORED)
     }
 
     val queueActive: Boolean
@@ -57,8 +52,6 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
     fun close() {
         Timber.d("Archive streamer : Closing")
         stop.set(true)
-        stream.flush()
-        stream.finish()
         stream.close()
         filesMatch.clear()
         isQueueActive.set(false)
@@ -89,17 +82,12 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
                         getDocumentProperties(context, uri)?.let { doc ->
                             Timber.d("Processing archive queue BEGIN (${filesQueue.size}) : $uri")
                             val name = doc.name
-                            val entry = ZipEntry(name)
-                            entry.size = doc.size
-                            entry.method = STORED
-                            getInputStream(context, uri).use {
-                                entry.crc = getChecksumValue(CRC32(), it)
+                            val crc = getInputStream(context, uri).use {
+                                getChecksumValue(CRC32(), it)
                             }
-                            stream.putNextEntry(entry)
-                            getInputStream(context, uri).use {
-                                copy(it, stream)
-                            }
-                            stream.closeEntry()
+                            stream.putStoredRecord(name, doc.size, crc)
+                            getInputStream(context, uri).use { stream.transferData(it) }
+                            stream.closeRecord()
                             filesMatch[uri.toString()] =
                                 archiveUri.toString() + File.separator + name
                         } ?: throw IOException("Document not found : $uri")
