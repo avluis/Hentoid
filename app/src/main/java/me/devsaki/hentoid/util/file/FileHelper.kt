@@ -949,7 +949,7 @@ fun findSequencePosition(
         if (sequence[iSequence] == data[i]) iSequence++
         else if (iSequence > 0) iSequence = 0
 
-        if (sequence.size == iSequence) return i - sequence.size
+        if (sequence.size == iSequence) return i - sequence.size + 1
     }
 
     // Target sequence not found
