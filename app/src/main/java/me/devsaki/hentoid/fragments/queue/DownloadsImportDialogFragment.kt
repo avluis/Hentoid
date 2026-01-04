@@ -126,10 +126,10 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
                     try {
                         return@withContext readFile(requireContext(), file)
                     } catch (e: Exception) {
-                        Timber.Forest.w(e)
+                        Timber.w(e)
                         errorFileName = file.name ?: ""
                     }
-                    return@withContext emptyList<String>()
+                    return@withContext emptyList()
                 }
                 coroutineScope {
                     if (errorFileName.isEmpty()) onFileRead(result, file)
@@ -146,8 +146,8 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun readFile(context: Context, file: DocumentFile): List<String> {
-        getInputStream(context, file).use {
-            val urls = parseBookmarks(it)
+        getInputStream(context, file).use { input ->
+            val urls = parseBookmarks(input)
             return urls.map { it.url }
         }
     }
@@ -228,6 +228,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEvent(event: ProcessEvent) {
         if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
@@ -262,6 +263,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onImportStickyEvent(event: ProcessEvent) {
         if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
@@ -287,6 +289,7 @@ class DownloadsImportDialogFragment : BaseDialogFragment<Nothing>() {
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.downloads_import_service) return
