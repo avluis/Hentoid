@@ -8,6 +8,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.util.assertNonUiThread
+import me.devsaki.hentoid.util.byteArrayOfInts
 import me.devsaki.hentoid.util.image.startsWith
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
@@ -52,27 +53,10 @@ private const val INTERRUPTION_MSG = "Extract archive INTERRUPTED"
 
 // In Java and Kotlin, byte type is signed !
 // => Converting all raw values to byte to be sure they are evaluated as expected
-private val ZIP_SIGNATURE = byteArrayOf(0x50.toByte(), 0x4B.toByte(), 0x03.toByte())
-private val SEVEN_ZIP_SIGNATURE = byteArrayOf(
-    0x37.toByte(),
-    0x7A.toByte(),
-    0xBC.toByte(),
-    0xAF.toByte(),
-    0x27.toByte(),
-    0x1C.toByte()
-)
-private val RAR5_SIGNATURE = byteArrayOf(
-    0x52.toByte(),
-    0x61.toByte(),
-    0x72.toByte(),
-    0x21.toByte(),
-    0x1A.toByte(),
-    0x07.toByte(),
-    0x01.toByte(),
-    0x00.toByte()
-)
-private val RAR_SIGNATURE =
-    byteArrayOf(0x52.toByte(), 0x61.toByte(), 0x72.toByte(), 0x21.toByte())
+private val ZIP_SIGNATURE = byteArrayOfInts(0x50, 0x4B, 0x03)
+private val SEVEN_ZIP_SIGNATURE = byteArrayOfInts(0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C)
+private val RAR5_SIGNATURE = byteArrayOfInts(0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00)
+private val RAR_SIGNATURE = byteArrayOfInts(0x52, 0x61, 0x72, 0x21)
 
 private const val BUFFER = 32 * 1024
 
@@ -458,7 +442,7 @@ fun Context.zipFiles(
  * @property path Asbolute path, extension included
  * @property size Size in bytes
  */
-data class ArchiveEntry(val isFolder : Boolean, val path: String, val size: Long)
+data class ArchiveEntry(val isFolder: Boolean, val path: String, val size: Long)
 
 private class ArchiveOpenCallback : IArchiveOpenCallback {
     override fun setTotal(files: Long?, bytes: Long?) {

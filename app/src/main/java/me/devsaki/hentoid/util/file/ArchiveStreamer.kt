@@ -58,6 +58,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
         Timber.d("Archive streamer : Closing")
         stop.set(true)
         stream.flush()
+        stream.finish()
         stream.close()
         filesMatch.clear()
         isQueueActive.set(false)

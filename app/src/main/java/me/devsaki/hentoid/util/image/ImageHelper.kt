@@ -21,6 +21,7 @@ import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.util.byteArrayOfInts
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
 import me.devsaki.hentoid.util.file.createFile
@@ -59,12 +60,11 @@ const val MIME_VIDEO_MP4 = "video/mp4"
 
 // In Java and Kotlin, byte type is signed !
 // => Converting all raw values to byte to be sure they are evaluated as expected
-private val JPEG_SIGNATURE = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte())
-private val WEBP_SIGNATURE =
-    byteArrayOf(0x52.toByte(), 0x49.toByte(), 0x46.toByte(), 0x46.toByte())
-private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte())
-private val GIF_SIGNATURE = byteArrayOf(0x47.toByte(), 0x49.toByte(), 0x46.toByte())
-private val BMP_SIGNATURE = byteArrayOf(0x42.toByte(), 0x4D.toByte())
+private val JPEG_SIGNATURE = byteArrayOfInts(0xFF, 0xD8, 0xFF)
+private val WEBP_SIGNATURE = byteArrayOfInts(0x52, 0x49, 0x46, 0x46)
+private val PNG_SIGNATURE = byteArrayOfInts(0x89, 0x50, 0x4E)
+private val GIF_SIGNATURE = byteArrayOfInts(0x47, 0x49, 0x46)
+private val BMP_SIGNATURE = byteArrayOfInts(0x42, 0x4D)
 
 private val GIF_NETSCAPE = "NETSCAPE".toByteArray(CHARSET_LATIN_1)
 
@@ -74,21 +74,9 @@ private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
 private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
 private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
-private val JXL_NAKED = byteArrayOf(0xFF.toByte(), 0x0A.toByte())
-private val JXL_ISO = byteArrayOf(
-    0x00.toByte(),
-    0x00.toByte(),
-    0x00.toByte(),
-    0x0C.toByte(),
-    0x4A.toByte(),
-    0x58.toByte(),
-    0x4C.toByte(),
-    0x20.toByte(),
-    0x0D.toByte(),
-    0x0A.toByte(),
-    0x87.toByte(),
-    0x0A.toByte()
-)
+private val JXL_NAKED = byteArrayOfInts(0xFF, 0x0A)
+private val JXL_ISO =
+    byteArrayOfInts(0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20, 0x0D, 0x0A, 0x87, 0x0A)
 
 private val AVIF_SIGNATURE = "ftypavif".toByteArray(CHARSET_LATIN_1)
 private val AVIF_ANIMATED_SIGNATURE = "ftypavis".toByteArray(CHARSET_LATIN_1)

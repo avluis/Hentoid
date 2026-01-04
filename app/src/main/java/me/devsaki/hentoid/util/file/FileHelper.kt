@@ -38,10 +38,12 @@ import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
+import okio.Buffer
 import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
+import java.io.DataInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -931,13 +933,17 @@ fun shareFile(context: Context, fileUri: Uri, title: String, type: String) {
  * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
  * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
  */
-fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, limit: Int): Int {
+fun findSequencePosition(
+    data: ByteArray,
+    initialPos: Int,
+    sequence: ByteArray,
+    limit: Int = 0
+): Int {
     var iSequence = 0
 
     if (initialPos < 0 || initialPos > data.size) return -1
 
-    val remainingBytes = if ((limit > 0)) min((data.size - initialPos).toDouble(), limit.toDouble())
-        .toInt() else data.size
+    val remainingBytes = if (limit > 0) min(data.size - initialPos, limit) else data.size
 
     for (i in initialPos until remainingBytes) {
         if (sequence[iSequence] == data[i]) iSequence++
@@ -1807,6 +1813,9 @@ fun DocumentFile.formatDisplayUri(rootUri: Uri): String {
 fun DocumentFile.formatDisplayUri(rootUri: String = ""): String {
     return this.uri.formatDisplay(rootUri)
 }
+
+
+// URI EXTENSIONS
 
 fun Uri.formatDisplay(uri: Uri): String {
     return this.formatDisplay(uri.toString())

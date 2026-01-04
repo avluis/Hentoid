@@ -693,5 +693,7 @@ fun removeDocs(context: Context, root: Uri, names: Collection<String>) {
     }
 }
 
+fun byteArrayOfInts(vararg ints: Int) = ByteArray(ints.size) { pos -> ints[pos].toByte() }
+
 inline fun <E> Iterable<E>.indexesOf(predicate: (E) -> Boolean) =
     mapIndexedNotNull { index, elem -> index.takeIf { predicate(elem) } }
