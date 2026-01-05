@@ -22,7 +22,7 @@ import java.util.zip.ZipException
 
 class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
 
-    private val stream = ZipStream(context, archiveUri)
+    private val stream = ZipStream(context, archiveUri, append)
     private val filesQueue: Queue<Uri> = ConcurrentLinkedQueue()
     private val filesMatch: MutableMap<String, String> = ConcurrentHashMap()
 
@@ -33,7 +33,7 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
     private var queueFailMsg = ""
 
     init {
-        Timber.d("Archive streamer : Init @ $archiveUri (append $append)")
+        Timber.d("Archive streamer : Init @ $archiveUri")
     }
 
     val queueActive: Boolean

@@ -18,10 +18,8 @@ import me.devsaki.hentoid.util.byteArrayOfInts
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.Closeable
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.nio.channels.FileChannel
 import java.util.Date
 
 
@@ -41,7 +39,8 @@ private const val DOSTIME_BEFORE_1980 = (1 shl 21) or (1 shl 16)
  * Assume and force Zip64
  * Assume not multiple files ("disks")
  */
-class ZipStream(context: Context, archiveUri: Uri) : Closeable {
+class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable {
+    // TODO manage append
 
     var tocOffset: Long
     val allNotCompressed: Boolean
@@ -116,8 +115,9 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
                 // Read central directory
                 it.skip(tocOffset)
                 for (i in 1..cdrCount) {
-                    var id = it.readByteArray(2)
+                    var id = it.readByteArray(4)
                     if (!id.contentEquals(TOCFILE)) {
+                        Timber.d("Corrupted ToC @ $i (${records.size} records in)")
                         corruptedToC = true
                         break
                     }
@@ -151,8 +151,8 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
                             } else {
                                 it.skip(size)
                             }
-                            read += size
-                        } while (read <= extraDataLength)
+                            read += (4 + size)
+                        } while (read < extraDataLength)
                     }
 
                     records.add(
@@ -195,8 +195,8 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
                                 } else {
                                     it.skip(size)
                                 }
-                                read += size
-                            } while (read <= extraDataLength)
+                                read += (4 + size)
+                            } while (read < extraDataLength)
                         }
                         records.add(
                             ZipRecord(name, uncompressedSize, offset)
@@ -206,6 +206,7 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
 
                         id = it.readByteArray(4)
                     } while (id.contentEquals(FILE))
+                    Timber.d("Ended @ $offset")
 
                     if (id.contentEquals(TOCFILE)) tocOffset = offset
                 }
@@ -220,26 +221,37 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
             Timber.d("RECORD $i ${e.path} (${e.isFolder}) ${e.size} @${e.offset}")
         }
 
+
+        val outStream = getOutputStream(context, archiveUri, append)
+            ?: throw IOException("Couldn't open for output : $archiveUri")
+
+        if (append) currentOffset = fileSize
+
+        /*
         // Open in normal mode
         var outStream = getOutputStream(context, archiveUri)
             ?: throw IOException("Couldn't open for output : $archiveUri")
 
         // Skip to ToC offset
-        var hasSkipped = false
-        try {
-            if (outStream is FileOutputStream) {
-                val ch: FileChannel = outStream.getChannel()
-                ch.position(tocOffset)
-                hasSkipped = true
+        if (append) {
+            var hasSkipped = false
+            try {
+                if (outStream is FileOutputStream) {
+                    val ch: FileChannel = outStream.getChannel()
+                    ch.position(tocOffset)
+                    hasSkipped = true
+                }
+            } catch (e: Exception) {
+                Timber.d(e)
             }
-        } catch (e: Exception) {
-            Timber.d(e)
+            if (!hasSkipped) {
+                Timber.d("Couldn't skip; opening in APPEND mode")
+                outStream = getOutputStream(context, archiveUri, true)
+                    ?: throw IOException("Couldn't open for output : $archiveUri")
+            }
         }
-        if (!hasSkipped) {
-            Timber.d("Couldn't skip; opening in APPEND mode")
-            outStream = getOutputStream(context, archiveUri, true)
-                ?: throw IOException("Couldn't open for output : $archiveUri")
-        }
+
+         */
 
         sink = outStream.asSink().buffered()
     }
@@ -311,7 +323,7 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
             sink.writeUShortLe(0u) // Flag
             sink.writeUShortLe(0u) // STORED mode
             sink.writeUIntLe(it.time.toUInt()) // Time & Date
-            sink.writeULongLe(it.crc.toULong())
+            sink.writeUIntLe(it.crc.toUInt())
             sink.writeUIntLe(UInt.MAX_VALUE) // Uncompressed size for ZIP64
             sink.writeUIntLe(UInt.MAX_VALUE) // Compressed size for ZIP64
             val nameBuffer = Charsets.UTF_8.encode(it.path)

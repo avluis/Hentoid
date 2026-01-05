@@ -566,17 +566,19 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Parse pages for images
-            Timber.i("Parse ${pagesToParse.size} pages START")
-            val parser = ContentParserFactory.getImageListParser(content.site)
-            try {
-                pagesToParse.forEach {
-                    if (this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return@forEach
-                    parsePageforImage(it, downloadFolder, content, parser)
+            GlobalScope.launch(Dispatchers.IO) {
+                Timber.i("Parse ${pagesToParse.size} pages START")
+                val parser = ContentParserFactory.getImageListParser(content.site)
+                try {
+                    pagesToParse.forEach {
+                        if (this@ContentDownloadWorker.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return@forEach
+                        parsePageforImage(it, downloadFolder, content, parser)
+                    }
+                } finally {
+                    parser.clear()
                 }
-            } finally {
-                parser.clear()
+                Timber.i("Parse ${pagesToParse.size} pages END")
             }
-            Timber.i("Parse ${pagesToParse.size} pages END")
 
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
