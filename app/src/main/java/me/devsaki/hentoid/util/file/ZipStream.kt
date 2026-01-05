@@ -112,17 +112,65 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
             // Start with a brand new file stream to avoid mark/reset nightmares
             var hasOneCompressed = false
             var corruptedToC = false
-            getInputStream(context, archiveUri).use { fis ->
-                fis.asSource().buffered().use {
-                    // Read central directory
-                    fis.skip(tocOffset)
-                    for (i in 1..cdrCount) {
-                        var id = it.readByteArray(2)
-                        if (!id.contentEquals(TOCFILE)) {
-                            corruptedToC = true
-                            break
-                        }
-                        it.skip(4) // Version (creator and viewer)
+            getInputStream(context, archiveUri).asSource().buffered().use {
+                // Read central directory
+                it.skip(tocOffset)
+                for (i in 1..cdrCount) {
+                    var id = it.readByteArray(2)
+                    if (!id.contentEquals(TOCFILE)) {
+                        corruptedToC = true
+                        break
+                    }
+                    it.skip(4) // Version (creator and viewer)
+                    val flags = it.readUShortLe()
+                    if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
+                    val compressionMode = it.readUShortLe()
+                    if (compressionMode > 0u) hasOneCompressed = true
+                    it.skip(2) // Time
+                    it.skip(2) // TODO Date
+                    it.skip(4) // CRC32
+                    var uncompressedSize = it.readUIntLe().toLong()
+                    it.skip(4) // Compressed size
+                    val nameLength = it.readUShortLe().toLong()
+                    val extraDataLength = it.readUShortLe().toInt()
+                    it.skip(2) // Comment length
+                    it.skip(2) // Disk number
+                    it.skip(6) // Internal and external attributes
+                    var lfhOffset = it.readUIntLe().toLong()
+                    val name = it.readString(nameLength, Charsets.UTF_8)
+                    // Extra data
+                    if (extraDataLength > 0) {
+                        var read = 0L
+                        do {
+                            id = it.readByteArray(2)
+                            val size = it.readUShortLe().toLong()
+                            if (id.contentEquals(FILE_EXTRA64)) {
+                                uncompressedSize = it.readLongLe()
+                                it.skip(8) // Compressed size
+                                lfhOffset = it.readLongLe()
+                            } else {
+                                it.skip(size)
+                            }
+                            read += size
+                        } while (read <= extraDataLength)
+                    }
+
+                    records.add(
+                        ZipRecord(name, uncompressedSize, lfhOffset)
+                    )
+                    // Don't read comments
+                } // cdrCount
+            } // FileInputStream
+
+            // Try parsing all file entries if table of contents is corrupted
+            if (corruptedToC) {
+                Timber.d("Corrupted table of contents; trying to parse file entries")
+                records.clear()
+                getInputStream(context, archiveUri).asSource().buffered().use {
+                    var offset = 0L
+                    var id = it.readByteArray(4)
+                    do {
+                        it.skip(2) // Version (viewer)
                         val flags = it.readUShortLe()
                         if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
                         val compressionMode = it.readUShortLe()
@@ -131,13 +179,9 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
                         it.skip(2) // TODO Date
                         it.skip(4) // CRC32
                         var uncompressedSize = it.readUIntLe().toLong()
-                        it.skip(4) // Compressed size
+                        var compressedSize = it.readUIntLe().toLong()
                         val nameLength = it.readUShortLe().toLong()
                         val extraDataLength = it.readUShortLe().toInt()
-                        it.skip(2) // Comment length
-                        it.skip(2) // Disk number
-                        it.skip(6) // Internal and external attributes
-                        var lfhOffset = it.readUIntLe().toLong()
                         val name = it.readString(nameLength, Charsets.UTF_8)
                         // Extra data
                         if (extraDataLength > 0) {
@@ -147,71 +191,23 @@ class ZipStream(context: Context, archiveUri: Uri) : Closeable {
                                 val size = it.readUShortLe().toLong()
                                 if (id.contentEquals(FILE_EXTRA64)) {
                                     uncompressedSize = it.readLongLe()
-                                    it.skip(8) // Compressed size
-                                    lfhOffset = it.readLongLe()
+                                    compressedSize = it.readLongLe()
                                 } else {
                                     it.skip(size)
                                 }
                                 read += size
                             } while (read <= extraDataLength)
                         }
-
                         records.add(
-                            ZipRecord(name, uncompressedSize, lfhOffset)
+                            ZipRecord(name, uncompressedSize, offset)
                         )
-                        // Don't read comments
-                    }
-                }
-            }
+                        it.skip(compressedSize)
+                        offset += (30 + nameLength + extraDataLength + compressedSize)
 
-            // Try parsing all file entries if table of contents is corrupted
-            if (corruptedToC) {
-                Timber.d("Corrupted table of contents; trying to parse file entries")
-                records.clear()
-                getInputStream(context, archiveUri).use { fis ->
-                    fis.asSource().buffered().use {
-                        var offset = 0L
-                        var id = it.readByteArray(4)
-                        do {
-                            it.skip(2) // Version (viewer)
-                            val flags = it.readUShortLe()
-                            if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
-                            val compressionMode = it.readUShortLe()
-                            if (compressionMode > 0u) hasOneCompressed = true
-                            it.skip(2) // Time
-                            it.skip(2) // TODO Date
-                            it.skip(4) // CRC32
-                            var uncompressedSize = it.readUIntLe().toLong()
-                            var compressedSize = it.readUIntLe().toLong()
-                            val nameLength = it.readUShortLe().toLong()
-                            val extraDataLength = it.readUShortLe().toInt()
-                            val name = it.readString(nameLength, Charsets.UTF_8)
-                            // Extra data
-                            if (extraDataLength > 0) {
-                                var read = 0L
-                                do {
-                                    id = it.readByteArray(2)
-                                    val size = it.readUShortLe().toLong()
-                                    if (id.contentEquals(FILE_EXTRA64)) {
-                                        uncompressedSize = it.readLongLe()
-                                        compressedSize = it.readLongLe()
-                                    } else {
-                                        it.skip(size)
-                                    }
-                                    read += size
-                                } while (read <= extraDataLength)
-                            }
-                            records.add(
-                                ZipRecord(name, uncompressedSize, offset)
-                            )
-                            it.skip(compressedSize)
-                            offset += (30 + nameLength + extraDataLength + compressedSize)
+                        id = it.readByteArray(4)
+                    } while (id.contentEquals(FILE))
 
-                            id = it.readByteArray(4)
-                        } while (id.contentEquals(FILE))
-
-                        if (id.contentEquals(TOCFILE)) tocOffset = offset
-                    }
+                    if (id.contentEquals(TOCFILE)) tocOffset = offset
                 }
             } // CorruptedToC
 

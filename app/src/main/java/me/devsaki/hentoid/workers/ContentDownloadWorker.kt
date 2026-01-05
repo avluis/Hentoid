@@ -36,6 +36,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification
 import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
+import me.devsaki.hentoid.parsers.images.ImageListParser
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
@@ -565,14 +566,23 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Parse pages for images
-            pagesToParse.forEach {
-                parsePageforImage(it, downloadFolder, content)
+            Timber.i("Parse ${pagesToParse.size} pages START")
+            val parser = ContentParserFactory.getImageListParser(content.site)
+            try {
+                pagesToParse.forEach {
+                    if (this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return@forEach
+                    parsePageforImage(it, downloadFolder, content, parser)
+                }
+            } finally {
+                parser.clear()
             }
+            Timber.i("Parse ${pagesToParse.size} pages END")
 
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
                 GlobalScope.launch(Dispatchers.IO) {
                     ugoirasToDownload.forEach {
+                        if (this@ContentDownloadWorker.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return@forEach
                         downloadAndUnzipUgoira(content, it, downloadFolder, content.site)
                     }
                 }
@@ -860,7 +870,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.id, content.title, pagesOK, pagesKO, downloadedBytes)
         } else if (isScheduledTimeOver) {
-            Timber.d("Content download paused (scheduled time over) : %s [%s]", content.title, content.id)
+            Timber.d(
+                "Content download paused (scheduled time over) : %s [%s]",
+                content.title,
+                content.id
+            )
             pauseQueue()
             return Pair(QueuingResult.QUEUE_END, null)
         } else {
@@ -1124,7 +1138,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun parsePageforImage(
         img: ImageFile,
         dir: Uri,
-        content: Content
+        content: Content,
+        parser: ImageListParser
     ) {
         val site = content.site
         val pageUrl = fixUrl(img.pageUrl, site.url)
@@ -1133,17 +1148,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val requestHeaders = getRequestHeaders(pageUrl, img.downloadParams)
         try {
             val reqHeaders = webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
-            val parser = ContentParserFactory.getImageListParser(content.site)
-            val pages: Pair<String, String?>
-            try {
-                pages = parser.parseImagePage(img.pageUrl, reqHeaders)
-                DownloadRateLimiter.take()
-            } finally {
-                parser.clear()
-            }
+            val pages = parser.parseImagePage(img.pageUrl, reqHeaders)
+            DownloadRateLimiter.take()
             img.url = pages.first
-            // Set backup URL
-            if (pages.second != null) img.backupUrl = pages.second ?: ""
+            img.backupUrl = pages.second ?: ""
             // Queue the picture
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content))
         } catch (e: UnsupportedOperationException) {
