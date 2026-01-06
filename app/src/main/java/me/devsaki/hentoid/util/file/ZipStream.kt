@@ -293,7 +293,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
             sink.writeUShortLe(45u) // Version for ZIP64
             sink.writeUShortLe(0u) // Flag
             sink.writeUShortLe(0u) // STORED mode
-            sink.writeUIntLe(it.time.toUInt()) // Time & Date
+            sink.writeUIntLe(javaToExtendedDosTime(it.time).first.toUInt()) // Time & Date
             sink.writeUIntLe(it.crc.toUInt())
             sink.writeUIntLe(UInt.MAX_VALUE) // Uncompressed size for ZIP64
             sink.writeUIntLe(UInt.MAX_VALUE) // Compressed size for ZIP64
