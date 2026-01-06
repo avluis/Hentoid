@@ -40,7 +40,6 @@ private const val DOSTIME_BEFORE_1980 = (1 shl 21) or (1 shl 16)
  * Assume not multiple files ("disks")
  */
 class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable {
-    // TODO manage append
 
     var tocOffset: Long
     val allNotCompressed: Boolean
@@ -86,7 +85,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
                         it.skip(4) // Header
                         if (is64) {
                             // Zip64 EOCDR
-                            val ecdrSize = it.readLongLe()
+                            it.skip(8) // ECDR size
                             it.skip(2) // Version (creator)
                             val versionViewer = it.readUShortLe()
                             if (versionViewer > 50u) throw UnsupportedOperationException("ZIP version not supported : $versionViewer")
@@ -126,9 +125,8 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
                     if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
                     val compressionMode = it.readUShortLe()
                     if (compressionMode > 0u) hasOneCompressed = true
-                    it.skip(2) // Time
-                    it.skip(2) // TODO Date
-                    it.skip(4) // CRC32
+                    val datetime = dosToJavaTime(it.readUIntLe().toLong())
+                    val crc = it.readUIntLe().toLong() // CRC32
                     var uncompressedSize = it.readUIntLe().toLong()
                     it.skip(4) // Compressed size
                     val nameLength = it.readUShortLe().toLong()
@@ -156,7 +154,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
                     }
 
                     records.add(
-                        ZipRecord(name, uncompressedSize, lfhOffset)
+                        ZipRecord(name, uncompressedSize, lfhOffset, time = datetime, crc = crc)
                     )
                     // Don't read comments
                 } // cdrCount
@@ -175,9 +173,8 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
                         if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
                         val compressionMode = it.readUShortLe()
                         if (compressionMode > 0u) hasOneCompressed = true
-                        it.skip(2) // Time
-                        it.skip(2) // TODO Date
-                        it.skip(4) // CRC32
+                        val datetime = dosToJavaTime(it.readUIntLe().toLong())
+                        val crc = it.readUIntLe().toLong() // CRC32
                         var uncompressedSize = it.readUIntLe().toLong()
                         var compressedSize = it.readUIntLe().toLong()
                         val nameLength = it.readUShortLe().toLong()
@@ -199,7 +196,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
                             } while (read < extraDataLength)
                         }
                         records.add(
-                            ZipRecord(name, uncompressedSize, offset)
+                            ZipRecord(name, uncompressedSize, offset, time = datetime, crc = crc)
                         )
                         it.skip(compressedSize)
                         offset += (30 + nameLength + extraDataLength + compressedSize)
@@ -227,32 +224,6 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
 
         if (append) currentOffset = fileSize
 
-        /*
-        // Open in normal mode
-        var outStream = getOutputStream(context, archiveUri)
-            ?: throw IOException("Couldn't open for output : $archiveUri")
-
-        // Skip to ToC offset
-        if (append) {
-            var hasSkipped = false
-            try {
-                if (outStream is FileOutputStream) {
-                    val ch: FileChannel = outStream.getChannel()
-                    ch.position(tocOffset)
-                    hasSkipped = true
-                }
-            } catch (e: Exception) {
-                Timber.d(e)
-            }
-            if (!hasSkipped) {
-                Timber.d("Couldn't skip; opening in APPEND mode")
-                outStream = getOutputStream(context, archiveUri, true)
-                    ?: throw IOException("Couldn't open for output : $archiveUri")
-            }
-        }
-
-         */
-
         sink = outStream.asSink().buffered()
     }
 
@@ -264,8 +235,8 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
         sink.writeUShortLe(45u) // Version for ZIP64
         sink.writeUShortLe(0u) // Flag
         sink.writeUShortLe(0u) // STORED mode
-        val dosTime = javaToExtendedDosTime(java.time.Instant.now().toEpochMilli()).first
-        sink.writeUIntLe(dosTime.toUInt()) // Time & Date
+        val time = java.time.Instant.now().toEpochMilli()
+        sink.writeUIntLe(javaToExtendedDosTime(time).first.toUInt()) // Time & Date
         sink.writeUIntLe(crc.toUInt())
         sink.writeUIntLe(UInt.MAX_VALUE) // Uncompressed size for ZIP64
         sink.writeUIntLe(UInt.MAX_VALUE) // Compressed size for ZIP64
@@ -281,7 +252,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
         sink.writeULongLe(size.toULong())
         sink.writeULongLe(size.toULong()) // Compressed size is identical to uncompressed size as we use STORED mode
 
-        currentRecord = ZipRecord(path, size, currentOffset, time = dosTime, crc = crc)
+        currentRecord = ZipRecord(path, size, currentOffset, time = time, crc = crc)
         currentOffset += (30 + nameData.size + 20)
     }
 
@@ -412,11 +383,28 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
         return (year - 1980) shl 25 or ((d.month + 1) shl 21) or (d.date shl 16) or (d.hours shl 11) or (d.minutes shl 5) or (d.seconds shr 1)
     }
 
+    /**
+     * Converts DOS time to Java time (number of milliseconds since epoch).
+     */
+    @Suppress("DEPRECATION")
+    private fun dosToJavaTime(dtime: Long): Long {
+        // Use of date constructor
+        val d = Date(
+            (((dtime shr 25) and 0x7fL) + 80).toInt(),
+            (((dtime shr 21) and 0x0fL) - 1).toInt(),
+            ((dtime shr 16) and 0x1fL).toInt(),
+            ((dtime shr 11) and 0x1fL).toInt(),
+            ((dtime shr 5) and 0x3fL).toInt(),
+            ((dtime shl 1) and 0x3eL).toInt()
+        )
+        return d.time
+    }
+
     data class ZipRecord(
         val path: String,
         val size: Long,
         val offset: Long,
-        val time: Int = 0,
+        val time: Long = 0L,
         val crc: Long = 0L
     ) {
         val isFolder: Boolean
