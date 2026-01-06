@@ -1449,7 +1449,8 @@ class ReaderViewModel(
                     },
                     { onExtractionComplete(nbProcessed, indexesToLoad.size) })
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Timber.d(e)
             EventBus.getDefault().post(
                 ProcessEvent(
                     ProcessEvent.Type.COMPLETE,
