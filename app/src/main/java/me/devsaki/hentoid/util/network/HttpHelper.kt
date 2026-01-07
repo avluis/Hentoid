@@ -225,6 +225,59 @@ fun postOnlineResource(
     return OkHttpClientManager.getInstance().newCall(request).execute()
 }
 
+@Throws(IOException::class, CloudflareHelper.CloudflareProtectedException::class)
+fun fetchBodyFast(
+    url: String,
+    site: Site,
+    requestHeaders: MutableList<Pair<String, String>>?,
+    targetContentType: String?
+): Pair<ResponseBody?, String> {
+    val requestHeadersList: MutableList<Pair<String, String>>
+    if (null == requestHeaders) {
+        requestHeadersList = ArrayList()
+        requestHeadersList.add(Pair(HEADER_REFERER_KEY, url))
+    } else {
+        requestHeadersList = requestHeaders
+    }
+    val cookieStr = getCookies(
+        url,
+        requestHeadersList,
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
+    )
+    if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+
+    // Don't close that one here as it is transmitted to the caller to be consumed
+    val response = getOnlineResourceFast(
+        url,
+        requestHeadersList,
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
+    )
+    // Raise exception if blocked by Cloudflare
+    if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
+
+    // Scram if the response is a redirection or an error
+    if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
+
+    // Scram if the response content-type is something else than the target type
+    if (targetContentType != null) {
+        val contentType =
+            cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
+        if (contentType.first.isNotEmpty() && !contentType.first.equals(
+                targetContentType,
+                ignoreCase = true
+            )
+        ) throw IOException(
+            "Not an HTML resource $url"
+        )
+    }
+
+    return Pair(response.body, cookieStr)
+}
+
 /**
  * Build an HTTP request using the given arguments
  *
@@ -753,59 +806,6 @@ fun waitBlocking429(response: retrofit2.Response<*>, defaultDelayMs: Int): Boole
         return true
     }
     return false
-}
-
-@Throws(IOException::class, CloudflareHelper.CloudflareProtectedException::class)
-fun fetchBodyFast(
-    url: String,
-    site: Site,
-    requestHeaders: MutableList<Pair<String, String>>?,
-    targetContentType: String?
-): Pair<ResponseBody?, String> {
-    val requestHeadersList: MutableList<Pair<String, String>>
-    if (null == requestHeaders) {
-        requestHeadersList = ArrayList()
-        requestHeadersList.add(Pair(HEADER_REFERER_KEY, url))
-    } else {
-        requestHeadersList = requestHeaders
-    }
-    val cookieStr = getCookies(
-        url,
-        requestHeadersList,
-        site.useMobileAgent,
-        site.useHentoidAgent,
-        site.useWebviewAgent
-    )
-    if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
-
-    // Don't close that one here as it is transmitted to the caller to be consumed
-    val response = getOnlineResourceFast(
-        url,
-        requestHeadersList,
-        site.useMobileAgent,
-        site.useHentoidAgent,
-        site.useWebviewAgent
-    )
-    // Raise exception if blocked by Cloudflare
-    if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
-
-    // Scram if the response is a redirection or an error
-    if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
-
-    // Scram if the response content-type is something else than the target type
-    if (targetContentType != null) {
-        val contentType =
-            cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
-        if (contentType.first.isNotEmpty() && !contentType.first.equals(
-                targetContentType,
-                ignoreCase = true
-            )
-        ) throw IOException(
-            "Not an HTML resource $url"
-        )
-    }
-
-    return Pair(response.body, cookieStr)
 }
 
 fun isPrefetch(headers: Map<String, String>?): Boolean {
