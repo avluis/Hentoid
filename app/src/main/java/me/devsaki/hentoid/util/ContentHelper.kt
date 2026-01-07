@@ -2015,8 +2015,9 @@ suspend fun mergeContents(
                             unarchivedBytes += picToUnarchive.size
                         }
                         val toExtract = picsToUnarchive.map {
+                            val uri = if (it.url.startsWith(c.storageUri)) it.url else it.fileUri
                             Triple(
-                                it.url.replace(c.storageUri + File.separator, ""),
+                                uri.replace(c.storageUri + File.separator, ""),
                                 it.id,
                                 it.id.toString()
                             )

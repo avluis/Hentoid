@@ -258,8 +258,7 @@ class PdfManager {
         // List once, search the map during extraction
         val targetFolderList = listFiles(context, targetFolder)
             .groupBy { UriParts(it.toString()).fileNameFull }
-        val fileFinder: (String) -> Uri? =
-            { it -> targetFolderList[it]?.firstOrNull() }
+        val fileFinder: (String) -> Uri? = { targetFolderList[it]?.firstOrNull() }
 
         extractedFiles.clear()
         extractImages(
