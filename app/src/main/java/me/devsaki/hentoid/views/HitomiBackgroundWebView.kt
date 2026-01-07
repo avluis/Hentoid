@@ -82,21 +82,22 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                     webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url)
                 try {
                     // Query resource here, using OkHttp
-                    val response = getOnlineResource(
+                    getOnlineResource(
                         url,
                         requestHeadersList,
                         site.useMobileAgent,
                         site.useHentoidAgent,
                         site.useWebviewAgent
-                    )
-                    val body = response.body
-                    if (response.code < 300) {
-                        var jsFile = body.source().readString(StandardCharsets.UTF_8)
-                        jsFile = jsFile.replace(RETURN_PATTERN, "{return o;}")
-                        return okHttpResponseToWebkitResponse(
-                            response,
-                            ByteArrayInputStream(jsFile.toByteArray(StandardCharsets.UTF_8))
-                        )
+                    ).use { response ->
+                        val body = response.body
+                        if (response.code < 300) {
+                            var jsFile = body.source().readString(StandardCharsets.UTF_8)
+                            jsFile = jsFile.replace(RETURN_PATTERN, "{return o;}")
+                            return okHttpResponseToWebkitResponse(
+                                response,
+                                ByteArrayInputStream(jsFile.toByteArray(StandardCharsets.UTF_8))
+                            )
+                        }
                     }
                 } catch (e: IOException) {
                     Timber.w(e)
@@ -113,18 +114,18 @@ class HitomiBackgroundWebView(context: Context, site: Site) : WebView(context) {
                 val requestHeadersList =
                     webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
                 try {
-                    val response = getOnlineResource(
+                    getOnlineResource(
                         urlStr,
                         requestHeadersList,
                         site.useMobileAgent,
                         site.useHentoidAgent,
                         site.useWebviewAgent
-                    )
-
-                    // Scram if the response is a redirection or an error
-                    if (response.code >= 300) return null
-                    val body = response.body
-                    return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    ).use { response ->
+                        // Scram if the response is a redirection or an error
+                        if (response.code >= 300) return null
+                        val body = response.body
+                        return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    }
                 } catch (e: IOException) {
                     Timber.i(e)
                 }

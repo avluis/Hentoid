@@ -720,10 +720,10 @@ open class CustomWebViewClient : WebViewClient {
 
                 // Scram if the response is empty
                 val body = response.body
-                val parserStream: InputStream?
+                val parserStream: InputStream? // Should be eventually closed
                 val result: WebResourceResponse?
                 if (canUseSingleOkHttpRequest()) {
-                    var browserStream: InputStream
+                    var browserStream: InputStream // Shouldn't be closed here as it it transmitted to the WebView
                     if (analyzeForDownload) {
                         // Response body bytestream needs to be duplicated
                         // because Jsoup closes it, which makes it unavailable for the WebView to use
@@ -775,9 +775,9 @@ open class CustomWebViewClient : WebViewClient {
                 }
                 // If there's a red alert ongoing, don't try parsing the page
                 val alert = activity?.alertStatus ?: AlertStatus.NONE
-                if (analyzeForDownload && alert != AlertStatus.RED) {
+                if (analyzeForDownload && alert != AlertStatus.RED && parserStream != null) {
                     try {
-                        var content = htmlAdapter.fromInputStream(parserStream!!, URL(url))
+                        var content = htmlAdapter.fromInputStream(parserStream, URL(url))
                             .toContent(url)
                         // ProcessContent needs to be called on a new thread as it may wait for browser loading to complete
                         scope.launch {
@@ -788,9 +788,10 @@ open class CustomWebViewClient : WebViewClient {
                         }
                     } catch (t: Throwable) {
                         Timber.e(t, "Error parsing content.")
-                        parserStream?.close()
                         isHtmlLoaded.set(true)
                         resConsumer?.onResultFailed()
+                    } finally {
+                        parserStream.close()
                     }
                 } else {
                     isHtmlLoaded.set(true)
@@ -801,6 +802,8 @@ open class CustomWebViewClient : WebViewClient {
                 Timber.e(e)
             } catch (e: IllegalStateException) {
                 Timber.e(e)
+            } finally {
+                response.close()
             }
         }
         return null

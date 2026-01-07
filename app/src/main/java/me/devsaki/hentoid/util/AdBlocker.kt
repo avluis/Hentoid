@@ -225,7 +225,8 @@ class AdBlocker(val site: Site) {
 
         // 3- Accept non-JS files that are not blacklisted
         val extension = getExtensionFromUri(cleanUrl)
-        val isJs = extension == "js" || extension == "go" || extension.isEmpty() // Obvious js and hidden js
+        val isJs =
+            extension == "js" || extension == "go" || extension.isEmpty() // Obvious js and hidden js
         if (!isJs) return false
 
         // If no grey list has been defined...
@@ -240,22 +241,23 @@ class AdBlocker(val site: Site) {
             Timber.d(">> examining grey file : %s", url)
             try {
                 val requestHeadersList = webkitRequestHeadersToOkHttpHeaders(headers, url)
-                val response = getOnlineResourceFast(
+                getOnlineResourceFast(
                     url,
                     requestHeadersList,
                     site.useMobileAgent,
                     site.useHentoidAgent,
                     site.useWebviewAgent
-                )
-                if (response.code >= 400) {
-                    Timber.d(">> grey file KO (%d) : %s", response.code, url)
-                    return false // Better safe than sorry
+                ).use { response ->
+                    if (response.code >= 400) {
+                        Timber.d(">> grey file KO (%d) : %s", response.code, url)
+                        return false // Better safe than sorry
+                    }
+                    val body = response.body
+                    Timber.d(">> grey file downloaded : %s", url)
+                    // Handle "grey files" by analyzing its contents
+                    val jsBody = body.string().lowercase(Locale.getDefault())
+                    if (isJsContentBlacklisted(jsBody, cleanUrl)) return true
                 }
-                val body = response.body
-                Timber.d(">> grey file downloaded : %s", url)
-                // Handle "grey files" by analyzing its contents
-                val jsBody = body.string().lowercase(Locale.getDefault())
-                if (isJsContentBlacklisted(jsBody, cleanUrl)) return true
             } catch (e: IOException) {
                 Timber.d(e, ">> I/O issue while retrieving %s", url)
             } catch (iae: IllegalArgumentException) {

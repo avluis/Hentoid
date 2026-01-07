@@ -166,18 +166,18 @@ class CloudflareHelper {
                 val requestHeadersList =
                     webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
                 try {
-                    val response = getOnlineResource(
+                    getOnlineResource(
                         urlStr,
                         requestHeadersList,
                         useMobileAgent,
                         useHentoidAgent,
                         useWebviewAgent
-                    )
-
-                    // Scram if the response is a redirection or an error
-                    if (response.code >= 300) return null
-                    val body = response.body
-                    return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    ).use { response ->
+                        // Scram if the response is a redirection or an error
+                        if (response.code >= 300) return null
+                        val body = response.body
+                        return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    }
                 } catch (e: IOException) {
                     Timber.i(e)
                 }

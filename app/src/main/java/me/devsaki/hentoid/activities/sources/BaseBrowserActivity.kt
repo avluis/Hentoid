@@ -463,7 +463,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         Timber.i("onPause")
         webView.url?.let {
             val parts = UriParts(it)
-            val usefulData = parts.pathFull.substring(parts.host.length).replace("/", "") + parts.query
+            val usefulData =
+                parts.pathFull.substring(parts.host.length).replace("/", "") + parts.query
             if (usefulData.length < 8) return // Don't record useless locations (e.g. /en/, /artists/, /search/...)
             viewModel.saveCurrentUrl(getStartSite(), it)
         }
@@ -1338,7 +1339,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                         downloadParams[HEADER_COOKIE_KEY] =
                             getCookies(onlineContent.coverImageUrl)
                         downloadParams[HEADER_REFERER_KEY] = onlineContent.site.url
-                        val onlineCover = getOnlineResourceFast(
+                        getOnlineResourceFast(
                             fixUrl(
                                 onlineContent.coverImageUrl,
                                 getStartUrl() // TODO is that the URL we need?!
@@ -1347,11 +1348,12 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             getStartSite().useMobileAgent,
                             getStartSite().useHentoidAgent,
                             getStartSite().useWebviewAgent
-                        )
-                        val coverBody = onlineCover.body
-                        val bodyStream = coverBody.byteStream()
-                        val b = getCoverBitmapFromStream(bodyStream)
-                        pHash = calcPhash(getHashEngine(), b)
+                        ).use { onlineCover ->
+                            val coverBody = onlineCover.body
+                            val bodyStream = coverBody.byteStream()
+                            val b = getCoverBitmapFromStream(bodyStream)
+                            pHash = calcPhash(getHashEngine(), b)
+                        }
                     } catch (e: IOException) {
                         Timber.w(e)
                     } catch (e: IllegalArgumentException) {

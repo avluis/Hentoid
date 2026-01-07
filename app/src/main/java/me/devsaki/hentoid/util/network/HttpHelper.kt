@@ -185,26 +185,8 @@ fun getOnlineResourceDownloader(
     headers: List<Pair<String, String>>?,
     useMobileAgent: Boolean,
     useHentoidAgent: Boolean,
-    useWebviewAgent: Boolean
-): Response {
-    return getOnlineResourceDownloader(
-        url,
-        headers,
-        useMobileAgent,
-        useHentoidAgent,
-        useWebviewAgent,
-        true
-    )
-}
-
-@Throws(IOException::class)
-fun getOnlineResourceDownloader(
-    url: String,
-    headers: List<Pair<String, String>>?,
-    useMobileAgent: Boolean,
-    useHentoidAgent: Boolean,
     useWebviewAgent: Boolean,
-    followRedirects: Boolean
+    followRedirects: Boolean = true
 ): Response {
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
@@ -619,16 +601,17 @@ private fun peekCookies(
     useWebviewAgent: Boolean
 ): String {
     try {
-        val response = getOnlineResourceFast(
+        getOnlineResourceFast(
             url,
             headers,
             useMobileAgent,
             useHentoidAgent,
             useWebviewAgent
-        )
-        var cookielist: List<String?> = response.headers("Set-Cookie")
-        if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie")
-        return TextUtils.join("; ", cookielist)
+        ).use { response ->
+            var cookielist: List<String?> = response.headers("Set-Cookie")
+            if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie")
+            return TextUtils.join("; ", cookielist)
+        }
     } catch (e: IOException) {
         Timber.e(e)
     }
@@ -795,34 +778,34 @@ fun fetchBodyFast(
     )
     if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
 
-    val response = getOnlineResourceFast(
+    getOnlineResourceFast(
         url,
         requestHeadersList,
         site.useMobileAgent,
         site.useHentoidAgent,
         site.useWebviewAgent
-    )
+    ).use { response ->
+        // Raise exception if blocked by Cloudflare
+        if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
 
-    // Raise exception if blocked by Cloudflare
-    if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
+        // Scram if the response is a redirection or an error
+        if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
 
-    // Scram if the response is a redirection or an error
-    if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
-
-    // Scram if the response content-type is something else than the target type
-    if (targetContentType != null) {
-        val contentType =
-            cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
-        if (contentType.first.isNotEmpty() && !contentType.first.equals(
-                targetContentType,
-                ignoreCase = true
+        // Scram if the response content-type is something else than the target type
+        if (targetContentType != null) {
+            val contentType =
+                cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
+            if (contentType.first.isNotEmpty() && !contentType.first.equals(
+                    targetContentType,
+                    ignoreCase = true
+                )
+            ) throw IOException(
+                "Not an HTML resource $url"
             )
-        ) throw IOException(
-            "Not an HTML resource $url"
-        )
-    }
+        }
 
-    return Pair(response.body, cookieStr)
+        return Pair(response.body, cookieStr)
+    }
 }
 
 fun isPrefetch(headers: Map<String, String>?): Boolean {
