@@ -98,6 +98,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     private suspend fun archive(contentIds: LongArray, params: Params) =
         withContext(Dispatchers.IO) {
             globalProgress = ProgressManager(contentIds.size)
+            nbItems = contentIds.size
 
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
@@ -136,7 +137,6 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         // Else : Everything (incl. JSON and thumb) gets into the archive
         val filter = if (params.archivePrimaryContent) imageNamesFilter else null
         val files = listFiles(context, bookFolder, filter)
-        nbItems = files.size
         if (files.isEmpty()) return
 
         val destFileUri = getFileResult(context, content, params)
