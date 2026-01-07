@@ -23,6 +23,7 @@ import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.viewholders.IconItem
 import me.devsaki.hentoid.viewmodels.BrowserViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import java.net.URLDecoder
 
 class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
 
@@ -116,7 +117,8 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
                 .filter { it.site.isVisible }
                 .map {
                     val parts = UriParts(it.url)
-                    val shortUrl = parts.pathFull.substring(parts.host.length)
+                    val shortUrl =
+                        URLDecoder.decode(parts.pathFull.substring(parts.host.length), "UTF-8")
                     DrawerItem(shortUrl, it.site.ico, it.id, mTag = it)
                 }.filter { it.label.length > 1 } // Don't include site roots or '/'
         )
