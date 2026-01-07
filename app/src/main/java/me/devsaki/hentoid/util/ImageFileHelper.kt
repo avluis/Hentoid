@@ -428,17 +428,16 @@ fun testDownloadPicture(
     val url = fixUrl(img.url, site.url)
     if (url.isEmpty()) return false
 
-    val response = fetchBodyFast(url, site, requestHeaders, null)
-    val body = response.first
-        ?: throw IOException("Could not read response : empty body for ${img.url}")
-
-    val buffer = ByteArray(50)
-    body.byteStream().use { `in` ->
-        if (`in`.read(buffer) > -1) {
-            val mimeType = getMimeTypeFromPictureBinary(buffer)
-            Timber.d("Testing online picture accessibility : found $mimeType at ${img.url}")
-            return (mimeType.isNotEmpty() && mimeType != MIME_IMAGE_GENERIC)
+    fetchBodyFast(url, site, requestHeaders, null).first?.use { body ->
+        val buffer = ByteArray(50)
+        body.byteStream().use { `in` ->
+            if (`in`.read(buffer) > -1) {
+                val mimeType = getMimeTypeFromPictureBinary(buffer)
+                Timber.d("Testing online picture accessibility : found $mimeType at ${img.url}")
+                return (mimeType.isNotEmpty() && mimeType != MIME_IMAGE_GENERIC)
+            }
         }
-    }
+    } ?: throw IOException("Could not read response : empty body for ${img.url}")
+
     return false
 }
