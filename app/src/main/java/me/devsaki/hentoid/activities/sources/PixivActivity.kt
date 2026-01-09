@@ -86,20 +86,23 @@ class PixivActivity : BaseBrowserActivity() {
             // Kill CORS
             if (url.contains("s.pximg.net")) {
                 try {
-                    getOnlineResourceFast(
+                    // Don't close it as it will be consumed by the browser
+                    val response = getOnlineResourceFast(
                         url,
                         webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
                         Site.PIXIV.useMobileAgent,
                         Site.PIXIV.useHentoidAgent,
                         Site.PIXIV.useWebviewAgent
-                    ).use { response ->
-                        // Scram if the response is a redirection or an error
-                        if (response.code >= 300) return null
-
-                        // Scram if the response is empty
-                        val body = response.body
-                        return okHttpResponseToWebkitResponse(response, body.byteStream())
+                    )
+                    // Scram if the response is a redirection or an error
+                    if (response.code >= 300) {
+                        response.close()
+                        return null
                     }
+
+                    // Scram if the response is empty
+                    val body = response.body
+                    return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {
                     Timber.w(e)
                 }
