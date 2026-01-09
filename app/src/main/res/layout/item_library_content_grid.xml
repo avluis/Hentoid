@@ -155,7 +155,7 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:id="@+id/ivOnline"
+            android:id="@+id/ivStorage2"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginTop="8dp"

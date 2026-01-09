@@ -244,7 +244,7 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
         private val tvArtist: TextView? = view.findViewById(R.id.tvArtist)
         private val ivPages: ImageView? = view.findViewById(R.id.ivPages)
         private val tvPages: TextView? = view.findViewById(R.id.tvPages)
-        private val ivOnline: ImageView? = view.findViewById(R.id.ivOnline)
+        private val ivStorage2: ImageView? = view.findViewById(R.id.ivStorage2)
         override val swipeableView: View = view.findViewById(R.id.item_card) ?: ivCover
         private val deleteButton: View? = view.findViewById(R.id.delete_btn)
 
@@ -564,7 +564,23 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             }
 
             val isStreamed = content.downloadMode == DownloadMode.STREAM
-            ivOnline?.isVisible = isStreamed && (!isGrid || Settings.libraryDisplayGridStorageInfo)
+            val isArchive =
+                content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE
+            val isPdf = content.isPdf
+            ivStorage2?.apply {
+                val resourceId =
+                    if (isArchive) R.drawable.ic_archive
+                    else if (isPdf) R.drawable.ic_pdf_file
+                    else R.drawable.ic_action_download_stream
+                setImageResource(resourceId)
+                val helpId =
+                    if (isArchive) R.string.archived_help
+                    else if (isPdf) R.string.pdf_help
+                    else R.string.streamed_help
+                tooltipText = resources.getString(helpId)
+                isVisible =
+                    (isStreamed || isArchive || isPdf) && (!isGrid || Settings.libraryDisplayGridStorageInfo)
+            }
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 topButton?.visibility = View.VISIBLE
                 bottomButton?.visibility = View.VISIBLE
