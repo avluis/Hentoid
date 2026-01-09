@@ -1408,6 +1408,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                     toExtract
                 )
                 content.storageUri = f.uri.toString()
+                content.downloadMode = DownloadMode.DOWNLOAD
 
                 // Save core
                 dao.insertContentCore(content)

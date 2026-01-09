@@ -17,6 +17,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification
@@ -194,6 +195,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                 if (persistJson(context, content)) {
                     removeDocument(context, formerJsonLocation)
                     content.lastEditDate = Instant.now().toEpochMilli()
+                    content.downloadMode = DownloadMode.DOWNLOAD_ARCHIVE
                     dao.insertContentCore(content)
                     // Remove former location
                     bookFolder.delete()
