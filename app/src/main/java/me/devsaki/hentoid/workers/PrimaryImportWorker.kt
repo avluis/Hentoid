@@ -546,6 +546,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
             explorer,
             emptyList(),
             dao,
+            StatusContent.DOWNLOADED,
             log,
             requiresJson = true
         ) { res ->

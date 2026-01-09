@@ -705,6 +705,7 @@ fun scanFolderRecursive(
                     explorer,
                     parentNames,
                     dao,
+                    StatusContent.EXTERNAL,
                     chaptered = true,
                     onProgress = { c -> c?.let { onContentFound(it) } }
                 )
@@ -1114,6 +1115,7 @@ fun scanForArchivesPdf(
     explorer: FileExplorer,
     parentNames: List<String>,
     dao: CollectionDAO,
+    targetStatus: StatusContent,
     log: MutableList<LogEntry>? = null,
     chaptered: Boolean = false,
     requiresJson: Boolean = false,
@@ -1153,7 +1155,7 @@ fun scanForArchivesPdf(
                         subfolder.uri,
                         archive,
                         parentNames,
-                        StatusContent.EXTERNAL,
+                        targetStatus,
                         content
                     )
                     when (c.first) {
@@ -1199,7 +1201,8 @@ fun scanForArchivesPdf(
                 result,
                 parent,
                 subFolders,
-                parentNames
+                parentNames,
+                targetStatus
             )
         )
     else result
@@ -1211,6 +1214,7 @@ private fun loadAsChapters(
     parent: DocumentFile,
     subFolders: List<DocumentFile>,
     parentNames: List<String>,
+    targetStatus: StatusContent
 ): Content {
     val content =
         Content(
@@ -1223,7 +1227,7 @@ private fun loadAsChapters(
     content.addAttributes(parentNamesAsTags(parentNames))
 
     content.addAttributes(newExternalAttribute())
-    content.status = StatusContent.EXTERNAL
+    content.status = targetStatus
     content.setStorageDoc(parent)
     val now = Instant.now().toEpochMilli()
     if (0L == content.downloadDate) content.downloadDate = now
@@ -1332,6 +1336,13 @@ fun scanArchivePdf(
     result.apply {
         addAttributes(newExternalAttribute())
         status = targetStatus
+        // Fix DownloadMode if needed
+        if (StatusContent.DOWNLOADED == targetStatus
+            && downloadMode != DownloadMode.DOWNLOAD_ARCHIVE
+            && downloadMode != DownloadMode.DOWNLOAD_ARCHIVE_FILE
+        ) {
+            downloadMode = DownloadMode.DOWNLOAD_ARCHIVE
+        }
         setStorageDoc(doc) // Here storage URI is a file URI, not a folder
         parentStorageUri = parent.toString()
         if (0L == downloadDate) downloadDate = now
