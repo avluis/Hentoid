@@ -257,7 +257,7 @@ abstract class BaseDeleteWorker(
                         }
                     } catch (e: Exception) {
                         nbError++
-                        trace(Log.WARN, "Error when trying to delete %s : ${e.message}", it.id)
+                        trace(Log.WARN, "Error when trying to delete ${it.id} : ${e.message}")
                         Timber.w(e)
                     } finally {
                         dao.updateContentProcessedFlag(it.id, false)
