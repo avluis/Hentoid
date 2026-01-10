@@ -93,24 +93,22 @@ class LogsDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private suspend fun getLogs(): List<DocumentFile> {
-        return withContext(Dispatchers.IO) {
-            val rootFolder =
-                getDocumentFromTreeUriString(
-                    requireContext(),
-                    Settings.getStorageUri(StorageLocation.PRIMARY_1)
-                ) ?: return@withContext emptyList<DocumentFile>()
+        context?.let { ctx ->
+            return withContext(Dispatchers.IO) {
+                val rootFolder =
+                    getDocumentFromTreeUriString(
+                        ctx,
+                        Settings.getStorageUri(StorageLocation.PRIMARY_1)
+                    ) ?: return@withContext emptyList<DocumentFile>()
 
-            var files = listFiles(
-                requireContext(), rootFolder
-            ) { displayName: String ->
-                displayName.lowercase(
-                    Locale.getDefault()
-                ).endsWith("_log.txt")
+                val files = listFiles(ctx, rootFolder) {
+                    it.lowercase(Locale.getDefault()).endsWith("_log.txt")
+                }
+                // Sort by date desc
+                return@withContext files.sortedByDescending { it.lastModified() }
             }
-            // Sort by date desc
-            files = files.sortedByDescending { f -> f.lastModified() }
-            return@withContext files
         }
+        return emptyList()
     }
 
     private fun onItemClick(item: TextItem<DocumentFile>): Boolean {
