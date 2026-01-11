@@ -14,7 +14,9 @@ import kotlinx.io.readUShortLe
 import kotlinx.io.writeUIntLe
 import kotlinx.io.writeULongLe
 import kotlinx.io.writeUShortLe
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.util.byteArrayOfInts
+import me.devsaki.hentoid.util.file.ZipStream.ZipRecord
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.Closeable
@@ -35,28 +37,18 @@ private val FILE_EXTRA64 = byteArrayOfInts(0x01, 0x00)
  */
 private const val DOSTIME_BEFORE_1980 = (1 shl 21) or (1 shl 16)
 
-/**
- * Assume and force Zip64
- * Assume not multiple files ("disks")
- */
-class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable {
-
-    var tocOffset: Long
-    val allNotCompressed: Boolean
-
+class ZipReader(context: Context, archiveUri: Uri) {
     val records = ArrayList<ZipRecord>()
-
-    var currentRecord: ZipRecord? = null
-    var currentOffset = 0L
-
-    val sink: Sink
+    val allNotCompressed: Boolean
 
     init {
         // Read Zip file; build index
         var cdrCount = 0L
         var is64 = false
         var cdrSize = 0
+        var tocOffset: Long
 
+        Timber.d("Reading archive $archiveUri")
         val fileSize = fileSizeFromUri(context, archiveUri)
 
         if (0L == fileSize) { // Brand new file
@@ -212,13 +204,49 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
             allNotCompressed = !hasOneCompressed
         } // File size
 
-        Timber.d("TocOffset $tocOffset")
-
-        records.forEachIndexed { i, e ->
-            Timber.d("RECORD $i ${e.path} (${e.isFolder}) ${e.size} @${e.offset}")
+        if (BuildConfig.DEBUG) {
+            Timber.d("TocOffset $tocOffset")
+            records.forEachIndexed { i, e ->
+                Timber.d("RECORD $i ${e.path} (${e.isFolder}) ${e.size} @${e.offset}")
+            }
         }
+    }
 
 
+    /**
+     * Converts DOS time to Java time (number of milliseconds since epoch).
+     */
+    @Suppress("DEPRECATION")
+    private fun dosToJavaTime(dtime: Long): Long {
+        // Use of date constructor
+        val d = Date(
+            (((dtime shr 25) and 0x7fL) + 80).toInt(),
+            (((dtime shr 21) and 0x0fL) - 1).toInt(),
+            ((dtime shr 16) and 0x1fL).toInt(),
+            ((dtime shr 11) and 0x1fL).toInt(),
+            ((dtime shr 5) and 0x3fL).toInt(),
+            ((dtime shl 1) and 0x3eL).toInt()
+        )
+        return d.time
+    }
+}
+
+/**
+ * Assume and force Zip64
+ * Assume not multiple files ("disks")
+ */
+class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable {
+    val records = ArrayList<ZipRecord>()
+
+    var currentRecord: ZipRecord? = null
+    var currentOffset = 0L
+
+    val sink: Sink
+
+    init {
+        records.addAll(ZipReader(context, archiveUri).records)
+
+        val fileSize = fileSizeFromUri(context, archiveUri)
         val outStream = getOutputStream(context, archiveUri, append)
             ?: throw IOException("Couldn't open for output : $archiveUri")
 
@@ -383,23 +411,6 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
         return (year - 1980) shl 25 or ((d.month + 1) shl 21) or (d.date shl 16) or (d.hours shl 11) or (d.minutes shl 5) or (d.seconds shr 1)
     }
 
-    /**
-     * Converts DOS time to Java time (number of milliseconds since epoch).
-     */
-    @Suppress("DEPRECATION")
-    private fun dosToJavaTime(dtime: Long): Long {
-        // Use of date constructor
-        val d = Date(
-            (((dtime shr 25) and 0x7fL) + 80).toInt(),
-            (((dtime shr 21) and 0x0fL) - 1).toInt(),
-            ((dtime shr 16) and 0x1fL).toInt(),
-            ((dtime shr 11) and 0x1fL).toInt(),
-            ((dtime shr 5) and 0x3fL).toInt(),
-            ((dtime shl 1) and 0x3eL).toInt()
-        )
-        return d.time
-    }
-
     data class ZipRecord(
         val path: String,
         val size: Long,
@@ -409,5 +420,9 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
     ) {
         val isFolder: Boolean
             get() = path.endsWith("/")
+
+        fun toArchiveEntry(): ArchiveEntry {
+            return ArchiveEntry(isFolder, path, size)
+        }
     }
 }
