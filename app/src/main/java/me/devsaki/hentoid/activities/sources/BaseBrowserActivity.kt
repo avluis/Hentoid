@@ -890,14 +890,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      */
     private fun onBookmarkClick() {
         binding?.drawerLayout?.openDrawer(GravityCompat.END)
-        /*
-        BookmarksDialogFragment.invoke(
-            this,
-            getStartSite(),
-            webView.title ?: "",
-            webView.url ?: ""
-        )
-         */
     }
 
     /**
@@ -929,7 +921,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         webView.loadUrl(url)
     }
 
-    override fun downloadContentArchive(url: String) {
+    override fun downloadContentArchivePdf(url: String) {
         currentContent?.let { processDownload(it, archiveUrl = url) }
     }
 

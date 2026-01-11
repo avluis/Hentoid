@@ -790,9 +790,9 @@ fun getPictureThumbCached(
             } else {
                 val mgr = PdfManager()
                 val entries = if (resource.isNullOrBlank()) {
-                    mgr.getEntries(context, archive, true)
+                    mgr.getEntries(context, archive.uri, true)
                 } else {
-                    mgr.getEntries(context, archive)
+                    mgr.getEntries(context, archive.uri)
                         .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
                         .filter {
                             // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)

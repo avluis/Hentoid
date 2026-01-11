@@ -1587,7 +1587,6 @@ object ObjectBoxDB {
             }
 
             Type.PDF -> {
-                qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
                 val pdfCondition = Content_.storageUri.endsWith(
                     "pdf",
                     QueryBuilder.StringOrder.CASE_INSENSITIVE

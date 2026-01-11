@@ -16,6 +16,7 @@ import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.file.ArchiveStreamer
 import me.devsaki.hentoid.util.file.InnerNameNumberArchiveComparator
 import me.devsaki.hentoid.util.file.MIME_TYPE_CBZ
+import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.getArchiveEntries
@@ -217,7 +218,13 @@ class PrimaryDownloadManager {
                         throw IOException("Couldn't rename archive")
                     }
                 }
-                val imgs = context.getArchiveEntries(uri)
+
+                val entries = if (uriParts.extension.equals("pdf", true)) {
+                    PdfManager().getEntries(context, uri)
+                } else // Archive
+                    context.getArchiveEntries(uri)
+
+                val imgs = entries
                     .filter { !it.isFolder && isSupportedImage(it.path) }
                     .sortedWith(InnerNameNumberArchiveComparator())
                     .mapIndexed { i, e ->

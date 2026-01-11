@@ -36,6 +36,7 @@ import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.file.isSupportedPdf
 import me.devsaki.hentoid.util.file.openFile
 import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.getRandomInt
@@ -406,16 +407,19 @@ open class CustomWebViewClient : WebViewClient {
 
         // Queue archives as archive direct downloads
         val uri = url.toUri()
-        if (isSupportedArchive(uri.lastPathSegment ?: "")
-            // Specific to Kemono - target file name is inside the f parameter
-            || isSupportedArchive(uri.getQueryParameter("f") ?: "")
-            && isMainPage
-        ) {
-            activity?.downloadContentArchive(url)
-        }
+        if (isSupportedDirectDownload(uri) && isMainPage) activity?.downloadContentArchivePdf(url)
 
         val host = uri.host
         return host != null && isHostNotInRestrictedDomains(host)
+    }
+
+    private fun isSupportedDirectDownload(uri: Uri): Boolean {
+        var fileName = uri.lastPathSegment ?: ""
+        if (isSupportedArchive(fileName) || isSupportedPdf(fileName)) return true
+
+        // Specific to Kemono - target file name is inside the f parameter
+        fileName = uri.getQueryParameter("f") ?: ""
+        return isSupportedArchive(fileName) || isSupportedPdf(fileName)
     }
 
     /**
@@ -1110,9 +1114,9 @@ open class CustomWebViewClient : WebViewClient {
         fun loadUrl(url: String)
 
         /**
-         * Download the given archive URL as a Content
+         * Download the given archive / PDF URL as a Content
          */
-        fun downloadContentArchive(url: String)
+        fun downloadContentArchivePdf(url: String)
 
 
         // CALLBACKS

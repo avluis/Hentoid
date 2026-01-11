@@ -19,12 +19,22 @@ fun getPdfNamesFilter(): NameFilter {
 }
 
 /**
- * Determine the format of the given binary data if it's an archive
+ * Determine if the given file name is supported by the app as a PDF
  *
- * @param binary Archive binary header data to determine the format for
- * @return Format of the given binary data; null if not supported
+ * @param fileName File name to test
+ * @return True if the app supports the reading of the given file name as a PDF; false if not
  */
-private fun isPdfFromHeader(binary: ByteArray): Boolean {
+fun isSupportedPdf(fileName: String): Boolean {
+    return getExtension(fileName).equals("pdf", true)
+}
+
+/**
+ * Determine the format of the given binary data if it's a PDF
+ *
+ * @param binary PDF binary header data to determine the format for
+ * @return True if it's a PDF
+ */
+fun isPdfFromHeader(binary: ByteArray): Boolean {
     if (binary.size < 5) return false
 
     // In Java, byte type is signed !

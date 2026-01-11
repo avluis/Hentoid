@@ -593,21 +593,14 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
                 ivStorage?.isVisible = (!isGrid || Settings.libraryDisplayGridStorageInfo)
 
                 if (content.status == StatusContent.EXTERNAL) {
-                    var resourceId =
-                        if (content.isArchive) R.drawable.ic_archive
-                        else if (content.isPdf) R.drawable.ic_pdf_file
-                        else R.drawable.ic_folder_full
-                    ivExternal?.setImageResource(resourceId)
-                    // External streamed is streamed icon
-                    if (isStreamed) resourceId = R.drawable.ic_action_download_stream
-                    ivStorage?.setImageResource(resourceId)
-                } else {
-                    val resourceId =
-                        if (isStreamed) R.drawable.ic_action_download_stream
-                        else if (content.isArchive) R.drawable.ic_archive
-                        else R.drawable.ic_storage
-                    ivStorage?.setImageResource(resourceId)
+                    ivExternal?.setImageResource(R.drawable.ic_folder_full)
                 }
+                val resourceId =
+                    if (isStreamed) R.drawable.ic_action_download_stream
+                    else if (content.isArchive) R.drawable.ic_archive
+                    else if (content.isPdf) R.drawable.ic_pdf_file
+                    else R.drawable.ic_storage
+                ivStorage?.setImageResource(resourceId)
 
                 ivFavourite?.apply {
                     isVisible = (!isGrid || Settings.libraryDisplayGridFav)

@@ -1302,7 +1302,7 @@ fun scanArchivePdf(
     try {
         entries = if (isPdf) {
             val pdfMgr = PdfManager()
-            pdfMgr.getEntries(context, doc)
+            pdfMgr.getEntries(context, doc.uri)
         } else context.getArchiveEntries(doc.uri)
     } catch (e: Exception) {
         Timber.w(e)

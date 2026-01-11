@@ -38,12 +38,10 @@ import me.devsaki.hentoid.util.network.getExtensionFromUri
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.toastLong
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
-import okio.Buffer
 import timber.log.Timber
 import java.io.BufferedOutputStream
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
-import java.io.DataInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -884,10 +882,15 @@ fun getMimeTypeFromData(
             throw UnsupportedContentException("Message received from $url : $message")
         } else if (me.devsaki.hentoid.util.file.isMimeTypeSupported(contentType)) {
             return contentType
-        } else {
-            val archiveMime = getMimeTypeFromArchiveHeader(buffer)
-            if (archiveMime.isNotEmpty()) return archiveMime
         }
+
+        // Try archives
+        val archiveMime = getMimeTypeFromArchiveHeader(buffer)
+        if (archiveMime.isNotEmpty()) return archiveMime
+
+        // Try PDF
+        if (isPdfFromHeader(buffer)) return MIME_TYPE_PDF
+
         throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
     }
     return result

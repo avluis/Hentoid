@@ -510,7 +510,7 @@ abstract class BaseDeleteWorker(
     private fun removeDocuments(uris: List<Uri>) {
         trace(Log.INFO, "Removing ${uris.size} documents...")
 
-        uris.forEachIndexed { index, uri ->
+        uris.forEach { uri ->
             if (isStopped) return
             removeFile(applicationContext, uri)
             progressItem(

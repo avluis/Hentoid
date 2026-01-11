@@ -343,11 +343,11 @@ class PdfManager {
 
     fun getEntries(
         context: Context,
-        doc: DocumentFile,
+        uri: Uri,
         stopFirst: Boolean = false
     ): List<ArchiveEntry> {
         val result = ArrayList<ArchiveEntry>()
-        getInputStream(context, doc).use { input ->
+        getInputStream(context, uri).use { input ->
             PdfDocument(PdfReader(input)).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(null)
                 { name, data, _ -> result.add(ArchiveEntry(false, name, data.size.toLong())) }
