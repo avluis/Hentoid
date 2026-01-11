@@ -53,17 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger
 private val PORTRAIT = PdfNumber(0)
 private val LANDSCAPE = PdfNumber(90)
 
-private val pdfNamesFilter = NameFilter { getExtension(it).equals("pdf", true) }
-
-/**
- * Build a [NameFilter] only accepting PDF files supported by the app
- *
- * @return [NameFilter] only accepting PDF files supported by the app
- */
-fun getPdfNamesFilter(): NameFilter {
-    return pdfNamesFilter
-}
-
 class PdfManager {
 
     private val extractedFiles = ArrayList<Uri>()
@@ -200,7 +189,7 @@ class PdfManager {
         onExtracted: ((Long, Uri) -> Unit)? = null
     ) {
         val existing = fileFinder.invoke(fileName)
-        Timber.Forest.v("Extract PDF, get stream: id $fileName")
+        Timber.v("Extract PDF, get stream: id $fileName")
         try {
             val target =
                 existing ?: fileCreator.invoke(fileName)
@@ -436,16 +425,16 @@ class PdfManager {
                     } ?: hash64(internalUniqueName)
                     onExtract.invoke(internalUniqueName, data, identifier)
                 } catch (e: com.itextpdf.io.exceptions.IOException) {
-                    Timber.Forest.w(e)
+                    Timber.w(e)
                 } catch (e: IOException) {
-                    Timber.Forest.w(e)
+                    Timber.w(e)
                 }
 
                 else -> {}
             }
         }
 
-        override fun getSupportedEvents(): Set<EventType>? {
+        override fun getSupportedEvents(): Set<EventType> {
             return setOf(EventType.RENDER_IMAGE)
         }
     }

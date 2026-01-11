@@ -20,6 +20,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.core.CHARSET_LATIN_1
 import me.devsaki.hentoid.enums.PictureEncoder
 import me.devsaki.hentoid.util.byteArrayOfInts
 import me.devsaki.hentoid.util.duplicateInputStream
@@ -32,6 +33,7 @@ import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.startsWith
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
@@ -42,8 +44,6 @@ import kotlin.math.pow
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-
-private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
 const val PIXEL_BUFFER_HEIGHT = 1024
 
@@ -127,12 +127,6 @@ private fun isImageExtensionSupported(extension: String): Boolean {
 
 fun isSupportedImage(fileName: String): Boolean {
     return isImageExtensionSupported(getExtension(fileName))
-}
-
-fun ByteArray.startsWith(data: ByteArray): Boolean {
-    if (this.size < data.size) return false
-    data.forEachIndexed { index, byte -> if (byte != this[index]) return false }
-    return true
 }
 
 /**

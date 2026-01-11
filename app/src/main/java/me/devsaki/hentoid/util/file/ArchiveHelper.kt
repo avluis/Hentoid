@@ -9,9 +9,9 @@ import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.byteArrayOfInts
-import me.devsaki.hentoid.util.image.startsWith
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
+import me.devsaki.hentoid.util.startsWith
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator
 import net.sf.sevenzipjbinding.ArchiveFormat
 import net.sf.sevenzipjbinding.ExtractAskMode

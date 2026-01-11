@@ -2,6 +2,7 @@
 
 package me.devsaki.hentoid.core
 
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KProperty
 
@@ -12,6 +13,8 @@ typealias Consumer<T> = (T) -> Unit
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
 typealias SuspendBiConsumer<T, U> = suspend (T, U) -> Unit
+
+val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
 fun <T> lazyWithReset(initializer: () -> T): ResetLazy<T> = ResetLazy(initializer)
 
