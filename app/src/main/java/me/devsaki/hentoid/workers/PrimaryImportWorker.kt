@@ -26,6 +26,7 @@ import me.devsaki.hentoid.core.RENAMING_RULES_JSON_FILE_NAME
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
+import me.devsaki.hentoid.database.ObjectBoxDAOContainer
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
@@ -285,8 +286,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     Log.DEBUG,
                     0,
                     log,
-                    "Import books starting - initial detected count : %s",
-                    bookFolders.size.toString() + ""
+                    "Import books starting - initial detected count : ${bookFolders.size + nbArchives}"
                 )
                 trace(
                     Log.INFO,
@@ -320,19 +320,18 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
 
                 // Flag DB content for cleanup
-                var dao: CollectionDAO = ObjectBoxDAO()
+                val dao = ObjectBoxDAOContainer()
                 try {
-                    dao.flagAllInternalBooks(
+                    dao.dao.flagAllInternalBooks(
                         getPathRoot(previousUriStr),
                         removePlaceholders
                     )
-                    dao.flagAllErrorBooksWithJson()
+                    dao.dao.flagAllErrorBooksWithJson()
                 } finally {
-                    dao.cleanup()
+                    dao.reset()
                 }
 
                 try {
-                    dao = ObjectBoxDAO()
                     nbBookSources = bookFolders.size + nbArchives
 
                     importArchives(
@@ -369,7 +368,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             val subfolders = importFolder(
                                 context,
                                 explorer,
-                                dao,
+                                dao.dao,
                                 rootFolder,
                                 bookFolder,
                                 log,
@@ -381,18 +380,15 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                             nbBookSources += subfolders.size
                             allSubfolders.addAll(subfolders)
 
-                            // Clear the DAO every 2500K iterations to optimize memory
-                            if (0 == index % 2500) {
-                                dao.cleanup()
-                                dao = ObjectBoxDAO()
-                            }
+                            // Clear the DAO every 1000 iterations to optimize memory
+                            if (0 == index % 1000) dao.reset()
                         }
                         // Prepare next wave with leftover subfolders
                         toScan.clear()
                         toScan.addAll(allSubfolders)
                     } while (toScan.isNotEmpty())
                 } finally {
-                    dao.cleanup()
+                    dao.reset()
                 }
                 trace(
                     Log.INFO,
@@ -415,14 +411,14 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 clearCoilCache(applicationContext)
 
                 // 4th pass : Import queue, bookmarks and renaming rules JSON
-                dao = ObjectBoxDAO()
+                dao.reset()
                 try {
                     val queueFile =
                         explorer.findFile(context, rootFolder, QUEUE_JSON_FILE_NAME)
                     if (queueFile != null) importQueue(
                         context,
                         queueFile,
-                        dao,
+                        dao.dao,
                         log
                     ) else trace(
                         Log.INFO,
@@ -435,7 +431,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     if (bookmarksFile != null) importBookmarks(
                         context,
                         bookmarksFile,
-                        dao,
+                        dao.dao,
                         log
                     ) else trace(
                         Log.INFO,
@@ -448,7 +444,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     if (rulesFile != null) importRenamingRules(
                         context,
                         rulesFile,
-                        dao,
+                        dao.dao,
                         log
                     ) else trace(
                         Log.INFO,
@@ -457,7 +453,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                         "No renaming rules file found"
                     )
                 } finally {
-                    dao.cleanup()
+                    dao.reset()
                 }
             }
         } catch (e: InterruptedException) {
@@ -528,7 +524,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         parent: DocumentFile,
         subFolders: List<DocumentFile>,
         explorer: FileExplorer,
-        dao: CollectionDAO,
+        dao: ObjectBoxDAOContainer,
         log: MutableList<LogEntry>,
         onProgress: BiConsumer<String, Boolean>
     ) {
@@ -540,23 +536,26 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
         )
 
         // Add all archives inside the current site folder
+        var nbScanned = 0
         scanForArchivesPdf(
             context,
             parent,
             subFolders,
             explorer,
             emptyList(),
-            dao,
+            dao.dao,
             StatusContent.DOWNLOADED,
             log,
             requiresJson = true
         ) { res ->
+            // Clear the DAO every 1000 iterations to optimize memory
+            if (0 == ++nbScanned % 1000) dao.reset()
             res?.let {
                 onArchiveFound(
                     context,
                     it,
                     parent,
-                    dao,
+                    dao.dao,
                     log,
                     onProgress
                 )
