@@ -2239,7 +2239,7 @@ fun Content.getStorageRoot(): Uri? {
 
 fun Content.getContainingFolder(context: Context): Uri? {
     if (storageUri.isEmpty()) return null
-    if (!isArchive) return storageUri.toUri()
+    if (!isArchive && !isPdf) return storageUri.toUri()
 
     val storageRoot = getStorageRoot() ?: return null
     return getParent(context, storageRoot, storageUri.toUri())
