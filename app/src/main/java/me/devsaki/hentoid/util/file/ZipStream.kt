@@ -123,7 +123,7 @@ class ZipReader(context: Context, archiveUri: Uri) {
                     it.skip(4) // Compressed size
                     val nameLength = it.readUShortLe().toLong()
                     val extraDataLength = it.readUShortLe().toInt()
-                    it.skip(2) // Comment length
+                    val commentLength = it.readUShortLe().toLong()
                     it.skip(2) // Disk number
                     it.skip(6) // Internal and external attributes
                     var lfhOffset = it.readUIntLe().toLong()
@@ -144,15 +144,16 @@ class ZipReader(context: Context, archiveUri: Uri) {
                             read += (4 + size)
                         } while (read < extraDataLength)
                     }
+                    it.skip(commentLength)
 
                     records.add(
                         ZipRecord(name, uncompressedSize, lfhOffset, time = datetime, crc = crc)
                     )
-                    // Don't read comments
                 } // cdrCount
             } // FileInputStream
 
             // Try parsing all file entries if table of contents is corrupted
+            // NB : Fails when ToC is the only place where compressed size appears
             if (corruptedToC) {
                 Timber.d("Corrupted table of contents; trying to parse file entries")
                 records.clear()
