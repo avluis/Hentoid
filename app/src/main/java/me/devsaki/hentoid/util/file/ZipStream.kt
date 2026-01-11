@@ -206,10 +206,12 @@ class ZipReader(context: Context, archiveUri: Uri) {
         } // File size
 
         if (BuildConfig.DEBUG) {
-            Timber.d("TocOffset $tocOffset")
+            Timber.d("Read completed; ${records.size} records found")
+            /*
             records.forEachIndexed { i, e ->
                 Timber.d("RECORD $i ${e.path} (${e.isFolder}) ${e.size} @${e.offset}")
             }
+             */
         }
     }
 
