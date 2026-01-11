@@ -26,6 +26,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.formatEpochToDate
@@ -417,15 +418,27 @@ fun removeFile(file: File): Boolean {
 }
 
 /**
- * Delete the document at the given Uri
+ * Delete the document at the given Uri except if it is a site root
  * NB : Inspired by TreeDocumentFile.delete & SingleDocumentFile.delete
  *
  * @param docUri Uri of the document to delete
  * @return True if succeeds; false if not
  */
 fun removeDocument(context: Context, docUri: Uri): Boolean {
+    // Check the document is not a site root
+    val fileName = docUri.lastPathSegment ?: ""
+    if (fileName.isBlank() || Site.entries.any { it.folder.equals(fileName, true) }) {
+        Timber.w("Trying to delete a site folder : $docUri")
+        return false
+    }
     return DocumentsContract.deleteDocument(context.contentResolver, docUri)
 }
+
+fun removeDocument(context: Context, doc: DocumentFile?): Boolean {
+    if (null == doc) return false
+    return removeDocument(context, doc.uri)
+}
+
 
 /**
  * Return the DocumentFile with the given display name located in the given folder

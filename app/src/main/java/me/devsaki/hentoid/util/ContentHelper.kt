@@ -88,6 +88,7 @@ import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.clearCoilKey
 import me.devsaki.hentoid.util.image.getScaledDownBitmap
@@ -590,7 +591,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
                     "Failed to find directory ${content.storageUri}"
                 )
 
-            if (folder.delete()) {
+            if (removeDocument(context, folder)) {
                 Timber.i("Directory removed : ${content.storageUri}")
             } else {
                 throw FileNotProcessedException(
@@ -999,7 +1000,7 @@ fun getOrCreateContentDownloadDir(
             bookFolder = findFolder(context, parentFolder, bookFolderName.second)
         }
         if (bookFolder != null) {
-            if (createFromScratch) bookFolder.delete()
+            if (createFromScratch) removeDocument(context, bookFolder)
             else return bookFolder
         }
     }
@@ -1143,10 +1144,8 @@ fun getOrCreateSiteDownloadDir(
             var siteFolders =
                 explorer.listDocumentFiles(
                     context, appFolder,
-                    { displayName: String ->
-                        displayName.startsWith(
-                            siteFolderName
-                        )
+                    { displayName ->
+                        displayName.startsWith(siteFolderName)
                     }, listFolders = true, listFiles = false, stopFirst = false
                 )
             // Order by name (nhentai, nhentai1, ..., nhentai10)
@@ -1499,7 +1498,7 @@ private fun purgeFolderFiles(
 
         try {
             // Delete the whole initial folder
-            bookFolder.delete()
+            removeDocument(context, bookFolder)
 
             // Re-create an empty folder with the same name
             val siteFolder = getOrCreateSiteDownloadDir(
@@ -2121,9 +2120,7 @@ suspend fun mergeContents(
         }
 
         // Remove target folder and merged images if manually canceled
-        if (isCanceled.invoke()) {
-            targetFolder.delete()
-        }
+        if (isCanceled.invoke()) removeDocument(context, targetFolder)
 
         if (!isError && !isCanceled.invoke()) {
             mergedContent.setImageFiles(mergedImages)

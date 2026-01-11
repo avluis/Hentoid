@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewmodels
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -15,6 +16,7 @@ import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.copyFiles
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.getPathRoot
 import org.greenrobot.eventbus.EventBus
@@ -119,7 +121,7 @@ class SettingsViewModel(application: Application, val dao: CollectionDAO) :
                         success = true
 
                         // Remove files from initial location
-                        sourceFolder.delete()
+                        removeDocument(application, sourceFolder)
                     }
                 }
             }

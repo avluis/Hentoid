@@ -40,6 +40,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.clearCoilCache
@@ -181,7 +182,8 @@ abstract class BaseSplitMergeWorker(
                         val nbMaxDigits =
                             (floor(log10(splitContentImages.size.toDouble())) + 1).toInt()
                         val extractInstructions = splitContentImages.map {
-                            val uri = if (it.url.startsWith(content.storageUri)) it.url else it.fileUri
+                            val uri =
+                                if (it.url.startsWith(content.storageUri)) it.url else it.fileUri
                             Triple(
                                 uri.replace(content.storageUri + File.separator, ""),
                                 it.order.toLong(),
@@ -261,7 +263,9 @@ abstract class BaseSplitMergeWorker(
 
         // Remove latest target folder and split images if manually canceled
         if (isStopped) {
-            withContext(Dispatchers.IO) { targetFolder?.delete() }
+            withContext(Dispatchers.IO) {
+                removeDocument(applicationContext, targetFolder)
+            }
         } else {
             progressDone(chapterSplitIds.size)
         }

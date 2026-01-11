@@ -62,6 +62,7 @@ import me.devsaki.hentoid.util.file.formatDisplayUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.findDuplicateContentByUrl
 import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getPathRoot
@@ -654,7 +655,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 }
                 if (doRemove) {
                     booksKO++
-                    val success = bookFolder.delete()
+                    val success = removeDocument(applicationContext, bookFolder)
                     trace(
                         Log.INFO,
                         STEP_1,
@@ -843,7 +844,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                     )
                     // Deletes the folder if cleanup is active
                     if (cleanNoJSON) {
-                        val success = bookFolder.delete()
+                        val success = removeDocument(applicationContext, bookFolder)
                         trace(
                             Log.INFO,
                             STEP_2_BOOK_FOLDERS,

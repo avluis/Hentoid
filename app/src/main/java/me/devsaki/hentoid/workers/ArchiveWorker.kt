@@ -198,7 +198,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                     content.downloadMode = DownloadMode.DOWNLOAD_ARCHIVE
                     dao.insertContentCore(content)
                     // Remove former location
-                    bookFolder.delete()
+                    removeDocument(context, bookFolder)
                     // Create thumb
                     createArchivePdfCover(context, content, dao)
                     dao.updateContentProcessedFlag(content.id, false)
