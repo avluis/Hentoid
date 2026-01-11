@@ -15,10 +15,6 @@
       "hasUniqueBookId": true,
       "useCloudflare": true
     },
-    "TSUMINO": {
-      "useHentoidAgent": true,
-      "hasUniqueBookId": true
-    },
     "ASMHENTAI": {
       "useHentoidAgent": true,
       "hasUniqueBookId": true
