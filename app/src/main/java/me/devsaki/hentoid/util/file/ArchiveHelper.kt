@@ -501,6 +501,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
             try {
                 if (seekDelta < 0) {
                     // "skip" can only go forward, so we have to start over
+                    // TODO experiment with stream.channel.position
                     openUri()
                     skipNBytes(position + seekDelta)
                 } else {
