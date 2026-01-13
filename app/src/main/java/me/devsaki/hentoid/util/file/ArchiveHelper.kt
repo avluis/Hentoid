@@ -153,7 +153,11 @@ fun Context.getArchiveEntries(uri: Uri): List<ArchiveEntry> {
         if (fi.read(header) < header.size) return emptyList()
         format = getTypeFromArchiveHeader(header)
     }
-    return if (null == format) emptyList() else getArchiveEntries(format, uri)
+    return when (format) {
+        null -> emptyList()
+        ArchiveFormat.ZIP -> ZipReader(this, uri).records.map { it.toArchiveEntry() }
+        else -> getArchiveEntries(format, uri)
+    }
 }
 
 /**

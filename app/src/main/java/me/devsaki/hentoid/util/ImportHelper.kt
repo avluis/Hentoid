@@ -1015,17 +1015,19 @@ private fun scanFolderImages(
 private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
     // Clear chapters contained in ref images (their content will be replaced by images from 'recipient')
     ref.mapNotNull { it.linkedChapter }.distinct().forEach { it.clearImageFiles() }
+    // Map refs for faster mapping
+    val refMap = ref.groupBy { it.name }
     // Copy metadata from ref to recipient images, using name as pivot
     recipient.forEach { img ->
-        ref.firstOrNull { it.name == img.name }?.let { ref ->
+        refMap[img.name]?.firstOrNull()?.let { rf ->
             img.apply {
-                url = ref.url
-                pageUrl = ref.pageUrl
-                read = ref.read
-                favourite = ref.favourite
-                isTransformed = ref.isTransformed
-                isCover = ref.isCover
-                chapter = ref.chapter
+                url = rf.url
+                pageUrl = rf.pageUrl
+                read = rf.read
+                favourite = rf.favourite
+                isTransformed = rf.isTransformed
+                isCover = rf.isCover
+                chapter = rf.chapter
             }
         }
     }
