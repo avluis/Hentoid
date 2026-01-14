@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.util.download
 
-import androidx.documentfile.provider.DocumentFile
+import android.net.Uri
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
-import java.util.*
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 data class RequestOrder(
@@ -11,15 +11,17 @@ data class RequestOrder(
     val url: String,
     val headers: Map<String, String>,
     val site: Site,
-    val targetDir: DocumentFile,
+    val targetDir: Uri,
     val fileName: String,
     val pageIndex: Int,
     val backupUrl: String,
-    val img: ImageFile
+    val img: ImageFile,
+    val shouldReportIndividualProgress: Boolean = false
 ) {
     val killSwitch: AtomicBoolean = AtomicBoolean(false)
     val id: UUID = UUID.randomUUID()
-    
+
+    @Suppress("unused")
     enum class HttpMethod {
         GET, POST, OPTIONS
     }

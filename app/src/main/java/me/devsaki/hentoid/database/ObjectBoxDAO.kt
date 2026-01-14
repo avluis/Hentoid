@@ -20,6 +20,7 @@ import me.devsaki.hentoid.database.ObjectBoxRandomDataSource.RandomDataSourceFac
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ErrorRecord
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.GroupItem
@@ -40,6 +41,7 @@ import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.LIBRARY_DISPLAY_GROUP_SIZE
 import me.devsaki.hentoid.util.Type
+import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.widget.ContentSearchManager.Companion.searchContentIds
 import me.devsaki.hentoid.widget.ContentSearchManager.ContentSearchBundle
@@ -349,7 +351,7 @@ class ObjectBoxDAO : CollectionDAO {
             contentUrl,
             coverUrlStart,
             searchChapters
-        )
+        ).firstOrNull()
     }
 
     // Find any book that has the given content URL _and_ has a cover starting with the given cover URL
@@ -357,12 +359,16 @@ class ObjectBoxDAO : CollectionDAO {
         site: Site,
         contentUrl: String
     ): Set<Content> {
-        return ObjectBoxDB.selectContentByUrl(site, contentUrl)
+        return ObjectBoxDB.selectContentByUrlOrCover(site, contentUrl).toSet()
     }
 
     // Find any book that has the given quality of pages _and_ size
     override fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
         return ObjectBoxDB.selectContentsByQtyPageAndSize(qtyPage, size)
+    }
+
+    override fun selectContentByUniqueId(site: Site, id: String): Set<Content> {
+        return ObjectBoxDB.selectContentsByUniqueId(site, id)
     }
 
     override fun selectAllSourceUrls(site: Site): Set<String> {
@@ -1034,6 +1040,10 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.updateImageFileStatusParamsMimeTypeUriSize(image)
     }
 
+    override fun updateImageLocations(locations : Map<Long, String>) {
+        ObjectBoxDB.updateImageFileUri(locations)
+    }
+
     override fun deleteImageFiles(imgs: List<ImageFile>) {
         // Delete the page
         ObjectBoxDB.deleteImageFiles(imgs)
@@ -1073,16 +1083,15 @@ class ObjectBoxDAO : CollectionDAO {
         return ObjectBoxDB.flagImagesForDeletion(ids, value)
     }
 
-    override fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>> {
-        return ObjectBoxLiveData(ObjectBoxDB.selectDownloadedImagesFromContentQ(id))
+    override fun selectImagesFromContentLive(
+        id: Long,
+        downloadedOnly: Boolean
+    ): LiveData<List<ImageFile>> {
+        return ObjectBoxLiveData(ObjectBoxDB.selectImagesFromContentQ(id, downloadedOnly))
     }
 
-    override fun selectDownloadedImagesFromContent(id: Long): List<ImageFile> {
-        return ObjectBoxDB.selectDownloadedImagesFromContentQ(id).safeFind()
-    }
-
-    override fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>> {
-        return ObjectBoxDB.countProcessedImagesById(contentId)
+    override fun selectImagesFromContent(id: Long, downloadedOnly: Boolean): List<ImageFile> {
+        return ObjectBoxDB.selectImagesFromContentQ(id, downloadedOnly).safeFind()
     }
 
     override fun selectAllFavouritePagesLive(): LiveData<List<ImageFile>> {
@@ -1118,6 +1127,7 @@ class ObjectBoxDAO : CollectionDAO {
         position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
+        archiveUrl: String?,
         isQueueActive: Boolean
     ) {
         if (targetImageStatus != null) ObjectBoxDB.updateImageContentStatus(
@@ -1129,6 +1139,18 @@ class ObjectBoxDAO : CollectionDAO {
         content.isBeingProcessed = false // Remove any UI animation
         if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId)
         content.replacementTitle = replacementTitle ?: ""
+
+        // Archive download - Replace all images by the archive to download
+        archiveUrl?.let {
+            val singleImage = ImageFile.fromImageUrl(0, it, StatusContent.SAVED, 9999)
+            singleImage.name = formatFolderName(content).first
+            val imgs = listOf(singleImage)
+            replaceImageList(content.id, imgs)
+            content.setImageFiles(imgs)
+            content.downloadMode = DownloadMode.DOWNLOAD_ARCHIVE_FILE
+            content.qtyPages = 1
+        }
+
         insertContent(content)
         if (!ObjectBoxDB.isContentInQueue(content)) {
             val targetPosition: Int =

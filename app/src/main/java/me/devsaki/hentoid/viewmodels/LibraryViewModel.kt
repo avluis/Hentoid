@@ -10,6 +10,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import androidx.work.Data
@@ -18,6 +19,9 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import androidx.work.workDataOf
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.map
@@ -30,6 +34,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle.Companion.buildSearchUri
 import me.devsaki.hentoid.core.Consumer
+import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.SEED_CONTENT
 import me.devsaki.hentoid.core.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.CollectionDAO
@@ -40,6 +45,7 @@ import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.SearchRecord
 import me.devsaki.hentoid.enums.Grouping
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.util.JSON_MIME_TYPE
 import me.devsaki.hentoid.util.Location
 import me.devsaki.hentoid.util.MergerLiveData
 import me.devsaki.hentoid.util.QueuePosition
@@ -49,10 +55,15 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Type
 import me.devsaki.hentoid.util.download.ContentQueueManager.isQueueActive
 import me.devsaki.hentoid.util.download.ContentQueueManager.resumeQueue
+import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.DisplayFile
+import me.devsaki.hentoid.util.file.copyFile
+import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getParent
+import me.devsaki.hentoid.util.file.removeDocument
+import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.isDownloadable
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -67,6 +78,7 @@ import me.devsaki.hentoid.util.updateJson
 import me.devsaki.hentoid.widget.ContentSearchManager
 import me.devsaki.hentoid.widget.FolderSearchManager
 import me.devsaki.hentoid.widget.GroupSearchManager
+import me.devsaki.hentoid.workers.ArchiveWorker
 import me.devsaki.hentoid.workers.BaseDeleteWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.MergeWorker
@@ -77,6 +89,7 @@ import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.SplitMergeData
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
+import java.io.IOException
 import java.security.InvalidParameterException
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
@@ -691,23 +704,22 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
 
     /**
      * General purpose download/redownload
-     * @reparseContent : True to reparse Content metadata from the site
-     * @reparseImages : True to reparse and redownload images from the site
+     * @param reparseContent    True to reparse Content metadata from the site
+     * @param reparseImages     True to reparse and redownload images from the site
      */
     fun downloadContent(
         contentList: List<Content>,
         reparseContent: Boolean,
         reparseImages: Boolean,
         position: QueuePosition,
+        forceArchive: Boolean,
         onSuccess: Consumer<Int>,
         onError: Consumer<Throwable>
     ) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.invoke(
-                EmptyResultException(
-                    getApplication<Application>().getString(R.string.download_updating_webview)
-                )
-            ) else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.download_missing_webview)))
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.download_updating_webview)))
+            else onError.invoke(EmptyResultException(getApplication<Application>().getString(R.string.download_missing_webview)))
             return
         }
 
@@ -762,23 +774,33 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 if (!isDownloadable) msg += " (pages unreachable)"
                                 Timber.d(msg)
                                 // Reparse content itself
-                                res = reparseFromScratch(c, reparseImages)
+                                res = reparseFromScratch(c, keepUris = !reparseImages, updateImages = reparseImages)
                             }
                         }
 
                         res?.let {
-                            it.downloadMode = DownloadMode.DOWNLOAD
+                            it.downloadMode =
+                                if (forceArchive) DownloadMode.DOWNLOAD_ARCHIVE else DownloadMode.DOWNLOAD
                             if (areModifiedImages) {
                                 dao.insertChapters(it.chaptersList)
                                 dao.insertImageFiles(it.imageList)
                             }
 
+                            if (forceArchive) {
+                                // Delete download folder
+                                removeDocument(application, it.storageUri.toUri())
+                                // Delete previous references
+                                it.jsonUri = ""
+                                it.storageUri = ""
+                            }
+
                             dao.addContentToQueue(
-                                it, sourceImageStatus, targetImageStatus, position, -1, null,
+                                it, sourceImageStatus, targetImageStatus, position, -1, null,null,
                                 isQueueActive(getApplication())
                             )
-                            // Non-blocking performance bottleneck; run in a dedicated worker
-                            if (reparseImages) purgeContent(
+
+                            if (!forceArchive && reparseImages) purgeContent(
+                                // Non-blocking performance bottleneck; run in a dedicated worker
                                 getApplication(),
                                 it,
                                 keepCover = false
@@ -889,9 +911,8 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         workManager.enqueueUniqueWork(
             R.id.delete_service_stream.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.Builder(
-                DeleteWorker::class.java
-            ).setInputData(builder.data).build()
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java)
+                .setInputData(builder.data).build()
         )
     }
 
@@ -912,7 +933,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         roots.removeAll(uris.map {
             val str = it.toString()
             val docPos = str.indexOf("/document/")
-            str.substring(0, docPos)
+            str.take(docPos)
         })
         Settings.libraryFoldersRoots = roots
 
@@ -1279,4 +1300,136 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
         dao.deleteAllSearchRecords(if (isGroup) SearchRecord.EntityType.GROUP else SearchRecord.EntityType.CONTENT)
         dao.cleanup()
     }
+
+    fun archiveContent(
+        content: List<Content>,
+        onError: Consumer<Throwable>
+    ) {
+        val contentIds = content.map { it.id }.toLongArray()
+
+        val params = ArchiveWorker.Params(
+            "",
+            1, // CBZ
+            0,
+            overwrite = false,
+            deleteOnSuccess = false,
+            archivePrimaryContent = true
+        )
+
+        val moshi = Moshi.Builder()
+            .addLast(KotlinJsonAdapterFactory())
+            .build()
+
+        val serializedParams = moshi.adapter(ArchiveWorker.Params::class.java).toJson(params)
+
+        val myData: Data = workDataOf(
+            "IDS" to contentIds,
+            "PARAMS" to serializedParams
+        )
+
+        val workManager = WorkManager.getInstance(application)
+        workManager.enqueueUniqueWork(
+            R.id.archive_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequest.Builder(ArchiveWorker::class.java)
+                .setInputData(myData)
+                .addTag(WORK_CLOSEABLE).build()
+        )
+    }
+
+    /**
+     * Turn archived Content into folder-stored Content
+     *
+     * @param contentList List of Content stored in the form of archives
+     */
+    fun unarchive(contentList: List<Content>, onError: Consumer<Throwable>) {
+        // Flag contents as "being processed" (trigger blink animation)
+        dao.updateContentsProcessedFlag(contentList, true)
+
+        viewModelScope.launch {
+            contentList.forEach { c ->
+                try {
+                    doUnarchive(application, c)
+                } catch (t: Throwable) {
+                    onError.invoke(t)
+                } finally {
+                    // Unflag contents as "being processed" (cancel blink animation)
+                    dao.updateContentsProcessedFlag(listOf(c), false)
+                }
+            } // Each content
+            dao.cleanup()
+        } // ViewModelScope
+        dao.cleanup()
+    }
+
+    /**
+     * Turn archived Content into folder-stored Content
+     *
+     * @param content Content stored in the form of an archive
+     */
+    private suspend fun doUnarchive(context: Context, content: Content) =
+        withContext(Dispatchers.IO) {
+            val initialJsonUri = content.jsonUri.toUri()
+            val initialArchiveUri = content.storageUri.toUri()
+
+            // Create target folder for streaming from scratch
+            val location = selectDownloadLocation(context)
+            getOrCreateContentDownloadDir(
+                context,
+                content,
+                location,
+                createFromScratch = true
+            )?.let { f ->
+                // Copy the JSON file inside target folder
+                copyFile(
+                    context,
+                    content.jsonUri.toUri(),
+                    f,
+                    JSON_FILE_NAME_V2,
+                    JSON_MIME_TYPE
+                )?.let { content.jsonUri = it.toString() }
+                    ?: throw IOException("Couldn't copy JSON file")
+
+                // Unarchive the whole book inside target folder
+                val imgs = content.imageList
+                val isLocationInUri =
+                    imgs.filter { it.isReadable }.all { it.fileUri.startsWith(content.storageUri) }
+                val toExtract: List<Triple<String, Long, String>> = imgs
+                    .filter { it.isReadable }
+                    .mapIndexed { i, e ->
+                        var path = if (isLocationInUri) e.fileUri else e.url
+                        path = path.replace(content.storageUri, "")
+                        path = path.substring(path.lastIndexOf('/') + 1)
+                        Triple(path, i.toLong(), path)
+                    }
+                val imgUris = context.extractArchiveEntriesBlocking(
+                    content.storageUri.toUri(),
+                    f.uri,
+                    toExtract
+                )
+                content.storageUri = f.uri.toString()
+                content.downloadMode = DownloadMode.DOWNLOAD
+
+                // Save core
+                dao.insertContentCore(content)
+
+                // Remap pictures
+                imgs.filter { it.isReadable }
+                    .forEachIndexed { i, e ->
+                        if (imgUris.size <= i) return@forEachIndexed
+                        imgUris[i].toString().let {
+                            if (isLocationInUri) e.fileUri = it else e.url = it
+                        }
+                    }
+
+                // Don't move thumb as it can keep being read from the archive cache folder
+
+                // Save pictures
+                dao.insertImageFiles(imgs)
+
+                // Remove the initial archive and its JSON
+                removeDocument(context, initialJsonUri)
+                removeDocument(context, initialArchiveUri)
+            } ?: throw IOException("Couldn't create book folder")
+        }
 }

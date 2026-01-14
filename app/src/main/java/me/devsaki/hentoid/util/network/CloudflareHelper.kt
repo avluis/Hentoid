@@ -166,6 +166,7 @@ class CloudflareHelper {
                 val requestHeadersList =
                     webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
                 try {
+                    // Don't close it as it is consumed by the browser
                     val response = getOnlineResource(
                         urlStr,
                         requestHeadersList,
@@ -173,9 +174,11 @@ class CloudflareHelper {
                         useHentoidAgent,
                         useWebviewAgent
                     )
-
                     // Scram if the response is a redirection or an error
-                    if (response.code >= 300) return null
+                    if (response.code >= 300) {
+                        response.close()
+                        return null
+                    }
                     val body = response.body
                     return okHttpResponseToWebkitResponse(response, body.byteStream())
                 } catch (e: IOException) {

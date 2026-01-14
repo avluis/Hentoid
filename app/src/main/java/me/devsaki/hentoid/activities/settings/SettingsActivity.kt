@@ -99,9 +99,11 @@ class SettingsActivity : BaseActivity(), SearchPreferenceResultListener {
     }
 
     override fun onSearchResultClicked(result: SearchPreferenceResult) {
-        if (result.screen != null)
+        if (result.screen != null) {
             fragment = fragment.navigateToScreen(supportFragmentManager, result.screen)
-        fragment.view?.fitsSystemWindows = true
+            fragment.view?.fitsSystemWindows = true
+        }
+        result.closeSearchPage(this)
         result.highlight(fragment)
     }
 }

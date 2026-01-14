@@ -122,8 +122,7 @@ class DeleteData {
             get() = data.getString(KEY_DOCS_ROOT)?.toUri() ?: Uri.EMPTY
         val docsNames: Set<String>
             get() {
-                val bytes = data.getByteArray(KEY_DOCS_NAMES)
-                if (null == bytes) return emptySet()
+                val bytes = data.getByteArray(KEY_DOCS_NAMES) ?: return emptySet()
                 return String(bytes, LATIN_1).split("?").toSet()
             }
         val isDeleteAllQueueRecords: Boolean

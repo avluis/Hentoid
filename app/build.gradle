@@ -43,7 +43,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 36
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.21.3'
+        versionName '1.21.4'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -192,7 +192,7 @@ dependencies {
     /**
      * UI
      */
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.2.0'
 
     // https://github.com/mikepenz/FastAdapter
     def fastadapter_version = '5.7.0'
@@ -259,7 +259,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     // Download speed limit
-    implementation 'com.bucket4j:bucket4j_jdk17-core:8.15.0'
+    implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.0'
 
     // TLS v1.3 support for Android <= 9
     implementation 'org.conscrypt:conscrypt-android:2.5.3'
@@ -303,7 +303,7 @@ dependencies {
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // Biometrics
-    implementation 'dev.skomlach:biometric:2.2.51'
+    implementation 'dev.skomlach:biometric:2.3.4'
 
     // Searchable prefs
     implementation 'com.github.ByteHamster:SearchPreference:2.7.3'
@@ -318,7 +318,7 @@ dependencies {
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:34.4.0')
+    implementation platform('com.google.firebase:firebase-bom:34.6.0')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'

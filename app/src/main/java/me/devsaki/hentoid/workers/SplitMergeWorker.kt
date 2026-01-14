@@ -40,6 +40,7 @@ import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.getLocation
 import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.image.clearCoilCache
@@ -156,7 +157,7 @@ abstract class BaseSplitMergeWorker(
                 splitContent,
                 location,
                 true,
-                content.storageUri.toUri()
+                siblingLocation = content.storageUri.toUri()
             )
             if (null == targetFolder || !targetFolder.exists())
                 throw ContentNotProcessedException(
@@ -181,8 +182,10 @@ abstract class BaseSplitMergeWorker(
                         val nbMaxDigits =
                             (floor(log10(splitContentImages.size.toDouble())) + 1).toInt()
                         val extractInstructions = splitContentImages.map {
+                            val uri =
+                                if (it.url.startsWith(content.storageUri)) it.url else it.fileUri
                             Triple(
-                                it.url.replace(content.storageUri + File.separator, ""),
+                                uri.replace(content.storageUri + File.separator, ""),
                                 it.order.toLong(),
                                 String.format(
                                     Locale.ENGLISH,
@@ -260,7 +263,9 @@ abstract class BaseSplitMergeWorker(
 
         // Remove latest target folder and split images if manually canceled
         if (isStopped) {
-            withContext(Dispatchers.IO) { targetFolder?.delete() }
+            withContext(Dispatchers.IO) {
+                removeDocument(applicationContext, targetFolder)
+            }
         } else {
             progressDone(chapterSplitIds.size)
         }
@@ -353,14 +358,13 @@ abstract class BaseSplitMergeWorker(
         var images: List<ImageFile>? = chapter.imageFiles
         if (images != null) {
             images = chapter.imageList.sortedBy { it.order }
-            val nbMaxDigits = floor(log10(images.size.toDouble()) + 1).toInt()
             for ((position, img) in images.withIndex()) {
                 img.id = 0 // Force working on a new picture
                 img.setChapter(null)
                 img.content.target = null // Clear content
                 img.isCover = (0 == position)
                 img.order = position
-                img.computeName(nbMaxDigits)
+                img.computeName(images.size)
             }
             splitContent.setImageFiles(images)
             splitContent.setChapters(null)
@@ -387,23 +391,20 @@ abstract class BaseSplitMergeWorker(
         val orderById = chapterIds.withIndex().associate { (index, it) -> it to index }
         chapters = chapters.sortedBy { orderById[it.id] }.toMutableList()
 
-        // Renumber all chapters and update the DB
+        // Renumber all chapters (and don't save them to the DB yet)
         renumberChapters(chapters)
-        dao.insertChapters(chapters)
 
         // Renumber all readable images
         val orderedImages =
             chapters.flatMap { it.imageList }.filter { it.isReadable }
         require(orderedImages.isNotEmpty()) { "No images found" }
 
-        // Keep existing formatting
-        val nbMaxDigits = orderedImages.maxOf { it.name.length }
         // Key = source Uri
         // Value = operation
         val operations = HashMap<String, FileOperation>()
         orderedImages.forEachIndexed { index, img ->
             img.order = index + 1
-            img.computeName(nbMaxDigits)
+            img.computeName(orderedImages.size)
 
             val uriParts = UriParts(Uri.decode(img.fileUri))
             val sourceFileName = uriParts.fileNameFull
@@ -420,6 +421,7 @@ abstract class BaseSplitMergeWorker(
         // Case where chapters have been imported from distinct folders
         // => No need to swap anything
         if (chapters.all { it.url.startsWith(SCHEME_CONTENT) } && chapters.distinctBy { it.url }.size == chapters.size) {
+            dao.insertChapters(chapters)
             dao.insertImageFiles(orderedImages)
             val finalContent = dao.selectContent(contentId)
             if (finalContent != null) persistJson(applicationContext, finalContent)
@@ -433,6 +435,17 @@ abstract class BaseSplitMergeWorker(
         ) ?: throw IOException("Parent folder not found")
 
         buildPermutationGroups(applicationContext, operations, root)
+
+        // If any operation hasn't been mapped to a permutation group, we can't continue
+        if (operations.values.any { it.sequenceNumber < 0 }) {
+            nbError = nbMax
+            progressDone(nbMax)
+            return
+        }
+
+        // Operations validity check has passed => wa save new chapter order to the DB
+        dao.insertChapters(chapters)
+
         val finalOpsTmp = operations.values.sortedBy { it.sequenceNumber }.sortedBy { it.order }
         val finalOps = finalOpsTmp.groupBy { it.sequenceNumber }.values.toList()
 

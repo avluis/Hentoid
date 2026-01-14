@@ -27,9 +27,11 @@ class PixivActivity : BaseBrowserActivity() {
             "pixiv.net/touch/ajax/illust/details\\?",  // Illustrations page (single gallery) / load using fetch call
             "pixiv.net/touch/ajax/illust/series_content/",  // Manga/series page (anthology) / load using fetch call
             "pixiv.net/touch/ajax/user/details\\?",  // User page / load using fetch call
+            "pixiv.net/touch/ajax/user/bookmarks",  // Bookmarks page / load using fetch call
             "pixiv.net/[\\w\\-]+/artworks/[0-9]+$",  // Illustrations page (single gallery)
             "pixiv.net/user/[0-9]+/series/[0-9]+$",  // Manga/series page (anthology)
-            "pixiv.net/users/[0-9]+$" // User page
+            "pixiv.net/users/[0-9]+$", // User page
+            "pixiv.net/users/[0-9]+/bookmarks/" // Bookmarks page
         )
         private val BLOCKED_CONTENT = arrayOf("ads-pixiv.net")
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
@@ -84,6 +86,7 @@ class PixivActivity : BaseBrowserActivity() {
             // Kill CORS
             if (url.contains("s.pximg.net")) {
                 try {
+                    // Don't close it as it will be consumed by the browser
                     val response = getOnlineResourceFast(
                         url,
                         webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, url),
@@ -91,9 +94,11 @@ class PixivActivity : BaseBrowserActivity() {
                         Site.PIXIV.useHentoidAgent,
                         Site.PIXIV.useWebviewAgent
                     )
-
                     // Scram if the response is a redirection or an error
-                    if (response.code >= 300) return null
+                    if (response.code >= 300) {
+                        response.close()
+                        return null
+                    }
 
                     // Scram if the response is empty
                     val body = response.body

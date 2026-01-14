@@ -11,6 +11,7 @@
     <string name="library_display_group_figure_title">Contatore dei gruppi</string>
     <string name="mass_operations_summary">Operazioni di massa della libreria</string>
     <string name="mass_operations_title">Operazioni di massa</string>
+    <string name="material_you_warning">Il dispositivo non supporta il Material You; ripristino tema Chiaro</string>
     <string name="pref_analytics_preference_summary_off">Il tracciamento analitico è attualmente disabilitato\nAbilitarlo ci aiuterà a migliorare l’app monitorando arresti anomali ed eccezioni</string>
     <string name="pref_analytics_preference_summary_on">Il tracciamento analitico è attivo\nGrazie per aver contribuito a migliorare Hentoid!</string>
     <string name="pref_analytics_preference_title">Analisi Firebase</string>
@@ -72,6 +73,7 @@
     <string name="pref_browser_nhentai_invisible_blacklist_off">I libri nella lista nera di NHentai sono offuscati</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">I libri della lista nera di NHentai sono nascosti</string>
     <string name="pref_browser_nhentai_invisible_blacklist_title">Nascondi i libri della lista nera di NHentai</string>
+    <string name="pref_browser_proxy_title">Proxy</string>
     <string name="pref_browser_quick_dl_summary">Nella pagina dell’elenco dei libri, tieni premuto per scaricare qualsiasi libro</string>
     <string name="pref_browser_quick_dl_threshold_summary">Tieni premuto per questa durata per iniziare un download rapido\nAttualmente: %s</string>
     <string name="pref_browser_quick_dl_threshold_title">Soglia di pressione prolungata per il download rapido</string>
@@ -125,6 +127,7 @@
     <string name="pref_dl_speed_cap_title">Limite velocità download</string>
     <string name="pref_dl_threads_quantity_summary">Numero d’immagini scaricate contemporaneamente\nAttualmente: %s</string>
     <string name="pref_dl_threads_quantity_title">Download paralleli</string>
+    <string name="pref_downloader_set_time">Imposta orario</string>
     <string name="pref_drawer_sources_summary">Abilita, disabilita e riorganizza le fonti che appaiono nel riquadro di navigazione a sinistra</string>
     <string name="pref_drawer_sources_title">Gestisci le fonti</string>
     <string name="pref_endless_scroll_summary_off">Abilita lo scorrimento infinito nella lista dei download\nDisabilita la paginazione</string>
@@ -158,6 +161,7 @@
     <string name="pref_memory_usage_title">Utilizzo della memoria</string>
     <string name="pref_misc">Varie</string>
     <string name="pref_navigation_nostalgia_mode">Modalità nostalgia</string>
+    <string name="pref_next_schedule">Prossima esecuzione prevista in %.0f minuti</string>
     <string name="pref_nostalgia_summary_off">Il pannello di navigazione NON mostra le fonti attive</string>
     <string name="pref_nostalgia_summary_on">Il pannello di navigazione mostra le fonti attive</string>
     <string name="pref_plug_reactions">Reazioni agli inserimenti cavi</string>
@@ -167,6 +171,7 @@
     <string name="pref_queue_autostart_on">La coda dei download inizierà non appena un download è terminato</string>
     <string name="pref_queue_autostart_title">Avvia automatico della coda dei download</string>
     <string name="pref_queue_new_position_title">Nuova locazione dei download</string>
+    <string name="pref_queue_schedule_title">Pianifica download</string>
     <string name="pref_queue_wifi_only_off">La coda dei download si avvierà se il dispositivo è connesso a qualsiasi rete</string>
     <string name="pref_queue_wifi_only_on">La coda dei download inizierà solo se connesso al Wi-Fi</string>
     <string name="pref_queue_wifi_only_title">Scarica solo su Wi-Fi</string>
@@ -247,6 +252,7 @@
     <string name="pref_viewer_zoom_transitions">Abilita animazione zoom</string>
     <string name="prefs_ask_detach_external_library">Staccare la libreria esterna\?</string>
     <string name="prefs_external_library_detached">Libreria esterna staccata</string>
+    <string name="proxy_warning">Alcui siti non funzionano bene con un proxy. Usa un’app DNS se incontri problemi durante la navigazione (ad es. pagine bianche, campi login bloccati)</string>
     <string name="searchpreference_clear">Cancella</string>
     <string name="searchpreference_clear_history">Camcella cronologia</string>
     <string name="searchpreference_more">Altro</string>

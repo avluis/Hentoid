@@ -27,7 +27,7 @@ import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getMimeTypeFromPicData
+import me.devsaki.hentoid.util.file.getMimeTypeFromData
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isUriPermissionPersisted
 import me.devsaki.hentoid.util.file.removeFile
@@ -47,7 +47,6 @@ import timber.log.Timber
 import java.io.File
 import java.io.IOException
 import java.io.OutputStream
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 // NB : Actual size of read bytes may be smaller
@@ -57,7 +56,7 @@ private const val DL_IO_BUFFER_SIZE_B = 50 * 1024
  * Download the picture at the given index to the given folder
  *
  * @param pageIndex    Index of the picture to download
- * @param stopDownload Switch to interrupt the download
+ * @param isCanceled Switch to interrupt the download
  * @return Optional triple with
  * - The page index
  * - The Uri of the downloaded file
@@ -71,7 +70,7 @@ suspend fun downloadPic(
     resourceId: Int,
     targetFolderUri: Uri? = null,
     onProgress: ((Float, Int) -> Unit)? = null,
-    stopDownload: AtomicBoolean? = null
+    isCanceled: (() -> Boolean)? = null
 ): Pair<Int, String>? = withContext(Dispatchers.IO) {
     try {
         val targetFile: File
@@ -99,7 +98,7 @@ suspend fun downloadPic(
                 headers,
                 targetFolderUri,
                 onProgress,
-                stopDownload
+                isCanceled
             )
         } else {
             val imgUrl = fixUrl(img.url, content.site.url)
@@ -129,8 +128,8 @@ suspend fun downloadPic(
                         mimeType
                     )
                 },
-                stopDownload,
-                resourceId = resourceId
+                resourceId = resourceId,
+                isCanceled
             ) { onProgress?.invoke(it, resourceId) }
         }
 
@@ -153,7 +152,7 @@ suspend fun downloadPic(
  * @param img               ImageFile of the page to download
  * @param resourceId        Internal ID for the page to download, for remapping purposes (usually, the page index)
  * @param requestHeaders    HTTP request headers to use
- * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+ * @param isCanceled        Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
  * @return Pair containing
  * - Left : Downloaded file
  * - Right : Detected mime-type of the downloaded resource
@@ -174,7 +173,7 @@ private suspend fun downloadPictureFromPage(
     requestHeaders: List<Pair<String, String>>,
     targetFolderUri: Uri? = null,
     onProgress: ((Float, Int) -> Unit)? = null,
-    interruptDownload: AtomicBoolean? = null
+    isCanceled: (() -> Boolean)?
 ): Uri? {
     val site = content.site
     val pageUrl = fixUrl(img.pageUrl, site.url)
@@ -207,8 +206,8 @@ private suspend fun downloadPictureFromPage(
                     mimeType
                 )
             },
-            interruptDownload,
-            resourceId = resourceId
+            resourceId = resourceId,
+            isCanceled
         ) { onProgress?.invoke(it, resourceId) }
     } catch (e: IOException) {
         if (pages.second != null) Timber.d("First download failed; trying backup URL") else throw e
@@ -227,8 +226,8 @@ private suspend fun downloadPictureFromPage(
             )
         }
         else { ctx, mimeType -> createFile(ctx, targetFolderUri, formatCacheKey(img), mimeType) },
-        interruptDownload,
-        resourceId = resourceId
+        resourceId = resourceId,
+        isCanceled
     ) { onProgress?.invoke(it, resourceId) }
 }
 
@@ -243,7 +242,7 @@ suspend fun downloadToFileCached(
     site: Site,
     rawUrl: String,
     requestHeaders: List<Pair<String, String>>,
-    interruptDownload: AtomicBoolean,
+    isCanceled: () -> Boolean,
     cacheKey: String,
     forceMimeType: String? = null,
     failFast: Boolean = true,
@@ -253,7 +252,7 @@ suspend fun downloadToFileCached(
     return downloadToFile(
         context, site, rawUrl, requestHeaders,
         fileCreator = { _, _ -> StorageCache.createFile(READER_CACHE, cacheKey) },
-        interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
+        resourceId, isCanceled, forceMimeType, failFast, notifyProgress = notifyProgress
     )
 }
 
@@ -270,10 +269,10 @@ suspend fun downloadToFile(
     requestHeaders: List<Pair<String, String>>,
     targetFolderUri: Uri,
     targetFileName: String,
-    interruptDownload: AtomicBoolean,
+    isCanceled: () -> Boolean,
+    resourceId: Int,
     forceMimeType: String? = null,
     failFast: Boolean = true,
-    resourceId: Int,
     notifyProgress: Consumer<Float>? = null
 ): Uri? {
     return downloadToFile(
@@ -281,7 +280,7 @@ suspend fun downloadToFile(
         fileCreator = { ctx, mimeType ->
             createFile(ctx, targetFolderUri, targetFileName, mimeType)
         },
-        interruptDownload, forceMimeType, failFast, resourceId, notifyProgress
+        resourceId, isCanceled, forceMimeType, failFast, notifyProgress
     )
 }
 
@@ -292,7 +291,7 @@ suspend fun downloadToFile(
  * @param rawUrl            URL to download from
  * @param requestHeaders    HTTP request headers to use
  * @param fileCreator       Method to use to create the file where to download
- * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+ * @param isCanceled        Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
  * @param forceMimeType     Forced mime-type of the downloaded resource (null for auto-set)
  * @param failFast          True for a shorter read timeout; false for a regular, patient download
  * @param resourceId        ID of the corresponding resource (for logging purposes only)
@@ -313,14 +312,14 @@ private suspend fun downloadToFile(
     rawUrl: String,
     requestHeaders: List<Pair<String, String>>,
     fileCreator: (Context, String) -> Uri,
-    interruptDownload: AtomicBoolean? = null,
+    resourceId: Int,
+    isCanceled: (() -> Boolean)? = null,
     forceMimeType: String? = null,
     failFast: Boolean = true,
-    resourceId: Int,
     notifyProgress: Consumer<Float>? = null
 ): Uri? = withContext(Dispatchers.IO) {
     val url = fixUrl(rawUrl, site.url)
-    if (interruptDownload?.get() == true) throw DownloadInterruptedException("Download interrupted")
+    if (isCanceled?.invoke() == true) throw DownloadInterruptedException("Download interrupted 1")
     Timber.d("DOWNLOADING %d %s", resourceId, url)
     val response = if (failFast) getOnlineResourceFast(
         url,
@@ -361,7 +360,7 @@ private suspend fun downloadToFile(
     body.use { bdy ->
         bdy.byteStream().use { stream ->
             while (stream.read(buffer).also { len = it } > -1) {
-                if (interruptDownload?.get() == true) break
+                if (isCanceled?.invoke() == true) break
                 processed += len.toLong()
 
                 // First iteration
@@ -369,7 +368,7 @@ private suspend fun downloadToFile(
                     // Read mime-type on the fly if not forced
                     if (mimeType.isEmpty()) {
                         val contentType = response.header(HEADER_CONTENT_TYPE) ?: ""
-                        mimeType = getMimeTypeFromPicData(buffer, len, contentType, url, sizeStr)
+                        mimeType = getMimeTypeFromData(buffer, len, contentType, url, sizeStr)
                     }
                     // Create target file and output stream
                     targetFileUri = fileCreator(context, mimeType)
@@ -389,7 +388,7 @@ private suspend fun downloadToFile(
                 }
             }
             // End of download
-            if (interruptDownload?.get() != true) {
+            if (isCanceled?.invoke() != true) {
                 notifyProgress?.invoke(100f)
                 out?.flush()
                 if (targetFileUri != null) {
@@ -412,7 +411,7 @@ private suspend fun downloadToFile(
     }
     // Remove the remaining file chunk if download has been interrupted
     if (targetFileUri != null) removeFile(context, targetFileUri)
-    throw DownloadInterruptedException("Download interrupted")
+    throw DownloadInterruptedException("Download interrupted 2")
 }
 
 /**
@@ -473,6 +472,14 @@ fun selectDownloadLocation(context: Context): StorageLocation {
     }
 }
 
+/**
+ * Get download location for the given Content : either existing valid folder or target location
+ *
+ * @return Pair containing either of the two (_mutually exclusive_)
+ *   first : Target download folder if already set (e.g. resume paused download, redownload from library) and valid
+ *   or
+ *   second : Target download location (default)
+ */
 fun getDownloadLocation(context: Context, content: Content): Pair<DocumentFile?, StorageLocation>? {
     // Check for download folder existence, available free space and credentials
     var dir: DocumentFile? = null

@@ -8,7 +8,8 @@ import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.enums.StorageLocation
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.createNewDownloadFile
 import me.devsaki.hentoid.util.file.saveBinary
 import timber.log.Timber
 import java.io.ByteArrayInputStream
@@ -252,10 +253,13 @@ fun Context.writeLog(logInfo: LogInfo): DocumentFile? {
             )
             return logDocumentFile
         } else { // If it fails, use device's "download" folder (panic mode)
-            openNewDownloadOutputStream(
+            getOutputStream(
                 this,
-                logFileName,
-                "text/plain"
+                createNewDownloadFile(
+                    this,
+                    logFileName,
+                    "text/plain"
+                )
             )?.use { newDownload ->
                 ByteArrayInputStream(log.toByteArray()).use { input ->
                     copy(input, newDownload)

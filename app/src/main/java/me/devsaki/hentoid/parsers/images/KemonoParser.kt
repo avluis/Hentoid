@@ -163,6 +163,7 @@ class KemonoParser : BaseImageListParser() {
                     .replace("/posts", "/")
                 content.status = StatusContent.SAVED
                 content.uploadDate = 0L
+                content.coverImageUrl = artist.iconUrl
                 content.title = cleanup(artist.name)
                 content.addAttributes(listOf(artist.toAttribute()))
 
@@ -172,7 +173,7 @@ class KemonoParser : BaseImageListParser() {
                     return content
                 }
 
-                // One result = one chapter, if it contains at least an usable picture (i.e. not exclusively MEGA links)
+                // One result = one chapter, if it contains at least an usable picture (i.e. not exclusively MEGA links or PSD files)
                 val chapters = ArrayList<Chapter>()
                 val chapterOrder = AtomicInteger(1)
                 val pageOrder = AtomicInteger(1)
@@ -205,8 +206,10 @@ class KemonoParser : BaseImageListParser() {
                     }
                 }
                 content.setChapters(chapters)
-                content.qtyPages = chapters.sumOf { it.imageList.size }
-                content.setImageFiles(chapters.flatMap { it.imageList })
+                val images = chapters.flatMap { it.imageList }.toMutableList()
+                images.add(0, ImageFile.newCover(artist.iconUrl, StatusContent.SAVED))
+                content.setImageFiles(images)
+                content.qtyPages = images.size - 1  // Don't count the cover
                 progressor?.progressComplete()
                 return content
             } catch (e: IOException) {

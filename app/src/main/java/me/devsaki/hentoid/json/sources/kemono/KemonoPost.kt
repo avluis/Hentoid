@@ -32,8 +32,8 @@ data class KemonoPost(
             .filter { isSupportedImage(it.path ?: "") }
             .distinct()
             .map {
-                val server = serverMapping?.get(it.path) ?:
-                "https://n${(getRandomInt(4) + 1)}.$KEMONO_DOMAIN_FILTER"
+                val server = serverMapping?.get(it.path)
+                    ?: "https://n${(getRandomInt(4) + 1)}.$KEMONO_DOMAIN_FILTER"
                 val origin = URLEncoder.encode(it.name, "UTF-8")
                 "$server/data/${it.path}?f=$origin"
             }
@@ -59,7 +59,8 @@ data class KemonoPost(
         val chapter = Chapter(
             chapterOrder.andIncrement,
             "https://$KEMONO_DOMAIN_FILTER/${service}/user/${userId}/post/${id}",
-            title
+            title,
+            id
         )
         val imageUrls = getImageUrls()
         if (imageUrls.isNotEmpty()) {

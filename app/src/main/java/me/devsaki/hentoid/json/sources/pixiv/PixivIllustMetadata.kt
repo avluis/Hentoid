@@ -94,7 +94,7 @@ data class PixivIllustMetadata(
         }
 
         fun getTags(): List<Pair<String, String>> {
-            return displayTags?.map { obj -> obj.getTag() } ?: emptyList()
+            return displayTags?.map { it.getTag() } ?: emptyList()
         }
 
         fun getImageFiles(): List<ImageFile> {

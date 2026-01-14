@@ -30,7 +30,7 @@ import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.getMimeTypeFromFileUri
 import me.devsaki.hentoid.util.file.getOutputStream
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.file.createNewDownloadFile
 import me.devsaki.hentoid.util.file.requestExternalStorageReadWritePermission
 import me.devsaki.hentoid.util.persistLocationCredentials
 import java.io.File
@@ -224,11 +224,12 @@ class ReaderCopyImgDialogFragment : BaseDialogFragment<ReaderCopyImgDialogFragme
         }
 
         if (null == outputStream) {
-            outputStream = openNewDownloadOutputStream(
+            outputStream = getOutputStream(requireContext(),
+                createNewDownloadFile(
                 requireContext(),
                 targetFileName,
                 mimeType
-            )
+            ))
             docFile = null
             file = getDownloadsFolder()
         }

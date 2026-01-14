@@ -55,7 +55,8 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:textCursorDrawable="@null" />
 
     </com.google.android.material.textfield.TextInputLayout>
 

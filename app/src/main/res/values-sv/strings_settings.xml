@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="doh_warning">Vissa webbplatser kommer inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
     <string name="download_eh_hires_title">Ladda ner högupplösta bilder</string>
     <string name="download_hitomi_avif_off">Ladda ner bilder i WEBP-format</string>
@@ -11,7 +11,7 @@
     <string name="library_display_group_figure_title">Gruppfigur</string>
     <string name="mass_operations_summary">Masshandlingar för biblioteket</string>
     <string name="mass_operations_title">Masshandlingar</string>
-    <string name="material_you_warning">Din enhet stödjer inte Material You, byter tillbaka till ljust tema</string>
+    <string name="material_you_warning">switching back to Light theme</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking är just nu avstängd.\nAtt slå på den här inställningen kommer hjälpa oss att förbättra appen genom spårande av kraschar &amp; undantagsfall.</string>
     <string name="pref_analytics_preference_summary_on">Analytics Tracking är påslaget.\nTack för hjälpen att förbättra Hentoid!</string>
     <string name="pref_analytics_preference_title">Firebase Analytics</string>
@@ -73,6 +73,7 @@
     <string name="pref_browser_nhentai_invisible_blacklist_off">Nhentai-svartlistade böcker blurras</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Nhentai-svartlistade böcker osynliggörs</string>
     <string name="pref_browser_nhentai_invisible_blacklist_title">Dölj Nhentai-svartlistade böcker</string>
+    <string name="pref_browser_proxy_title">Proxy</string>
     <string name="pref_browser_quick_dl_summary">På boklista sidan, tryck ner och håll nere fingret över valfri bok för att ladda ner</string>
     <string name="pref_browser_quick_dl_threshold_summary">Håll nere för den här tidslängden för att påbörja en snabbnedladdning\nNuvarande: %s</string>
     <string name="pref_browser_quick_dl_threshold_title">Snabbnedladdnings-håll-nere-tröskel</string>
@@ -160,6 +161,7 @@
     <string name="pref_memory_usage_title">Lagringsmängd</string>
     <string name="pref_misc">Diverse</string>
     <string name="pref_navigation_nostalgia_mode">Nostalgiläge</string>
+    <string name="pref_next_schedule">Schemalägg nästa körning om %.0f antal minuter</string>
     <string name="pref_nostalgia_summary_off">Navigationslådan visar inte aktiva sidor</string>
     <string name="pref_nostalgia_summary_on">Navigationslådan visar aktiva sidor</string>
     <string name="pref_plug_reactions">Pluggreaktioner</string>
@@ -250,6 +252,7 @@
     <string name="pref_viewer_zoom_transitions">Sätt på zoomanimation</string>
     <string name="prefs_ask_detach_external_library">Koppla från det externa biblioteket\?</string>
     <string name="prefs_external_library_detached">Externt bibliotek frånkopplat</string>
+    <string name="proxy_warning">Vissa webbsidor fungerar inget vidare genom en proxy. Använd en extern DNS-app ifall problem uppstår vid navigarion (t.ex. blanka sidor, loginpromptar som inte svarar)</string>
     <string name="searchpreference_clear">Rensa</string>
     <string name="searchpreference_clear_history">Rensa historik</string>
     <string name="searchpreference_more">Mer</string>

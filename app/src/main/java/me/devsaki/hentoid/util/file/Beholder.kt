@@ -5,18 +5,17 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
+import me.devsaki.hentoid.core.CHARSET_LATIN_1
 import me.devsaki.hentoid.util.file.FileExplorer.DocumentProperties
-import me.devsaki.hentoid.util.image.startsWith
 import me.devsaki.hentoid.util.isSupportedArchivePdf
+import me.devsaki.hentoid.util.startsWith
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
 import java.io.IOException
-import java.nio.charset.StandardCharsets
 
-private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 private const val SNAPSHOT_LOCATION = "beholder.snapshot"
 private val SNAPSHOT_VERSION_2 = "SC2".toByteArray(CHARSET_LATIN_1)
 private val SNAPSHOT_VERSION_3 = "SC3".toByteArray(CHARSET_LATIN_1)

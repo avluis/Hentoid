@@ -141,11 +141,12 @@ class ExHentaiParser : ImageListParser {
      *
      * @param event Download event
      */
+    @Suppress("unused")
     @Subscribe
     fun onDownloadCommand(event: DownloadCommandEvent) {
         when (event.type) {
             DownloadCommandEvent.Type.EV_PAUSE, DownloadCommandEvent.Type.EV_CANCEL, DownloadCommandEvent.Type.EV_SKIP -> progress.haltProcess()
-            DownloadCommandEvent.Type.EV_UNPAUSE, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT -> {}
+            DownloadCommandEvent.Type.EV_UNPAUSE, DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE -> {}
         }
     }
 }

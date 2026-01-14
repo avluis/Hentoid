@@ -92,7 +92,6 @@
     <string name="menu_share">Поділитися</string>
     <string name="menu_share_help">Поділитися лінком на книгу та її назвою через сторонній додаток</string>
     <string name="menu_archive">В архів</string>
-    <string name="menu_archive_help">Заархівувати книгу в ZIP</string>
     <string name="menu_share_title">Лінк на книгу</string>
     <string name="library_search_hint">Назва, художник, теґ чи ID книги</string>
     <string name="send_to">Поділитися через:</string>
@@ -184,7 +183,7 @@
     <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> Кб/с</string>
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
     <string name="download_notif_failed">Завантаження не вдалося</string>
-    <string name="download_notif_failed_details">Неможливо завантажити <x:g id="book_name" example="Крута хентай-манґа">%1$s</x:g>: не вдалося створити папку <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Будь ласка, перевірте папку Hentoid та повторіть завантаження за допомогою кнопки \'!\'.</string>
+    <string name="download_notif_failed_details">Неможливо завантажити <x:g id="book_name" example="Крута хентай-манґа">%1$s</x:g>: не вдалося створити папку. Будь ласка, перевірте папку Hentoid та повторіть завантаження за допомогою кнопки \'!\'.</string>
 
     <!-- Import downloads -->
     <string name="import_downloads_title">Імпорт завантажень</string>

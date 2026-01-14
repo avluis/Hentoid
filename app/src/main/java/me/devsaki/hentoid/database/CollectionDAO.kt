@@ -51,6 +51,8 @@ interface CollectionDAO {
 
     fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content>
 
+    fun selectContentByUniqueId(site: Site, id: String): Set<Content>
+
     fun selectAllSourceUrls(site: Site): Set<String>
 
     fun selectAllMergedUrls(site: Site): Set<String>
@@ -227,6 +229,8 @@ interface CollectionDAO {
 
     fun updateImageFileStatusParamsMimeTypeUriSize(image: ImageFile)
 
+    fun updateImageLocations(locations : Map<Long, String>)
+
     fun deleteImageFiles(imgs: List<ImageFile>)
 
     fun selectImageFile(id: Long): ImageFile?
@@ -237,11 +241,9 @@ interface CollectionDAO {
 
     fun flagImagesForDeletion(ids: LongArray, value: Boolean)
 
-    fun selectDownloadedImagesFromContentLive(id: Long): LiveData<List<ImageFile>>
+    fun selectImagesFromContentLive(id: Long, downloadedOnly: Boolean): LiveData<List<ImageFile>>
 
-    fun selectDownloadedImagesFromContent(id: Long): List<ImageFile>
-
-    fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>>
+    fun selectImagesFromContent(id: Long, downloadedOnly: Boolean): List<ImageFile>
 
     fun selectAllFavouritePagesLive(): LiveData<List<ImageFile>>
 
@@ -270,6 +272,7 @@ interface CollectionDAO {
         position: QueuePosition,
         replacedContentId: Long,
         replacementTitle: String?,
+        archiveUrl: String?,
         isQueueActive: Boolean
     )
 

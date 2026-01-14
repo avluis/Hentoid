@@ -2,7 +2,9 @@ package me.devsaki.hentoid.workers
 
 import android.content.Context
 import android.graphics.Color
+import android.net.Uri
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -15,27 +17,36 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification
 import me.devsaki.hentoid.util.ProgressManager
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.canBeArchived
+import me.devsaki.hentoid.util.createArchivePdfCover
+import me.devsaki.hentoid.util.download.selectDownloadLocation
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
+import me.devsaki.hentoid.util.file.PdfManager
+import me.devsaki.hentoid.util.file.createNewDownloadFile
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.listFiles
-import me.devsaki.hentoid.util.file.openNewDownloadOutputStream
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.file.zipFiles
 import me.devsaki.hentoid.util.formatFolderName
-import me.devsaki.hentoid.util.file.PdfManager
+import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
+import me.devsaki.hentoid.util.image.imageNamesFilter
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
+import me.devsaki.hentoid.util.persistJson
 import me.devsaki.hentoid.util.removeContent
 import timber.log.Timber
+import java.io.File
 import java.io.IOException
-import java.io.OutputStream
+import java.time.Instant
 
 
 class ArchiveWorker(context: Context, parameters: WorkerParameters) :
@@ -47,7 +58,8 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val targetFormat: Int,
         val pdfBackgroundColor: Int,
         val overwrite: Boolean,
-        val deleteOnSuccess: Boolean
+        val deleteOnSuccess: Boolean,
+        val archivePrimaryContent: Boolean = false
     )
 
     private var nbItems = 0
@@ -87,18 +99,27 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     private suspend fun archive(contentIds: LongArray, params: Params) =
         withContext(Dispatchers.IO) {
             globalProgress = ProgressManager(contentIds.size)
+            nbItems = contentIds.size
 
             val dao: CollectionDAO = ObjectBoxDAO()
             try {
+                dao.updateContentsProcessedFlagById(contentIds.toList(), true)
                 for (contentId in contentIds) {
                     if (isStopped) break
-                    val content = dao.selectContent(contentId)
-                    content?.let {
-                        if (canBeArchived(content)) archiveContent(content, params, dao)
-                        else {
-                            globalProgress.setProgress(content.id.toString(), 1f)
-                            nextKO()
+                    try {
+                        val content = dao.selectContent(contentId)
+                        content?.let {
+                            if (canBeArchived(content)) archiveContent(content, params, dao)
+                            else {
+                                dao.updateContentProcessedFlag(it.id, false)
+                                globalProgress.setProgress(contentId.toString(), 1f)
+                                nextKO()
+                            }
                         }
+                    } catch (t: Throwable) {
+                        Timber.w(t)
+                        globalProgress.setProgress(contentId.toString(), 1f)
+                        nextKO()
                     }
                 }
                 if (isStopped) notificationManager.cancel()
@@ -109,54 +130,90 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         }
 
     private suspend fun archiveContent(content: Content, params: Params, dao: CollectionDAO) {
-        Timber.i(">> archive %s", content.title)
-        val bookFolder = getDocumentFromTreeUriString(
-            applicationContext, content.storageUri
-        ) ?: return
+        Timber.i("Archiving %s", content.title)
+        val context = applicationContext
+        val bookFolder = getDocumentFromTreeUriString(context, content.storageUri) ?: return
 
-        // Everything (incl. JSON and thumb) gets into the archive
-        val files = listFiles(applicationContext, bookFolder, null)
-        nbItems = files.size
+        // Archive primary : Get images only
+        // Else : Everything (incl. JSON and thumb) gets into the archive
+        val filter = if (params.archivePrimaryContent) imageNamesFilter else null
+        val files = listFiles(context, bookFolder, filter)
+        if (files.isEmpty()) return
 
-        if (files.isNotEmpty()) {
-            val destFileResult = getFileResult(content, params)
-            val outputStream: OutputStream? = destFileResult.first
-            val success = outputStream?.use { os ->
-                if (2 == params.targetFormat) { // PDF
-                    val mgr = PdfManager()
-                    val color = when (params.pdfBackgroundColor) {
-                        1 -> R.color.light_gray
-                        2 -> R.color.dark_gray
-                        3 -> R.color.black
-                        else -> R.color.white
-                    }
-                    mgr.convertImagesToPdf(
-                        applicationContext,
-                        os,
-                        files,
-                        true,
-                        Color.valueOf(ContextCompat.getColor(applicationContext, color))
-                    ) {
-                        globalProgress.setProgress(content.id.toString(), it)
-                        launchProgressNotification()
-                    }
-                } else {
-                    applicationContext.zipFiles(files, os, this::isStopped) {
-                        globalProgress.setProgress(content.id.toString(), it)
-                        launchProgressNotification()
-                    }
+        val destFileUri = getFileResult(context, content, params)
+        val outputStream = getOutputStream(context, destFileUri)
+        var success = false
+        outputStream?.use { os ->
+            if (2 == params.targetFormat) { // PDF
+                val mgr = PdfManager()
+                val color = when (params.pdfBackgroundColor) {
+                    1 -> R.color.light_gray
+                    2 -> R.color.dark_gray
+                    3 -> R.color.black
+                    else -> R.color.white
                 }
-                !isStopped
-            } ?: run {
-                destFileResult.second
+                mgr.convertImagesToPdf(
+                    context,
+                    os,
+                    files,
+                    true,
+                    Color.valueOf(ContextCompat.getColor(context, color))
+                ) {
+                    globalProgress.setProgress(content.id.toString(), it)
+                    launchProgressNotification()
+                }
+                // PDF is not a storage method => no mapping to perform
+            } else { // Archive
+                context.zipFiles(files, os, this::isStopped) {
+                    globalProgress.setProgress(content.id.toString(), it)
+                    launchProgressNotification()
+                }
+                // Map new image locations
+                if (params.archivePrimaryContent) {
+                    val imgs = content.imageList
+                    files.forEach { f ->
+                        var found = false
+                        imgs.forEach {
+                            if (!found && UriParts(it.fileUri).fileNameFull == f.name) {
+                                it.fileUri =
+                                    destFileUri.toString() + File.separator + f.name
+                                found = true
+                            }
+                        }
+                    }
+                    dao.insertImageFiles(imgs)
+                    content.setImageFiles(imgs)
+                }
             }
-            if (success && params.deleteOnSuccess && !isStopped) {
-                removeContent(applicationContext, dao, content)
+            success = true
+        }
+        if (success && !isStopped) {
+            if (params.archivePrimaryContent) {
+                content.storageUri = destFileUri.toString()
+                val formerJsonLocation = content.jsonUri.toUri()
+                content.jsonUri = ""
+                if (persistJson(context, content)) {
+                    removeDocument(context, formerJsonLocation)
+                    content.lastEditDate = Instant.now().toEpochMilli()
+                    content.downloadMode = DownloadMode.DOWNLOAD_ARCHIVE
+                    dao.insertContentCore(content)
+                    // Remove former location
+                    removeDocument(context, bookFolder)
+                    // Create thumb
+                    createArchivePdfCover(context, content, dao)
+                    dao.updateContentProcessedFlag(content.id, false)
+                }
             }
+            if (params.deleteOnSuccess) removeContent(context, dao, content)
         }
     }
 
-    private fun getFileResult(content: Content, params: Params): Pair<OutputStream?, Boolean> {
+    @Throws(IOException::class)
+    private fun getFileResult(
+        context: Context,
+        content: Content,
+        params: Params
+    ): Uri {
         // Build destination file
         val bookFolderName = formatFolderName(content)
         val ext = when (params.targetFormat) {
@@ -166,55 +223,52 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         }
         // First try creating the file with the new naming...
         var destName = bookFolderName.first + "." + ext
+        // Identify target folder
+        val targetFolderUri = params.targetFolderUri.ifEmpty {
+            val location = selectDownloadLocation(context)
+            getOrCreateSiteDownloadDir(context, location, content.site)?.uri?.toString()
+                ?: throw IOException("Couldn't locate site folder")
+        }
         return try {
-            createTargetFile(params.targetFolderUri, destName, params.overwrite)
+            createTargetFile(targetFolderUri, destName, params.overwrite)
         } catch (_: IOException) { // ...if it fails, try creating the file with the old sanitized naming
             destName = bookFolderName.second + "." + ext
-            createTargetFile(params.targetFolderUri, destName, params.overwrite)
+            createTargetFile(targetFolderUri, destName, params.overwrite)
         }
     }
 
     /**
-     * Returns
-     *  - Output stream; null if none
-     *  - Success or failure
+     * Returns file Uri; Uri.EMPTY if nothing has been created
      */
     private fun createTargetFile(
         targetFolderUri: String,
         displayName: String,
         overwrite: Boolean
-    ): Pair<OutputStream?, Boolean> {
+    ): Uri {
         if (targetFolderUri == Settings.Value.TARGET_FOLDER_DOWNLOADS) {
             // Overwrite can't be taken into account as Android prevents listing
             // what's inside the Downloads folder for security/privacy reasons
-            return Pair(
-                // NB : specifying the ZIP Mime-Type here forces extension to ".zip"
-                // even when the file name already ends with ".cbr"
-                openNewDownloadOutputStream(
-                    applicationContext, displayName, DEFAULT_MIME_TYPE
-                ), true
-            )
+
+            // NB : specifying the ZIP Mime-Type here forces extension to ".zip"
+            // even when the file name already ends with ".cbr"
+            return createNewDownloadFile(applicationContext, displayName, DEFAULT_MIME_TYPE)
         } else {
             val targetFolder = getDocumentFromTreeUriString(applicationContext, targetFolderUri)
             if (targetFolder != null) {
                 if (!overwrite) {
                     val existing =
                         findFile(applicationContext, targetFolder, displayName)
-                    // If the target file is already there, skip archiving
-                    if (existing != null) return Pair(null, true)
+                    // If the target file is already there and we can't overwrite, skip archiving
+                    if (existing != null) Uri.EMPTY
                 }
-                val destFile = findOrCreateDocumentFile(
+                findOrCreateDocumentFile(
                     applicationContext, targetFolder, DEFAULT_MIME_TYPE, displayName
-                )
-                if (destFile != null) return Pair(
-                    getOutputStream(
-                        applicationContext,
-                        destFile
-                    ), true
-                )
+                )?.let {
+                    return it.uri
+                }
             }
         }
-        return Pair(null, false)
+        return Uri.EMPTY
     }
 
     private fun nextKO() {

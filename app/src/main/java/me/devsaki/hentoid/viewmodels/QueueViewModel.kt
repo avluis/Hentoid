@@ -311,7 +311,7 @@ class QueueViewModel(
                         okCount.incrementAndGet()
                         dao.addContentToQueue(
                             res, sourceImageStatus, targetImageStatus, position,
-                            -1, res.replacementTitle,
+                            -1, res.replacementTitle, null,
                             ContentQueueManager.isQueueActive(getApplication())
                         )
                     } else {

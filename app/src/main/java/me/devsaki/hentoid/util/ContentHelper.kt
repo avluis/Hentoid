@@ -26,6 +26,7 @@ import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
+import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.QUEUE_JSON_FILE_NAME
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
@@ -87,6 +88,7 @@ import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.legacyFileFromUri
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.listFoldersFilter
+import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.image.clearCoilKey
 import me.devsaki.hentoid.util.image.getScaledDownBitmap
@@ -120,8 +122,6 @@ import java.time.Instant
 import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.log10
 
 
 // == Used for queue management
@@ -299,7 +299,7 @@ private fun isInQueueTab(status: StatusContent): Boolean {
 }
 
 fun canBeArchived(content: Content): Boolean {
-    return !(content.isArchive || content.downloadMode == DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
+    return !(content.isArchive || content.isPdf || content.downloadMode == DownloadMode.STREAM || content.status == StatusContent.PLACEHOLDER)
 }
 
 /**
@@ -322,7 +322,6 @@ fun viewContentGalleryPage(context: Context, content: Content) {
 fun viewContentGalleryPage(context: Context, content: Content, wrapPin: Boolean) {
     if (content.site == Site.NONE) return
     if (!content.site.isVisible) return  // Support is dropped
-
 
     if (!getWebViewAvailable()) {
         if (getWebViewUpdating()) context.toast(R.string.error_updating_webview)
@@ -373,19 +372,33 @@ suspend fun updateJson(context: Context, content: Content): Boolean = withContex
  */
 suspend fun createJson(context: Context, content: Content): DocumentFile? =
     withContext(Dispatchers.IO) {
-        if (content.isArchive || content.isPdf) return@withContext null // Keep that as is, we can't find the parent folder anyway
+        var folder: DocumentFile? = null
+        var name = JSON_FILE_NAME_V2
+        if (content.isArchive || content.isPdf) {
+            // Parent folder
+            content.getContainingFolder(context)?.let { parent ->
+                folder = getDocumentFromTreeUri(context, parent)
+            }
+            // Name
+            val archiveFile = getFileFromSingleUriString(context, content.storageUri)
+            name =
+                getFileNameWithoutExtension(archiveFile?.name ?: "") + JSON_ARCHIVE_SUFFIX + ".json"
+        } else {
+            folder =
+                getDocumentFromTreeUriString(context, content.storageUri)
+        }
 
-        val folder =
-            getDocumentFromTreeUriString(context, content.storageUri) ?: return@withContext null
-        try {
-            val newJson = jsonToFile(
-                context, JsonContent(content),
-                JsonContent::class.java, folder, JSON_FILE_NAME_V2
-            )
-            content.jsonUri = newJson.uri.toString()
-            return@withContext newJson
-        } catch (e: IOException) {
-            Timber.e(e, "Error while writing to %s", content.storageUri)
+        folder?.let { f ->
+            try {
+                val newJson = jsonToFile(
+                    context, JsonContent(content),
+                    JsonContent::class.java, f, name
+                )
+                content.jsonUri = newJson.uri.toString()
+                return@withContext newJson
+            } catch (e: IOException) {
+                Timber.e(e, "Error while writing to %s", content.storageUri)
+            }
         }
         return@withContext null
     }
@@ -396,10 +409,10 @@ suspend fun createJson(context: Context, content: Content): DocumentFile? =
  * @param context Context to use
  * @param content Content to persist the JSON for
  */
-suspend fun persistJson(context: Context, content: Content) = withContext(Dispatchers.IO) {
+suspend fun persistJson(context: Context, content: Content): Boolean = withContext(Dispatchers.IO) {
     var result = false
     if (content.jsonUri.isNotEmpty()) result = updateJson(context, content)
-    if (!result) createJson(context, content)
+    return@withContext if (result) true else (createJson(context, content) != null)
 }
 
 /**
@@ -547,12 +560,9 @@ suspend fun getPictureFilesFromContent(context: Context, content: Content): List
             return@withContext emptyList()
         }
 
-        return@withContext listFoldersFilter(
-            context, folder
-        ) { displayName: String ->
-            (displayName.lowercase(
-                Locale.getDefault()
-            ).startsWith(THUMB_FILE_NAME) && isSupportedImage(displayName))
+        return@withContext listFoldersFilter(context, folder) {
+            it.lowercase(Locale.getDefault()).startsWith(THUMB_FILE_NAME)
+                    && isSupportedImage(it)
         }
     }
 
@@ -572,27 +582,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
         dao.deleteContent(content)
 
         if (content.isArchive || content.isPdf) { // Remove an archive
-            val archive = getFileFromSingleUriString(context, content.storageUri)
-                ?: throw FileNotProcessedException(
-                    content,
-                    "Failed to find archive ${content.storageUri}"
-                )
-
-            if (archive.delete()) {
-                Timber.i("Archive removed : ${content.storageUri}")
-            } else {
-                throw FileNotProcessedException(
-                    content,
-                    "Failed to delete archive ${content.storageUri}"
-                )
-            }
-
-            // Remove the cover stored in the app's persistent folder
-            val appFolder = context.filesDir
-            val images = appFolder.listFiles { _, name ->
-                getFileNameWithoutExtension(name) == content.id.toString()
-            }
-            if (images != null) for (f in images) removeFile(f!!)
+            purgeArchivePdfFiles(context, content, removeJson = true, removeCover = true)
         } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             val folder = getDocumentFromTreeUriString(context, content.storageUri)
@@ -601,7 +591,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
                     "Failed to find directory ${content.storageUri}"
                 )
 
-            if (folder.delete()) {
+            if (removeDocument(context, folder)) {
                 Timber.i("Directory removed : ${content.storageUri}")
             } else {
                 throw FileNotProcessedException(
@@ -708,31 +698,47 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     val newContentId = dao.insertContent(content)
     content.id = newContentId
 
-    // Extract the cover to the app's persistent folder if the book is an archive or a PDF
-    if (content.isArchive || content.isPdf) {
-        val targetFolder = context.filesDir
-        getPictureThumbCached(
-            context,
-            content.storageUri.toUri(),
-            libraryGridCardWidthDP,
-            null,
-            { fileName -> findFile(targetFolder, fileName)?.toUri() },
-            { fileName ->
-                val file = File(targetFolder, fileName)
-                if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
-                file.toUri()
-            }
-        )?.let { cachedThumbUri ->
-            Timber.i(">> Set cover for %s", content.title)
-            content.cover.fileUri = cachedThumbUri.toString()
-            content.cover.name = cachedThumbUri.lastPathSegment ?: ""
-            dao.replaceImageList(newContentId, content.imageList)
-        } ?: run {
-            Timber.w("Couldn't create thumb for ${content.storageUri}")
-        }
-    }
+    if (content.isArchive || content.isPdf) createArchivePdfCover(context, content, dao)
 
     return newContentId
+}
+
+/**
+ * Extract the cover to the app's persistent folder if the book is an archive or a PDF
+ */
+fun createArchivePdfCover(
+    context: Context,
+    content: Content,
+    dao: CollectionDAO
+) {
+    val cover = content.imageList.firstOrNull { it.isCover && !it.isReadable }
+
+    val targetFolder = context.filesDir
+    getPictureThumbCached(
+        context,
+        content.storageUri.toUri(),
+        libraryGridCardWidthDP,
+        null,
+        { fileName -> findFile(targetFolder, fileName)?.toUri() },
+        { fileName ->
+            val file = File(targetFolder, fileName)
+            if (!file.exists() && !file.createNewFile()) throw IOException("Could not create file ${file.path}")
+            file.toUri()
+        }
+    )?.let { cachedThumbUri ->
+        cover?.let {
+            // Only replace image properties if it is a thumb already
+            it.fileUri = cachedThumbUri.toString()
+            it.name = cachedThumbUri.lastPathSegment ?: ""
+            dao.insertImageFile(it)
+        } ?: run {
+            // If no dedicated thumb, replace content cover Uri
+            content.coverImageUrl = cachedThumbUri.toString()
+            dao.insertContentCore(content)
+        }
+    } ?: run {
+        Timber.w("Couldn't create thumb for ${content.storageUri}")
+    }
 }
 
 fun getArchivePdfThumbFileName(archivePdfUri: Uri): String {
@@ -762,12 +768,12 @@ fun getPictureThumbCached(
             val results = if (isArchive) {
                 val entries = if (resource.isNullOrBlank()) {
                     // No targeted resource => take the first one
-                    context.getArchiveEntries(archive)
+                    context.getArchiveEntries(archive.uri)
                         .filter { isSupportedImage(it.path) }.filter { it.size > 0 }
                         .sortedWith(InnerNameNumberArchiveComparator())
                 } else {
                     // Get targeted resource
-                    context.getArchiveEntries(archive)
+                    context.getArchiveEntries(archive.uri)
                         .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
                         .filter {
                             // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
@@ -784,9 +790,9 @@ fun getPictureThumbCached(
             } else {
                 val mgr = PdfManager()
                 val entries = if (resource.isNullOrBlank()) {
-                    mgr.getEntries(context, archive, true)
+                    mgr.getEntries(context, archive.uri, true)
                 } else {
-                    mgr.getEntries(context, archive)
+                    mgr.getEntries(context, archive.uri)
                         .filter { resource.endsWith(it.path) }.filter { it.size > 0 }
                         .filter {
                             // Make sure we have the targeted file (e.g. 21.jpg vs 1.jpg)
@@ -969,6 +975,7 @@ fun getOrCreateContentDownloadDir(
     content: Content,
     location: StorageLocation,
     createOnly: Boolean = false,
+    createFromScratch: Boolean = false,
     siblingLocation: Uri = Uri.EMPTY
 ): DocumentFile? {
     // Parent = site folder if primary; parent folder if external
@@ -986,12 +993,15 @@ fun getOrCreateContentDownloadDir(
     val bookFolderName = formatFolderName(content)
 
     // First try finding the folder with new naming...
-    if (!createOnly) {
+    if (!createOnly || createFromScratch) {
         var bookFolder = findFolder(context, parentFolder, bookFolderName.first)
         if (null == bookFolder) { // ...then with old (sanitized) naming
             bookFolder = findFolder(context, parentFolder, bookFolderName.second)
         }
-        if (bookFolder != null) return bookFolder
+        if (bookFolder != null) {
+            if (createFromScratch) removeDocument(context, bookFolder)
+            else return bookFolder
+        }
     }
 
     // If nothing found, or create-only, create a new folder with the new naming...
@@ -1133,10 +1143,8 @@ fun getOrCreateSiteDownloadDir(
             var siteFolders =
                 explorer.listDocumentFiles(
                     context, appFolder,
-                    { displayName: String ->
-                        displayName.startsWith(
-                            siteFolderName
-                        )
+                    { displayName ->
+                        displayName.startsWith(siteFolderName)
                     }, listFolders = true, listFiles = false, stopFirst = false
                 )
             // Order by name (nhentai, nhentai1, ..., nhentai10)
@@ -1286,10 +1294,16 @@ fun getBlockedTags(id: Long, dao: CollectionDAO): List<String> {
  */
 suspend fun reparseFromScratch(
     content: Content,
-    keepUris: Boolean = false
+    keepUris: Boolean = false,
+    updateImages: Boolean = true
 ): Content? = withContext(Dispatchers.IO) {
     try {
-        return@withContext reparseFromScratch(content.galleryUrl, content, keepUris)
+        return@withContext reparseFromScratch(
+            content.galleryUrl,
+            content,
+            keepUris = keepUris,
+            updateImages = updateImages
+        )
     } catch (e: IOException) {
         Timber.w(e)
     } catch (e: CloudflareProtectedException) {
@@ -1307,7 +1321,7 @@ suspend fun reparseFromScratch(
  */
 @Throws(IOException::class, CloudflareProtectedException::class)
 suspend fun parseFromScratch(url: String): Content? {
-    return reparseFromScratch(url, null)
+    return reparseFromScratch(url)
 }
 
 /**
@@ -1322,8 +1336,9 @@ suspend fun parseFromScratch(url: String): Content? {
 @Throws(IOException::class, CloudflareProtectedException::class)
 private suspend fun reparseFromScratch(
     url: String,
-    content: Content?,
-    keepUris: Boolean = false
+    content: Content? = null,
+    keepUris: Boolean = false,
+    updateImages: Boolean = true
 ): Content? = withContext(Dispatchers.IO) {
     val urlToLoad: String
     val site: Site?
@@ -1346,7 +1361,7 @@ private suspend fun reparseFromScratch(
         val contentParser =
             htmlAdapter.fromInputStream(body.byteStream(), URL(urlToLoad))
         val newContent = if (null == content) contentParser.toContent(urlToLoad)
-        else contentParser.update(content, urlToLoad, true)
+        else contentParser.update(content, urlToLoad, updateImages)
 
         if (!keepUris) {
             newContent.jsonUri = ""
@@ -1356,16 +1371,14 @@ private suspend fun reparseFromScratch(
 
         if (newContent.status == StatusContent.IGNORED) {
             val canonicalUrl = contentParser.canonicalUrl
-            return@withContext if (canonicalUrl.isNotEmpty() && !canonicalUrl.equals(
-                    urlToLoad,
-                    ignoreCase = true
-                )
-            ) reparseFromScratch(canonicalUrl, content)
+            return@withContext if (canonicalUrl.isNotEmpty()
+                && !canonicalUrl.equals(urlToLoad, ignoreCase = true)
+            ) reparseFromScratch(canonicalUrl, content, keepUris, updateImages)
             else null
         }
 
         // Clear existing chapters to avoid issues with extra chapter detection
-        newContent.clearChapters()
+        if (updateImages) newContent.clearChapters()
 
         // Save cookies for future calls during download
         val params: MutableMap<String, String> = HashMap()
@@ -1397,6 +1410,51 @@ private suspend fun reparseFromScratch(
  * @return Nothing, but content.storageUri, content.storageDoc and content.jsonUri are updated
  */
 fun purgeFiles(
+    context: Context,
+    content: Content,
+    removeJson: Boolean,
+    removeCover: Boolean
+) {
+    if (content.isArchive || content.isPdf) {
+        purgeArchivePdfFiles(context, content, removeJson, removeCover)
+    } else { // Regular and streamed downloads
+        purgeFolderFiles(context, content, removeJson, removeCover)
+    }
+}
+
+private fun purgeArchivePdfFiles(
+    context: Context,
+    content: Content,
+    removeJson: Boolean,
+    removeCover: Boolean
+) {
+    val archive = getFileFromSingleUriString(context, content.storageUri)
+        ?: throw FileNotProcessedException(content, "Failed to find archive ${content.storageUri}")
+
+    if (archive.delete()) {
+        Timber.i("Archive removed : ${content.storageUri}")
+        content.storageUri = ""
+    } else {
+        throw FileNotProcessedException(content, "Failed to delete archive ${content.storageUri}")
+    }
+
+    // Remove the cover stored in the app's persistent folder
+    if (removeCover) {
+        context.filesDir.listFiles { _, name ->
+            getFileNameWithoutExtension(name) == content.id.toString()
+        }?.let { imgs ->
+            imgs.filterNotNull().forEach { removeFile(it) }
+        }
+    }
+
+    // Remove the corresponding JSON
+    if (removeJson && content.jsonUri.isNotEmpty()) {
+        removeFile(context, content.jsonUri.toUri())
+        content.jsonUri = ""
+    }
+}
+
+private fun purgeFolderFiles(
     context: Context,
     content: Content,
     removeJson: Boolean,
@@ -1439,7 +1497,7 @@ fun purgeFiles(
 
         try {
             // Delete the whole initial folder
-            bookFolder.delete()
+            removeDocument(context, bookFolder)
 
             // Re-create an empty folder with the same name
             val siteFolder = getOrCreateSiteDownloadDir(
@@ -1464,8 +1522,8 @@ fun purgeFiles(
                             context,
                             Uri.fromFile(file),
                             bookFolder,
-                            mimeType,
-                            file.name
+                            file.name,
+                            mimeType
                         )
                         if (newUri != null && name.endsWith("json"))
                             content.jsonUri = newUri.toString()
@@ -1701,7 +1759,7 @@ suspend fun computeAndSaveCoverHash(
     content: Content,
     dao: CollectionDAO
 ) {
-    val coverBitmap = getCoverBitmapFromContent(context, content)
+    val coverBitmap = getIdxCoverBitmapFromContent(context, content)
     try {
         val pHash = calcPhash(getHashEngine(), coverBitmap)
         content.cover.imageHash = pHash
@@ -1898,7 +1956,6 @@ suspend fun mergeContents(
 
         // Renumber all picture files and dispatch chapters
         val nbImages = contentList.flatMap { it.imageList }.count { it.isReadable }
-        val nbMaxDigits = (floor(log10(nbImages.toDouble())) + 1).toInt()
 
         val mergedImages: MutableList<ImageFile> = ArrayList()
         val mergedChapters: MutableList<Chapter> = ArrayList()
@@ -1919,8 +1976,13 @@ suspend fun mergeContents(
                 contentIdx++
                 var newChapter: Chapter? = null
                 // Create a default "content chapter" that represents the original book before merging
-                val contentChapter = Chapter(chapterOrder++, c.galleryUrl, c.title)
-                contentChapter.uniqueId = c.uniqueSiteId + "-" + contentChapter.order
+                chapterOrder++
+                val contentChapter = Chapter(
+                    chapterOrder,
+                    c.galleryUrl,
+                    c.title,
+                    c.uniqueSiteId + "-" + chapterOrder
+                )
 
                 val imgs = c.imageList.sortedBy { it.order }
                 val firstImageIsCover = !imgs.any { it.isCover }
@@ -1951,8 +2013,9 @@ suspend fun mergeContents(
                             unarchivedBytes += picToUnarchive.size
                         }
                         val toExtract = picsToUnarchive.map {
+                            val uri = if (it.url.startsWith(c.storageUri)) it.url else it.fileUri
                             Triple(
-                                it.url.replace(c.storageUri + File.separator, ""),
+                                uri.replace(c.storageUri + File.separator, ""),
                                 it.id,
                                 it.id.toString()
                             )
@@ -1999,7 +2062,7 @@ suspend fun mergeContents(
                     newImg.fileUri = "" // Clear initial URI
                     if (newImg.isReadable) {
                         newImg.order = pictureOrder++
-                        newImg.computeName(nbMaxDigits)
+                        newImg.computeName(nbImages)
                     } else {
                         newImg.isCover = true
                         newImg.order = 0
@@ -2034,8 +2097,8 @@ suspend fun mergeContents(
                             context,
                             img.fileUri.toUri(),
                             targetFolder,
-                            getMimeTypeFromExtension(referenceExt),
                             newImg.name + "." + referenceExt,
+                            getMimeTypeFromExtension(referenceExt),
                             true
                         )
                         if (newUri != null) {
@@ -2056,9 +2119,7 @@ suspend fun mergeContents(
         }
 
         // Remove target folder and merged images if manually canceled
-        if (isCanceled.invoke()) {
-            targetFolder.delete()
-        }
+        if (isCanceled.invoke()) removeDocument(context, targetFolder)
 
         if (!isError && !isCanceled.invoke()) {
             mergedContent.setImageFiles(mergedImages)
@@ -2170,6 +2231,14 @@ fun Content.getStorageRoot(): Uri? {
             return rootUri.toUri()
     }
     return null
+}
+
+fun Content.getContainingFolder(context: Context): Uri? {
+    if (storageUri.isEmpty()) return null
+    if (!isArchive && !isPdf) return storageUri.toUri()
+
+    val storageRoot = getStorageRoot() ?: return null
+    return getParent(context, storageRoot, storageUri.toUri())
 }
 
 /**

@@ -20,17 +20,21 @@ import androidx.documentfile.provider.DocumentFile
 import com.shakster.gifkt.GifEncoder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.io.files.Path
+import me.devsaki.hentoid.core.CHARSET_LATIN_1
 import me.devsaki.hentoid.enums.PictureEncoder
+import me.devsaki.hentoid.util.byteArrayOfInts
 import me.devsaki.hentoid.util.duplicateInputStream
 import me.devsaki.hentoid.util.file.NameFilter
+import me.devsaki.hentoid.util.file.createFile
 import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.findSequencePosition
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getInputStream
+import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.removeFile
 import me.devsaki.hentoid.util.network.getExtensionFromUri
+import me.devsaki.hentoid.util.startsWith
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -40,8 +44,6 @@ import kotlin.math.pow
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-
-private val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
 const val PIXEL_BUFFER_HEIGHT = 1024
 
@@ -58,12 +60,11 @@ const val MIME_VIDEO_MP4 = "video/mp4"
 
 // In Java and Kotlin, byte type is signed !
 // => Converting all raw values to byte to be sure they are evaluated as expected
-private val JPEG_SIGNATURE = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte())
-private val WEBP_SIGNATURE =
-    byteArrayOf(0x52.toByte(), 0x49.toByte(), 0x46.toByte(), 0x46.toByte())
-private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50.toByte(), 0x4E.toByte())
-private val GIF_SIGNATURE = byteArrayOf(0x47.toByte(), 0x49.toByte(), 0x46.toByte())
-private val BMP_SIGNATURE = byteArrayOf(0x42.toByte(), 0x4D.toByte())
+private val JPEG_SIGNATURE = byteArrayOfInts(0xFF, 0xD8, 0xFF)
+private val WEBP_SIGNATURE = byteArrayOfInts(0x52, 0x49, 0x46, 0x46)
+private val PNG_SIGNATURE = byteArrayOfInts(0x89, 0x50, 0x4E)
+private val GIF_SIGNATURE = byteArrayOfInts(0x47, 0x49, 0x46)
+private val BMP_SIGNATURE = byteArrayOfInts(0x42, 0x4D)
 
 private val GIF_NETSCAPE = "NETSCAPE".toByteArray(CHARSET_LATIN_1)
 
@@ -73,21 +74,9 @@ private val PNG_IDAT = "IDAT".toByteArray(CHARSET_LATIN_1)
 private val WEBP_VP8L = "VP8L".toByteArray(CHARSET_LATIN_1)
 private val WEBP_ANIM = "ANIM".toByteArray(CHARSET_LATIN_1)
 
-private val JXL_NAKED = byteArrayOf(0xFF.toByte(), 0x0A.toByte())
-private val JXL_ISO = byteArrayOf(
-    0x00.toByte(),
-    0x00.toByte(),
-    0x00.toByte(),
-    0x0C.toByte(),
-    0x4A.toByte(),
-    0x58.toByte(),
-    0x4C.toByte(),
-    0x20.toByte(),
-    0x0D.toByte(),
-    0x0A.toByte(),
-    0x87.toByte(),
-    0x0A.toByte()
-)
+private val JXL_NAKED = byteArrayOfInts(0xFF, 0x0A)
+private val JXL_ISO =
+    byteArrayOfInts(0x00, 0x00, 0x00, 0x0C, 0x4A, 0x58, 0x4C, 0x20, 0x0D, 0x0A, 0x87, 0x0A)
 
 private val AVIF_SIGNATURE = "ftypavif".toByteArray(CHARSET_LATIN_1)
 private val AVIF_ANIMATED_SIGNATURE = "ftypavis".toByteArray(CHARSET_LATIN_1)
@@ -138,12 +127,6 @@ private fun isImageExtensionSupported(extension: String): Boolean {
 
 fun isSupportedImage(fileName: String): Boolean {
     return isImageExtensionSupported(getExtension(fileName))
-}
-
-fun ByteArray.startsWith(data: ByteArray): Boolean {
-    if (this.size < data.size) return false
-    data.forEachIndexed { index, byte -> if (byte != this[index]) return false }
-    return true
 }
 
 /**
@@ -378,10 +361,15 @@ fun decodeSampledBitmapFromStream(
 @Throws(IOException::class, IllegalArgumentException::class)
 fun assembleGif(
     context: Context,
-    folder: File,  // GIF encoder only work with paths...
-    frames: List<Pair<Uri, Int>>
+    folder: Uri,
+    name: String,
+    frames: List<Pair<Uri, Int>>,
+    isCanceled: () -> Boolean,
+    onProgress: ((Float) -> Unit)? = null
 ): Uri? {
     require(frames.isNotEmpty()) { "No frames given" }
+    require(!isCanceled.invoke())
+
     val dims = getInputStream(context, frames[0].first).let { input ->
         BitmapFactory.decodeStream(input).let {
             Point(it.width, it.height)
@@ -391,36 +379,43 @@ fun assembleGif(
     val options = BitmapFactory.Options()
     options.inPreferredConfig = Bitmap.Config.ARGB_8888
 
-    val path = File(folder, "tmp.gif").absolutePath
-    val gifEncoderBuilder = GifEncoder.builder(Path(path))
-    gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
+    val tempFile = createFile(context, folder, "$name.gif", MIME_IMAGE_GIF)
+    getOutputStream(context, tempFile)?.use { out ->
+        val gifEncoderBuilder = GifEncoder.builder(out)
+        gifEncoderBuilder.minimumFrameDurationCentiseconds = 1
 
-    val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
-        Timber.d("framesWritten=$framesWritten writtenDuration=$writtenDuration")
-    }
-    gifEncoder.use {
-        frames.forEachIndexed { idx, frame ->
-            Timber.d("encoding frame $idx [duration ${frame.second} ms]")
-            getInputStream(context, frame.first).use { input ->
-                BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
-                    bmp.getPixels(buffer, 0, dims.x, 0, 0, dims.x, dims.y)
-                    try {
-                        gifEncoder.writeFrame(
-                            buffer,
-                            dims.x,
-                            dims.y,
-                            // Warning : if frame.second is <= 1ms, GIFs will be read slower on most readers
-                            // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
-                            frame.second.toDuration(DurationUnit.MILLISECONDS)
-                        )
-                    } finally {
-                        bmp.recycle()
+        val gifEncoder = gifEncoderBuilder.build { framesWritten, writtenDuration ->
+            Timber.d("framesWritten=$framesWritten writtenDuration=$writtenDuration")
+        }
+        gifEncoder.use {
+            frames.forEachIndexed { idx, frame ->
+                if (isCanceled.invoke()) return@forEachIndexed
+                Timber.d("encoding frame $idx [duration ${frame.second} ms]")
+                getInputStream(context, frame.first).use { input ->
+                    BitmapFactory.decodeStream(input, null, options)?.let { bmp ->
+                        bmp.getPixels(buffer, 0, dims.x, 0, 0, dims.x, dims.y)
+                        try {
+                            gifEncoder.writeFrame(
+                                buffer,
+                                dims.x,
+                                dims.y,
+                                // Warning : if frame.second is <= 1ms, GIFs will be read slower on most readers
+                                // (see https://android.googlesource.com/platform/frameworks/base/+/2be87bb707e2c6d75f668c4aff6697b85fbf5b15)
+                                frame.second.toDuration(DurationUnit.MILLISECONDS)
+                            )
+                        } finally {
+                            bmp.recycle()
+                        }
                     }
                 }
+                onProgress?.invoke(idx / frames.size.toFloat())
             }
         }
     }
-    return Uri.fromFile(File(path))
+    if (isCanceled.invoke()) {
+        removeFile(context, tempFile)
+        return null
+    } else return tempFile
 }
 
 /**
@@ -433,34 +428,30 @@ fun getScaledDownBitmap(
     maxDim: Int,
     noRecycle: Boolean
 ): Bitmap {
-    val width = bitmap.width
-    val height = bitmap.height
-    var newWidth = width
-    var newHeight = height
-    if (width > height && width > maxDim) {
-        newWidth = maxDim
-        newHeight = (height * newWidth.toFloat() / width).toInt()
+    val srcDims = Point(bitmap.width, bitmap.height)
+    val targetDims = scaleDownToMax(srcDims, maxDim)
+
+    return if (targetDims == srcDims) bitmap
+    else sharpRescale(bitmap, targetDims.x, targetDims.y, noRecycle)
+}
+
+/**
+ * Scale down given dimensions so that none of them are larger than the given constraint,
+ * keeping the aspect ratio.
+ *
+ * NB : Given dimensions are unchanged if both are shorter than the given constraint
+ */
+fun scaleDownToMax(srcDims: Point, maxDim: Int): Point {
+    if (srcDims.x > srcDims.y && srcDims.x > maxDim) {
+        return Point(maxDim, (srcDims.y * maxDim.toFloat() / srcDims.x).toInt())
     }
-    if (width in (height + 1)..maxDim) {
-        //the bitmap is already smaller than our required dimension, no need to resize it
-        return bitmap
+    if (srcDims.x < srcDims.y && srcDims.y > maxDim) {
+        return Point(maxDim, (srcDims.x * maxDim.toFloat() / srcDims.y).toInt())
     }
-    if (width < height && height > maxDim) {
-        newHeight = maxDim
-        newWidth = (width * newHeight.toFloat() / height).toInt()
+    if (srcDims.x == srcDims.y && srcDims.x > maxDim) {
+        return Point(maxDim, maxDim)
     }
-    if (height in (width + 1)..maxDim) {
-        //the bitmap is already smaller than our required dimension, no need to resize it
-        return bitmap
-    }
-    if (width == height && width > maxDim) {
-        newWidth = maxDim
-        newHeight = newWidth
-    }
-    return if (width == height && width <= maxDim) {
-        //the bitmap is already smaller than our required dimension, no need to resize it
-        bitmap
-    } else sharpRescale(bitmap, newWidth, newHeight, noRecycle)
+    return srcDims
 }
 
 private fun sharpRescale(

@@ -23,7 +23,7 @@ import kotlin.math.min
 /**
  * Manager class for image download queue
  */
-class RequestQueueManager private constructor(
+class RequestQueueManager(
     context: Context,
     private val onSuccess: BiConsumer<RequestOrder, Uri>,
     private val onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>
@@ -285,30 +285,5 @@ class RequestQueueManager private constructor(
     private fun getMemoryClass(context: Context): Int {
         val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         return activityManager.memoryClass
-    }
-
-    companion object {
-        @Volatile
-        private var instance: RequestQueueManager? = null
-
-        /**
-         * Get the instance of the RequestQueueManager singleton
-         *
-         * @param context Context to use
-         * @return Instance of the RequestQueueManager singleton
-         */
-        fun getInstance(
-            context: Context,
-            onSuccess: BiConsumer<RequestOrder, Uri>,
-            onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>
-        ): RequestQueueManager = instance ?: synchronized(this) {
-            instance ?: RequestQueueManager(context, onSuccess, onError).also { instance = it }
-        }
-
-        fun getInstance(): RequestQueueManager? {
-            synchronized(this) {
-                return instance
-            }
-        }
     }
 }

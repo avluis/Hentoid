@@ -14,55 +14,70 @@ import java.io.IOException
 
 class PixivContent : BaseContentParser() {
     override fun update(content: Content, url: String, updateImages: Boolean): Content {
-        val urlParts = url.split("/")
-        var id = urlParts[urlParts.size - 1]
-        if (id.contains("?")) {
-            id = id.substring(0, id.indexOf("?"))
-        }
-        val entity = urlParts[urlParts.size - 2]
+        var id = ""
+        var entity = ""
+
         val uri = url.toUri()
-        when (entity) {
-            "artworks", "illust" -> if (!isNumeric(id)) id =
-                uri.getQueryParameter("illust_id") ?: ""
+        val urlParts = url.split("/")
 
-            "user", "users" -> if (!isNumeric(id)) id = uri.getQueryParameter("id") ?: ""
+        if (url.contains("user/bookmarks") || url.contains("/bookmarks/")) {
+            entity = "bookmarks"
+            id = if (url.contains("user/bookmarks")) uri.getQueryParameter("id") ?: ""
+            else urlParts[urlParts.size - 3]
+        } else {
+            id = urlParts[urlParts.size - 1]
+            if (id.contains("?")) id = id.take(id.indexOf("?"))
+            entity = urlParts[urlParts.size - 2]
+            when (entity) {
+                "artworks", "illust" -> if (!isNumeric(id))
+                    id = uri.getQueryParameter("illust_id") ?: ""
 
-            else -> {}
+                "user", "users" -> if (!isNumeric(id)) id = uri.getQueryParameter("id") ?: ""
+
+                else -> {}
+            }
         }
+        if (id.isEmpty()) return Content(site = Site.PIXIV, status = StatusContent.IGNORED)
+
         try {
-            if (id.isNotEmpty()) {
-                val cookieStr = getCookies(
-                    url,
-                    null,
-                    Site.PIXIV.useMobileAgent,
-                    Site.PIXIV.useHentoidAgent,
-                    Site.PIXIV.useWebviewAgent
-                )
-                val userAgent = getUserAgent(Site.PIXIV)
-                when (entity) {
-                    "artworks", "illust" -> {
-                        val metadata =
-                            PixivServer.api.getIllustMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
-                                .execute().body()
-                        if (metadata != null) return metadata.update(content, url, updateImages)
-                    }
-
-                    "series_content", "series" -> {
-                        val seriesData =
-                            PixivServer.api.getSeriesMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
-                                .execute().body()
-                        if (seriesData != null) return seriesData.update(content, updateImages)
-                    }
-
-                    "user", "users" -> {
-                        val userData =
-                            PixivServer.api.getUserMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
-                                .execute().body()
-                        if (userData != null) return userData.update(content, updateImages)
-                    }
-
-                    else -> {}
+            val cookieStr = getCookies(
+                url,
+                null,
+                Site.PIXIV.useMobileAgent,
+                Site.PIXIV.useHentoidAgent,
+                Site.PIXIV.useWebviewAgent
+            )
+            val userAgent = getUserAgent(Site.PIXIV)
+            when (entity) {
+                "artworks", "illust" -> {
+                    val metadata =
+                        PixivServer.api.getIllustMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
+                            .execute().body()
+                    if (metadata != null) return metadata.update(content, url, updateImages)
                 }
+
+                "series_content", "series" -> {
+                    val seriesData =
+                        PixivServer.api.getSeriesMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
+                            .execute().body()
+                    if (seriesData != null) return seriesData.update(content, updateImages)
+                }
+
+                "user", "users" -> {
+                    val userData =
+                        PixivServer.api.getUserMetadata(id, cookieStr, ACCEPT_ALL, userAgent)
+                            .execute().body()
+                    if (userData != null) return userData.update(content, updateImages)
+                }
+
+                "bookmarks" -> {
+                    val bookmarksData =
+                        PixivServer.api.getUserBookmarks(id, cookieStr, ACCEPT_ALL, userAgent)
+                            .execute().body()
+                    if (bookmarksData != null) return bookmarksData.update(content, id, updateImages)
+                }
+
+                else -> {}
             }
         } catch (e: IOException) {
             Timber.e(e, "Error parsing content.")

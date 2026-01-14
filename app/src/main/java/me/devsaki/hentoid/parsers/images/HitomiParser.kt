@@ -81,16 +81,17 @@ class HitomiParser : BaseImageListParser() {
         // Get the gallery JSON
         val headers: MutableList<Pair<String, String>> = ArrayList()
         headers.add(Pair(HEADER_REFERER_KEY, pageUrl))
-        val response = getOnlineResourceFast(
+        var galleryInfo = ""
+        getOnlineResourceFast(
             galleryJsonUrl,
             headers,
             Site.HITOMI.useMobileAgent,
             Site.HITOMI.useHentoidAgent,
             Site.HITOMI.useWebviewAgent
-        )
-        val body = response.body
-        val galleryInfo = body.string()
-        updateContentInfo(onlineContent, galleryInfo)
+        ).use { response ->
+            galleryInfo = response.body.string()
+            updateContentInfo(onlineContent, galleryInfo)
+        }
 
         // Get pages URL
         val done = AtomicBoolean(false)
@@ -169,8 +170,8 @@ class HitomiParser : BaseImageListParser() {
         val sb = StringBuilder()
         getAssetAsString(getInstance().assets, "hitomi_pages.js", sb)
         return sb.toString()
-            .replace("\$galleryInfo", galleryInfo)
-            .replace("\$download_avif", dlAvif.toString())
+            .replace($$"$galleryInfo", galleryInfo)
+            .replace($$"$download_avif", dlAvif.toString())
     }
 
     // TODO doc

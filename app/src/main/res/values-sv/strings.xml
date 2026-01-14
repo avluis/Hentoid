@@ -35,7 +35,7 @@
     <string name="app_lock_pin">Mata in PIN-kod</string>
     <string name="app_settings">Appinställningar</string>
     <string name="apply_final">Verkställ val</string>
-    <string name="archive_delete_after_archiving">Ta bort böcker efter lyckad arkivering</string>
+    <string name="archive_delete_after_archiving">Ta bort böcker efter lyckad export</string>
     <string name="archive_format">Arkivformat</string>
     <string name="archive_limit">Kan inte arkivera fler än 1000 böcker samtidigt</string>
     <string name="archive_overwrite">Skriv över existerande arkiv</string>
@@ -193,7 +193,7 @@
         <item quantity="other">%d Utvalda böcker är redan nerladdade\nDe kommer bli ignorerade.</item>
     </plurals>
     <string name="download_notif_failed">Nerladdning misslyckades</string>
-    <string name="download_notif_failed_details">Kan inte ladda ned %1$s: kan inte skapa mapp %2$s. Vänligen kontrollera din primärmapp och försök ladda ned igen genom att använda nerladdningsknappen.</string>
+    <string name="download_notif_failed_details">Kan inte ladda ned %1$s: kan inte skapa mapp. Vänligen kontrollera din primärmapp och försök ladda ned igen genom att använda nerladdningsknappen.</string>
     <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
     <string name="download_updating_webview">Nerladdning avbruten - Webbvy uppdaterar</string>
     <string name="downloader_title">Nerladdare</string>
@@ -329,6 +329,7 @@
     <string name="filter_rating">Filtrera efter betyg</string>
     <string name="fix_permissions">Fix</string>
     <string name="folder_device_downloads">Enhetens\ Nerladdningsmapp</string>
+    <string name="folder_not_found">Fel – innehållande folder ej funnen</string>
     <string name="folder_other">Välj mapp…</string>
     <string name="folder_undefined">Fel - Innehåller odefinierad mapp</string>
     <string name="freeze">Växla frys</string>
@@ -446,6 +447,7 @@
         <item quantity="one">Importera bokmärke (%d föremål)</item>
         <item quantity="other">Importera bokmärken (%d föremål)</item>
     </plurals>
+    <string name="import_file_empty">Fil %s innehåller inget giltigt värde</string>
     <plurals name="import_file_groups">
         <item quantity="one">Importera anpassad grupp (%d grupp)</item>
         <item quantity="other">Importera anpassade grupper (%d grupper)</item>
@@ -569,9 +571,10 @@
     <string name="memory_title">Användning av lagring</string>
     <string name="memory_total">Totalt: %s</string>
     <string name="menu_archive">Arkiv</string>
-    <string name="menu_archive_help">Arkivera boken i en zip-fil</string>
+    <string name="menu_archive_help">Exportera böcker som arkiv eller PDF</string>
     <string name="menu_change_dl_mode">Ändra nerladdningsläge</string>
     <string name="menu_change_group">Flytta till grupp</string>
+    <string name="menu_change_storage">Ändra lagring</string>
     <string name="menu_completed_single">Markera som komplett</string>
     <string name="menu_delete_single">Ta bort</string>
     <string name="menu_download_streamed">Ladda ner stream</string>
@@ -581,6 +584,7 @@
     <string name="menu_edit_name">Redigera</string>
     <string name="menu_edit_order">Omarrangera</string>
     <string name="menu_edit_warning_custom">En improviserad ordning kommer skriva över den förra ordningen.</string>
+    <string name="menu_export">Exportera</string>
     <string name="menu_fav">Växla favoritfilter</string>
     <string name="menu_group_new">Ny grupp</string>
     <string name="menu_mark_fav">Växla favorit</string>
@@ -596,6 +600,7 @@
     <string name="menu_share_title">Bok-URL</string>
     <string name="menu_sort">Sortera</string>
     <string name="menu_sort_filter">Sortera och filtrera</string>
+    <string name="menu_storage_method">Lagringsmetod</string>
     <string name="menu_stream">Byt till streaming</string>
     <string name="merge_delete_after_merging">Ta bort böckerna efter ihopslagning</string>
     <string name="merge_fail">Misslyckades att slå ihop innehåll</string>
@@ -609,6 +614,7 @@
     <string name="meta_cover_multiple_warning">Omlaget kan inte ändras på fler än en bok åt gången</string>
     <string name="meta_remove_all_confirm">Ta bort metadata från valda böcker</string>
     <string name="meta_remove_all_tags">Ta bort all metadata</string>
+    <string name="meta_remove_all_type_confirm">Ta bort all %s metadata från valda böcker?</string>
     <string name="meta_rename_new_name">Nytt namn</string>
     <string name="meta_rename_new_rule">Kom ihåg det här för framtida nedladdningar</string>
     <string name="meta_replace_with">Ersätt med…</string>
@@ -747,6 +753,7 @@
     <string name="previous_page">Föregående sida</string>
     <string name="primary_library">Primärbibliotek</string>
     <string name="primary_library_subtitle">Nerladdningar</string>
+    <string name="process_limit">Kan inte hantera mer än 1000 böcker på samma gång</string>
     <string name="purge_progress">rensar ut böcker</string>
     <string name="queue_add_bottom">Lägg till vid bottnen</string>
     <string name="queue_add_top">Lägg till på toppen</string>
@@ -759,6 +766,7 @@
     <string name="queue_bottom_bar_speed">%d KBps</string>
     <string name="queue_content_size_estimate">beräknad %.1f MB</string>
     <string name="queue_dl">Laddar ned %s</string>
+    <string name="queue_dl_single_file">Laddar ner stor fil</string>
     <string name="queue_empty">Varför är jag tom\?</string>
     <string name="queue_errors_tab">Fel</string>
     <string name="queue_json_failed">Kunde inte spara JSON av kön</string>
@@ -906,6 +914,7 @@
     <string name="starting_download">Startar nedladdning</string>
     <string name="starting_import">Påbörjar import…</string>
     <string name="step_complete_download">Färdigställer nedladdningen</string>
+    <string name="step_encode_animation">Kodningsanimering</string>
     <string name="step_fetch_img">Hämtar bilder</string>
     <string name="step_init">Förbereder</string>
     <string name="step_prepare_download">Förbereder nedladdningskedja</string>
@@ -919,7 +928,11 @@
     <string name="storage_action_change">Byt plats…</string>
     <string name="storage_action_merge_to_1">Slå ihop till plats 1</string>
     <string name="storage_action_remove">Koppla loss</string>
+    <string name="storage_archive">Arkiv (CBZ)</string>
+    <string name="storage_archive_description">Lagra böcker som bilder i CBZ-arkiv</string>
     <string name="storage_fallover_threshold">Lågutrymmeströskel (%%)</string>
+    <string name="storage_folder">Mapp</string>
+    <string name="storage_folder_description">Lagra böcker som bilder i mappar</string>
     <string name="storage_merge_ask">Slå ihop %d böcker från plats 2 till plats 1?\nNotera: Böcker kommer tas bort efter färdig ihopslagning</string>
     <string name="storage_merge_complete">Ihopslagning färdig</string>
     <string name="storage_merge_ko1">Kan inte slå ihop till plats 1 : inte tillräckligt med lagringsutrymme kvar</string>
@@ -937,6 +950,8 @@
     <string name="storage_strategy_fallover">Våg</string>
     <string name="storage_strategy_fallover_desc">Hentoid laddar ner till plats 1 tills %d%% av kapaciteten är fylld, sedan laddar den ner till plats 2.</string>
     <string name="storage_strategy_title">Nerladdningsstrategi : %s</string>
+    <string name="storage_streamed">Strömma</string>
+    <string name="storage_streamed_description">Ladda inte ner till lagringsenhet, strömma dem medans du läser</string>
     <string name="stream_canceled">Streaming avbruten - bok otillgänglig online</string>
     <string name="stream_confirm">Streama vald bok?</string>
     <plurals name="stream_confirm">
@@ -1034,6 +1049,7 @@
     <string name="viewer_filter_favourite_on">Visa alla sidor</string>
     <string name="viewer_fix">Åtgärda nerladdningsfel</string>
     <string name="viewer_img_details">%1$d x %2$d (skala %3$.0f%%) - %4$s</string>
+    <string name="viewer_img_details_cropped">%1$d x %2$d,beskuren till %3$d x %4$d (skala %5$.0f%%) - %6$s</string>
     <string name="viewer_make_cover">Ställ in som omslag</string>
     <string name="viewer_order_123">Omordna sidor</string>
     <string name="viewer_order_reverse">Omvänd ordning</string>

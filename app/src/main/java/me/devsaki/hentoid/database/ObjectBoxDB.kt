@@ -406,6 +406,29 @@ object ObjectBoxDB {
         }
     }
 
+    /**
+     * Cleanup all Chapters that aren't linked to any Content
+     */
+    fun cleanupOrphanChapters() {
+        val chapterBox = store.boxFor(Chapter::class.java)
+        // NB : QueryContent.relationCount doesn't work properly even for toOne relations
+        val allChaps = chapterBox.query().safeFindIds().toMutableSet()
+
+        val linkedChapsQb = chapterBox.query()
+        linkedChapsQb.link(Chapter_.content)
+        val linkedChaps = linkedChapsQb.build().safeFindIds().toSet()
+
+        allChaps.removeAll(linkedChaps)
+        if (allChaps.isEmpty()) return
+
+        // Clean the chapters
+        val toRemove = chapterBox.get(allChaps.toLongArray())
+        for (chp in toRemove) {
+            Timber.v(">> Found empty chapter : ${chp.name}")
+            chapterBox.remove(chp)
+        }
+    }
+
     fun selectQueueContents(): List<Content> {
         val result: MutableList<Content> = ArrayList()
         val queueRecords = selectQueueRecordsQ().safeFind()
@@ -515,13 +538,23 @@ object ObjectBoxDB {
         }
     }
 
+    private fun selectContentIdsByChapterUniqueId(id: String): LongArray {
+        if (id.isEmpty()) return LongArray(0)
+        store.boxFor(Chapter::class.java).query(
+            Chapter_.uniqueId.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(Chapter_.uniqueId.equal(id, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+        ).build().use { cq ->
+            return cq.property(Chapter_.contentId).findLongs()
+        }
+    }
+
     // Find any book that has the given content URL _or_ a chapter with the given content URL _or_ has a cover starting with the given cover URL
     fun selectContentByUrlOrCover(
         site: Site,
         contentUrl: String,
-        coverUrlStart: String,
+        coverUrlStart: String = "",
         searchChapters: Boolean = true
-    ): Content? {
+    ): List<Content> {
         val contentUrlCondition =
             Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
                 .and(
@@ -550,26 +583,10 @@ object ObjectBoxDB {
                     .and(Content_.site.equal(site.code))
 
             store.boxFor(Content::class.java).query(urlCondition.or(coverCondition))
-                .order(Content_.id).safeFindFirst()
+                .order(Content_.id).safeFind()
         } else
             store.boxFor(Content::class.java).query(urlCondition)
-                .order(Content_.id).safeFindFirst()
-    }
-
-    // Find all books that have the given content URL
-    fun selectContentByUrl(site: Site, contentUrl: String): Set<Content> {
-        val contentUrlCondition =
-            Content_.dbUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
-                .and(
-                    Content_.dbUrl.equal(
-                        contentUrl,
-                        QueryBuilder.StringOrder.CASE_INSENSITIVE
-                    )
-                )
-                .and(Content_.site.equal(site.code))
-
-        return store.boxFor(Content::class.java).query(contentUrlCondition)
-            .order(Content_.id).safeFind().toSet()
+                .order(Content_.id).safeFind()
     }
 
     fun selectContentsByQtyPageAndSize(qtyPage: Int, size: Long): Set<Content> {
@@ -578,6 +595,27 @@ object ObjectBoxDB {
                 .and(Content_.qtyPages.equal(qtyPage))
 
         return store.boxFor(Content::class.java).query(contentUrlCondition)
+            .order(Content_.id).safeFind().toSet()
+    }
+
+    fun selectContentsByUniqueId(site: Site, id: String): Set<Content> {
+        val contentIdCondition =
+            Content_.uniqueSiteId.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .and(
+                    Content_.uniqueSiteId.equal(
+                        id,
+                        QueryBuilder.StringOrder.CASE_INSENSITIVE
+                    )
+                )
+                .and(Content_.site.equal(site.code))
+
+        val chapterIdCondition: QueryCondition<Content> =
+            Content_.id.oneOf(selectContentIdsByChapterUniqueId(id))
+                .and(Content_.site.equal(site.code))
+
+        val idCondition = contentIdCondition.or(chapterIdCondition)
+
+        return store.boxFor(Content::class.java).query(idCondition)
             .order(Content_.id).safeFind().toSet()
     }
 
@@ -1532,7 +1570,6 @@ object ObjectBoxDB {
             )
 
             Type.ARCHIVE -> {
-                qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
                 var combinedCondition: QueryCondition<Content>? = null
                 for (ext in getSupportedExtensions()) {
                     combinedCondition =
@@ -1550,7 +1587,6 @@ object ObjectBoxDB {
             }
 
             Type.PDF -> {
-                qc = qc.and(Content_.status.equal(StatusContent.EXTERNAL.code))
                 val pdfCondition = Content_.storageUri.endsWith(
                     "pdf",
                     QueryBuilder.StringOrder.CASE_INSENSITIVE
@@ -1603,25 +1639,15 @@ object ObjectBoxDB {
         }
     }
 
-    // Returns a list of processed images grouped by status, with count and filesize (in bytes)
-    fun countProcessedImagesById(contentId: Long): Map<StatusContent, Pair<Int, Long>> {
-        val imgQuery = store.boxFor(ImageFile::class.java).query()
-        imgQuery.equal(ImageFile_.contentId, contentId)
-        val images = imgQuery.safeFind()
-        val result: MutableMap<StatusContent, Pair<Int, Long>> =
-            EnumMap(StatusContent::class.java)
-        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
-        // (see https://github.com/objectbox/objectbox-java/issues/422)
-        // => Group by and count have to be done manually (thanks God Stream exists !)
-        // Group and count by type
-        val map = images.groupBy { i -> i.status }
-        map.forEach {
-            var sizeBytes: Long = 0
-            val count: Int = it.value.size
-            for (img in it.value) sizeBytes += img.size
-            result[it.key] = Pair(count, sizeBytes)
+    fun updateImageFileUri(locations : Map<Long, String>) {
+        val imgBox = store.boxFor(ImageFile::class.java)
+        store.runInTx {
+            val imgs = imgBox[locations.keys].map { img ->
+                locations[img.id]?.let { img.fileUri = it }
+                img
+            }
+            imgBox.put(imgs)
         }
-        return result
     }
 
     fun selectAllFavouritePagesQ(): Query<ImageFile> {
@@ -1730,19 +1756,21 @@ object ObjectBoxDB {
         return builder.build().safeFind()
     }
 
-    fun selectDownloadedImagesFromContentQ(id: Long): Query<ImageFile> {
+    fun selectImagesFromContentQ(id: Long, downloadedOnly: Boolean): Query<ImageFile> {
         val builder = store.boxFor(ImageFile::class.java).query()
         builder.equal(ImageFile_.contentId, id)
-        builder.`in`(
-            ImageFile_.status,
-            intArrayOf(
-                StatusContent.DOWNLOADED.code,
-                StatusContent.EXTERNAL.code,
-                StatusContent.ONLINE.code,
-                StatusContent.PLACEHOLDER.code,
-                StatusContent.STORAGE_RESOURCE.code
+        if (downloadedOnly) {
+            builder.`in`(
+                ImageFile_.status,
+                intArrayOf(
+                    StatusContent.DOWNLOADED.code,
+                    StatusContent.EXTERNAL.code,
+                    StatusContent.ONLINE.code,
+                    StatusContent.PLACEHOLDER.code,
+                    StatusContent.STORAGE_RESOURCE.code
+                )
             )
-        )
+        }
         builder.order(ImageFile_.dbOrder)
         return builder.build()
     }

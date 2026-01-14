@@ -72,6 +72,7 @@
     <string name="pref_viewer_dl_action_entries_1">Ladda ned samtliga sidor</string>
     <string name="pref_viewer_dl_action_entries_2">Streama sidorna vid läsning</string>
     <string name="pref_viewer_dl_action_entries_3">Fråga varje gång</string>
+    <string name="pref_viewer_dl_action_entries_4">Ladda ner alla sidor och arkivera dem</string>
     <string name="pref_viewer_read_threshold_entries_1">1 sida (standardval)</string>
     <string name="pref_viewer_read_threshold_entries_2">2 sidor</string>
     <string name="pref_viewer_read_threshold_entries_3">5 sidor</string>

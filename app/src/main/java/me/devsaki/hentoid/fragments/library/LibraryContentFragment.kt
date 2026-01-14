@@ -79,14 +79,15 @@ import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.SearchCriteria
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.util.canBeArchived
 import me.devsaki.hentoid.util.contentItemDiffCallback
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
+import me.devsaki.hentoid.util.file.folderExists
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.formatEpochToDate
+import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.getIdForCurrentTheme
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.launchBrowserFor
@@ -131,6 +132,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     RatingDialogFragment.Parent,
     LibraryTransformDialogFragment.Parent,
     SelectSiteDialogFragment.Parent,
+    ChangeStorageDialogFragment.Parent,
     PopupTextProvider,
     ItemTouchCallback,
     SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -475,7 +477,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_completed -> markSelectedAsCompleted()
             R.id.action_reset_read -> resetSelectedReadStats()
             R.id.action_rate -> onMassRateClick()
-            R.id.action_archive -> archiveSelectedItems()
+            R.id.action_export -> exportSelectedItems()
             R.id.action_change_group -> moveSelectedItems()
             R.id.action_open_folder -> openItemFolder()
             R.id.action_redownload -> {
@@ -483,13 +485,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 keepToolbar = true
             }
 
-            R.id.action_download -> {
-                askDownloadSelectedItems()
-                keepToolbar = true
-            }
-
-            R.id.action_stream -> {
-                askStreamSelectedItems()
+            R.id.action_storage_method -> {
+                val contents =
+                    selectExtension!!.selectedItems.mapNotNull { it.content }.map { it.id }
+                ChangeStorageDialogFragment.invoke(this, contents.toLongArray())
                 keepToolbar = true
             }
 
@@ -652,12 +651,12 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     /**
      * Callback for the "archive item" action button
      */
-    private fun archiveSelectedItems() {
+    private fun exportSelectedItems() {
         selectExtension?.apply {
             val selectedItems: Set<ContentItem> = selectedItems
             val contents = selectedItems.mapNotNull { ci -> ci.content }
                 .filterNot { c -> c.storageUri.isEmpty() }
-            activity.get()?.askArchiveItems(contents, this)
+            activity.get()?.askExportItems(contents, this)
         } ?: run {
             requireContext().toast("Couldn't find selectExtension")
         }
@@ -689,19 +688,15 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         if (1 == selectedItems.size) {
             val item = selectedItems.firstOrNull() ?: return
             val c = item.content ?: return
-            if (c.storageUri.isEmpty()) {
-                toast(R.string.folder_undefined)
-                return
-            }
-            val folder = getDocumentFromTreeUriString(context, c.storageUri)
-            if (folder != null) {
-                selectExtension?.apply { deselect(selections.toMutableSet()) }
-                activity.get()?.getSelectionToolbar()?.visibility = View.GONE
 
-                val uri = if (c.isArchive || c.isPdf)
-                    getParent(context, Settings.externalLibraryUri.toUri(), folder.uri)
-                else folder.uri
-                uri?.let { openUri(context, it) }
+            selectExtension?.apply { deselect(selections.toMutableSet()) }
+            activity.get()?.getSelectionToolbar()?.visibility = View.GONE
+
+            c.getContainingFolder(context)?.let {
+                if (folderExists(context, it)) openUri(context, it)
+                else toast(R.string.folder_not_found)
+            } ?: run {
+                toast(R.string.folder_undefined)
             }
         }
     }
@@ -712,7 +707,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun askRedownloadSelectedItemsScratch() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
         var externalContent = 0
-        val contents: MutableList<Content> = java.util.ArrayList()
+        val contents: MutableList<Content> = ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
             if (c.status == StatusContent.EXTERNAL) {
@@ -737,6 +732,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     reparseContent = true,
                     reparseImages = false,
                     position = QueuePosition.TOP,
+                    forceArchive = false,
                     onSuccess = { nbSuccess: Int? ->
                         val message = resources.getQuantityString(
                             R.plurals.add_to_queue,
@@ -762,100 +758,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
     }
 
-    /**
-     * Callback for the "Download" action button (for streamed books)
-     */
-    private fun askDownloadSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        var nonOnlineContent = 0
-        val contents: MutableList<Content> = java.util.ArrayList()
-        for (ci in selectedItems) {
-            val c = ci.content ?: continue
-            if (DownloadMode.STREAM != c.downloadMode) {
-                nonOnlineContent++
-            } else {
-                contents.add(c)
-            }
-        }
-        var message = resources.getQuantityString(R.plurals.download_confirm, contents.size)
-        if (nonOnlineContent > 0) message = resources.getQuantityString(
-            R.plurals.download_non_streamed_content,
-            nonOnlineContent,
-            nonOnlineContent
-        )
-        MaterialAlertDialogBuilder(
-            requireContext(),
-            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
-        )
-            .setIcon(R.drawable.ic_warning)
-            .setCancelable(false)
-            .setTitle(R.string.app_name)
-            .setMessage(message)
-            .setPositiveButton(R.string.yes)
-            { dialog1, _ ->
-                dialog1.dismiss()
-                download(contents) { t -> onDownloadError(t) }
-                leaveSelectionMode()
-            }
-            .setNegativeButton(R.string.no)
-            { dialog12, _ -> dialog12.dismiss() }
-            .create()
-            .show()
-    }
-
-    private fun onDownloadError(t: Throwable) {
-        Timber.w(t)
-        snack(t.message ?: "")
-    }
-
-    /**
-     * Callback for the "Switch to streaming" action button
-     */
-    private fun askStreamSelectedItems() {
-        val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        var streamedOrExternalContent = 0
-        val contents: MutableList<Content> = java.util.ArrayList()
-        for (ci in selectedItems) {
-            val c = ci.content ?: continue
-            if (c.downloadMode == DownloadMode.STREAM || c.status == StatusContent.EXTERNAL) {
-                streamedOrExternalContent++
-            } else {
-                contents.add(c)
-            }
-        }
-        if (contents.size > 1000) {
-            snack(R.string.stream_limit)
-            return
-        }
-        var message = resources.getQuantityString(R.plurals.stream_confirm, contents.size)
-        if (streamedOrExternalContent > 0) message = resources.getQuantityString(
-            R.plurals.stream_external_streamed_content,
-            streamedOrExternalContent,
-            streamedOrExternalContent
-        )
-        MaterialAlertDialogBuilder(
-            requireContext(),
-            requireContext().getIdForCurrentTheme(R.style.Theme_Light_Dialog)
-        )
-            .setIcon(R.drawable.ic_warning)
-            .setCancelable(false)
-            .setTitle(R.string.app_name)
-            .setMessage(message)
-            .setPositiveButton(
-                R.string.yes
-            ) { dialog1, _ ->
-                dialog1.dismiss()
-                leaveSelectionMode()
-                viewModel.streamContent(contents) { t: Throwable -> onStreamError(t) }
-            }
-            .setNegativeButton(
-                R.string.no
-            ) { dialog12, _ -> dialog12.dismiss() }
-            .create()
-            .show()
-    }
-
-    private fun onStreamError(t: Throwable) {
+    private fun onProcessError(t: Throwable) {
         Timber.w(t)
         snack(t.message ?: "")
     }
@@ -1568,6 +1471,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 reparseContent = true,
                 reparseImages = true,
                 position = addMode,
+                forceArchive = false,
                 onSuccess = { nbSuccess ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
@@ -1586,13 +1490,18 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         }
     }
 
-    private fun download(contentList: List<Content>, onError: Consumer<Throwable>) {
+    private fun download(
+        contentList: List<Content>,
+        forceArchive: Boolean,
+        onError: Consumer<Throwable>
+    ) {
         if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             binding?.recyclerView?.let {
                 showAddQueueMenu(activity.get()!!, it, this) { position: Int, _: PowerMenuItem? ->
                     download(
                         contentList,
                         if (0 == position) QueuePosition.TOP else QueuePosition.BOTTOM,
+                        forceArchive,
                         onError
                     )
                 }
@@ -1600,6 +1509,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         } else download(
             contentList,
             QueuePosition.fromValue(Settings.queueNewDownloadPosition),
+            forceArchive,
             onError
         )
     }
@@ -1607,6 +1517,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private fun download(
         contentList: List<Content>,
         addMode: QueuePosition,
+        forceArchive: Boolean,
         onError: Consumer<Throwable>
     ) {
         topItemPosition = getTopItemPosition()
@@ -1615,6 +1526,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 contentList,
                 false, reparseImages = true,
                 position = addMode,
+                forceArchive = forceArchive,
                 onSuccess = { nbSuccess ->
                     val message = resources.getQuantityString(
                         R.plurals.add_to_queue,
@@ -1698,6 +1610,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         viewModel.splitContent(content, chapters, deleteAfter)
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onProcessStickyEvent(event: ProcessEvent) {
         // Filter on delete, merge & split complete events
@@ -1726,6 +1639,49 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             )
         }
         refreshIfNeeded()
+    }
+
+    override fun onChangeStorageSuccess(targetStorage: DownloadMode) {
+        val selectedItems: Set<ContentItem> = selectExtension?.selectedItems ?: return
+        val toProcess: MutableList<Content> = ArrayList()
+        for (ci in selectedItems) {
+            val c = ci.content ?: continue
+            if (c.isPdf) continue
+            if (c.isArchive && targetStorage == DownloadMode.DOWNLOAD_ARCHIVE) continue
+            if (c.downloadMode == DownloadMode.STREAM && targetStorage == DownloadMode.STREAM) continue
+            if (targetStorage == DownloadMode.DOWNLOAD && c.downloadMode != DownloadMode.STREAM && !c.isArchive) continue
+            toProcess.add(c)
+        }
+        if (toProcess.size > 1000) {
+            snack(R.string.process_limit)
+            return
+        }
+        leaveSelectionMode()
+
+        when (targetStorage) {
+            DownloadMode.STREAM ->
+                viewModel.streamContent(toProcess) { onProcessError(it) }
+
+            DownloadMode.DOWNLOAD -> {
+                toProcess.filter { it.downloadMode == DownloadMode.STREAM }.let {
+                    if (it.isNotEmpty()) download(it, false) { e -> onProcessError(e) }
+                }
+                toProcess.filter { it.isArchive }.let {
+                    if (it.isNotEmpty()) viewModel.unarchive(it) { e -> onProcessError(e) }
+                }
+            }
+
+            DownloadMode.DOWNLOAD_ARCHIVE -> {
+                toProcess.filter { it.downloadMode == DownloadMode.STREAM }.let {
+                    if (it.isNotEmpty()) download(it, true) { e -> onProcessError(e) }
+                }
+                toProcess.filter { canBeArchived(it) }.let {
+                    if (it.isNotEmpty()) viewModel.archiveContent(toProcess) { e -> onProcessError(e) }
+                }
+            }
+
+            else -> {} // Nothing
+        }
     }
 
     /**

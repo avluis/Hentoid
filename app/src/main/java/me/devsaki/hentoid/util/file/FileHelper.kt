@@ -26,6 +26,7 @@ import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.copy
 import me.devsaki.hentoid.util.exception.UnsupportedContentException
 import me.devsaki.hentoid.util.formatEpochToDate
@@ -65,7 +66,7 @@ const val AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider"
 private const val PRIMARY_VOLUME_NAME = "primary" // DocumentsContract.PRIMARY_VOLUME_NAME
 private const val NOMEDIA_FILE_NAME = ".nomedia"
 private const val TEST_FILE_NAME = "delete.me"
-const val DEFAULT_MIME_TYPE = "application/octet-steam"
+const val DEFAULT_MIME_TYPE = "application/octet-stream"
 
 // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 private val ILLEGAL_FILENAME_CHARS by lazy { "[\"*/:<>\\?\\\\|]".toRegex() }
@@ -120,6 +121,31 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
     }
 }
 
+fun getDocumentProperties(context: Context, uri: Uri): FileExplorer.DocumentProperties? {
+    if (ContentResolver.SCHEME_FILE == uri.scheme) {
+        legacyFileFromUri(uri)?.let { file ->
+            return FileExplorer.DocumentProperties(
+                file.absolutePath,
+                file.name,
+                file.length(),
+                file.isDirectory,
+                file.lastModified()
+            )
+        }
+    } else {
+        getDocumentFromTreeUri(context, uri)?.let { doc ->
+            return FileExplorer.DocumentProperties(
+                doc.uri.toString(),
+                doc.name ?: "",
+                doc.length(),
+                doc.isDirectory,
+                doc.lastModified()
+            )
+        }
+    }
+    return null
+}
+
 /**
  * Get the full, human-readable access path from the given Uri
  *
@@ -134,11 +160,11 @@ private fun getFullPathFromTreeUri(context: Context, uri: Uri): String {
 
     var volumePath = getVolumePath(context, getVolumeIdFromUri(uri)) ?: "UnknownVolume"
     if (volumePath.endsWith(File.separator))
-        volumePath = volumePath.substring(0, volumePath.length - 1)
+        volumePath = volumePath.dropLast(1)
 
     var documentPath = getDocumentPathFromUri(uri) ?: ""
     if (documentPath.endsWith(File.separator))
-        documentPath = documentPath.substring(0, documentPath.length - 1)
+        documentPath = documentPath.dropLast(1)
 
     return if (documentPath.isNotEmpty()) {
         if (documentPath.startsWith(File.separator)) volumePath + documentPath
@@ -265,14 +291,16 @@ fun syncStream(stream: FileOutputStream): Boolean {
 
 /**
  * Create an OutputStream opened the given file
- * NB1 : File length will be truncated to the length of the written data
- * NB2 : Code initially from org.apache.commons.io.FileUtils
+ * Code inspired from org.apache.commons.io.FileUtils
  *
  * @param file File to open the OutputStream on
+ * @param append  True to open the Stream to append data; false to write from scratch (default)
+ * NB : If false, file length will be truncated to the length of the written data
+ *
  * @return New OutputStream opened on the given file
  */
 @Throws(IOException::class)
-fun getOutputStream(file: File): OutputStream {
+fun getOutputStream(file: File, append: Boolean = false): OutputStream {
     if (file.exists()) {
         if (!file.isFile) throw IOException(file.path + " is not a File")
         if (!file.canWrite()) throw IOException(file.path + " can't be written to")
@@ -283,43 +311,52 @@ fun getOutputStream(file: File): OutputStream {
             }
         }
     }
-    return FileOutputStream(file, false)
+    return FileOutputStream(file, append)
 }
 
 /**
  * Create an OutputStream for the given file
- * NB : File length will be truncated to the length of the written data
  *
  * @param context Context to use
  * @param target  File to open the OutputStream on
+ * @param append  True to open the Stream to append data; false to write from scratch (default)
+ * NB : If false, file length will be truncated to the length of the written data
+ *
  * @return New OutputStream opened on the given file
  * @throws IOException In case something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun getOutputStream(context: Context, target: DocumentFile): OutputStream? {
+fun getOutputStream(
+    context: Context,
+    target: DocumentFile,
+    append: Boolean = false
+): OutputStream? {
     return context.contentResolver.openOutputStream(
         target.uri,
-        "rwt"
-    ) // Always truncate file to whatever data needs to be written
+        if (append) "wa" else "rwt"
+    )
 }
 
 /**
  * Create an OutputStream for the file at the given Uri
- * NB : File length will be truncated to the length of the written data
  *
  * @param context Context to use
  * @param fileUri Uri of the file to open the OutputStream on
+ * @param append  True to open the Stream to append data; false to write from scratch (default)
+ * NB : If false, file length will be truncated to the length of the written data
+ *
  * @return New OutputStream opened on the given file
  * @throws IOException In case something horrible happens during I/O
  */
 @Throws(IOException::class)
-fun getOutputStream(context: Context, fileUri: Uri): OutputStream? {
+fun getOutputStream(context: Context, fileUri: Uri, append: Boolean = false): OutputStream? {
+    if (fileUri == Uri.EMPTY) throw IOException("Couldn't find document for Empty Uri")
     if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
         val path = fileUri.path
-        if (null != path) return getOutputStream(File(path))
+        if (null != path) return getOutputStream(File(path), append)
     } else {
         val doc = getFileFromSingleUri(context, fileUri)
-        if (doc != null) return getOutputStream(context, doc)
+        if (doc != null) return getOutputStream(context, doc, append)
     }
     throw IOException("Couldn't find document for Uri : $fileUri")
 }
@@ -381,15 +418,27 @@ fun removeFile(file: File): Boolean {
 }
 
 /**
- * Delete the document at the given Uri
+ * Delete the document at the given Uri except if it is a site root
  * NB : Inspired by TreeDocumentFile.delete & SingleDocumentFile.delete
  *
  * @param docUri Uri of the document to delete
  * @return True if succeeds; false if not
  */
 fun removeDocument(context: Context, docUri: Uri): Boolean {
+    // Check the document is not a site root
+    val fileName = docUri.lastPathSegment ?: ""
+    if (fileName.isBlank() || Site.entries.any { it.folder.equals(fileName, true) }) {
+        Timber.w("Trying to delete a site folder : $docUri")
+        return false
+    }
     return DocumentsContract.deleteDocument(context.contentResolver, docUri)
 }
+
+fun removeDocument(context: Context, doc: DocumentFile?): Boolean {
+    if (null == doc) return false
+    return removeDocument(context, doc.uri)
+}
+
 
 /**
  * Return the DocumentFile with the given display name located in the given folder
@@ -608,13 +657,13 @@ fun listFiles(
     parent: Uri
 ): List<Uri> {
     if (ContentResolver.SCHEME_FILE == parent.scheme) {
-        legacyFileFromUri(parent)?.let {
-            return it.listFiles()?.map { it.toUri() } ?: emptyList()
+        legacyFileFromUri(parent)?.let { p ->
+            return p.listFiles()?.map { it.toUri() } ?: emptyList()
         }
     } else {
         getDocumentFromTreeUri(context, parent)?.let {
-            getDocumentFromTreeUri(context, parent)?.let {
-                return listFiles(context, it).map { it.uri }
+            getDocumentFromTreeUri(context, parent)?.let { p ->
+                return listFiles(context, p).map { it.uri }
             }
         }
     }
@@ -726,7 +775,7 @@ fun getFileNameWithoutExtension(filePath: String): String {
 
     val dotIndex = fileName.lastIndexOf('.')
     return if (-1 == dotIndex) fileName
-    else fileName.substring(0, dotIndex)
+    else fileName.take(dotIndex)
 }
 
 /**
@@ -765,6 +814,7 @@ fun getBinary(context: Context, uri: Uri): ByteArray {
 
 /**
  * Get the relevant file extension (without the ".") from the given mime-type
+ * Also see https://android.googlesource.com/platform/external/mime-support/
  *
  * @param mimeType Mime-type to get a file extension from
  * @return Most relevant file extension (without the ".") corresponding to the given mime-type; null if none has been found
@@ -786,6 +836,7 @@ fun getExtensionFromMimeType(mimeType: String): String? {
 
 /**
  * Get the most relevant mime-type for the given file extension
+ * Also see https://android.googlesource.com/platform/external/mime-support/
  *
  * @param extension File extension to get the mime-type for (without the ".")
  * @return Most relevant mime-type for the given file extension; generic mime-type if none found
@@ -819,18 +870,18 @@ fun getMimeTypeFromFileUri(uri: String): String {
 }
 
 /**
- * Detect mime type from picture data if supported
+ * Detect mime-type from given data if supported by the app
  * Returns an exception if not
  *
  * @param buffer        Data to read from
  * @param bufLength     Number of bytes to read from `buffer`
  * @param contentType   Content type declared in HTTP response header
- * @param url           Image URL (for display)
- * @param size          Image size (for display)
+ * @param url           Resource URL (for display)
+ * @param size          Resource size (for display)
  * @return  Mime-type
  */
 @Throws(UnsupportedContentException::class)
-fun getMimeTypeFromPicData(
+fun getMimeTypeFromData(
     buffer: ByteArray,
     bufLength: Int,
     contentType: String,
@@ -842,7 +893,17 @@ fun getMimeTypeFromPicData(
         if (contentType.contains("text/")) {
             val message = buffer.copyOfRange(0, bufLength).toString(UTF_8).trim()
             throw UnsupportedContentException("Message received from $url : $message")
+        } else if (me.devsaki.hentoid.util.file.isMimeTypeSupported(contentType)) {
+            return contentType
         }
+
+        // Try archives
+        val archiveMime = getMimeTypeFromArchiveHeader(buffer)
+        if (archiveMime.isNotEmpty()) return archiveMime
+
+        // Try PDF
+        if (isPdfFromHeader(buffer)) return MIME_TYPE_PDF
+
         throw UnsupportedContentException("Invalid mime-type received from $url (size=$size; content-type=$contentType; img mime-type=$result)")
     }
     return result
@@ -888,19 +949,23 @@ fun shareFile(context: Context, fileUri: Uri, title: String, type: String) {
  * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
  * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
  */
-fun findSequencePosition(data: ByteArray, initialPos: Int, sequence: ByteArray, limit: Int): Int {
+fun findSequencePosition(
+    data: ByteArray,
+    initialPos: Int,
+    sequence: ByteArray,
+    limit: Int = 0
+): Int {
     var iSequence = 0
 
     if (initialPos < 0 || initialPos > data.size) return -1
 
-    val remainingBytes = if ((limit > 0)) min((data.size - initialPos).toDouble(), limit.toDouble())
-        .toInt() else data.size
+    val remainingBytes = if (limit > 0) min(data.size - initialPos, limit) else data.size
 
     for (i in initialPos until remainingBytes) {
         if (sequence[iSequence] == data[i]) iSequence++
         else if (iSequence > 0) iSequence = 0
 
-        if (sequence.size == iSequence) return i - sequence.size
+        if (sequence.size == iSequence) return i - sequence.size + 1
     }
 
     // Target sequence not found
@@ -1003,16 +1068,26 @@ fun copyFile(
     context: Context,
     sourceFileUri: Uri,
     targetFolder: DocumentFile,
-    mimeType: String,
     newName: String,
+    mimeType: String? = null,
     forceCreate: Boolean = false
 ): Uri? {
-    if (!targetFolder.exists()) return null
-    if (!fileExists(context, sourceFileUri)) return null
+    if (!targetFolder.exists()) {
+        Timber.w("Target folder doesn't exist : ${targetFolder.uri}")
+        return null
+    }
+    if (!fileExists(context, sourceFileUri)) {
+        Timber.w("Source file doesn't exist : $sourceFileUri")
+        return null
+    }
 
-    val targetFile = if (forceCreate) targetFolder.createFile(mimeType, newName)
+    val mime = mimeType ?: getMimeTypeFromFileUri(sourceFileUri.toString())
+    val targetFile = if (forceCreate) targetFolder.createFile(mime, newName)
     else findOrCreateDocumentFile(context, targetFolder, mimeType, newName)
-    if (null == targetFile || !targetFile.exists()) return null
+    if (null == targetFile || !targetFile.exists()) {
+        Timber.w("Target fome doesn't exist")
+        return null
+    }
 
     getOutputStream(context, targetFile.uri)?.use { output ->
         getInputStream(context, sourceFileUri)
@@ -1031,38 +1106,38 @@ fun getDownloadsFolder(): File {
 }
 
 /**
- * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+ * Create a brand new file in the device's Downloads folder
  *
  * @param context  Context to use
  * @param fileName Name of the file to create
  * @param mimeType Mime-type of the file to create
- * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+ * @return Uri of a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
 // TODO document what happens when a file with the same name already exists there before the call
 @Throws(IOException::class)
-fun openNewDownloadOutputStream(
+fun createNewDownloadFile(
     context: Context,
     fileName: String,
     mimeType: String
-): OutputStream? {
+): Uri {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        openNewDownloadOutputStreamQ(context, fileName, mimeType)
+        createNewDownloadFileQ(context, fileName, mimeType)
     } else {
-        openNewDownloadOutputStreamLegacy(fileName)
+        createNewDownloadFileLegacy(fileName)
     }
 }
 
 /**
- * Legacy (non-SAF, pre-Android 10) version of openNewDownloadOutputStream
- * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+ * Legacy (non-SAF, pre-Android 10) version of createNewDownloadFile
+ * Return the Uri of a brand new file created in the device's Downloads folder
  *
  * @param fileName Name of the file to create
- * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+ * @return Uri of a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
 @Throws(IOException::class)
-private fun openNewDownloadOutputStreamLegacy(fileName: String): OutputStream {
+private fun createNewDownloadFileLegacy(fileName: String): Uri {
     val downloadsFolder =
         Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             ?: throw IOException("Downloads folder not found")
@@ -1070,27 +1145,27 @@ private fun openNewDownloadOutputStreamLegacy(fileName: String): OutputStream {
     val target = File(downloadsFolder, fileName)
     if (!target.exists() && !target.createNewFile()) throw IOException("Could not create new file in downloads folder")
 
-    return getOutputStream(target)
+    return target.toUri()
 }
 
 /**
- * Android 10 version of openNewDownloadOutputStream
+ * Android 10 version of createNewDownloadFile
  * https://gitlab.com/commonsguy/download-wrangler/blob/master/app/src/main/java/com/commonsware/android/download/DownloadRepository.kt
- * Return an opened OutputStream in a brand new file created in the device's Downloads folder
+ * Return the Uri of a brand new file created in the device's Downloads folder
  *
  * @param context  Context to use
  * @param fileName Name of the file to create
  * @param mimeType Mime-type of the file to create
- * @return Opened OutputStream in a brand new file created in the device's Downloads folder
+ * @return Uri of a brand new file created in the device's Downloads folder
  * @throws IOException If something horrible happens during I/O
  */
 @RequiresApi(29)
 @Throws(IOException::class)
-private fun openNewDownloadOutputStreamQ(
+private fun createNewDownloadFileQ(
     context: Context,
     fileName: String,
     mimeType: String
-): OutputStream? {
+): Uri {
     val values = ContentValues()
     // Make filename unique to avoid failures on certain devices when creating a file with the same name multiple times
     val fileExt = getExtension(fileName)
@@ -1102,10 +1177,8 @@ private fun openNewDownloadOutputStreamQ(
     values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
 
     val resolver = context.contentResolver
-    val targetFileUri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
+    return resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values)
         ?: throw IOException("Target URI could not be formed")
-
-    return resolver.openOutputStream(targetFileUri)
 }
 
 /**
@@ -1134,9 +1207,9 @@ fun formatHumanReadableSizeInt(bytes: Long, res: Resources): String {
  * Get memory usage figures for the volume containing the given folder
  *
  * @param context Context to use
- * @param f       Folder to get the figures from
+ * @param fUri    Uri of the folder to get the figures from
  */
-class MemoryUsageFigures(context: Context, f: DocumentFile) {
+class MemoryUsageFigures(context: Context, fUri: Uri) {
     private var freeMemBytes: Long = 0
 
     /**
@@ -1145,15 +1218,17 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     var totalSpaceBytes: Long = 0
         private set
 
+    constructor(context: Context, doc: DocumentFile) : this(context, doc.uri)
+
     init {
-        init26(context, f)
-        if (0L == totalSpaceBytes) init21(context, f)
-        if (0L == totalSpaceBytes) initLegacy(context, f)
+        init26(context, fUri)
+        if (0L == totalSpaceBytes) init21(context, fUri)
+        if (0L == totalSpaceBytes) initLegacy(context, fUri)
     }
 
     // Old way of measuring memory (inaccurate on certain devices)
-    private fun initLegacy(context: Context, f: DocumentFile) {
-        val fullPath = getFullPathFromUri(context, f.uri) // Oh so dirty !!
+    private fun initLegacy(context: Context, fUri: Uri) {
+        val fullPath = getFullPathFromUri(context, fUri) // Oh so dirty !!
         if (fullPath.isNotEmpty()) {
             val file = File(fullPath)
             this.freeMemBytes = file.freeSpace // should actually have been getUsableSpace
@@ -1162,8 +1237,8 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
     }
 
     // Init for API 21 to 25
-    private fun init21(context: Context, f: DocumentFile) {
-        val fullPath = getFullPathFromUri(context, f.uri) // Oh so dirty !!
+    private fun init21(context: Context, fUri: Uri) {
+        val fullPath = getFullPathFromUri(context, fUri) // Oh so dirty !!
         try {
             if (fullPath.isNotEmpty()) {
                 val stat = StatFs(fullPath)
@@ -1179,8 +1254,8 @@ class MemoryUsageFigures(context: Context, f: DocumentFile) {
 
     // Init for API 26+
     // Inspired by https://github.com/Cheticamp/Storage_Volumes/
-    private fun init26(context: Context, f: DocumentFile) {
-        val volumeId = getVolumeIdFromUri(f.uri)
+    private fun init26(context: Context, fUri: Uri) {
+        val volumeId = getVolumeIdFromUri(fUri)
         val mgr = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 
         val volumes = mgr.storageVolumes
@@ -1432,6 +1507,24 @@ fun fileExists(context: Context, fileUri: Uri): Boolean {
     }
 }
 
+/**
+ * Indicate whether the folder at the given Uri exists or not
+ *
+ * @param context Context to be used
+ * @param fileUri Uri to the folder whose existence is to check
+ * @return True if the given Uri points to an existing folder; false instead
+ */
+fun folderExists(context: Context, fileUri: Uri): Boolean {
+    if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
+        val path = fileUri.path
+        return if (path != null) File(path).exists()
+        else false
+    } else {
+        val doc = getDocumentFromTreeUri(context, fileUri)
+        return (doc != null)
+    }
+}
+
 fun legacyFileFromUri(fileUri: Uri): File? {
     if (ContentResolver.SCHEME_FILE == fileUri.scheme) {
         val path = fileUri.path
@@ -1611,7 +1704,6 @@ fun createFile(
 /**
  * Cleans a directory without deleting it.
  *
- *
  * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
  *
  * @param directory directory to clean
@@ -1730,8 +1822,19 @@ fun DocumentFile.getExtension(): String {
     return getExtension(this.name ?: "")
 }
 
+fun DocumentFile.formatDisplayUri(rootUri: Uri): String {
+    return this.uri.formatDisplay(rootUri.toString())
+}
+
 fun DocumentFile.formatDisplayUri(rootUri: String = ""): String {
     return this.uri.formatDisplay(rootUri)
+}
+
+
+// URI EXTENSIONS
+
+fun Uri.formatDisplay(uri: Uri): String {
+    return this.formatDisplay(uri.toString())
 }
 
 fun Uri.formatDisplay(rootUri: String = ""): String {

@@ -16,7 +16,8 @@ class DownloadCommandEvent(val type: Type, val content: Content? = null) {
         EV_SKIP,    // Cancel without removing the Content; used when the 2nd book is prioritized to end up in the first place of the queue or when 1st book is deprioritized
 
         // /!\ Using EV_SKIP without moving the position of the book won't have any effect
-        EV_INTERRUPT_CONTENT // Interrupt extra page parsing only for a specific Content
+        EV_INTERRUPT_CONTENT, // Interrupt extra page parsing only for a specific Content
+        EV_RESET_REQUEST_QUEUE // Reset Request queue and OKHTTP (used when changing Http settings)
     }
 
     var log = ""

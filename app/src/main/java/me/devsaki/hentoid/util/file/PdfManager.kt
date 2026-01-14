@@ -53,17 +53,6 @@ import java.util.concurrent.atomic.AtomicInteger
 private val PORTRAIT = PdfNumber(0)
 private val LANDSCAPE = PdfNumber(90)
 
-private val pdfNamesFilter = NameFilter { getExtension(it).equals("pdf", true) }
-
-/**
- * Build a [NameFilter] only accepting PDF files supported by the app
- *
- * @return [NameFilter] only accepting PDF files supported by the app
- */
-fun getPdfNamesFilter(): NameFilter {
-    return pdfNamesFilter
-}
-
 class PdfManager {
 
     private val extractedFiles = ArrayList<Uri>()
@@ -128,6 +117,7 @@ class PdfManager {
         return null
     }
 
+    // Blocking call
     fun convertImagesToPdf(
         context: Context,
         out: OutputStream,
@@ -199,7 +189,7 @@ class PdfManager {
         onExtracted: ((Long, Uri) -> Unit)? = null
     ) {
         val existing = fileFinder.invoke(fileName)
-        Timber.Forest.v("Extract PDF, get stream: id $fileName")
+        Timber.v("Extract PDF, get stream: id $fileName")
         try {
             val target =
                 existing ?: fileCreator.invoke(fileName)
@@ -257,8 +247,7 @@ class PdfManager {
         // List once, search the map during extraction
         val targetFolderList = listFiles(context, targetFolder)
             .groupBy { UriParts(it.toString()).fileNameFull }
-        val fileFinder: (String) -> Uri? =
-            { it -> targetFolderList[it]?.firstOrNull() }
+        val fileFinder: (String) -> Uri? = { targetFolderList[it]?.firstOrNull() }
 
         extractedFiles.clear()
         extractImages(
@@ -354,14 +343,14 @@ class PdfManager {
 
     fun getEntries(
         context: Context,
-        doc: DocumentFile,
+        uri: Uri,
         stopFirst: Boolean = false
     ): List<ArchiveEntry> {
         val result = ArrayList<ArchiveEntry>()
-        getInputStream(context, doc).use { input ->
+        getInputStream(context, uri).use { input ->
             PdfDocument(PdfReader(input)).use { pdfDoc ->
                 val listener: IEventListener = ImageRenderListener(null)
-                { name, data, id -> result.add(ArchiveEntry(name, data.size.toLong())) }
+                { name, data, _ -> result.add(ArchiveEntry(false, name, data.size.toLong())) }
                 val parser = PdfCanvasProcessor(listener)
                 for (i in 1..pdfDoc.numberOfPages) {
                     currentPageIndex.set(i)
@@ -436,16 +425,16 @@ class PdfManager {
                     } ?: hash64(internalUniqueName)
                     onExtract.invoke(internalUniqueName, data, identifier)
                 } catch (e: com.itextpdf.io.exceptions.IOException) {
-                    Timber.Forest.w(e)
+                    Timber.w(e)
                 } catch (e: IOException) {
-                    Timber.Forest.w(e)
+                    Timber.w(e)
                 }
 
                 else -> {}
             }
         }
 
-        override fun getSupportedEvents(): Set<EventType>? {
+        override fun getSupportedEvents(): Set<EventType> {
             return setOf(EventType.RENDER_IMAGE)
         }
     }

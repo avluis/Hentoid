@@ -40,6 +40,7 @@ import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.Theme
+import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.retrofit.DeviantArtServer
 import me.devsaki.hentoid.retrofit.GithubServer
 import me.devsaki.hentoid.retrofit.JikanServer
@@ -51,13 +52,13 @@ import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
-import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.getFullPathFromUri
 import me.devsaki.hentoid.util.network.OkHttpClientManager
 import me.devsaki.hentoid.viewmodels.SettingsViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.UpdateCheckWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
+import org.greenrobot.eventbus.EventBus
 
 
 // Value of key elements on the preferences tree
@@ -302,7 +303,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 // Reset OkHttp instance
                 OkHttpClientManager.reset()
                 // Reset connection pool used by the downloader
-                RequestQueueManager.getInstance()?.resetRequestQueue(true)
+                EventBus.getDefault().post(
+                    DownloadCommandEvent(DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE)
+                )
                 // Reset all retrofit clients
                 GithubServer.init()
                 EHentaiServer.init()
@@ -323,7 +326,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 // Reset OkHttp instance
                 OkHttpClientManager.reset()
                 // Reset connection pool used by the downloader
-                RequestQueueManager.getInstance()?.resetRequestQueue(true)
+                EventBus.getDefault().post(
+                    DownloadCommandEvent(DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE)
+                )
                 // Reset all retrofit clients
                 GithubServer.init()
                 EHentaiServer.init()

@@ -111,6 +111,7 @@
     <string name="menu_change_group">Move to group</string>
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
+    <string name="menu_storage_method">Storage method</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
     <string name="menu_stream">Switch to streaming</string>
     <string name="menu_download_streamed">Download</string>
@@ -118,8 +119,8 @@
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_share_title">Book URL</string>
-    <string name="menu_archive">Archive</string>
-    <string name="menu_archive_help">Archive the book to a ZIP file</string>
+    <string name="menu_export">Export</string>
+    <string name="menu_archive_help">Export books as archives or PDFs</string>
     <string name="library_search_hint">Title, artist, tag or book ID</string>
     <string name="group_search_hint">Group title</string>
     <string name="send_to">Share with:</string>
@@ -152,6 +153,7 @@
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading <x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
+    <string name="queue_dl_single_file">Downloading large file</string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
     <string name="err_no_content">Book does not exist yet</string>
@@ -180,6 +182,7 @@
     <string name="step_start_download">Download chain started!</string>
     <string name="step_complete_download">Completing download</string>
     <string name="step_remove_duplicate">Replacing duplicate</string>
+    <string name="step_encode_animation">Encoding animation</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <string name="redownloaded_missing_webview">WebView is unavailable, can\'t redownload now</string>
@@ -208,13 +211,20 @@
     <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download failed</string>
-    <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Please check your Primary folder and retry downloading using the \'!\' button.</string>
+    <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder. Please check your Primary folder and retry downloading using the \'!\' button.</string>
     <string name="menu_change_dl_mode">Change download mode</string>
     <string name="mode_dl">Picture download</string>
     <string name="mode_stream">Streaming</string>
     <string name="redl_scratch">Redownload from scratch</string>
     <string name="redl_refresh">Update metadata only</string>
     <string name="filter_by_source">Filter by source</string>
+    <string name="menu_change_storage">Change storage</string>
+    <string name="storage_folder">Folder</string>
+    <string name="storage_folder_description">Store books as images inside folders</string>
+    <string name="storage_archive">Archive (CBZ)</string>
+    <string name="storage_archive_description">Store books as images inside CBZ archives</string>
+    <string name="storage_streamed">Streamed</string>
+    <string name="storage_streamed_description">Don\'t store images on storage, stream them as you read</string>
 
     <!-- Import downloads -->
     <string name="import_downloads_title">Import downloads</string>
@@ -515,7 +525,7 @@
     <string name="redownload_limit">Cannot redownload more than 1000 books at once</string>
     <string name="stream_limit">Cannot stream more than 1000 books at once</string>
     <string name="transform_limit">Cannot transform more than 1000 books at once</string>
-    <string name="archive_limit">Cannot archive more than 1000 books at once</string>
+    <string name="process_limit">Cannot process more than 1000 books at once</string>
     <string name="new_group_name">Name of the new group\?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="book_edit_title">Edit book title</string>
@@ -610,6 +620,7 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> items selected</item>
     </plurals>
     <string name="folder_undefined">Error - containing folder undefined</string>
+    <string name="folder_not_found">Error - containing folder not found</string>
     <string name="malformed_url">Error - Malformed URL</string>
     <string name="unsupported_site">Error - Site is not supported</string>
     <plurals name="external_not_removed">
@@ -715,6 +726,8 @@
     <string name="external_help">Belongs to the external library</string>
     <string name="rating_help">Book rating</string>
     <string name="streamed_help">Streamed book</string>
+    <string name="archived_help">Archived book</string>
+    <string name="pdf_help">PDF</string>
     <string name="view_source_help">View source in browser</string>
     <string name="fav_help">Mark/unmark as favourite</string>
 
@@ -1084,7 +1097,7 @@
     <string name="folder_device_downloads">Device\'s Downloads folder</string>
     <string name="folder_other">Choose folder…</string>
     <string name="archive_overwrite">Overwrite existing archives</string>
-    <string name="archive_delete_after_archiving">Delete books after successful archiving</string>
+    <string name="archive_delete_after_archiving">Delete books after successful export</string>
     <plurals name="create_archive">
         <item quantity="one">Create archive</item>
         <item quantity="other">Create archives</item>

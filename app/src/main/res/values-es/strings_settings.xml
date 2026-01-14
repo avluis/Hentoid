@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
     <string name="doh_warning">Algunos sitios web no funcionan bien con DNS mediante HTTPS. Utiliza una aplicación DNS externa si experimentas problemas durante la navegación (p. ej. páginas en blanco o formularios de inicio de sesión que no responden)</string>
     <string name="download_eh_hires_title">Descargar imágenes en alta resolución</string>
     <string name="download_hitomi_avif_off">Descargar imágenes en formato WEBP</string>
@@ -73,6 +73,7 @@
     <string name="pref_browser_nhentai_invisible_blacklist_off">Los libros bloqueados en nhentai se muestran borrosos</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Los libros bloqueados en nhentai no se muestran</string>
     <string name="pref_browser_nhentai_invisible_blacklist_title">Ocultar libros bloqueados en nhentai</string>
+    <string name="pref_browser_proxy_title">Apoderado</string>
     <string name="pref_browser_quick_dl_summary">En la página de la lista de libros, manten pulsado para descargar cualquier libro</string>
     <string name="pref_browser_quick_dl_threshold_summary">Tiempo de pulsación para iniciar la descarga rápida\nActual: %s</string>
     <string name="pref_browser_quick_dl_threshold_title">Umbral de pulsación para descarga rápida</string>
@@ -161,6 +162,7 @@
     <string name="pref_memory_usage_title">Uso del almacenamiento</string>
     <string name="pref_misc">Varios</string>
     <string name="pref_navigation_nostalgia_mode">Modo nostalgia</string>
+    <string name="pref_next_schedule">Próxima ejecución programada en %.0f minutos</string>
     <string name="pref_nostalgia_summary_off">El cajón de navegación no muestra los sitios activos</string>
     <string name="pref_nostalgia_summary_on">El cajón de navegación muestra los sitios activos</string>
     <string name="pref_plug_reactions">Conectar reacciones</string>
@@ -251,6 +253,7 @@
     <string name="pref_viewer_zoom_transitions">Hablitar la animación del zoom</string>
     <string name="prefs_ask_detach_external_library">¿Desconectar biblioteca externa?</string>
     <string name="prefs_external_library_detached">Biblioteca externa desconectada</string>
+    <string name="proxy_warning">Algunos sitios web no funcionan bien con un proxy. Usa una aplicación DNS externa si experimentas problemas durante la navegación (por ejemplo, páginas en blanco o formularios de inicio de sesión que no responden).</string>
     <string name="searchpreference_clear">Limpiar</string>
     <string name="searchpreference_clear_history">Limpiar historial de búsqueda</string>
     <string name="searchpreference_more">Más</string>

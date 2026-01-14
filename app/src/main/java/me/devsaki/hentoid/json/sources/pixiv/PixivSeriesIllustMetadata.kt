@@ -25,8 +25,7 @@ data class PixivSeriesIllustMetadata(
         if (body?.seriesContents == null) return result
         for ((order, sc) in body.seriesContents.withIndex()) {
             val forgedUrl = Site.PIXIV.url + "artworks/" + (sc.id ?: "")
-            val chp = Chapter(order, forgedUrl, cleanup(sc.title))
-            chp.uniqueId = sc.id ?: ""
+            val chp = Chapter(order, forgedUrl, cleanup(sc.title), sc.id ?: "")
             chp.setContentId(contentId)
             result.add(chp)
         }

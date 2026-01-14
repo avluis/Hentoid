@@ -35,7 +35,7 @@
     <string name="app_lock_pin">Ingresar PIN</string>
     <string name="app_settings">Configuración de la aplicación </string>
     <string name="apply_final">Aplicar opciones</string>
-    <string name="archive_delete_after_archiving">Borrar libros después de archivar</string>
+    <string name="archive_delete_after_archiving">Eliminar libros después de una exportación exitosa</string>
     <string name="archive_format">Formato de archivo</string>
     <string name="archive_limit">No se pueden archivar más de 1000 libros a la vez</string>
     <string name="archive_overwrite">Sobrescribir archivos existentes</string>
@@ -209,7 +209,7 @@
         <item quantity="other">%d libros seleccionados ya están descargados, serán ignorados.</item>
     </plurals>
     <string name="download_notif_failed">Descarga fallida</string>
-    <string name="download_notif_failed_details">No se puede descargar %1$s: no se puede crear carpeta %2$s. Revisa tu Carpeta principal e intenta descargar usando el botón \'!\'.</string>
+    <string name="download_notif_failed_details">No se puede descargar %1$s: no se puede crear carpeta. Revisa tu Carpeta principal e intenta descargar usando el botón \'!\'.</string>
     <string name="download_notif_speed">%1$d%2$s MB a %3$d  kB/s</string>
     <string name="download_updating_webview">Descarga cancelada - WebView actualizándose</string>
     <string name="downloader_title">Descargas</string>
@@ -354,6 +354,7 @@
     <string name="filter_rating">Filtrar por apreciación</string>
     <string name="fix_permissions">Reparar</string>
     <string name="folder_device_downloads">Carpeta de Descargas del dispositivo</string>
+    <string name="folder_not_found">Error: no se encontró la carpeta que contiene</string>
     <string name="folder_other">Seleccionar carpeta…</string>
     <string name="folder_undefined">Error - carpeta contenedora no definida</string>
     <string name="freeze">Cambiar a congelar</string>
@@ -479,6 +480,7 @@
         <item quantity="one">Importar marcador (%d elemento)</item>
         <item quantity="other">Importar marcadores (%d items)</item>
     </plurals>
+    <string name="import_file_empty">El archivo %s no contiene ninguna entrada válida</string>
     <plurals name="import_file_groups">
         <item quantity="many">Importar grupos personalizados (%d grupos)</item>
         <item quantity="one">Importar grupo personalizado (grupo %d)</item>
@@ -608,9 +610,10 @@
     <string name="memory_title">Uso del almacenamiento</string>
     <string name="memory_total">Total: %s</string>
     <string name="menu_archive">Archivar</string>
-    <string name="menu_archive_help">Archivar el libro en un archivo ZIP</string>
+    <string name="menu_archive_help">Exportar libros como archivos o PDF</string>
     <string name="menu_change_dl_mode">Cambiar modo de descarga</string>
     <string name="menu_change_group">Mover a grupo</string>
+    <string name="menu_change_storage">Cambiar almacenamiento</string>
     <string name="menu_completed_single">Marcar como completado</string>
     <string name="menu_delete_single">Borrar</string>
     <string name="menu_download_streamed">Descargar</string>
@@ -620,6 +623,7 @@
     <string name="menu_edit_name">Renombrar</string>
     <string name="menu_edit_order">Reordenar</string>
     <string name="menu_edit_warning_custom">El nuevo orden personalizado sobrescribirá el previo.</string>
+    <string name="menu_export">Exportar</string>
     <string name="menu_fav">Cambiar el filtro de favoritos</string>
     <string name="menu_group_new">Nuevo grupo</string>
     <string name="menu_mark_fav">Cambiar favorito</string>
@@ -635,6 +639,7 @@
     <string name="menu_share_title">URL del libro</string>
     <string name="menu_sort">Clasificar</string>
     <string name="menu_sort_filter">Ordenar y filtrar</string>
+    <string name="menu_storage_method">Método de almacenamiento</string>
     <string name="menu_stream">Cambiar a lectura vía transmisión</string>
     <string name="merge_delete_after_merging">Borrar libros después de unir</string>
     <string name="merge_fail">No se pudo fusionar el contenido</string>
@@ -648,6 +653,7 @@
     <string name="meta_cover_multiple_warning">La portada no se puede cambiar para varios libros</string>
     <string name="meta_remove_all_confirm">¿Eliminar todos los metadatos de los libros seleccionados?</string>
     <string name="meta_remove_all_tags">Eliminar todos los metadatos</string>
+    <string name="meta_remove_all_type_confirm">¿Eliminar todos los metadatos %s de los libros seleccionados?</string>
     <string name="meta_rename_new_name">Nuevo nombre</string>
     <string name="meta_rename_new_rule">Recordar para descargas futuras</string>
     <string name="meta_replace_with">Reemplazar con…</string>
@@ -789,6 +795,7 @@
     <string name="previous_page">Página anterior</string>
     <string name="primary_library">Biblioteca principal</string>
     <string name="primary_library_subtitle">Descargas</string>
+    <string name="process_limit">No se pueden procesar más de 1000 libros a la vez</string>
     <string name="purge_progress">Purgando libros</string>
     <string name="queue_add_bottom">Añadir hasta abajo</string>
     <string name="queue_add_top">Añadir hasta arriba</string>
@@ -802,6 +809,7 @@
     <string name="queue_bottom_bar_speed">%d kB/s </string>
     <string name="queue_content_size_estimate">estimado %.1f MB</string>
     <string name="queue_dl">Descargando %s</string>
+    <string name="queue_dl_single_file">Descargar archivo grande</string>
     <string name="queue_empty">¿Qué hago vacía?</string>
     <string name="queue_errors_tab">Errores</string>
     <string name="queue_json_failed">No se pudo guardar el archivo JSON de la cola de descargas</string>
@@ -950,6 +958,7 @@
     <string name="starting_download">Comenzando descarga</string>
     <string name="starting_import">Comenzando importación…</string>
     <string name="step_complete_download">Completando descarga</string>
+    <string name="step_encode_animation">Codificación de animación</string>
     <string name="step_fetch_img">Obtener imágenes</string>
     <string name="step_init">Iniciando</string>
     <string name="step_prepare_download">Preparando cadena de descarga</string>
@@ -963,7 +972,11 @@
     <string name="storage_action_change">Cambiar ubicación</string>
     <string name="storage_action_merge_to_1">Unir a Ubicación 1</string>
     <string name="storage_action_remove">Desconectar</string>
+    <string name="storage_archive">Archivo (CBZ)</string>
+    <string name="storage_archive_description">Guarde los libros como imágenes dentro de los archivos CBZ</string>
     <string name="storage_fallover_threshold">Umbral de poco espacio (%%)</string>
+    <string name="storage_folder">Carpeta</string>
+    <string name="storage_folder_description">Almacenar libros como imágenes dentro de carpetas</string>
     <string name="storage_merge_ask">¿Unir %d libros de la Ubicación 2 a la Ubicación 1?\nNota: Los lbros se eliminarán luego de que se complete el proceso</string>
     <string name="storage_merge_complete">Unión completada</string>
     <string name="storage_merge_ko1">No se puede unir a la ubicación 1: no hay suficiente espacio libre</string>
@@ -981,6 +994,8 @@
     <string name="storage_strategy_fallover">Colapsar</string>
     <string name="storage_strategy_fallover_desc">Hentoid descarga en la Ubicación 1 hasta que se llene el %d%% de la capacidad, y procede a descargar en la Ubicación 2</string>
     <string name="storage_strategy_title">Estrategia de descarga: %s</string>
+    <string name="storage_streamed">Transmitido</string>
+    <string name="storage_streamed_description">No guardes imágenes en el almacenamiento, transmítelas mientras las lees</string>
     <string name="stream_canceled">Transmitido cancelado - libro no disponible online</string>
     <plurals name="stream_confirm">
         <item quantity="many">¿Cambiar los libros seleccionados a transmisión de internet?</item>
@@ -1080,6 +1095,7 @@
     <string name="viewer_filter_favourite_on">Mostrar todas las páginas</string>
     <string name="viewer_fix">Arreglar error de descarga</string>
     <string name="viewer_img_details">%1$d x %2$d (%3$.0f%% escala) - %4$s</string>
+    <string name="viewer_img_details_cropped">%1$d x %2$d, recortado a %3$d x %4$d (escala %5$.0f%%) - %6$s</string>
     <string name="viewer_make_cover">Establecer como portada</string>
     <string name="viewer_order_123">Reordenar páginas</string>
     <string name="viewer_order_reverse">Orden inverso</string>

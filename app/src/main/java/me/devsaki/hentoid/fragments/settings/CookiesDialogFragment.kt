@@ -93,10 +93,12 @@ class CookiesDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
     private fun deleteAllCookies() {
-        CookieManager.getInstance().removeAllCookies {
-            val caption =
-                if (it) R.string.pref_browser_clear_cookies_ok else R.string.pref_browser_clear_cookies_ko
-            (activity as AppCompatActivity).shortSnack(caption)
+        activity?.let { a ->
+            CookieManager.getInstance().removeAllCookies {
+                val caption =
+                    if (it) R.string.pref_browser_clear_cookies_ok else R.string.pref_browser_clear_cookies_ko
+                (a as AppCompatActivity).shortSnack(caption)
+            }
         }
     }
 

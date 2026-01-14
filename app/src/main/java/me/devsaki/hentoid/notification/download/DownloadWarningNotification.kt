@@ -6,8 +6,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.notification.BaseNotification
 
 class DownloadWarningNotification(
-    private val title: String,
-    private val absolutePath: String
+    private val title: String
 ) : BaseNotification() {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
@@ -20,6 +19,6 @@ class DownloadWarningNotification(
 
     private fun getBigStyle(context: Context): NotificationCompat.BigTextStyle {
         return NotificationCompat.BigTextStyle()
-            .bigText(context.getString(R.string.download_notif_failed_details, title, absolutePath))
+            .bigText(context.getString(R.string.download_notif_failed_details, title))
     }
 }

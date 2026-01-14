@@ -2,6 +2,7 @@
 
 package me.devsaki.hentoid.core
 
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KProperty
 
@@ -12,6 +13,8 @@ typealias Consumer<T> = (T) -> Unit
 
 typealias BiConsumer<T, U> = (T, U) -> Unit
 typealias SuspendBiConsumer<T, U> = suspend (T, U) -> Unit
+
+val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
 fun <T> lazyWithReset(initializer: () -> T): ResetLazy<T> = ResetLazy(initializer)
 
@@ -43,6 +46,7 @@ const val RENAMING_RULES_JSON_FILE_NAME = "rules.json"
 const val THUMB_FILE_NAME = "thumb"
 const val EXT_THUMB_FILE_PREFIX = "ext-thumb-"
 const val UGOIRA_CACHE_FOLDER = "ugoira"
+const val DOWNLOAD_CACHE_FOLDER = "download"
 
 const val SEED_CONTENT = "content"
 const val SEED_PAGES = "pages"

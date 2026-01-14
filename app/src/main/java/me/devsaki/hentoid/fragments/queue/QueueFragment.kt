@@ -52,6 +52,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
+import me.devsaki.hentoid.events.DownloadEvent.Step
 import me.devsaki.hentoid.events.DownloadPreparationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
@@ -90,6 +91,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.round
 
@@ -135,7 +137,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
     // Indicate whether this tab is enabled (active on screen) or not
     private var enabled = true
 
-    // Currenty content ID
+    // Currenty downloaded content ID
     private var contentId = -1L
 
     // Used to show a given item at first display
@@ -465,6 +467,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onDownloadEvent(event: DownloadEvent) {
         Timber.v("Event received : %s.%s", event.eventType, event.step)
@@ -485,7 +488,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 event.pagesTotal,
                 event.getNumberRetries(),
                 event.downloadedSizeB,
-                false
+                event.step,
+                event.fileDownloadProgress
             )
 
             DownloadEvent.Type.EV_UNPAUSED -> {
@@ -586,6 +590,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             DownloadEvent.Step.START_DOWNLOAD -> R.string.step_start_download
             DownloadEvent.Step.COMPLETE_DOWNLOAD -> R.string.step_complete_download
             DownloadEvent.Step.REMOVE_DUPLICATE -> R.string.step_remove_duplicate
+            DownloadEvent.Step.ENCODE_ANIMATION -> R.string.step_encode_animation
             DownloadEvent.Step.NONE -> R.string.empty_string
         }
     }
@@ -595,8 +600,9 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onPrepDownloadEvent(event: DownloadPreparationEvent) {
+    fun onDownloadPreparationEvent(event: DownloadPreparationEvent) {
         bottomBarBinding?.queueDownloadPreparationProgressBar?.apply {
             if (!isShown && !event.isCompleted() && !isPaused() && !isEmpty()) {
                 visibility = View.VISIBLE
@@ -611,6 +617,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         }
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onActivityEvent(event: CommunicationEvent) {
         if (event.recipient != CommunicationEvent.Recipient.QUEUE && event.recipient != CommunicationEvent.Recipient.ALL) return
@@ -645,6 +652,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.download_service) return
@@ -660,6 +668,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
      * @param totalPages      Total pages of current (1st in queue) book
      * @param numberRetries   Current number of download auto-retries for current (1st in queue) book
      * @param downloadedSizeB Current size of downloaded content (in bytes)
+     * @param fileProgress    Progress of currently downloaded file (in %; 1f=100%)
      * @param forceDisplay    True to force display even if the queue is paused
      */
     private fun updateProgress(
@@ -669,55 +678,77 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         totalPages: Int,
         numberRetries: Int,
         downloadedSizeB: Long,
-        forceDisplay: Boolean
+        step: Step = Step.NONE,
+        fileProgress: Float = -1f,
+        forceDisplay: Boolean = false
     ) {
-        if ((!ContentQueueManager.isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0 && content != null) {
-            contentId = content.id
-            // Pages download has started
-            if (pagesKO + pagesOK > 1 || forceDisplay) {
-                // Downloader reports about the cover thumbnail too
-                // Display one less page to avoid confusing the user
-                val totalPagesDisplay = max(0, totalPages - 1)
-                val pagesOKDisplay = max(0, pagesOK - 1)
+        if ((!ContentQueueManager.isQueuePaused || forceDisplay) && itemAdapter.adapterItemCount > 0) {
 
-                // Update book progress bar
-                // NB : use the instance _inside the adapter_ to pass values
-                fastAdapter.getItemById(content.uniqueHash())?.first?.content?.let { c ->
-                    c.progress = pagesOKDisplay.toLong() + pagesKO
-                    c.downloadedBytes = downloadedSizeB
-                    c.qtyPages = totalPagesDisplay
-                    updateProgress(content, false)
-                }
+            // Display file progress when explicitly asked to
+            if (fileProgress > -1) {
+                val res = if (step == Step.ENCODE_ANIMATION) R.string.step_encode_animation
+                else R.string.queue_dl_single_file
+                bottomBarBinding?.queueStatus?.text = resources.getString(res)
 
-                // Update information bar
-                bottomBarBinding?.queueStatus?.text =
-                    resources.getString(R.string.queue_dl, content.title)
-
-                val message = StringBuilder()
-                val processedPagesFmt =
-                    formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
-                message.append(
-                    resources.getString(
-                        R.string.queue_bottom_bar_processed, processedPagesFmt, totalPagesDisplay
-                    )
+                bottomBarBinding?.queueInfo?.text = String.format(
+                    Locale.getDefault(),
+                    "%.0f%%",
+                    fileProgress
                 )
-                if (pagesKO > 0) message.append(" ").append(
-                    resources.getQuantityString(
-                        R.plurals.queue_bottom_bar_errors, pagesKO, pagesKO
-                    )
-                )
-                if (numberRetries > 0) message.append(" ").append(
-                    resources.getString(
-                        R.string.queue_bottom_bar_retry,
-                        numberRetries,
-                        Settings.dlRetriesNumber
-                    )
-                )
-                val avgSpeedKbps = getAvgSpeedKbps().toInt()
-                if (avgSpeedKbps > 0) message.append(" @ ")
-                    .append(resources.getString(R.string.queue_bottom_bar_speed, avgSpeedKbps))
-                bottomBarBinding?.queueInfo?.text = message.toString()
                 isPreparingDownload = false
+                return
+            }
+
+            if (content != null) {
+                contentId = content.id
+                // Pages download has started
+                if (pagesKO + pagesOK > 1 || forceDisplay) {
+                    // Downloader reports about the cover thumbnail too
+                    // Display one less page to avoid confusing the user
+                    val totalPagesDisplay = max(0, totalPages - 1)
+                    val pagesOKDisplay = max(0, pagesOK - 1)
+
+                    // Update book progress bar
+                    // NB : use the instance _inside the adapter_ to pass values
+                    fastAdapter.getItemById(content.uniqueHash())?.first?.content?.let { c ->
+                        c.progress = pagesOKDisplay.toLong() + pagesKO
+                        c.downloadedBytes = downloadedSizeB
+                        c.qtyPages = totalPagesDisplay
+                        updateProgress(content, false)
+                    }
+
+                    // Update information bar
+                    bottomBarBinding?.queueStatus?.text =
+                        resources.getString(R.string.queue_dl, content.title)
+
+                    val message = StringBuilder()
+                    val processedPagesFmt =
+                        formatIntAsStr(pagesOKDisplay, totalPagesDisplay.toString().length)
+                    message.append(
+                        resources.getString(
+                            R.string.queue_bottom_bar_processed,
+                            processedPagesFmt,
+                            totalPagesDisplay
+                        )
+                    )
+                    if (pagesKO > 0) message.append(" ").append(
+                        resources.getQuantityString(
+                            R.plurals.queue_bottom_bar_errors, pagesKO, pagesKO
+                        )
+                    )
+                    if (numberRetries > 0) message.append(" ").append(
+                        resources.getString(
+                            R.string.queue_bottom_bar_retry,
+                            numberRetries,
+                            Settings.dlRetriesNumber
+                        )
+                    )
+                    val avgSpeedKbps = getAvgSpeedKbps().toInt()
+                    if (avgSpeedKbps > 0) message.append(" @ ")
+                        .append(resources.getString(R.string.queue_bottom_bar_speed, avgSpeedKbps))
+                    bottomBarBinding?.queueInfo?.text = message.toString()
+                    isPreparingDownload = false
+                }
             }
         }
     }
@@ -1083,8 +1114,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                     showDownloadModeMenu(
                         menu,
                         it.queueList,
-                        { position: Int, _: PowerMenuItem? ->
-                            onNewModeSelected(DownloadMode.fromValue(position))
+                        { _: Int, item: PowerMenuItem ->
+                            onNewModeSelected(DownloadMode.fromValue(item.tag as Int))
                             menu.dismiss()
                         },
                         { leaveSelectionMode() }
@@ -1217,7 +1248,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 // Visually reset the progress of selected items
                 selectedItems.forEach {
                     if (it.content != null)
-                        updateProgress(it.content, 0, 0, 1, 0, 0, true)
+                        updateProgress(it.content, 0, 0, 1, 0, 0, forceDisplay = true)
                 }
 
                 selectExtension.apply {

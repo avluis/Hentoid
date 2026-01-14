@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.net.Uri
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -96,7 +97,7 @@ class ImagePagerAdapter(context: Context) :
         IMG_TYPE_APNG(2), // Animated PNGs -> use Coil
         IMG_TYPE_AWEBP(3), // Animated WEBPs -> use Coil
         IMG_TYPE_JXL(4), // JXL -> use Coil
-        IMG_TYPE_AVIF(5), // AVIF -> use Coil
+        IMG_TYPE_AVIF(5), // AVIF -> use Coil (native support on API34+ is unstable)
         IMG_TYPE_AAVIF(6), // Animated AVIF -> use APNG4Android
         IMG_TYPE_VIDEO(7) // Video -> use VideoView
     }
@@ -419,7 +420,7 @@ class ImagePagerAdapter(context: Context) :
 
             if (ImageType.IMG_TYPE_VIDEO == imgType) {
                 setActiveView(ActiveView.VIDEOVIEW, isClickThrough = true)
-            } else if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType || ImageType.IMG_TYPE_AVIF == imgType || ImageType.IMG_TYPE_AAVIF == imgType) {
+            } else if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType || (ImageType.IMG_TYPE_AVIF == imgType) || ImageType.IMG_TYPE_AAVIF == imgType) {
                 // Formats that aren't supported by SSIV
                 setActiveView(ActiveView.IMAGEVIEW, isClickThrough = true)
             } else setActiveView(ActiveView.SSIV, isVertical || isHalfWidth) // Use SSIV by default

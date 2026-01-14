@@ -67,7 +67,7 @@ fun createImageListFromFolder(
  * @param files Files to find images into
  * @return List of ImageFiles corresponding to all supported pictures among the given files, sorted numerically then alphabetically
  */
-fun createImageListFromFiles(files: List<DocumentFile>, setCover : Boolean = true): List<ImageFile> {
+fun createImageListFromFiles(files: List<DocumentFile>, setCover: Boolean = true): List<ImageFile> {
     return createImageListFromFiles(files, StatusContent.DOWNLOADED, 0, "", setCover)
 }
 
@@ -121,33 +121,30 @@ fun createImageListFromFiles(
  * @param files          Entries to create the ImageFile list with
  * @param targetStatus   Target status of the ImageFiles
  * @param startingOrder  Starting order of the first ImageFile to add; will be numbered incrementally from that number on
- * @param namePrefix     Prefix to add to image names
  * @return List of ImageFiles contructed from the given parameters
  */
 fun createImageListFromArchiveEntries(
     archiveFileUri: Uri,
     files: List<ArchiveEntry>,
     targetStatus: StatusContent,
-    startingOrder: Int,
-    namePrefix: String
+    startingOrder: Int
 ): List<ImageFile> {
     assertNonUiThread()
     val result: MutableList<ImageFile> = ArrayList()
     var order = startingOrder
     // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
     val fileList = files.sortedWith(InnerNameNumberArchiveComparator())
-    for ((path1, size) in fileList) {
-        val name = namePrefix + path1
-        val path = archiveFileUri.toString() + File.separator + path1
+    fileList.forEach {
+        val path = archiveFileUri.toString() + File.separator + it.path
         val img = ImageFile()
-        if (name.startsWith(THUMB_FILE_NAME)) img.isCover = true
+        if (it.path.startsWith(THUMB_FILE_NAME)) img.isCover = true
         else order++
-        img.name = getFileNameWithoutExtension(name)
+        img.name = getFileNameWithoutExtension(it.path)
         img.order = order
         img.url = path
         img.status = targetStatus
         img.fileUri = path
-        img.size = size
+        img.size = it.size
         result.add(img)
     }
     return result
@@ -431,17 +428,16 @@ fun testDownloadPicture(
     val url = fixUrl(img.url, site.url)
     if (url.isEmpty()) return false
 
-    val response = fetchBodyFast(url, site, requestHeaders, null)
-    val body = response.first
-        ?: throw IOException("Could not read response : empty body for ${img.url}")
-
-    val buffer = ByteArray(50)
-    body.byteStream().use { `in` ->
-        if (`in`.read(buffer) > -1) {
-            val mimeType = getMimeTypeFromPictureBinary(buffer)
-            Timber.d("Testing online picture accessibility : found $mimeType at ${img.url}")
-            return (mimeType.isNotEmpty() && mimeType != MIME_IMAGE_GENERIC)
+    fetchBodyFast(url, site, requestHeaders, null).first?.use { body ->
+        val buffer = ByteArray(50)
+        body.byteStream().use { `in` ->
+            if (`in`.read(buffer) > -1) {
+                val mimeType = getMimeTypeFromPictureBinary(buffer)
+                Timber.d("Testing online picture accessibility : found $mimeType at ${img.url}")
+                return (mimeType.isNotEmpty() && mimeType != MIME_IMAGE_GENERIC)
+            }
         }
-    }
+    } ?: throw IOException("Could not read response : empty body for ${img.url}")
+
     return false
 }

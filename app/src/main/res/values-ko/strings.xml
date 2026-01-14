@@ -79,7 +79,6 @@
     <string name="menu_share_help">작품 제목과 URL을 다른 앱으로 공유합니다</string>
     <string name="menu_share_title">작품 URL</string>
     <string name="menu_archive">아카이브</string>
-    <string name="menu_archive_help">작품을 압축 파일로 보관합니다</string>
     <string name="library_search_hint">제목, 작가, 태그 또는 작품 ID</string>
     <string name="group_search_hint">그룹 제목</string>
     <string name="send_to">다음과 공유:</string>
@@ -151,7 +150,7 @@
     <string name="queue_bottom_bar_speed">%d KBps</string>
     <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
     <string name="download_notif_failed">다운로드 실패</string>
-    <string name="download_notif_failed_details">%1$s 다운로드 불가: %2$s 폴더를 생성할 수 없습니다. 기본 폴더를 확인하고 \'!\' 버튼을 사용하여 다운로드를 다시 시도하세요.</string>
+    <string name="download_notif_failed_details">%1$s 다운로드 불가: 폴더를 생성할 수 없습니다. 기본 폴더를 확인하고 \'!\' 버튼을 사용하여 다운로드를 다시 시도하세요.</string>
     <string name="menu_change_dl_mode">다운로드 모드 변경</string>
     <string name="mode_dl">이미지 다운로드</string>
     <string name="mode_stream">스트리밍</string>
@@ -729,7 +728,6 @@
     <string name="folder_device_downloads">장치의 다운로드 폴더</string>
     <string name="folder_other">폴더 선택…</string>
     <string name="archive_overwrite">기존 아카이브 덮어쓰기</string>
-    <string name="archive_delete_after_archiving">아카이빙 후 작품 삭제</string>
     <string name="create_archive">아카이브 생성</string>
     <string name="notif_archive_title">컨텐츠 보관</string>
     <string name="notif_delete_title">컨텐츠 삭제</string>

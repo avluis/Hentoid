@@ -11,6 +11,7 @@ import com.skydoves.powermenu.OnMenuItemClickListener
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.getThemedColor
 
@@ -18,7 +19,7 @@ fun showDownloadModeMenu(
     context: Context,
     anchor: View,
     lifecycle: LifecycleOwner,
-    listener: OnMenuItemClickListener<PowerMenuItem?>,
+    listener: OnMenuItemClickListener<PowerMenuItem>,
     dismissListener: OnDismissedListener?
 ) {
     showDownloadModeMenu(
@@ -32,7 +33,7 @@ fun showDownloadModeMenu(
 fun showDownloadModeMenu(
     powerMenu: PowerMenu,
     anchor: View,
-    listener: OnMenuItemClickListener<PowerMenuItem?>,
+    listener: OnMenuItemClickListener<PowerMenuItem>,
     dismissListener: OnDismissedListener?
 ) {
     powerMenu.onMenuItemClickListener = listener
@@ -52,13 +53,23 @@ fun buildDownloadModeMenu(
                 res.getString(R.string.pref_viewer_dl_action_entries_1),
                 false,
                 R.drawable.ic_action_download,
+                tag = Settings.Value.DL_ACTION_DL_PAGES
+            )
+        )
+        .addItem(
+            PowerMenuItem(
+                res.getString(R.string.pref_viewer_dl_action_entries_4),
+                false,
+                R.drawable.ic_archive,
+                tag = Settings.Value.DL_ACTION_DL_ARCHIVE_PAGES
             )
         )
         .addItem(
             PowerMenuItem(
                 res.getString(R.string.pref_viewer_dl_action_entries_2),
                 false,
-                R.drawable.ic_action_download_stream
+                R.drawable.ic_action_download_stream,
+                tag = Settings.Value.DL_ACTION_STREAM
             )
         )
         .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)

@@ -16,10 +16,9 @@ import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.parsers.getImgSrc
 import me.devsaki.hentoid.parsers.urlToImageFile
-import me.devsaki.hentoid.util.download.getDownloadLocation
+import me.devsaki.hentoid.util.download.PrimaryDownloadManager
 import me.devsaki.hentoid.util.exception.EmptyResultException
 import me.devsaki.hentoid.util.file.getFileFromSingleUri
-import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.pause
@@ -31,6 +30,7 @@ const val PIC_SELECTOR = "#pic_container img"
 
 class MangagoParser : BaseChapteredImageListParser() {
     private var webview: WysiwygBackgroundWebView? = null
+    private val dlManager = PrimaryDownloadManager()
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun clear() {
@@ -38,6 +38,7 @@ class MangagoParser : BaseChapteredImageListParser() {
             webview?.clear()
             webview = null
         }
+        dlManager.clear()
     }
 
     override fun isChapterUrl(url: String): Boolean {
@@ -71,20 +72,25 @@ class MangagoParser : BaseChapteredImageListParser() {
     ): List<ImageFile> {
         val results: MutableList<ImageFile> = ArrayList()
         var done = false
-
-        // Create the book's folder to receive screencapped images
+        val context = getInstance()
+        /*
         val locationResult = getDownloadLocation(getInstance(), content) ?: return emptyList()
         var dir = locationResult.first
         val location = locationResult.second
         if (null == dir) dir = getOrCreateContentDownloadDir(getInstance(), content, location)
+         */
 
         GlobalScope.launch(Dispatchers.Default) {
+            // Create the book's folder to receive screencapped images
+            if (!dlManager.createTargetLocation(context, content))
+                throw EmptyResultException("Unable to create target folder for ${content.title}")
+
             withContext(Dispatchers.Main) {
                 webview = WysiwygBackgroundWebView(
-                    getInstance(),
+                    context,
                     MangagoActivity.MangagoWebClient(),
                     true,
-                    dir
+                    dlManager.getDownloadFolder(context)
                 )
             }
 
@@ -119,7 +125,7 @@ class MangagoParser : BaseChapteredImageListParser() {
                     processHalted
                 )?.let { res ->
                     if (res.isImage) processImgResult(
-                        getInstance(),
+                        context,
                         res.fileUri!!,
                         pageUrls[results.size],
                         targetOrder + results.size,
@@ -171,7 +177,7 @@ class MangagoParser : BaseChapteredImageListParser() {
         )
     }
 
-    private fun processImgResult(
+    private suspend fun processImgResult(
         context: Context,
         fileUri: Uri,
         pageUrl: String,
@@ -186,12 +192,13 @@ class MangagoParser : BaseChapteredImageListParser() {
             fileUri = fileUri.toString()
         )
         Timber.v("%d IMG result : %s", order, pageUrl)
-        img.computeName(5)
+        img.computeName(11111)
         img.setChapter(chp)
         // Enrich physical properties
         getFileFromSingleUri(context, fileUri)?.let {
             img.size = it.length()
         }
         result.add(img)
+        dlManager.processDownloadedFile(context, false, fileUri)
     }
 }

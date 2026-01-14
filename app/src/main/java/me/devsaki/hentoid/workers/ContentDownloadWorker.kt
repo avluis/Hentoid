@@ -3,6 +3,7 @@ package me.devsaki.hentoid.workers
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.Data
 import androidx.work.WorkerParameters
@@ -10,7 +11,6 @@ import kotlinx.coroutines.*
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.CLOUDFLARE_COOKIE
 import me.devsaki.hentoid.core.HentoidApp.Companion.isInForeground
-import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.core.UGOIRA_CACHE_FOLDER
 import me.devsaki.hentoid.database.CollectionDAO
@@ -29,7 +29,6 @@ import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.DownloadCommandEvent
 import me.devsaki.hentoid.events.DownloadEvent
 import me.devsaki.hentoid.events.DownloadReviveEvent
-import me.devsaki.hentoid.json.JsonContent
 import me.devsaki.hentoid.json.sources.pixiv.UGOIRA_FRAMES_TYPE
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification
@@ -37,6 +36,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification
 import me.devsaki.hentoid.notification.userAction.UserActionNotification
 import me.devsaki.hentoid.parsers.ContentParserFactory
+import me.devsaki.hentoid.parsers.images.ImageListParser
 import me.devsaki.hentoid.util.AchievementsManager
 import me.devsaki.hentoid.util.KEY_DL_PARAMS_UGOIRA_FRAMES
 import me.devsaki.hentoid.util.MAP_STRINGS
@@ -44,18 +44,17 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.computeAndSaveCoverHash
 import me.devsaki.hentoid.util.download.ContentQueueManager
-import me.devsaki.hentoid.util.download.ContentQueueManager.isQueuePaused
 import me.devsaki.hentoid.util.download.ContentQueueManager.pauseQueue
 import me.devsaki.hentoid.util.download.DownloadRateLimiter
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.prefsSpeedCapToKbps
 import me.devsaki.hentoid.util.download.DownloadSpeedLimiter.setSpeedLimitKbps
+import me.devsaki.hentoid.util.download.PrimaryDownloadManager
 import me.devsaki.hentoid.util.download.RequestOrder
 import me.devsaki.hentoid.util.download.RequestOrder.NetworkError
 import me.devsaki.hentoid.util.download.RequestQueueManager
-import me.devsaki.hentoid.util.download.RequestQueueManager.Companion.getInstance
 import me.devsaki.hentoid.util.download.downloadToFile
-import me.devsaki.hentoid.util.download.getDownloadLocation
 import me.devsaki.hentoid.util.exception.AccountException
+import me.devsaki.hentoid.util.exception.ArchiveException
 import me.devsaki.hentoid.util.exception.CaptchaException
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.EmptyResultException
@@ -63,19 +62,14 @@ import me.devsaki.hentoid.util.exception.LimitReachedException
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException
 import me.devsaki.hentoid.util.fetchImageURLs
+import me.devsaki.hentoid.util.file.MIME_TYPE_ZIP
 import me.devsaki.hentoid.util.file.MemoryUsageFigures
-import me.devsaki.hentoid.util.file.ZIP_MIME_TYPE
-import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntries
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.formatHumanReadableSize
-import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
-import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getOrCreateCacheFolder
-import me.devsaki.hentoid.util.getOrCreateContentDownloadDir
-import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
+import me.devsaki.hentoid.util.getContainingFolder
 import me.devsaki.hentoid.util.image.assembleGif
-import me.devsaki.hentoid.util.jsonToFile
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.moveContentToCustomGroup
 import me.devsaki.hentoid.util.network.Connectivity
@@ -106,14 +100,11 @@ import java.time.Instant
 import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.log10
 
-// seconds; should be higher than the connect + I/O timeout defined in RequestQueueManager
-private const val IDLE_THRESHOLD = 20
+// Should be higher than the connect + I/O timeout defined in RequestQueueManager
+private const val IDLE_THRESHOLD_S = 20 // Seconds
 
-// KBps
-private const val LOW_NETWORK_THRESHOLD = 10
+private const val LOW_NETWORK_THRESHOLD_KBPS = 10 // KBps
 
 class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     BaseWorker(context, parameters, R.id.download_service, null) {
@@ -129,8 +120,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END, WORKER_STOPPED, CONTENT_DOWNLOADED
     }
 
-    // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
-    private val dao: CollectionDAO = ObjectBoxDAO()
+
+    // == Queue control
 
     // True if a Cancel event has been processed; false by default
     private val downloadCanceled = AtomicBoolean(false)
@@ -138,25 +129,42 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     // True if a Skip event has been processed; false by default
     private val downloadSkipped = AtomicBoolean(false)
 
-    // downloadCanceled || downloadSkipped
+    // True if the download has been interrupted by an exception
     private val downloadInterrupted = AtomicBoolean(false)
-    private var isCloudFlareBlocked = false
 
-    private val userActionNotificationManager: NotificationManager
-    private val requestQueueManager: RequestQueueManager
-    private lateinit var progressNotification: DownloadProgressNotification
+    private val downloadProcessStopped: Boolean
+        get() = downloadCanceled.get() || downloadSkipped.get() || downloadInterrupted.get()
 
+    private val requestQueueManager =
+        RequestQueueManager(context, this::onRequestSuccess, this::onRequestError)
+
+
+    // == Queue scheduling
     private var isManualStart = false
 
     // If the current instance is a scheduled run, when does it end?
     private var scheduledStart: LocalTime? = null
     private var scheduledEnd: LocalTime? = null
 
+
+    // == Cloudflare handling
+    private var isCloudFlareBlocked = false
+    private val userActionNotificationManager: NotificationManager
+
+
+    // == Misc
+
+    // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
+    private val dao: CollectionDAO = ObjectBoxDAO()
+
+    // Progress notifications
+    private lateinit var progressNotification: DownloadProgressNotification
+
+    private val dlManager = PrimaryDownloadManager()
+
+
     init {
         EventBus.getDefault().register(this)
-        requestQueueManager = getInstance(
-            context, this::onRequestSuccess, this::onRequestError
-        )
         userActionNotificationManager = NotificationManager(context, R.id.user_action_notification)
         setSpeedLimitKbps(prefsSpeedCapToKbps(Settings.dlSpeedCap))
 
@@ -177,11 +185,11 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     override fun onInterrupt() {
         requestQueueManager.cancelQueue()
         downloadCanceled.set(true)
-        downloadInterrupted.set(true)
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
         EventBus.getDefault().unregister(this)
+        dao.cleanup()
     }
 
     override fun runProgressNotification() {
@@ -209,7 +217,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         }
 
         // Process these here to avoid initializing notifications for downloads that will never start
-        if (isQueuePaused) {
+        if (ContentQueueManager.isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
             return@withContext
         }
@@ -217,6 +225,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         while (result.first != QueuingResult.QUEUE_END) {
             if (result.first == QueuingResult.CONTENT_FOUND)
                 result = watchProgress(result.second!!)
+            dlManager.clear()
+
             if (result.first != QueuingResult.QUEUE_END) result = downloadFirstInQueue()
             dao.cleanup()
         }
@@ -244,7 +254,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val context = applicationContext
 
         // Check if queue has been paused
-        if (isQueuePaused) {
+        if (ContentQueueManager.isQueuePaused) {
             Timber.i("Queue is paused. Download aborted.")
             return Pair(QueuingResult.QUEUE_END, null)
         }
@@ -295,17 +305,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("Content is already downloaded. Download aborted.")
             dao.deleteQueue(queueIdx)
             EventBus.getDefault()
-                .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
+                .post(DownloadEvent(content = content, eventType = DownloadEvent.Type.EV_COMPLETE))
             notificationManager.notify(DownloadErrorNotification(content))
             return Pair(QueuingResult.CONTENT_SKIPPED, null)
         }
         EventBus.getDefault()
-            .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT, null))
-
-        val locationResult =
-            getDownloadLocation(context, content) ?: return Pair(QueuingResult.QUEUE_END, null)
-        var dir = locationResult.first
-        val location = locationResult.second
+            .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.INIT))
 
         downloadCanceled.set(false)
         downloadSkipped.set(false)
@@ -325,8 +330,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PROCESS_IMG, content))
         var images = content.imageList
-        val targetImageStatus =
-            if (downloadMode == DownloadMode.DOWNLOAD) StatusContent.SAVED else StatusContent.ONLINE
+        val targetImageStatus = when (downloadMode) {
+            DownloadMode.DOWNLOAD, DownloadMode.DOWNLOAD_ARCHIVE -> StatusContent.SAVED
+            else -> StatusContent.ONLINE
+        }
 
         var hasError = false
         val nbErrors = images.count { it.status == StatusContent.ERROR }
@@ -445,26 +452,24 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (hasError) {
             moveToErrors(content.id)
             EventBus.getDefault()
-                .post(DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0))
+                .post(DownloadEvent(content = content, eventType = DownloadEvent.Type.EV_COMPLETE))
             return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadInterrupted.get()) return Pair(QueuingResult.CONTENT_SKIPPED, null)
+        if (downloadProcessStopped) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         EventBus.getDefault()
             .post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER, content))
 
         // Create destination folder for images to be downloaded
-        if (null == dir) dir = getOrCreateContentDownloadDir(applicationContext, content, location)
-        // Folder creation failed
-        if (null == dir || !dir.exists()) {
+        if (!dlManager.createTargetLocation(context, content)) {
             val title = content.title
-            val absolutePath = dir?.uri?.toString() ?: ""
-            val message = String.format("Directory could not be created: %s.", absolutePath)
+            val message = String.format("Failed to create destination folder for $title.")
+
             Timber.w(message)
             logErrorRecord(content.id, ErrorType.IO, content.url, "Destination folder", message)
-            notificationManager.notify(DownloadWarningNotification(title, absolutePath))
+            notificationManager.notify(DownloadWarningNotification(title))
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
@@ -473,9 +478,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
-        // Folder creation succeeds -> memorize its path
-        val targetFolder: DocumentFile = dir
-        content.setStorageDoc(targetFolder)
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.qtyPages) content.qtyPages = images.count { it.isReadable }
@@ -494,9 +496,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             content = dao.selectContent(content.id)
             if (null == content) return Pair(QueuingResult.CONTENT_SKIPPED, null)
             pause(1000)
-            if (downloadInterrupted.get()) break
+            if (downloadProcessStopped) break
         }
-        if (isBeingDeleted && !downloadInterrupted.get()) Timber.d("Purge completed; resuming download")
+        if (isBeingDeleted && !downloadProcessStopped) Timber.d("Purge completed; resuming download")
 
 
         // == DOWNLOAD PHASE ==
@@ -520,16 +522,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadInterrupted.get()) return Pair(QueuingResult.CONTENT_SKIPPED, null)
+        if (downloadProcessStopped) return Pair(QueuingResult.CONTENT_SKIPPED, null)
         val pagesToParse: MutableList<ImageFile> = ArrayList()
         val ugoirasToDownload: MutableList<ImageFile> = ArrayList()
+
+        val downloadFolder = dlManager.getDownloadFolder(context)
 
         // Streamed download => just get the cover
         if (downloadMode == DownloadMode.STREAM) {
             content.cover.let { cover ->
                 enrichImageDownloadParams(cover, content)
                 requestQueueManager.queueRequest(
-                    buildImageDownloadRequest(cover, targetFolder, content)
+                    buildImageDownloadRequest(cover, downloadFolder, content)
                 )
             }
         } else { // Regular download
@@ -541,7 +545,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
                     // Set the next image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
                     // NB : Per convention, cover is always the 1st picture of a given set
-                    if (img.isCover) {
+                    if (img.isCover && !img.url.isEmpty()) {
                         if (images.size > idx + 1) img.backupUrl = images[idx + 1].url
                         covers.add(img)
                     }
@@ -549,7 +553,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     else if (img.downloadParams.contains(KEY_DL_PARAMS_UGOIRA_FRAMES))
                         ugoirasToDownload.add(img)
                     else if (!img.isCover) requestQueueManager.queueRequest(
-                        buildImageDownloadRequest(img, targetFolder, content)
+                        buildImageDownloadRequest(img, downloadFolder, content)
                     )
                 }
             }
@@ -557,24 +561,31 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // Download cover last, to avoid being blocked by the server when downloading cover and page 1 back to back when they are the same resource
             covers.forEach {
                 requestQueueManager.queueRequest(
-                    buildImageDownloadRequest(it, targetFolder, content)
+                    buildImageDownloadRequest(it, downloadFolder, content)
                 )
             }
 
             // Parse pages for images
-            if (pagesToParse.isNotEmpty()) {
-                GlobalScope.launch(Dispatchers.IO) {
+            GlobalScope.launch(Dispatchers.IO) {
+                Timber.i("Parse ${pagesToParse.size} pages START")
+                val parser = ContentParserFactory.getImageListParser(content.site)
+                try {
                     pagesToParse.forEach {
-                        parsePageforImage(it, targetFolder, content)
+                        if (this@ContentDownloadWorker.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return@forEach
+                        parsePageforImage(it, downloadFolder, content, parser)
                     }
+                } finally {
+                    parser.clear()
                 }
+                Timber.i("Parse ${pagesToParse.size} pages END")
             }
 
             // Parse ugoiras for images
             if (ugoirasToDownload.isNotEmpty()) {
                 GlobalScope.launch(Dispatchers.IO) {
                     ugoirasToDownload.forEach {
-                        downloadAndUnzipUgoira(it, targetFolder, content.site)
+                        if (this@ContentDownloadWorker.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return@forEach
+                        downloadAndUnzipUgoira(content, it, downloadFolder, content.site)
                     }
                 }
             }
@@ -641,7 +652,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             result.forEachIndexed { idx, img ->
                 img.order = idx + 1
                 if (img.isReadable) {
-                    img.computeName(floor(log10(result.size.toDouble()) + 1).toInt())
+                    img.computeName(result.size)
                 } else if (img.isCover) {
                     img.status = StatusContent.SAVED
                     if (0 == coverIndex++) {
@@ -713,12 +724,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var networkBytes: Long = 0
         var deltaNetworkBytes: Long
         var nbDeltaLowNetwork = 0
-        val images = content.imageList
-        // Compute total downloadable pages; online (stream) pages do not count
-        val totalPages = images.count { it.status != StatusContent.ONLINE }
-        val contentQueueManager = ContentQueueManager
         var isScheduledTimeOver = false
+
         do {
+            // Check if scheduled end has time been reached
             if (!isManualStart) {
                 scheduledEnd?.let {
                     val isCrossDay = (scheduledStart ?: LocalTime.MIN) > it
@@ -731,21 +740,32 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
-            val statuses = dao.countProcessedImagesById(content.id)
-            var status = statuses[StatusContent.DOWNLOADED]
+            // Get fresh images from the DB
+            val images = dao.selectImagesFromContent(content.id, false)
+            // Compute total downloadable pages; online (streamed) pages do not count
+            val totalPages = images.count { it.status != StatusContent.ONLINE }
 
+            // Compute image stats per status
+            // Array[0] : Number of images; Array[1] : Total size of images
+            val statuses = images.groupingBy { it.status }.fold(
+                initialValueSelector = { _, _ -> Array<Long>(2) { 0 } },
+                operation = { _, acc, a -> acc[0]++; acc[1] += a.size; acc }
+            )
+
+            var status = statuses[StatusContent.DOWNLOADED]
             // Measure idle time since last iteration
             if (status != null) {
-                deltaPages = status.first - pagesOK
+                deltaPages = status[0].toInt() - pagesOK
                 if (deltaPages == 0) nbDeltaZeroPages++ else {
                     firstPageDownloaded = true
                     nbDeltaZeroPages = 0
                 }
-                pagesOK = status.first
-                downloadedBytes = status.second
+                pagesOK = status[0].toInt()
+                downloadedBytes = status[1]
             }
+
             status = statuses[StatusContent.ERROR]
-            if (status != null) pagesKO = status.first
+            if (status != null) pagesKO = status[0].toInt()
             val downloadedMB = downloadedBytes / (1024.0 * 1024)
             val progress = pagesOK + pagesKO
             isDone = progress == totalPages
@@ -762,7 +782,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             deltaNetworkBytes = networkBytesNow - networkBytes
 
             // LOW_NETWORK_THRESHOLD KBps threshold once download has started
-            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++
+            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD_KBPS * refreshDelayMs / 1000f && firstPageDownloaded) nbDeltaLowNetwork++
             else nbDeltaLowNetwork = 0
 
             networkBytes = networkBytesNow
@@ -784,7 +804,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             // Restart request queue when the queue has idled for too long
             // Idle = very low download speed _AND_ no new pages downloaded
-            if (nbDeltaLowNetwork > IDLE_THRESHOLD * 1000f / refreshDelayMs && nbDeltaZeroPages > IDLE_THRESHOLD * 1000f / refreshDelayMs) {
+            if (nbDeltaLowNetwork > IDLE_THRESHOLD_S * 1000f / refreshDelayMs && nbDeltaZeroPages > IDLE_THRESHOLD_S * 1000f / refreshDelayMs) {
                 nbDeltaLowNetwork = 0
                 nbDeltaZeroPages = 0
                 Timber.d("Inactivity detected ====> restarting request queue")
@@ -799,6 +819,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
             }
 
+            // Fire progress notification
             if (!this::progressNotification.isInitialized) {
                 progressNotification = DownloadProgressNotification()
             }
@@ -814,12 +835,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
             EventBus.getDefault().post(
                 DownloadEvent(
-                    content,
-                    DownloadEvent.Type.EV_PROGRESS,
-                    pagesOK,
-                    pagesKO,
-                    totalPages,
-                    downloadedBytes
+                    content = content,
+                    eventType = DownloadEvent.Type.EV_PROGRESS,
+                    pagesOK = pagesOK,
+                    pagesKO = pagesKO,
+                    pagesTotal = totalPages,
+                    downloadedSizeB = downloadedBytes
                 )
             )
 
@@ -838,13 +859,24 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
-            pause(refreshDelayMs)
-        } while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused && !isScheduledTimeOver)
+            // Refresh image locations when an archive download is in progress
+            // NB : Should be done like that to avoid threading issues while the same images may be updated by onRequestSuccess
+            val newLocations = dlManager.refreshLocation(images)
+            if (newLocations.isNotEmpty() && content.id > 0) dao.updateImageLocations(newLocations)
 
-        if (isDone && !downloadInterrupted.get()) {
+            pause(refreshDelayMs)
+        } while (!isDone && !downloadProcessStopped && !ContentQueueManager.isQueuePaused && !isScheduledTimeOver)
+
+        if (isDone && !downloadProcessStopped) {
+            Timber.d("Content download completed : %s [%s]", content.title, content.id)
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.id, content.title, pagesOK, pagesKO, downloadedBytes)
         } else if (isScheduledTimeOver) {
+            Timber.d(
+                "Content download paused (scheduled time over) : %s [%s]",
+                content.title,
+                content.id
+            )
             pauseQueue()
             return Pair(QueuingResult.QUEUE_END, null)
         } else {
@@ -862,9 +894,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      */
     private suspend fun completeDownload(
         contentId: Long, title: String,
-        pagesOK: Int, pagesKO: Int, sizeDownloadedBytes: Long
+        pagesOK: Int, pagesKO: Int,
+        sizeDownloadedBytes: Long
     ) {
-        val contentQueueManager = ContentQueueManager
         // Get the latest value of Content
         val content = dao.selectContent(contentId)
         if (null == content) {
@@ -875,7 +907,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             DownloadEvent.fromPreparationStep(DownloadEvent.Step.COMPLETE_DOWNLOAD, content)
         )
 
-        if (!downloadInterrupted.get()) {
+        val context = applicationContext
+        if (!downloadProcessStopped) {
             val images: List<ImageFile> = content.imageList
             val nbImages = images.count { !it.isCover } // Don't count the cover
             var hasError = false
@@ -939,35 +972,43 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 content.qtyPages = nbImages
                 content.downloadDate = now
             }
-            if (content.storageUri.isEmpty()) return
-            val dir = getDocumentFromTreeUriString(applicationContext, content.storageUri)
-            if (null == dir) {
-                Timber.w(
-                    "completeDownload : Directory %s does not exist - JSON not saved",
-                    content.storageUri
+
+            try {
+                dlManager.completeDownload(context, content)
+            } catch (e: ArchiveException) {
+                hasError = true
+                logErrorRecord(
+                    contentId,
+                    ErrorType.IO,
+                    content.galleryUrl,
+                    "archive",
+                    e.message
                 )
-                return
             }
+
+            if (content.storageUri.isEmpty()) return
 
             // Auto-retry when error pages are remaining and conditions are met
             // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
             if (pagesKO > 0 && Settings.isDlRetriesActive && content.numberDownloadRetries < Settings.dlRetriesNumber) {
-                val freeSpaceRatio =
-                    MemoryUsageFigures(applicationContext, dir).freeUsageRatio100
-                if (freeSpaceRatio < Settings.dlRetriesMemLimit) {
-                    Timber.i(
-                        "Initiating auto-retry #%s for content %s (%s%% free space)",
-                        content.numberDownloadRetries + 1,
-                        content.title,
-                        freeSpaceRatio
-                    )
-                    logErrorRecord(
-                        content.id,
-                        ErrorType.UNDEFINED,
-                        "",
-                        content.title,
-                        "Auto-retry #" + content.numberDownloadRetries
-                    )
+                content.getContainingFolder(context)?.let { containingUri ->
+                    val freeSpaceRatio =
+                        MemoryUsageFigures(context, containingUri).freeUsageRatio100
+                    if (freeSpaceRatio < Settings.dlRetriesMemLimit) {
+                        Timber.i(
+                            "Initiating auto-retry #%s for content %s (%s%% free space)",
+                            content.numberDownloadRetries + 1,
+                            content.title,
+                            freeSpaceRatio
+                        )
+                        logErrorRecord(
+                            content.id,
+                            ErrorType.UNDEFINED,
+                            "",
+                            content.title,
+                            "Auto-retry #" + content.numberDownloadRetries
+                        )
+                    }
                     content.increaseNumberDownloadRetries()
 
                     // Re-queue all failed images
@@ -983,7 +1024,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                         requestQueueManager.queueRequest(
                             buildImageDownloadRequest(
                                 img,
-                                dir,
+                                content.storageUri.toUri(),
                                 content
                             )
                         )
@@ -1009,23 +1050,12 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             content.computeSize()
 
             // Replace the book with its new title, if any
-            @Suppress("USELESS_ELVIS") // Central log reports NPE here
+            @Suppress("USELESS_ELVIS") // Central log reports NPE here (probably because of ObjectBox not applying default value to a new field)
             if ((content.replacementTitle ?: "").isNotEmpty()) {
                 content.title = content.replacementTitle
                 content.replacementTitle = ""
             }
 
-            // Save JSON file
-            try {
-                val jsonFile = jsonToFile(
-                    applicationContext, JsonContent(content),
-                    JsonContent::class.java, dir, JSON_FILE_NAME_V2
-                )
-                // Cache its URI to the newly created content
-                content.jsonUri = jsonFile.uri.toString()
-            } catch (e: IOException) {
-                Timber.e(e, "I/O Error saving JSON: %s", title)
-            }
             addContent(applicationContext, dao, content)
 
             // Delete the duplicate book that was meant to be replaced, if any
@@ -1060,9 +1090,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             dao.deleteQueue(content)
 
             // Increase downloads count
-            contentQueueManager.downloadComplete()
+            ContentQueueManager.downloadComplete()
             if (0 == pagesKO) {
-                val downloadCount = contentQueueManager.downloadCount
+                val downloadCount = ContentQueueManager.downloadCount
                 notificationManager.notify(DownloadSuccessNotification(downloadCount))
             } else {
                 notificationManager.notify(DownloadErrorNotification(content))
@@ -1072,18 +1102,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO)
             EventBus.getDefault().post(
                 DownloadEvent(
-                    content,
-                    DownloadEvent.Type.EV_COMPLETE,
-                    pagesOK,
-                    pagesKO,
-                    nbImages,
-                    sizeDownloadedBytes
+                    content = content,
+                    eventType = DownloadEvent.Type.EV_COMPLETE,
+                    pagesOK = pagesOK,
+                    pagesKO = pagesKO,
+                    pagesTotal = nbImages,
+                    downloadedSizeB = sizeDownloadedBytes
                 )
             )
             val context = applicationContext
-            if (
-                updateQueueJson(context, dao)
-            ) Timber.i(context.getString(R.string.queue_json_saved)) else Timber.w(
+            if (updateQueueJson(context, dao))
+                Timber.i(context.getString(R.string.queue_json_saved))
+            else Timber.w(
                 context.getString(
                     R.string.queue_json_failed
                 )
@@ -1109,8 +1139,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     @SuppressLint("TimberArgCount")
     private fun parsePageforImage(
         img: ImageFile,
-        dir: DocumentFile,
-        content: Content
+        dir: Uri,
+        content: Content,
+        parser: ImageListParser
     ) {
         val site = content.site
         val pageUrl = fixUrl(img.pageUrl, site.url)
@@ -1119,22 +1150,15 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         val requestHeaders = getRequestHeaders(pageUrl, img.downloadParams)
         try {
             val reqHeaders = webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.pageUrl)
-            val parser = ContentParserFactory.getImageListParser(content.site)
-            val pages: Pair<String, String?>
-            try {
-                pages = parser.parseImagePage(img.pageUrl, reqHeaders)
-                DownloadRateLimiter.take()
-            } finally {
-                parser.clear()
-            }
+            val pages = parser.parseImagePage(img.pageUrl, reqHeaders)
+            DownloadRateLimiter.take()
             img.url = pages.first
-            // Set backup URL
-            if (pages.second != null) img.backupUrl = pages.second ?: ""
+            img.backupUrl = pages.second ?: ""
             // Queue the picture
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content))
         } catch (e: UnsupportedOperationException) {
             Timber.i(e, "Could not read image from page %s", img.pageUrl)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.PARSING,
@@ -1144,7 +1168,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (e: IllegalArgumentException) {
             Timber.i(e, "Could not read image from page %s", img.pageUrl)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.PARSING,
@@ -1154,7 +1178,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (ioe: IOException) {
             Timber.i(ioe, "Could not read page data from %s", img.pageUrl)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.IO,
@@ -1169,7 +1193,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 lre.message
             )
             Timber.i(lre, description)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.SITE_LIMIT,
@@ -1179,7 +1203,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (ere: EmptyResultException) {
             Timber.i(ere, "No images have been found while parsing %s", content.title)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.PARSING,
@@ -1189,7 +1213,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             )
         } catch (e: Exception) { // Where "the rest" is caught
             Timber.i(e, "An unexpected error occured while parsing %s", content.title)
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 content.id,
                 ErrorType.UNDEFINED,
@@ -1202,7 +1226,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private fun buildImageDownloadRequest(
         img: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         content: Content
     ): RequestOrder {
         val site = content.site
@@ -1222,35 +1246,21 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             img.name,
             img.order,
             backupUrlFinal,
-            img
+            img,
+            content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE
         )
     }
 
-    // This is run on the I/O thread pool spawned by the downloader
     private fun onRequestSuccess(request: RequestOrder, fileUri: Uri) {
         val img = request.img
-        val imgFile = getFileFromSingleUri(applicationContext, fileUri)
-        if (imgFile != null) {
-            img.size = imgFile.length()
-            updateImageProperties(img, true, fileUri.toString())
-        } else {
-            Timber.i(
-                "I/O error - Image %s not saved in dir %s",
-                img.url,
-                request.targetDir.uri.path
-            )
-            updateImageProperties(img, false, "")
-            logErrorRecord(
-                img.content.targetId,
-                ErrorType.IO,
-                img.url,
-                "Picture " + img.name,
-                "Save failed in dir " + request.targetDir.uri.path
-            )
-        }
+        updateImageProperties(img, true, fileUri)
+        dlManager.processDownloadedFile(
+            applicationContext,
+            request.img.isCover && !request.img.isReadable,
+            fileUri
+        )
     }
 
-    // This is run on the I/O thread pool spawned by the downloader
     private fun onRequestError(request: RequestOrder, error: NetworkError) {
         val img = request.img
         val contentId = img.contentId
@@ -1268,7 +1278,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (error.type === RequestOrder.NetworkErrorType.FILE_IO) cause = "File I/O"
         else if (error.type === RequestOrder.NetworkErrorType.PARSE) cause = "Parsing"
         Timber.d("$message $cause")
-        updateImageProperties(img, false, "")
+        updateImageProperties(img, false)
         logErrorRecord(
             contentId, ErrorType.NETWORKING, img.url, img.name,
             "$cause; HTTP statusCode=$statusCode; message=$message"
@@ -1289,7 +1299,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     private fun tryUsingBackupUrl(
         img: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         backupUrl: String,
         requestHeaders: Map<String, String>
     ) {
@@ -1309,7 +1319,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 )
             processBackupImage(backupImg, img, dir, content)
         } catch (e: Exception) {
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 img.content.targetId,
                 ErrorType.NETWORKING,
@@ -1327,7 +1337,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
     private fun processBackupImage(
         backupImage: ImageFile?,
         originalImage: ImageFile,
-        dir: DocumentFile,
+        dir: Uri,
         content: Content
     ) {
         if (backupImage != null) {
@@ -1353,15 +1363,17 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * Download and unzip the given Ugoira to the given folder as an animated GIF file
      * NB : Ugoiuras are Pixiv's own animated pictures
      *
-     * @param img  Link to the Ugoira file
-     * @param dir  Folder to save the picture to
-     * @param site Correponding site
+     * @param img             Link to the Ugoira file
+     * @param site            Correponding site
      */
     private suspend fun downloadAndUnzipUgoira(
+        content: Content,
         img: ImageFile,
-        dir: DocumentFile,
+        downloadFolder: Uri,
         site: Site
     ) {
+        if (this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused) return
+
         var isError = false
         var errorMsg = ""
         val ugoiraCacheFolder = getOrCreateCacheFolder(
@@ -1384,9 +1396,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 ),
                 Uri.fromFile(ugoiraCacheFolder),
                 targetFileName,
-                downloadInterrupted,
-                ZIP_MIME_TYPE,
-                resourceId = img.order
+                isCanceled = { this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused },
+                img.order,
+                MIME_TYPE_ZIP,
+                notifyProgress = { f ->
+                    EventBus.getDefault().post(
+                        DownloadEvent(
+                            content = content,
+                            eventType = DownloadEvent.Type.EV_PROGRESS,
+                            fileDownloadProgress = f
+                        )
+                    )
+                }
             )
 
             val targetFileUri = result
@@ -1397,7 +1418,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 targetFileUri,
                 ugoiraCacheFolder,
                 null,  // Extract everything; keep original names
-                { downloadInterrupted.get() }
+                { this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused }
             )
 
             // == Build the GIF using download params and extracted pics
@@ -1423,39 +1444,39 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
+            EventBus.getDefault().post(
+                DownloadEvent.fromPreparationStep(DownloadEvent.Step.ENCODE_ANIMATION, content)
+            )
+
             // Assemble the GIF
             val ugoiraGifFile = assembleGif(
                 applicationContext,
-                ugoiraCacheFolder,
-                frames
-            ) ?: throw IOException("Couldn't assemble ugoira file")
+                downloadFolder,
+                img.name,
+                frames,
+                isCanceled = {
+                    this.isStopped || downloadProcessStopped || ContentQueueManager.isQueuePaused
+                }
+            ) { f ->
+                EventBus.getDefault().post(
+                    DownloadEvent(
+                        eventType = DownloadEvent.Type.EV_PROGRESS,
+                        step = DownloadEvent.Step.ENCODE_ANIMATION,
+                        fileDownloadProgress = f * 100
+                    )
+                )
+            } ?: throw IOException("Couldn't assemble ugoira file")
 
-            // Save it to the book folder
-            val finalImgUri = copyFile(
-                applicationContext,
-                ugoiraGifFile,
-                dir,
-                MIME_IMAGE_GIF,
-                img.name + ".gif"
-            ) ?: throw IOException("Couldn't copy result ugoira file")
+            updateImageProperties(img, true, ugoiraGifFile)
 
-            img.size = fileSizeFromUri(
-                applicationContext,
-                ugoiraGifFile
-            )
-            updateImageProperties(img, true, finalImgUri.toString())
+            dlManager.processDownloadedFile(applicationContext, false, ugoiraGifFile)
         } catch (e: Exception) {
             Timber.w(e)
             isError = true
             errorMsg = e.message ?: ""
-        } finally {
-            if (!ugoiraCacheFolder.delete()) Timber.w(
-                "Couldn't delete ugoira folder %s",
-                ugoiraCacheFolder.absolutePath
-            )
         }
         if (isError) {
-            updateImageProperties(img, false, "")
+            updateImageProperties(img, false)
             logErrorRecord(
                 img.content.targetId,
                 ErrorType.IMG_PROCESSING,
@@ -1473,11 +1494,18 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      * @param success True if download is successful; false if download failed
      */
     private fun updateImageProperties(
-        img: ImageFile, success: Boolean,
-        uriStr: String
+        img: ImageFile,
+        success: Boolean,
+        uri: Uri = Uri.EMPTY
     ) {
         img.status = if (success) StatusContent.DOWNLOADED else StatusContent.ERROR
-        img.fileUri = uriStr
+        if (uri != Uri.EMPTY) {
+            img.size = fileSizeFromUri(applicationContext, uri)
+            img.fileUri = uri.toString()
+        } else {
+            img.size = 0
+            img.fileUri = ""
+        }
         if (success) img.downloadParams = ""
         if (img.id > 0) dao.updateImageFileStatusParamsMimeTypeUriSize(img) // because thumb image isn't in the DB
     }
@@ -1487,6 +1515,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      *
      * @param event Download event
      */
+    @Suppress("unused")
     @Subscribe
     fun onDownloadCommand(event: DownloadCommandEvent) {
         when (event.type) {
@@ -1500,15 +1529,16 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             DownloadCommandEvent.Type.EV_CANCEL -> {
                 requestQueueManager.cancelQueue()
                 downloadCanceled.set(true)
-                downloadInterrupted.set(true)
             }
 
             DownloadCommandEvent.Type.EV_SKIP -> {
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED)
                 requestQueueManager.cancelQueue()
                 downloadSkipped.set(true)
-                downloadInterrupted.set(true)
             }
+
+            DownloadCommandEvent.Type.EV_RESET_REQUEST_QUEUE ->
+                requestQueueManager.resetRequestQueue(true)
 
             DownloadCommandEvent.Type.EV_INTERRUPT_CONTENT, DownloadCommandEvent.Type.EV_UNPAUSE -> {}
         }

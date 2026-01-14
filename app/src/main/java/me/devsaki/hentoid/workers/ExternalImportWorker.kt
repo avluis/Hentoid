@@ -58,10 +58,7 @@ import me.devsaki.hentoid.workers.data.ExternalImportData
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
-import java.net.URLDecoder
 import java.time.Instant
-import kotlin.math.floor
-import kotlin.math.log10
 import kotlin.math.roundToInt
 
 class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
@@ -134,7 +131,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
             Timber.e("External folder is not defined (%s)", Settings.externalLibraryUri)
             return
         }
-        trace(Log.INFO, "Import from ${URLDecoder.decode(rootFolder.uri.toString(), "UTF-8")}")
+        trace(Log.INFO, "Import from ${rootFolder.formatDisplayUri()}")
         try {
             eventComplete(STEP_2_BOOK_FOLDERS, 0, 0, 0, null) // Artificial
 
@@ -509,10 +506,9 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
 
         // Rebuild order
         var idx = 1
-        val nbMaxChars = floor(log10(targetImgs.size.toDouble()) + 1).toInt()
         targetImgs.forEach {
             it.order = if (it.isCover) 0 else idx++
-            it.computeName(nbMaxChars)
+            it.computeName(targetImgs.size)
         }
 
         content.setImageFiles(targetImgs)
@@ -596,8 +592,7 @@ class ExternalImportWorker(context: Context, parameters: WorkerParameters) :
         // Handle notifications on another coroutine not to steal focus for unnecessary stuff
         GlobalScope.launch(Dispatchers.Default) {
             val progressPc = (100 * progress).roundToInt()
-            val bookLocation = content.storageUri.replace(root.toString(), "")
-            trace(Log.INFO, "Import book OK : ${URLDecoder.decode(bookLocation, "UTF-8")}")
+            trace(Log.INFO, "Import book OK : ${content.storageUri.toUri().formatDisplay(root)}")
             notificationManager.notify(
                 ImportProgressNotification(content.title, progressPc, 100)
             )

@@ -48,6 +48,7 @@ object DatabaseMaintenance {
             this::clearTempContent,
             this::cleanBookmarksOneShot,
             this::cleanOrphanAttributes,
+            this::cleanOrphanChapters,
             this::refreshJsonForSecondDownloadDate
         )
     }
@@ -515,10 +516,20 @@ object DatabaseMaintenance {
     private suspend fun cleanOrphanAttributes(context: Context, emitter: (Float) -> Unit) =
         withContext(Dispatchers.IO) {
             try {
-                // Compute missing downloaded Content size according to underlying ImageFile sizes
                 Timber.i("Cleaning orphan attributes : start")
                 ObjectBoxDB.cleanupOrphanAttributes()
                 Timber.i("Cleaning orphan attributes : done")
+            } finally {
+                ObjectBoxDB.cleanup()
+            }
+        }
+
+    private suspend fun cleanOrphanChapters(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            try {
+                Timber.i("Cleaning orphan chapters : start")
+                ObjectBoxDB.cleanupOrphanChapters()
+                Timber.i("Cleaning orphan chapters : done")
             } finally {
                 ObjectBoxDB.cleanup()
             }

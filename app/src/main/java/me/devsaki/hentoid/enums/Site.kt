@@ -17,6 +17,7 @@ private val INVISIBLE_SITES = setOf(
     Site.HENTAICAFE,  // Dead
     Site.KSK,  // Dead
     Site.ANCHIRA,  // Dead
+    Site.TSUMINO,  // Dead
     Site.FAKKU,  // Old Fakku; kept for retrocompatibility
     Site.FAKKU2,  // Dropped after Fakku decided to flag downloading accounts and IPs
     Site.ASMHENTAI_COMICS,  // Does not work directly

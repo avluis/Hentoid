@@ -185,26 +185,8 @@ fun getOnlineResourceDownloader(
     headers: List<Pair<String, String>>?,
     useMobileAgent: Boolean,
     useHentoidAgent: Boolean,
-    useWebviewAgent: Boolean
-): Response {
-    return getOnlineResourceDownloader(
-        url,
-        headers,
-        useMobileAgent,
-        useHentoidAgent,
-        useWebviewAgent,
-        true
-    )
-}
-
-@Throws(IOException::class)
-fun getOnlineResourceDownloader(
-    url: String,
-    headers: List<Pair<String, String>>?,
-    useMobileAgent: Boolean,
-    useHentoidAgent: Boolean,
     useWebviewAgent: Boolean,
-    followRedirects: Boolean
+    followRedirects: Boolean = true
 ): Response {
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)
@@ -241,6 +223,59 @@ fun postOnlineResource(
     val request: Request =
         requestBuilder.post(body.toRequestBody(mimeType.toMediaTypeOrNull())).build()
     return OkHttpClientManager.getInstance().newCall(request).execute()
+}
+
+@Throws(IOException::class, CloudflareHelper.CloudflareProtectedException::class)
+fun fetchBodyFast(
+    url: String,
+    site: Site,
+    requestHeaders: MutableList<Pair<String, String>>?,
+    targetContentType: String?
+): Pair<ResponseBody?, String> {
+    val requestHeadersList: MutableList<Pair<String, String>>
+    if (null == requestHeaders) {
+        requestHeadersList = ArrayList()
+        requestHeadersList.add(Pair(HEADER_REFERER_KEY, url))
+    } else {
+        requestHeadersList = requestHeaders
+    }
+    val cookieStr = getCookies(
+        url,
+        requestHeadersList,
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
+    )
+    if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
+
+    // Don't close that one here as it is transmitted to the caller to be consumed
+    val response = getOnlineResourceFast(
+        url,
+        requestHeadersList,
+        site.useMobileAgent,
+        site.useHentoidAgent,
+        site.useWebviewAgent
+    )
+    // Raise exception if blocked by Cloudflare
+    if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
+
+    // Scram if the response is a redirection or an error
+    if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
+
+    // Scram if the response content-type is something else than the target type
+    if (targetContentType != null) {
+        val contentType =
+            cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
+        if (contentType.first.isNotEmpty() && !contentType.first.equals(
+                targetContentType,
+                ignoreCase = true
+            )
+        ) throw IOException(
+            "Not an HTML resource $url"
+        )
+    }
+
+    return Pair(response.body, cookieStr)
 }
 
 /**
@@ -533,7 +568,7 @@ fun fixUrl(url: String?, baseUrl: String): String {
     if (url.startsWith("//")) return "https:$url"
     return if (!url.startsWith("http")) {
         var sourceUrl = baseUrl
-        if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.substring(0, sourceUrl.length - 1)
+        if (sourceUrl.endsWith("/")) sourceUrl = sourceUrl.take(sourceUrl.length - 1)
         if (url.startsWith("/")) sourceUrl + url else "$sourceUrl/$url"
     } else url
 }
@@ -619,16 +654,17 @@ private fun peekCookies(
     useWebviewAgent: Boolean
 ): String {
     try {
-        val response = getOnlineResourceFast(
+        getOnlineResourceFast(
             url,
             headers,
             useMobileAgent,
             useHentoidAgent,
             useWebviewAgent
-        )
-        var cookielist: List<String?> = response.headers("Set-Cookie")
-        if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie")
-        return TextUtils.join("; ", cookielist)
+        ).use { response ->
+            var cookielist: List<String?> = response.headers("Set-Cookie")
+            if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie")
+            return TextUtils.join("; ", cookielist)
+        }
     } catch (e: IOException) {
         Timber.e(e)
     }
@@ -745,7 +781,7 @@ fun simplifyUrl(url: String): String {
     var result = url
     // Remove parameters
     val paramsIndex = result.indexOf("?")
-    if (paramsIndex > -1) result = result.substring(0, paramsIndex)
+    if (paramsIndex > -1) result = result.take(paramsIndex)
     // Simplify & eliminate double separators
     result = result.trim { it <= ' ' }.replace("-", "/")
     if (!result.endsWith("/")) result = "$result/"
@@ -772,57 +808,9 @@ fun waitBlocking429(response: retrofit2.Response<*>, defaultDelayMs: Int): Boole
     return false
 }
 
-@Throws(IOException::class, CloudflareHelper.CloudflareProtectedException::class)
-fun fetchBodyFast(
-    url: String,
-    site: Site,
-    requestHeaders: MutableList<Pair<String, String>>?,
-    targetContentType: String?
-): Pair<ResponseBody?, String> {
-    val requestHeadersList: MutableList<Pair<String, String>>
-    if (null == requestHeaders) {
-        requestHeadersList = ArrayList()
-        requestHeadersList.add(Pair(HEADER_REFERER_KEY, url))
-    } else {
-        requestHeadersList = requestHeaders
-    }
-    val cookieStr = getCookies(
-        url,
-        requestHeadersList,
-        site.useMobileAgent,
-        site.useHentoidAgent,
-        site.useWebviewAgent
-    )
-    if (cookieStr.isNotEmpty()) requestHeadersList.add(Pair(HEADER_COOKIE_KEY, cookieStr))
-
-    val response = getOnlineResourceFast(
-        url,
-        requestHeadersList,
-        site.useMobileAgent,
-        site.useHentoidAgent,
-        site.useWebviewAgent
-    )
-
-    // Raise exception if blocked by Cloudflare
-    if (503 == response.code && site.useCloudflare) throw CloudflareHelper.CloudflareProtectedException()
-
-    // Scram if the response is a redirection or an error
-    if (response.code >= 300) throw IOException("Network error " + response.code + " @ " + url)
-
-    // Scram if the response content-type is something else than the target type
-    if (targetContentType != null) {
-        val contentType =
-            cleanContentType(response.header(HEADER_CONTENT_TYPE, "") ?: "")
-        if (contentType.first.isNotEmpty() && !contentType.first.equals(
-                targetContentType,
-                ignoreCase = true
-            )
-        ) throw IOException(
-            "Not an HTML resource $url"
-        )
-    }
-
-    return Pair(response.body, cookieStr)
+fun isPrefetch(headers: Map<String, String>?): Boolean {
+    if (null == headers) return false
+    return headers["sec-purpose"] == "prefetch" || headers["Sec-Purpose"] == "prefetch"
 }
 
 data class Cookie(
@@ -925,6 +913,8 @@ class UriParts(uri: String, lowercase: Boolean = false) {
 
     val pathFull: String
         get() = "$path/$fileNameFull"
+
+    constructor(uri: Uri, lowercase: Boolean = false) : this(uri.toString(), lowercase)
 
     init {
         var uriNoParams = if (lowercase) uri.lowercase(Locale.getDefault()) else uri

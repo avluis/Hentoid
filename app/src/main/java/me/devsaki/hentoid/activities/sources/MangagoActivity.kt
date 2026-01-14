@@ -29,10 +29,10 @@ class MangagoActivity : BaseBrowserActivity() {
     class MangagoWebClient : CustomWebViewClient {
         constructor() : super(Site.MANGAGO, arrayOf(MGG_GALLERY, MGG_CHAPTER)) {
             setJsStartupScripts("mangago_parser.js")
-            addJsReplacement("\$interface", WysiwygBackgroundWebView.interfaceName)
-            addJsReplacement("\$fun", WysiwygBackgroundWebView.FUNCTION_NAME)
-            addJsReplacement("\$selector", PIC_SELECTOR)
-            addJsReplacement("\$force_page", "false")
+            addJsReplacement($$"$interface", WysiwygBackgroundWebView.interfaceName)
+            addJsReplacement($$"$fun", WysiwygBackgroundWebView.FUNCTION_NAME)
+            addJsReplacement($$"$selector", PIC_SELECTOR)
+            addJsReplacement($$"$force_page", "false")
         }
 
         internal constructor(activity: BrowserActivity)

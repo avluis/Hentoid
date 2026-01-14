@@ -59,6 +59,7 @@ import me.devsaki.hentoid.util.hash64
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.UriParts
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getHttpProtocol
 import me.devsaki.hentoid.util.serializeToJson
 import timber.log.Timber
@@ -67,7 +68,9 @@ import java.util.Objects
 import kotlin.math.max
 
 enum class DownloadMode(val value: Int) {
-    DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images
+    DOWNLOAD(Settings.Value.DL_ACTION_DL_PAGES), // Download images to a folder
+    DOWNLOAD_ARCHIVE(Settings.Value.DL_ACTION_DL_ARCHIVE_PAGES), // Download images to an archive
+    DOWNLOAD_ARCHIVE_FILE(Settings.Value.DL_ACTION_DL_ARCHIVE_FILE), // Download a single archive file
     STREAM(Settings.Value.DL_ACTION_STREAM), // Saves the book for on-demand viewing
     ASK(Settings.Value.DL_ACTION_ASK); // Saves the book for on-demand viewing)
 
@@ -235,10 +238,7 @@ data class Content(
                 Site.NHENTAI, Site.ASMHENTAI, Site.ASMHENTAI_COMICS -> site.url + "/g/" + id + "/"
                 Site.IMHENTAI, Site.HENTAIFOX -> site.url + "/gallery/" + id + "/"
                 Site.HENTAICAFE -> site.url + "/hc.fyi/" + id
-                Site.TSUMINO -> site.url + "/entry/" + id
-                Site.NEXUS -> site.url + "/view/" + id
                 Site.LUSCIOUS -> site.url.replace("manga", "albums") + id + "/"
-                Site.HBROWSE -> site.url + id + "/c00001"
                 Site.PIXIV -> if (1 == altCode) site.url + "users/" + id
                 else site.url + "artworks/" + id
 
@@ -274,7 +274,6 @@ data class Content(
 
         fun transformRawUrl(site: Site, url: String): String {
             when (site) {
-                Site.TSUMINO -> return url.replace("/Read/Index", "")
                 Site.PURURIN -> {
                     if (url.contains("/collection/")) return url
                     return url.replace(getHttpProtocol(url) + "://pururin.me/gallery", "")
@@ -378,7 +377,7 @@ data class Content(
                 return if ((paths.size > 1)) paths[1] else paths[0]
             }
 
-            Site.MRM, Site.HBROWSE -> return url.split("/")[0]
+            Site.MRM -> return url.split("/")[0]
 
             Site.HITOMI -> {
                 paths = url.split("/")
@@ -386,8 +385,7 @@ data class Content(
                 return expression.replace(".html", "")
             }
 
-            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI, Site.PANDA, Site.TSUMINO
-                -> return url.replace("/", "")
+            Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI -> return url.replace("/", "")
 
             Site.MUSES -> return url.replace("/comics/album/", "").replace("/", ".")
             Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART, Site.HIPERDEX, Site.NOVELCROW, Site.TMO -> {
@@ -444,17 +442,19 @@ data class Content(
                 else galleryConst = "/gallery"
 
                 Site.HITOMI -> galleryConst = "/galleries"
-                Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.NHENTAI, Site.ANCHIRA -> galleryConst =
-                    "/g"
+                Site.NHENTAI -> if (url.contains("/favorites/")) return fixUrl(url, site.url)
+                else galleryConst = "/g"
 
-                Site.TSUMINO -> galleryConst = "/entry"
+                Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.EHENTAI, Site.EXHENTAI, Site.ANCHIRA
+                    -> galleryConst = "/g"
+
                 Site.FAKKU2 -> galleryConst = "/hentai/"
                 Site.EDOUJIN, Site.LUSCIOUS -> return site.url.replace("/manga/", "") + url
                 Site.PORNCOMIX -> return url
                 Site.HENTAIFOX -> {
                     var result = site.url + "/gallery$url".replace("//", "/")
-                    if (result.endsWith("/1/")) result = result.substring(0, result.length - 3)
-                    if (result.endsWith("/1")) result = result.substring(0, result.length - 2)
+                    if (result.endsWith("/1/")) result = result.dropLast(3)
+                    if (result.endsWith("/1")) result = result.dropLast(2)
                     return result
                 }
 
@@ -468,7 +468,6 @@ data class Content(
         get() {
             when (site) {
                 Site.HITOMI -> return site.url + "/reader" + url
-                Site.TSUMINO -> return site.url + "/Read/Index" + url
                 Site.ASMHENTAI -> return site.url + "/gallery" + url + "1/"
                 Site.ASMHENTAI_COMICS -> return site.url + "/gallery" + url
                 Site.PURURIN -> {
@@ -651,7 +650,7 @@ data class Content(
     val chaptersList: List<Chapter>
         get() = chapters.safeReach(this)
 
-    val attributeList : List<Attribute>
+    val attributeList: List<Attribute>
         get() = attributes.safeReach(this)
 
     fun setChapters(chapters: List<Chapter?>?) {

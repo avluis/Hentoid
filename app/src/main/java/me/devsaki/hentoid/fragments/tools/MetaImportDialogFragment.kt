@@ -292,12 +292,14 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
     }
 
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEvent(event: ProcessEvent) {
         if (event.processId != R.id.import_metadata) return
         importEvent(event)
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onImportStickyEvent(event: ProcessEvent) {
         if (event.processId != R.id.import_metadata) return
@@ -342,6 +344,7 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
      *
      * @param event Broadcasted event
      */
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceDestroyed(event: ServiceDestroyedEvent) {
         if (event.service != R.id.metadata_import_service) return

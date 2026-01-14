@@ -21,13 +21,13 @@ class MrmParser : BaseChapteredImageListParser() {
 
     override fun parseImageFiles(onlineContent: Content, storedContent: Content?): List<ImageFile> {
         return urlsToImageFiles(
-            parseImages(onlineContent),
+            parseContentImages(onlineContent),
             onlineContent.coverImageUrl,
             StatusContent.SAVED
         )
     }
 
-    override fun parseImages(content: Content): List<String> {
+    private fun parseContentImages(content: Content): List<String> {
         val result: MutableList<String> = ArrayList()
         processedUrl = content.galleryUrl
 
@@ -58,7 +58,7 @@ class MrmParser : BaseChapteredImageListParser() {
         // 2. Open each chapter URL and get the image data until all images are found
         chapterUrls.forEachIndexed { index, url ->
             if (processHalted.get()) return@forEachIndexed
-            result.addAll(parseImages(url, headers))
+            result.addAll(parseChapterImages(url, headers))
             progressPlus((index + 1f) / chapterUrls.size)
         }
         // If the process has been halted manually, the result is incomplete and should not be returned as is
@@ -78,12 +78,12 @@ class MrmParser : BaseChapteredImageListParser() {
         fireProgressEvents: Boolean
     ): List<ImageFile> {
         return urlsToImageFiles(
-            parseImages(chp.url, headers),
+            parseChapterImages(chp.url, headers),
             targetOrder, StatusContent.SAVED, 1000, chp
         )
     }
 
-    fun parseImages(
+    fun parseChapterImages(
         chapterUrl: String,
         headers: List<Pair<String, String>>? = null
     ): List<String> {
@@ -94,7 +94,8 @@ class MrmParser : BaseChapteredImageListParser() {
             headers ?: fetchHeaders(chapterUrl),
             Site.MRM.useHentoidAgent, Site.MRM.useWebviewAgent
         )?.let { doc ->
-            val images = doc.select(".entry-content img[decoding=async][src*='https://i']").filterNotNull()
+            val images =
+                doc.select(".entry-content img[decoding=async][src*='https://i']").filterNotNull()
             return images.map { getImgSrc(it) }.filterNot { it.isEmpty() }
         }
         return emptyList()

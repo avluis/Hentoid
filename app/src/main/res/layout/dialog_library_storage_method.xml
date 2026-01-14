@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="16dp"
+    android:theme="@style/Theme.Light.DialogFragment">
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/selector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:checkedButton="@id/choice_balance"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_folder"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/storage_folder"
+            app:icon="@drawable/ic_folder"
+            app:iconSize="32dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_archive"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/storage_archive"
+            app:icon="@drawable/ic_archive"
+            app:iconSize="32dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/choice_streamed"
+            style="@style/HentoidCheckButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/storage_streamed"
+            app:icon="@drawable/ic_action_download_stream"
+            app:iconSize="32dp" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/white_opacity_25"
+        android:padding="8dp"
+        android:text="@string/storage_folder_description"
+        app:layout_constraintTop_toBottomOf="@id/selector" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        style="@style/Widget.Material3.Button.TonalButton"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:text="@string/menu_change_storage"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/description"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

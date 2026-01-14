@@ -35,7 +35,7 @@ class WysiwygBackgroundWebView(
     context: Context,
     private val client: CustomWebViewClient,
     isScreencap: Boolean = false,
-    downloadFolder: DocumentFile? = null
+    downloadFolderUri: Uri? = null
 ) : WebView(context) {
 
     var isLoaded = AtomicBoolean(false)
@@ -62,7 +62,7 @@ class WysiwygBackgroundWebView(
         )
 
         if (isScreencap) {
-            downloadFolder?.let {
+            downloadFolderUri?.let {
                 enableSlowWholeDocumentDraw()
                 addJavascriptInterface(ScreencapInterface(it), "screencap")
             }
@@ -88,13 +88,13 @@ class WysiwygBackgroundWebView(
         }
     }
 
-    inner class ScreencapInterface(private val downloadFolder: DocumentFile) {
+    inner class ScreencapInterface(private val downloadFolderUri: Uri) {
         @JavascriptInterface
         @Suppress("unused")
         fun onLoaded(width: Int, height: Int) {
             synchronized(isLoaded) {
                 if (isLoaded.get()) return
-                screenCap(downloadFolder, width, height)
+                screenCap(downloadFolderUri, width, height)
             }
         }
     }
@@ -124,7 +124,7 @@ class WysiwygBackgroundWebView(
         return result
     }
 
-    fun screenCap(downloadFolder: DocumentFile, width: Int, height: Int) {
+    fun screenCap(downloadFolderUri: Uri, width: Int, height: Int) {
         Timber.d("screencap %d : %dx%d BEGIN", imageIndex, width, height)
         val ratio = height * 1.0 / width
         // measure the webview
@@ -153,7 +153,7 @@ class WysiwygBackgroundWebView(
                     cv.drawBitmap(it, 0f, 0f, Paint())
                     this.draw(cv)
                 }
-                result = WysiwigResult(saveBmp(it, downloadFolder))
+                result = WysiwigResult(saveBmp(it, downloadFolderUri))
                 isLoaded.set(true)
                 Timber.v("screencap $imageIndex : SUCCESS")
             } finally {
@@ -163,10 +163,10 @@ class WysiwygBackgroundWebView(
         Timber.v("screencap $imageIndex : END")
     }
 
-    private fun saveBmp(bmp: Bitmap, downloadFolder: DocumentFile): Uri {
+    private fun saveBmp(bmp: Bitmap, downloadFolderUri: Uri): Uri {
         // Save file in download folder with proper name
         val fileName = String.format(Locale.ENGLISH, "%0" + 5 + "d", imageIndex)
-        val newFile = createFile(context, downloadFolder.uri, fileName, MIME_IMAGE_PNG)
+        val newFile = createFile(context, downloadFolderUri, fileName, MIME_IMAGE_PNG)
         getOutputStream(context, newFile)?.use { out ->
             ByteArrayInputStream(transcodeTo(bmp, PictureEncoder.PNG, 100))
                 .use { input -> copy(input, out) }

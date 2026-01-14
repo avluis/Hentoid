@@ -14,6 +14,7 @@ import me.devsaki.hentoid.util.completedStr
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
 import me.devsaki.hentoid.util.network.getUserAgent
 import me.devsaki.hentoid.util.ongoingStr
@@ -25,8 +26,6 @@ import org.apache.commons.text.StringEscapeUtils
 import org.greenrobot.eventbus.EventBus
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
-import kotlin.math.floor
-import kotlin.math.log10
 
 private val SQUARE_BRACKETS by lazy { Pattern.compile("\\[[^]]*\\]") }
 
@@ -40,7 +39,7 @@ fun removeBrackets(s: String?): String {
     if (s.isNullOrEmpty()) return ""
     var bracketPos = s.lastIndexOf('(')
     if (bracketPos > 1 && ' ' == s[bracketPos - 1]) bracketPos--
-    return if (bracketPos > -1) s.substring(0, bracketPos)
+    return if (bracketPos > -1) s.take(bracketPos)
     else s
 }
 
@@ -52,6 +51,7 @@ fun removeBrackets(s: String?): String {
  * @param s String to clean up
  * @return String with removed terms
  */
+@Suppress("KDocUnresolvedReference")
 fun removeTextualTags(s: String?): String {
     if (s.isNullOrEmpty()) return ""
     val m = SQUARE_BRACKETS.matcher(s)
@@ -116,7 +116,7 @@ fun parseAttribute(
     removeTrailingNumbers: Boolean,
     site: Site
 ) {
-    parseAttribute(element, map, type, site, "", removeTrailingNumbers, null)
+    parseAttribute(element, map, type, site, removeTrailingNumbers, null)
 }
 
 /**
@@ -130,7 +130,7 @@ private fun parseAttribute(
     childElementClass: String,
     site: Site
 ) {
-    parseAttribute(element, map, type, site, "", removeTrailingNumbers, childElementClass)
+    parseAttribute(element, map, type, site, removeTrailingNumbers, childElementClass)
 }
 
 /**
@@ -141,7 +141,6 @@ private fun parseAttribute(
  * @param map                   Output map where the detected attributes will be put
  * @param type                  AttributeType to give to the detected Attributes
  * @param site                  Site to give to the detected Attributes
- * @param prefix                If set, detected attributes will have this prefix added to their name
  * @param removeTrailingNumbers If true trailing numbers will be removed from the attribute name
  * @param childElementClass     If set, the parser will look for sub-elements of the given class
  */
@@ -150,7 +149,6 @@ private fun parseAttribute(
     map: AttributeMap,
     type: AttributeType,
     site: Site,
-    prefix: String,
     removeTrailingNumbers: Boolean,
     childElementClass: String?
 ) {
@@ -165,7 +163,6 @@ private fun parseAttribute(
     name = removeBrackets(name)
     if (removeTrailingNumbers) name = removeTrailingNumbers(name)
     if (name.isEmpty() || name == "-" || name == "/") return
-    if (prefix.isNotEmpty()) name = "$prefix:$name"
     val attribute = Attribute(type, name, element.attr("href"), site)
     map.add(attribute)
 }
@@ -191,9 +188,7 @@ fun urlsToImageFiles(
     chapter: Chapter?
 ): List<ImageFile> {
     val result: MutableList<ImageFile> = ArrayList()
-    if (!coverUrl.isNullOrEmpty()) result.add(
-        ImageFile.newCover(coverUrl, status)
-    )
+    if (!coverUrl.isNullOrEmpty()) result.add(ImageFile.newCover(coverUrl, status))
     result.addAll(urlsToImageFiles(imgUrls, 1, status, imgUrls.size, chapter))
     return result
 }
@@ -218,7 +213,7 @@ fun urlsToImageFiles(
     val result: MutableList<ImageFile> = ArrayList()
     var order = initialOrder
     // Remove duplicates and MACOSX indexes (yes, it does happen!) before creating the ImageFiles
-    val imgUrlsUnique = imgUrls.distinct().filterNot { it.contains("__MACOSX") }
+    val imgUrlsUnique = imgUrls.distinct().filterNot { it.contains("__MACOSX") || it.isEmpty() }
     for (s in imgUrlsUnique) result.add(
         urlToImageFile(
             s.trim(),
@@ -249,8 +244,7 @@ fun urlToImageFile(
     chapter: Chapter? = null
 ): ImageFile {
     val result = ImageFile(dbOrder = order, dbUrl = imgUrl, status = status)
-    val nbMaxDigits = (floor(log10(totalBookPages.toDouble())) + 1).toInt()
-    result.computeName(nbMaxDigits)
+    result.computeName(totalBookPages)
     if (chapter != null) result.setChapter(chapter)
     return result
 }
@@ -335,17 +329,7 @@ fun getExtensionFromFormat(imgFormat: Map<String, String>, i: Int): String {
 /**
  * Extract a list of Chapters from the given list of links, for the given Content ID
  *
- * @param chapterLinks List of HTML links to extract Chapters from
- * @param contentId    Content ID to associate with all extracted Chapters
- * @return Chapters detected from the given list of links, associated with the given Content ID
- */
-fun getChaptersFromLinks(chapterLinks: List<Element>, contentId: Long): List<Chapter> {
-    return getChaptersFromLinks(chapterLinks, contentId, null, null)
-}
-
-/**
- * Extract a list of Chapters from the given list of links, for the given Content ID
- *
+ * @param site         Site for which the URLs are processed
  * @param chapterLinks List of HTML links to extract Chapters from
  * @param contentId    Content ID to associate with all extracted Chapters
  * @param dateCssQuery CSS query to select the chapter upload date (optional)
@@ -353,10 +337,11 @@ fun getChaptersFromLinks(chapterLinks: List<Element>, contentId: Long): List<Cha
  * @return Chapters detected from the given list of links, associated with the given Content ID
  */
 fun getChaptersFromLinks(
+    site: Site,
     chapterLinks: List<Element>,
     contentId: Long,
-    dateCssQuery: String?,
-    datePattern: String?
+    dateCssQuery: String? = null,
+    datePattern: String? = null
 ): List<Chapter> {
     val result: MutableList<Chapter> = ArrayList()
     val urls: MutableSet<String> = HashSet()
@@ -364,7 +349,7 @@ fun getChaptersFromLinks(
     // First extract data and filter URL duplicates
     val chapterData: MutableList<Triple<String, String, Long>> = ArrayList()
     for (e in chapterLinks) {
-        val url = e.attr("href").trim()
+        val url = fixUrl(e.attr("href").trim(), site.url)
         var name = e.attr("title").trim()
         if (name.isEmpty()) name = cleanup(e.ownText()).trim()
         var epoch = 0L
@@ -383,8 +368,13 @@ fun getChaptersFromLinks(
     chapterData.reverse() // Put unique results in their chronological order
     // Build the final list
     for ((order, chapter) in chapterData.withIndex()) {
-        val chp = Chapter(order, chapter.first, chapter.second)
-        chp.uploadDate = chapter.third
+        val chp = Chapter(
+            order = order,
+            url = chapter.first,
+            name = chapter.second,
+            uploadDate = chapter.third
+            // TODO uniqueId?
+        )
         chp.setContentId(contentId)
         result.add(chp)
     }
@@ -403,7 +393,7 @@ fun getChaptersFromLinks(
  */
 private fun getLastPathPart(url: String, index: Int = 0): String {
     var workUrl = url.trim()
-    if (workUrl.endsWith("/")) workUrl = workUrl.substring(0, workUrl.length - 1)
+    if (workUrl.endsWith("/")) workUrl = workUrl.dropLast(1)
     val parts = workUrl.split("/")
     if (index > parts.size - 1) return workUrl
     return parts[parts.size - 1 - index]
@@ -431,18 +421,18 @@ fun getExtraChaptersbyUrl(
     }
 
     // Only keep the latest contiguous chapters (no in-between chapters)
-    tmpList = tmpList.sortedBy { c -> c.order }.toMutableList()
+    tmpList = tmpList.sortedBy { it.order }.toMutableList()
 
-    val lastStoredUrl = storedChapters.sortedBy { c -> c.order }
-        .map { c -> getLastPathPart(c.url) }.lastOrNull() ?: return tmpList
+    val lastStoredUrl = storedChapters.sortedBy { it.order }
+        .map { getLastPathPart(it.url) }.lastOrNull() ?: return tmpList
 
     val lastStoredOnlineOrder = detectedChapters
-        .filter { c -> getLastPathPart(c.url) == lastStoredUrl }
-        .map { obj: Chapter -> obj.order }
+        .filter { getLastPathPart(it.url) == lastStoredUrl }
+        .map { it.order }
         .lastOrNull()
 
     return if (null == lastStoredOnlineOrder) tmpList
-    else tmpList.filter { c -> c.order > lastStoredOnlineOrder }
+    else tmpList.filter { it.order > lastStoredOnlineOrder }
 }
 
 /**

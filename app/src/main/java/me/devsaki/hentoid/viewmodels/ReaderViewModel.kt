@@ -285,7 +285,7 @@ class ReaderViewModel(
 
     private suspend fun loadContentFromFile(uri: Uri, rootUri: Uri) = withContext(Dispatchers.IO) {
         // Content has already been loaded from storage once
-        folderContentsCache.get(uri)?.let {
+        folderContentsCache[uri]?.let {
             try {
                 dao.selectContent(it)?.let { c ->
                     loadContent(c)
@@ -404,7 +404,12 @@ class ReaderViewModel(
                 val newImg = newImages[i]
                 val cacheUri = StorageCache.getFile(READER_CACHE, formatCacheKey(newImg))
                 if (cacheUri != null) newImg.fileUri = cacheUri.toString()
-                else newImg.fileUri = ""
+                else {
+                    // Downloads saved as archives
+                    if (newImg.url.startsWith("http") || newImg.pageUrl.startsWith("http") && newImg.fileUri.isNotEmpty())
+                        newImg.url = newImg.fileUri
+                    newImg.fileUri = ""
+                }
             }
             processImages(theContent, pageNumber, newImages)
         }
@@ -1061,7 +1066,7 @@ class ReaderViewModel(
         synchronized(databaseImages) {
             currentImageSource?.let { databaseImages.removeSource(it) }
             currentImageSource = try {
-                dao.selectDownloadedImagesFromContentLive(theContent.id)
+                dao.selectImagesFromContentLive(theContent.id, true)
             } finally {
                 dao.cleanup()
             }
@@ -1444,7 +1449,8 @@ class ReaderViewModel(
                     },
                     { onExtractionComplete(nbProcessed, indexesToLoad.size) })
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Timber.d(e)
             EventBus.getDefault().post(
                 ProcessEvent(
                     ProcessEvent.Type.COMPLETE,
@@ -1574,9 +1580,8 @@ class ReaderViewModel(
             img,
             pageIndex,
             null,
-            this@ReaderViewModel::notifyDownloadProgress,
-            stopDownload
-        )
+            this@ReaderViewModel::notifyDownloadProgress
+        ) { stopDownload.get() }
     }
 
     /**
@@ -1590,14 +1595,15 @@ class ReaderViewModel(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val c = reparseFromScratch(theContent, true) ?: throw EmptyResultException()
+                    val c = reparseFromScratch(theContent, true, updateImages = true)
+                        ?: throw EmptyResultException()
                     dao.addContentToQueue(
                         c,
                         null,
                         StatusContent.SAVED,
                         QueuePosition.TOP,
                         -1,
-                        null,
+                        null, null,
                         isQueueActive(getApplication())
                     )
                     if (Settings.isQueueAutostart) resumeQueue(getApplication())
@@ -1647,7 +1653,7 @@ class ReaderViewModel(
                             targetImageStatus,
                             QueuePosition.TOP,
                             -1,
-                            null,
+                            null, null,
                             isQueueActive(getApplication())
                         )
                     }
@@ -1779,7 +1785,7 @@ class ReaderViewModel(
         var selectedChapter = selectedPage.linkedChapter
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == selectedChapter) {
-            selectedChapter = Chapter(1, "", "$chapterStr 1")
+            selectedChapter = Chapter(1, "", "$chapterStr 1", "")
             theContent.imageFiles.let { workingList ->
                 selectedChapter.setImageFiles(workingList)
                 // Link images the other way around so that what follows works properly
@@ -1803,7 +1809,7 @@ class ReaderViewModel(
 
         // Work on a clean image set directly from the DAO
         // (we don't want to depend on LiveData being on time here)
-        val theViewerImages = dao.selectDownloadedImagesFromContent(theContent.id)
+        val theViewerImages = dao.selectImagesFromContent(theContent.id, true)
         // Rely on the order of pictures to get chapter in the right order
         val allChapters =
             theViewerImages.asSequence().mapNotNull { it.linkedChapter }.distinct()
@@ -1839,7 +1845,7 @@ class ReaderViewModel(
         chapterImgs: List<ImageFile>
     ) {
         val newChapterOrder = currentChapter.order + 1
-        val newChapter = Chapter(newChapterOrder, "", "$chapterStr $newChapterOrder")
+        val newChapter = Chapter(newChapterOrder, "", "$chapterStr $newChapterOrder", "")
         newChapter.setContent(content)
 
         // Sort by order
