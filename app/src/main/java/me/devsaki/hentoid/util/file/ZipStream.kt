@@ -38,7 +38,7 @@ private val FILE_EXTRA64 = byteArrayOfInts(0x01, 0x00)
  */
 private const val DOSTIME_BEFORE_1980 = (1 shl 21) or (1 shl 16)
 
-class ZipReader(context: Context, archiveUri: Uri) {
+class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = false) {
     val records = ArrayList<ZipRecord>()
     val allNotCompressed: Boolean
 
@@ -84,7 +84,8 @@ class ZipReader(context: Context, archiveUri: Uri) {
                             it.skip(8) // ECDR size
                             it.skip(2) // Version (creator)
                             val versionViewer = it.readUShortLe()
-                            if (versionViewer > 50u) throw UnsupportedOperationException("ZIP version not supported : $versionViewer")
+                            if (versionViewer > 50u && failOnUnsupported)
+                                throw UnsupportedOperationException("ZIP version not supported : $versionViewer")
                             it.skip(8) // Disk info
                             it.skip(8) // Number of CDRs on disk
                             cdrCount = it.readLongLe()
@@ -122,7 +123,8 @@ class ZipReader(context: Context, archiveUri: Uri) {
                         }
                         it.skip(4) // Version (creator and viewer)
                         val flags = it.readUShortLe()
-                        if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
+                        if (1u == flags % 2u && failOnUnsupported)
+                            throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
                         val compressionMode = it.readUShortLe()
                         if (compressionMode > 0u) hasOneCompressed = true
                         val datetime = dosToJavaTime(it.readUIntLe().toLong())
@@ -172,7 +174,8 @@ class ZipReader(context: Context, archiveUri: Uri) {
                     do {
                         it.skip(2) // Version (viewer)
                         val flags = it.readUShortLe()
-                        if (1u == flags % 2u) throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
+                        if (1u == flags % 2u && failOnUnsupported)
+                            throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
                         val compressionMode = it.readUShortLe()
                         if (compressionMode > 0u) hasOneCompressed = true
                         val datetime = dosToJavaTime(it.readUIntLe().toLong())
@@ -256,7 +259,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
     val sink: Sink
 
     init {
-        records.addAll(ZipReader(context, archiveUri).records)
+        records.addAll(ZipReader(context, archiveUri, true).records)
 
         val fileSize = fileSizeFromUri(context, archiveUri)
         val outStream = getOutputStream(context, archiveUri, append)
