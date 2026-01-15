@@ -246,7 +246,7 @@ class TransformWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Remove old folder with old images
-            removeDocument(applicationContext, sourceFolder)
+            if (targetFolder != null) removeDocument(applicationContext, sourceFolder)
         } else {
             nbKO += sourceImages.size
 
