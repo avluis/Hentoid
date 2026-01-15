@@ -598,19 +598,24 @@ open class CustomWebViewClient : WebViewClient {
                 )
                 res.use { response ->
                     // Scram if the response is a redirection or an error
-                    if (response.code >= 300) return null
+                    if (response.code >= 300) {
+                        Timber.v("sendRequest ${request.method} ${request.url} FAILED ${response.code}")
+                        return WebResourceResponse(
+                            "text/plain",
+                            "utf-8",
+                            ByteArrayInputStream(NOTHING)
+                        )
+                    }
                     response.body.byteStream().use {
                         val streams = duplicateInputStream(it, 1)
                         return okHttpResponseToWebkitResponse(response, streams[0])
                     }
                 }
-            } catch (e: IOException) {
-                Timber.i(e)
-            } catch (e: IllegalStateException) {
-                Timber.i(e)
+            } catch (e: Exception) {
+                Timber.i(e, "sendRequest ${request.method} ${request.url} failed ")
             }
         }
-        return null
+        return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
     }
 
     fun recordDynamicPostRequests(url: String, body: String) {
