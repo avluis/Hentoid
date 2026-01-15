@@ -8,10 +8,10 @@ buildscript {
         maven { url='https://repo1.maven.org/maven2' } // androidndkgif
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.2'
+        classpath 'com.android.tools.build:gradle:9.0.0'
         classpath 'com.google.gms:google-services:4.4.3'
         classpath 'io.objectbox:objectbox-gradle-plugin:5.0.1'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.5.0.2730'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.4'
         classpath "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:8.9.4"
