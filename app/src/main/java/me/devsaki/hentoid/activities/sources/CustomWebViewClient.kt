@@ -614,8 +614,8 @@ open class CustomWebViewClient : WebViewClient {
             } catch (e: Exception) {
                 Timber.i(e, "sendRequest ${request.method} ${request.url} failed ")
             }
-        }
-        return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
+            return WebResourceResponse("text/plain", "utf-8", ByteArrayInputStream(NOTHING))
+        } else return null
     }
 
     fun recordDynamicPostRequests(url: String, body: String) {
