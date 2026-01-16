@@ -19,6 +19,7 @@ android {
 
     defaultConfig {
         minSdkVersion 26
+        targetSdkVersion 36
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles 'consumer-rules.pro'
@@ -31,12 +32,6 @@ android {
         }
     }
     namespace = 'me.devsaki.hentoid.customssiv'
-    lint {
-        targetSdk 36
-    }
-    testOptions {
-        targetSdk 36
-    }
 
 }
 

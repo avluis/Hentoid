@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.google.devtools.ksp").version('2.3.2')
+    id("com.google.devtools.ksp").version("2.2.0-2.0.2")
 }
 
 apply plugin: 'com.android.application'
@@ -53,7 +53,7 @@ android {
 
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
-        proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         resourceConfigurations += ['en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es', 'sv']
 // Only include complete translations
     }
