@@ -23,8 +23,23 @@ class SimplyActivity : BaseBrowserActivity() {
             "api.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$",
             "api-v3.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$"
         )
+        private val JS_CONTENT_BLACKLIST = arrayOf(
+            "exoloader",
+            //"popunder",
+            "ad_trigger_class",
+            "ad_popup_force",
+            "exosrv.com",
+            "realsrv.com",
+            "ad-provider",
+            "adprovider",
+            /*
+            "exovideoslider"
+            "adsbyexoclick",
+            "\"ads\"",
+            "\"adverts\""
+             */
+        )
     }
-
 
     override fun getStartSite(): Site {
         return Site.SIMPLY
@@ -34,6 +49,7 @@ class SimplyActivity : BaseBrowserActivity() {
         val client = SimplyViewClient(getStartSite(), GALLERY_FILTER, this, webView)
         client.restrictTo(DOMAIN_FILTER)
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
+        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
         return client
     }
 

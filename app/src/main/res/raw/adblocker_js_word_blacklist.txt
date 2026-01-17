@@ -1,3 +1,5 @@
+"ads"
+"adverts"
 &abvar=0
 'adsdomain'
 'closead'
@@ -11,6 +13,7 @@ adblocksucks
 adguardbase
 admanager
 adprovider
+adsbyexoclick
 adtrace.online
 ai_process_ip_addresses
 analytics_ads_v2
@@ -24,6 +27,9 @@ exojspop
 exoloader
 exoslider
 exosrv.com
+exovideoslider
 popunder
 realsrv.com
 trackingurl
+zfgloadedbanner
+zfgloadedpopup
