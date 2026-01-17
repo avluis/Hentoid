@@ -251,6 +251,8 @@ fun Context.extractArchiveEntriesBlocking(
     onProgress: (() -> Unit)? = null,
     interrupt: (() -> Boolean)? = null
 ): List<Uri> {
+    // Key : Image index; Uri : fileUri
+    // NB : Pivot between ID and index is entriesToExtract
     val result = ConcurrentHashMap<Int, Uri>()
     val onExtracted: (Long, Uri) -> Unit = { id, fileUri ->
         onProgress?.invoke()
@@ -291,7 +293,13 @@ fun Context.extractArchiveEntriesBlocking(
         result.apply {
             if (lastSize == size) {
                 // 3 seconds timeout when no progression
-                if (nbPauses++ > 3.0 * 1000.0 / delay) throw IOException("Extraction timed out (${result.size} / ${entriesToExtract.size})")
+                if (nbPauses++ > 3.0 * 1000.0 / delay) {
+                    val missingEntries =
+                        entriesToExtract.filterIndexed { idx, _ -> !result.keys.contains(idx) }
+                    Timber.w("Incomplete extraction for $archive - Missing ${missingEntries.size} entries")
+                    missingEntries.forEach { Timber.w(it.first) }
+                    throw IOException("Extraction timed out (${result.size} / ${entriesToExtract.size})")
+                }
             } else {
                 nbPauses = 0
             }
@@ -337,6 +345,7 @@ private fun Context.extractArchiveEntries(
         format = getTypeFromArchiveHeader(header)
     }
     if (null == format) return
+    val internalFileNames: MutableMap<Int, String> = HashMap() // For logging purposes
     val targetFileNames: MutableMap<Int, String> = HashMap()
     val identifiers: MutableMap<Int, Long> = HashMap()
 
@@ -354,6 +363,7 @@ private fun Context.extractArchiveEntries(
                                 // TL;DR - We don't care about folders
                                 // If we were coding an all-purpose extractor we would have to create folders
                                 // But Hentoid just wants to extract a bunch of files in one single place!
+                                internalFileNames[archiveIndex] = entry.first
                                 targetFileNames[archiveIndex] = entry.third
                                 identifiers[archiveIndex] = entry.second
                                 break
@@ -368,6 +378,7 @@ private fun Context.extractArchiveEntries(
                         fileFinder,
                         fileCreator,
                         outputStreamCreator = { uri -> getOutputStream(this, uri) },
+                        internalFileNames,
                         targetFileNames,
                         identifiers,
                         interrupt,
@@ -563,6 +574,7 @@ class DocumentFileRandomInStream(context: Context, val uri: Uri) : IInStream {
  * @property fileFinder             Delegate method that checks if the target file exists in the target folder
  * @property fileCreator            Delegate method that creates the given file in the target folder
  * @property outputStreamCreator    Delegate method that creates an OutputStream for the given Uri
+ * @property internalFileNames      Internal file names (with extension), indexed on archive absolute file index (for logging purposes)
  * @property targetFileNames        Target file names (with extension), indexed on archive absolute file index
  * @property identifiers            Target file identifiers given by the caller, indexed on archive absolute file index
  * @property interrupt              Kill switch
@@ -575,6 +587,7 @@ private class ArchiveExtractCallback(
     private val fileFinder: (String) -> Uri?,
     private val fileCreator: (String) -> Uri?,
     private val outputStreamCreator: (Uri) -> OutputStream?,
+    private val internalFileNames: Map<Int, String>,
     private val targetFileNames: Map<Int, String>,
     private val identifiers: Map<Int, Long>,
     private val interrupt: (() -> Boolean)? = null,
@@ -599,9 +612,10 @@ private class ArchiveExtractCallback(
 
         if (identifiers.isNotEmpty()) identifier = identifiers[index] ?: return null
         val fileName = targetFileNames[index] ?: return null
+        val internalName = internalFileNames[index] ?: ""
 
         val existing = fileFinder.invoke(fileName)
-        Timber.v("Extract archive, get stream: $index to: $extractAskMode as $fileName")
+        Timber.v("Extract archive, get stream: $index ($internalName) to: $extractAskMode as $fileName")
         return try {
             val target = existing ?: fileCreator.invoke(fileName)
             ?: throw IOException("Can't create file $fileName")
