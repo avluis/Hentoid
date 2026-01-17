@@ -140,6 +140,8 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         val files = listFiles(context, bookFolder, filter)
         if (files.isEmpty()) return
 
+        Timber.i("Archive ${content.storageUri} : ${files.size} files to process")
+
         val destFileUri = getFileResult(context, content, params)
         val outputStream = getOutputStream(context, destFileUri)
         var success = false

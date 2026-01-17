@@ -76,6 +76,7 @@ import me.devsaki.hentoid.util.file.findFolder
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
@@ -1996,10 +1997,11 @@ suspend fun mergeContents(
                         // TODO we have an unarchiving loop that gets multiple files inside a loop that goes on images one by one => OPTIMIZE
                         tempFolder?.delete()
                         tempFolder = getOrCreateCacheFolder(context, "tmp-merge-archive")
-                        if (null == tempFolder) throw ContentNotProcessedException(
-                            mergedContent,
-                            "Could not create temp unarchive folder"
-                        )
+                        if (null == tempFolder)
+                            throw ContentNotProcessedException(
+                                mergedContent,
+                                "Could not create temp unarchive folder"
+                            )
                         var unarchivedBytes = 0L
                         val picsToUnarchive: MutableList<ImageFile> = ArrayList()
                         var idx = -1
@@ -2018,7 +2020,7 @@ suspend fun mergeContents(
                             Triple(
                                 uri.replace(c.storageUri + File.separator, ""),
                                 it.id,
-                                it.id.toString()
+                                "${it.id}.${getExtension(uri)}" // Using ID to avoid name collisions when unarchiving multiple Contents
                             )
                         }
                             .distinctBy { it.first } // Prevent failures when processing corrupted archives with duplicate entries
@@ -2041,7 +2043,8 @@ suspend fun mergeContents(
                                     isCanceled
                                 )
                             } ?: emptyList()
-                        }
+                        } // Archive or PDF
+
                         if (unarchivedFiles.size < picsToUnarchive.size) throw ContentNotProcessedException(
                             mergedContent,
                             "Issue when unarchiving " + unarchivedFiles.size + " " + picsToUnarchive.size
