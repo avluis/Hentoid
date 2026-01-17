@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.io.IOException
+import me.devsaki.hentoid.util.getChecksumValue
 import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
@@ -113,21 +114,5 @@ class ArchiveStreamer(context: Context, val archiveUri: Uri, append: Boolean) {
                 isQueueActive.set(false)
             }
         }
-    }
-
-    fun getChecksumValue(checksum: Checksum, fis: InputStream): Long {
-        try {
-            val bis = BufferedInputStream(fis)
-            val bytes = ByteArray(1024)
-            var len = 0
-
-            while ((bis.read(bytes).also { len = it }) >= 0) {
-                checksum.update(bytes, 0, len)
-            }
-            bis.close()
-        } catch (e: IOException) {
-            Timber.e(e)
-        }
-        return checksum.value
     }
 }

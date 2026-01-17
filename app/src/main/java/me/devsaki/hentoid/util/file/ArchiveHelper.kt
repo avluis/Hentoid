@@ -9,6 +9,7 @@ import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.byteArrayOfInts
+import me.devsaki.hentoid.util.getChecksumValue
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.pause
 import me.devsaki.hentoid.util.startsWith
@@ -33,6 +34,7 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.util.concurrent.ConcurrentHashMap
+import java.util.zip.CRC32
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -414,11 +416,18 @@ private fun Context.addFile(
     getInputStream(this, file).use { fi ->
         BufferedInputStream(fi, BUFFER).use { origin ->
             val zipEntry = ZipEntry(file.name)
+            zipEntry.method = ZipEntry.STORED
+            zipEntry.size = file.length()
+            zipEntry.crc = getInputStream(this, file).use {
+                getChecksumValue(CRC32(), it)
+            }
             stream.putNextEntry(zipEntry)
             var count: Int
             while (origin.read(buffer, 0, BUFFER).also { count = it } != -1) {
                 stream.write(buffer, 0, count)
             }
+            stream.flush()
+            stream.closeEntry()
         }
     }
 }
@@ -439,14 +448,17 @@ fun Context.zipFiles(
     progress: ((Float) -> Unit)? = null
 ) {
     assertNonUiThread()
-    ZipOutputStream(BufferedOutputStream(out)).use { zipOutputStream ->
+    val zipStream = ZipOutputStream(BufferedOutputStream(out))
+    zipStream.setMethod(ZipOutputStream.STORED)
+    zipStream.use { stream ->
         val data = ByteArray(BUFFER)
         files.forEachIndexed { index, file ->
             if (isCanceled()) return@forEachIndexed
-            addFile(file, zipOutputStream, data)
+            addFile(file, stream, data)
             // Signal progress every 10 pages
             if (0 == index % 10) progress?.invoke(index * 1f / files.size)
         }
+        stream.finish()
         out.flush()
     }
 }
