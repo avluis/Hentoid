@@ -2021,6 +2021,7 @@ suspend fun mergeContents(
                                 it.id.toString()
                             )
                         }
+                            .distinctBy { it.first } // Prevent failures when processing corrupted archives with duplicate entries
                         val unarchivedFiles = if (c.isArchive) {
                             context.extractArchiveEntriesBlocking(
                                 c.storageUri.toUri(),
