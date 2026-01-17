@@ -321,8 +321,9 @@ class MetaImportDialogFragment : BaseDialogFragment<Nothing>() {
                 importProgressBar.max = event.elementsTotal
                 importProgressBar.progress = progress
                 importProgressBar.isIndeterminate = false
-            } else if (ProcessEvent.Type.COMPLETE == event.eventType) {
+            } else if (ProcessEvent.Type.COMPLETE == event.eventType || ProcessEvent.Type.FAILURE == event.eventType) {
                 isServiceGracefulClose = true
+                // TODO change message when failure
                 Snackbar.make(
                     root,
                     resources.getQuantityString(

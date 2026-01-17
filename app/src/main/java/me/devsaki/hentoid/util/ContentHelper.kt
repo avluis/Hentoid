@@ -25,6 +25,7 @@ import me.devsaki.hentoid.activities.UnlockActivity.Companion.wrapIntent
 import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
 import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
@@ -1887,7 +1888,7 @@ suspend fun mergeContents(
     dao: CollectionDAO,
     isCanceled: () -> Boolean,
     onProgress: (Int, Int, String) -> Unit,
-    onComplete: () -> Unit
+    onComplete: Consumer<Boolean>
 ) {
     // New book inherits properties of the first content of the list
     // which takes "precedence" as the 1st chapter
@@ -1915,6 +1916,7 @@ suspend fun mergeContents(
     val mergedAttributes = contentList.flatMap { it.attributes }
     mergedContent.addAttributes(mergedAttributes)
 
+    var isError = false
     withContext(Dispatchers.IO) {
         // Create destination folder for new content
         val parentFolder: DocumentFile?
@@ -1960,7 +1962,6 @@ suspend fun mergeContents(
         val mergedImages: MutableList<ImageFile> = ArrayList()
         val mergedChapters: MutableList<Chapter> = ArrayList()
 
-        var isError = false
         var tempFolder: File? = null
 
         try {
@@ -2152,7 +2153,7 @@ suspend fun mergeContents(
     }
     dao.cleanup()
 
-    if (!isCanceled.invoke()) onComplete.invoke()
+    if (!isCanceled.invoke()) onComplete.invoke(isError)
 }
 
 fun getLocation(content: Content): StorageLocation {
