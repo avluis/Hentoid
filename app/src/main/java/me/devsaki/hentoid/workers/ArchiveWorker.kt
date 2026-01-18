@@ -18,6 +18,7 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DownloadMode
+import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification
@@ -26,18 +27,22 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.canBeArchived
 import me.devsaki.hentoid.util.createArchivePdfCover
 import me.devsaki.hentoid.util.download.selectDownloadLocation
+import me.devsaki.hentoid.util.file.Beholder
 import me.devsaki.hentoid.util.file.DEFAULT_MIME_TYPE
 import me.devsaki.hentoid.util.file.PdfManager
 import me.devsaki.hentoid.util.file.createNewDownloadFile
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findOrCreateDocumentFile
+import me.devsaki.hentoid.util.file.formatDisplay
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getOutputStream
+import me.devsaki.hentoid.util.file.getParent
 import me.devsaki.hentoid.util.file.listFiles
 import me.devsaki.hentoid.util.file.removeDocument
 import me.devsaki.hentoid.util.file.zipFiles
 import me.devsaki.hentoid.util.formatFolderName
 import me.devsaki.hentoid.util.getOrCreateSiteDownloadDir
+import me.devsaki.hentoid.util.getStorageRoot
 import me.devsaki.hentoid.util.image.imageNamesFilter
 import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.notification.BaseNotification
@@ -142,7 +147,8 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
         Timber.i("Archive ${content.storageUri} : ${files.size} files to process")
 
-        val destFileUri = getFileResult(context, content, params)
+        val destFileUri = getTargetFile(context, content, params)
+        Timber.d("DestUri : ${destFileUri.formatDisplay()}")
         val outputStream = getOutputStream(context, destFileUri)
         var success = false
         outputStream?.use { os ->
@@ -173,14 +179,12 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                 // Map new image locations
                 if (params.archivePrimaryContent) {
                     val imgs = content.imageList
+                    val imgHash = imgs.groupBy { UriParts(it.fileUri).fileNameFull }
                     files.forEach { f ->
-                        var found = false
-                        imgs.forEach {
-                            if (!found && UriParts(it.fileUri).fileNameFull == f.name) {
-                                it.fileUri =
-                                    destFileUri.toString() + File.separator + f.name
-                                found = true
-                            }
+                        imgHash[f.name]?.firstOrNull()?.let { img ->
+                            img.fileUri =
+                                destFileUri.toString() + File.separator + f.name
+                            if (!img.url.startsWith("http")) img.url = img.fileUri
                         }
                     }
                     dao.insertImageFiles(imgs)
@@ -211,7 +215,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
     }
 
     @Throws(IOException::class)
-    private fun getFileResult(
+    private fun getTargetFile(
         context: Context,
         content: Content,
         params: Params
@@ -227,15 +231,23 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
         var destName = bookFolderName.first + "." + ext
         // Identify target folder
         val targetFolderUri = params.targetFolderUri.ifEmpty {
-            val location = selectDownloadLocation(context)
-            getOrCreateSiteDownloadDir(context, location, content.site)?.uri?.toString()
-                ?: throw IOException("Couldn't locate site folder")
+            if (StatusContent.EXTERNAL == content.status) {
+                Beholder.ignoreFolder(content.storageUri.toUri())
+                val storageRoot =
+                    content.getStorageRoot() ?: throw IOException("Couldn't locate external folder")
+                getParent(context, storageRoot, content.storageUri.toUri())?.toString()
+                    ?: throw IOException("Couldn't locate external folder")
+            } else {
+                val location = selectDownloadLocation(context)
+                getOrCreateSiteDownloadDir(context, location, content.site)?.uri?.toString()
+                    ?: throw IOException("Couldn't locate site folder")
+            }
         }
         return try {
-            createTargetFile(targetFolderUri, destName, params.overwrite)
+            createTargetFile(context, targetFolderUri, destName, params.overwrite)
         } catch (_: IOException) { // ...if it fails, try creating the file with the old sanitized naming
             destName = bookFolderName.second + "." + ext
-            createTargetFile(targetFolderUri, destName, params.overwrite)
+            createTargetFile(context, targetFolderUri, destName, params.overwrite)
         }
     }
 
@@ -243,6 +255,7 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
      * Returns file Uri; Uri.EMPTY if nothing has been created
      */
     private fun createTargetFile(
+        context: Context,
         targetFolderUri: String,
         displayName: String,
         overwrite: Boolean
@@ -253,18 +266,20 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
 
             // NB : specifying the ZIP Mime-Type here forces extension to ".zip"
             // even when the file name already ends with ".cbr"
-            return createNewDownloadFile(applicationContext, displayName, DEFAULT_MIME_TYPE)
+            return createNewDownloadFile(context, displayName, DEFAULT_MIME_TYPE)
         } else {
-            val targetFolder = getDocumentFromTreeUriString(applicationContext, targetFolderUri)
-            if (targetFolder != null) {
+            getDocumentFromTreeUriString(context, targetFolderUri)?.let { targetFolder ->
                 if (!overwrite) {
                     val existing =
-                        findFile(applicationContext, targetFolder, displayName)
+                        findFile(context, targetFolder, displayName)
                     // If the target file is already there and we can't overwrite, skip archiving
                     if (existing != null) Uri.EMPTY
                 }
                 findOrCreateDocumentFile(
-                    applicationContext, targetFolder, DEFAULT_MIME_TYPE, displayName
+                    context,
+                    targetFolder,
+                    DEFAULT_MIME_TYPE,
+                    displayName
                 )?.let {
                     return it.uri
                 }

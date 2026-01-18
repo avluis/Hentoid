@@ -226,7 +226,11 @@ object Beholder {
      * Ignore given for all subsequent scanForDelta's until said folder is registered using registerContent
      */
     fun ignoreFolder(folder: DocumentFile) {
-        ignoreList.add(DocumentsContract.getTreeDocumentId(folder.uri))
+        ignoreFolder(folder.uri)
+    }
+
+    fun ignoreFolder(folder: Uri) {
+        ignoreList.add(DocumentsContract.getTreeDocumentId(folder))
     }
 
     fun registerRoot(

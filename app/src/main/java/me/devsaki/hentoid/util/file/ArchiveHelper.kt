@@ -412,7 +412,7 @@ private fun Context.addFile(
     stream: ZipOutputStream,
     buffer: ByteArray
 ) {
-    Timber.d("Adding: %s", file)
+    Timber.d("Adding: ${file.uri}")
     getInputStream(this, file).use { fi ->
         BufferedInputStream(fi, BUFFER).use { origin ->
             val zipEntry = ZipEntry(file.name)
