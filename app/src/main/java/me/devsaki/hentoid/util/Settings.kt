@@ -63,6 +63,7 @@ object Settings {
         result.remove(Key.LOCK_TYPE)
         result.remove(Key.ACHIEVEMENTS)
         result.remove(Key.ACHIEVEMENTS_NB_AI_RESCALE)
+        result.remove(Key.BEHOLDER_TIMESTAMP)
 
         return result.filterValues { it != null }.mapValues { it -> it.value as Any }
     }
@@ -508,7 +509,7 @@ object Settings {
     var memoryAlertThreshold: Int by IntSettingStr(Key.MEMORY_ALERT_THRESHOLD, 110)
     val isDeleteExternalLibrary: Boolean by BoolSetting(Key.EXTERNAL_LIBRARY_DELETE, false)
     val folderTruncationNbChars: Int by IntSettingStr("pref_folder_trunc_lists", 100)
-    var latestBeholderTimestamp: Long by LongSetting("pref_latest_beholder_timestamp", 0)
+    var latestBeholderTimestamp: Long by LongSetting(Key.BEHOLDER_TIMESTAMP, 0)
 
     // DUPLICATE DETECTOR
     var duplicateSensitivity: Int by IntSettingStr("duplicate_sensitivity", 1)
@@ -663,6 +664,7 @@ object Settings {
         const val FORCE_ENGLISH = "force_english"
         const val COLOR_THEME = "pref_color_theme"
         const val ACTIVE_SITES = "active_sites"
+        const val BEHOLDER_TIMESTAMP = "pref_latest_beholder_timestamp"
 
         const val IMPORT_QUEUE_EMPTY = "pref_import_queue_empty"
 
