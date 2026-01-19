@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_BOOK
 import me.devsaki.hentoid.util.addContent
 import me.devsaki.hentoid.util.chapterStr
+import me.devsaki.hentoid.util.clearFileNameMatchCache
 import me.devsaki.hentoid.util.coerceIn
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.deleteChapters
@@ -374,7 +375,7 @@ class ReaderViewModel(
      * Process the given raw ImageFile entries to populate the viewer
      *
      * @param theContent Content to use
-     * @param pageNumber Page number to start with
+     * @param pageNumber Page number to start with at first load
      * @param newImages  Images to process
      */
     private fun loadImages(
@@ -466,6 +467,7 @@ class ReaderViewModel(
     fun onActivityLeave() {
         viewModelScope.launch(Dispatchers.IO) {
             AchievementsManager.checkCollection()
+            clearFileNameMatchCache()
             dao.cleanup()
         }
     }
@@ -474,7 +476,7 @@ class ReaderViewModel(
      * Initialize the picture viewer using the given parameters
      *
      * @param theContent Content to use
-     * @param pageNumber Page number to start with
+     * @param pageNumber Page number to start with at first load
      * @param imageFiles Pictures to process
      */
     private fun processImages(
@@ -512,7 +514,7 @@ class ReaderViewModel(
      * (used only once per book when it is loaded for the first time)
      *
      * @param theContent Content to use
-     * @param pageNumber Page number to start with
+     * @param pageNumber Page number to start with at first load
      * @param imageFiles Pictures to process
      */
     private fun contentFirstLoad(
