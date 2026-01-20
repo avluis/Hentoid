@@ -1185,7 +1185,7 @@ class ReaderViewModel(
             if (picturesLeftToProcess.isEmpty()) return@launch
 
             // Identify pages to be loaded
-            val indexesToLoad: MutableList<Int> = ArrayList()
+            val setToLoad: MutableSet<Int> = HashSet()
             val increment = if (direction >= 0) 1 else -1
             val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
             // pageIndex at 1/3rd of the range to extract/download
@@ -1198,7 +1198,14 @@ class ReaderViewModel(
             ).toInt()
             for (i in 0 until quantity)
                 if (picturesLeftToProcess.contains(initialIndex + increment * i))
-                    indexesToLoad.add(initialIndex + increment * i)
+                    setToLoad.add(initialIndex + increment * i)
+
+            // Load by distance from current index with a preference for forward browsing (e.g. 2-3-1-4-0)
+            val indexesToLoad: MutableList<Int> = ArrayList()
+            for (distance in 0..quantity) {
+                if (setToLoad.contains(viewerIndex + distance)) indexesToLoad.add(viewerIndex + distance)
+                if (setToLoad.contains(viewerIndex - distance)) indexesToLoad.add(viewerIndex - distance)
+            }
 
             // Only run extraction when there's at least 1/3rd of the extract range to fetch
             // (prevents calling extraction for one single picture at every page turn)
