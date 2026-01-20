@@ -308,6 +308,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             getStartingIndex().observe(viewLifecycleOwner) { onStartingIndexChanged(it) }
             getShuffled().observe(viewLifecycleOwner) { onShuffleChanged(it) }
             getShowFavouritesOnly().observe(viewLifecycleOwner) { updateShowFavouriteDisplay(it) }
+            getImageTypes().observe(viewLifecycleOwner) { adapter.setImageTypes(it.toMap()) } // Work on a copy to avoid concurrency issues
         }
     }
 
@@ -377,6 +378,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         super.onDestroy()
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         if (null == binding) return

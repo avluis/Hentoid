@@ -22,14 +22,16 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.adapters.ImagePagerAdapter
+import me.devsaki.hentoid.adapters.ImagePagerAdapter.ImageType
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
+import me.devsaki.hentoid.core.KRunnable
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.SEED_PAGES
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Chapter
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DownloadMode
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
@@ -41,6 +43,7 @@ import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_AGAIN
 import me.devsaki.hentoid.util.Settings.Value.VIEWER_DELETE_ASK_BOOK
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.assertNonUiThread
 import me.devsaki.hentoid.util.chapterStr
 import me.devsaki.hentoid.util.clearFileNameMatchCache
 import me.devsaki.hentoid.util.coerceIn
@@ -57,9 +60,18 @@ import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
 import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
+import me.devsaki.hentoid.util.file.getInputStream
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.formatCacheKey
 import me.devsaki.hentoid.util.getPictureFilesFromContent
+import me.devsaki.hentoid.util.image.MIME_IMAGE_AVIF
+import me.devsaki.hentoid.util.image.MIME_IMAGE_GIF
+import me.devsaki.hentoid.util.image.MIME_IMAGE_JXL
+import me.devsaki.hentoid.util.image.MIME_IMAGE_PNG
+import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
+import me.devsaki.hentoid.util.image.MIME_VIDEO_MP4
+import me.devsaki.hentoid.util.image.getMimeTypeFromPictureBinary
+import me.devsaki.hentoid.util.image.isImageAnimated
 import me.devsaki.hentoid.util.matchFilesToImageList
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.pause
@@ -86,12 +98,14 @@ import java.io.File
 import java.util.Collections
 import java.util.Queue
 import java.util.Random
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
+private const val PRELOAD_RANGE = 5
 private const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
 private const val EXTRACT_RANGE = 15
 
@@ -135,8 +149,8 @@ class ReaderViewModel(
 
     private val reversed = MutableLiveData<Boolean>() // Reverse state of the current book
 
-    private val imageTypes =
-        MutableLiveData<Map<Int, ImagePagerAdapter.ImageType>>() // Image types read from file content
+    // Image types read from file content
+    private val imageTypes = MutableLiveData<MutableMap<Long, ImageType>>()
 
     // True during one loading where images need to be reloaded on screen
     private var forceImageUIReload = false
@@ -167,6 +181,7 @@ class ReaderViewModel(
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
         reversed.postValue(false)
+        imageTypes.postValue(ConcurrentHashMap())
         StorageCache.addCleanupObserver(READER_CACHE, this.javaClass.name) { this.onCacheCleanup() }
     }
 
@@ -194,6 +209,10 @@ class ReaderViewModel(
 
     fun getShowFavouritesOnly(): LiveData<Boolean> {
         return showFavouritesOnly
+    }
+
+    fun getImageTypes(): LiveData<MutableMap<Long, ImageType>> {
+        return imageTypes
     }
 
     // Artificial observer bound to the activity's lifecycle to ensure DB images are pushed to the ViewModel
@@ -433,36 +452,42 @@ class ReaderViewModel(
     ) = withContext(Dispatchers.IO) {
         require(!theContent.isArchive) { "Content must not be an archive" }
         val missingUris = newImages.any { it.fileUri.isEmpty() }
-        var newImageFiles: List<ImageFile> = ArrayList(newImages)
-
-        // Reattach actual files to the book's pictures if they are empty or have no URI's
-        if (missingUris || newImages.isEmpty()) {
-            val pictureFiles = getPictureFilesFromContent(getApplication(), theContent)
-            if (pictureFiles.isNotEmpty()) {
-                if (newImages.isEmpty()) {
-                    newImageFiles = createImageListFromFiles(pictureFiles)
-                    theContent.setImageFiles(newImageFiles)
-                    try {
-                        dao.insertContent(theContent)
-                    } finally {
-                        dao.cleanup()
-                    }
-                } else {
-                    // Match files for viewer display; no need to persist that
-                    matchFilesToImageList(pictureFiles, newImageFiles)
-                }
-            } else { // Try to get some from the cache
-                newImageFiles.forEach {
-                    StorageCache.getFile(READER_CACHE, formatCacheKey(it))?.let { existingUri ->
-                        it.fileUri = existingUri.toString()
-                    }
-                }
-            }
-        }
+        val newImageFiles =
+            if (missingUris || newImages.isEmpty()) reattachImageFiles(theContent, newImages)
+            else ArrayList(newImages)
 
         // Replace initial images with updated images
         newImages.clear()
         newImages.addAll(newImageFiles)
+    }
+
+    private suspend fun reattachImageFiles(
+        c: Content,
+        newImages: List<ImageFile>
+    ): List<ImageFile> {
+        var newImageFiles: List<ImageFile> = ArrayList(newImages)
+        val pictureFiles = getPictureFilesFromContent(getApplication(), c)
+        if (pictureFiles.isNotEmpty()) {
+            if (newImages.isEmpty()) {
+                newImageFiles = createImageListFromFiles(pictureFiles)
+                c.setImageFiles(newImageFiles)
+                try {
+                    dao.insertContent(c)
+                } finally {
+                    dao.cleanup()
+                }
+            } else {
+                // Match files for viewer display; no need to persist that
+                matchFilesToImageList(pictureFiles, newImageFiles)
+            }
+        } else { // Try to get some from the cache
+            newImageFiles.forEach {
+                StorageCache.getFile(READER_CACHE, formatCacheKey(it))?.let { existingUri ->
+                    it.fileUri = existingUri.toString()
+                }
+            }
+        }
+        return newImageFiles
     }
 
     /**
@@ -488,12 +513,15 @@ class ReaderViewModel(
         pageNumber: Int,
         imageFiles: List<ImageFile>
     ) {
-        sortAndSetViewerImages(imageFiles, getShuffled().value == true, reversed.value == true)
-        if (theContent.id != loadedContentId) contentFirstLoad(
-            theContent,
-            pageNumber,
-            imageFiles
+        val startingIndex = if (theContent.id != loadedContentId)
+            computeStartingIndex(theContent, pageNumber, imageFiles) else -1
+        sortAndSetViewerImages(
+            imageFiles,
+            getShuffled().value == true,
+            reversed.value == true,
+            startingIndex
         )
+        if (theContent.id != loadedContentId) contentFirstLoad(startingIndex, imageFiles)
         loadedContentId = theContent.id
     }
 
@@ -513,19 +541,11 @@ class ReaderViewModel(
         return 0.coerceAtLeast(result - thumbIndex - 1)
     }
 
-    /**
-     * Initialize the picture viewer using the given parameters
-     * (used only once per book when it is loaded for the first time)
-     *
-     * @param theContent Content to use
-     * @param pageNumber Page number to start with at first load
-     * @param imageFiles Pictures to process
-     */
-    private fun contentFirstLoad(
+    private fun computeStartingIndex(
         theContent: Content,
         pageNumber: Int,
         imageFiles: List<ImageFile>
-    ) {
+    ): Int {
         var startingIndex = 0
 
         // Auto-restart at last read position if asked to
@@ -542,7 +562,20 @@ class ReaderViewModel(
             }
         }
 
-        startingIndex = adjustPageIndex(startingIndex, imageFiles)
+        return adjustPageIndex(startingIndex, imageFiles)
+    }
+
+    /**
+     * Initialize the picture viewer using the given parameters
+     * (used only once per book when it is loaded for the first time)
+     *
+     * @param startingIndex Index of the first page to load
+     * @param imageFiles    Pictures to process
+     */
+    private fun contentFirstLoad(
+        startingIndex: Int,
+        imageFiles: List<ImageFile>
+    ) {
         setViewerStartingIndex(startingIndex)
 
         // Init the read pages write cache
@@ -578,13 +611,16 @@ class ReaderViewModel(
     /**
      * Sort and set the given images for the viewer
      *
-     * @param images    Images to process
-     * @param shuffle Trye if shuffle mode is on; false if not
+     * @param images     Images to process
+     * @param shuffle    True if shuffle mode is on; false if not
+     * @param reverse    True if reverse mode is on; false if not
+     * @param startIndex Page index to start with (-1 when not applicable)
      */
     private fun sortAndSetViewerImages(
         images: List<ImageFile>,
         shuffle: Boolean,
-        reverse: Boolean
+        reverse: Boolean,
+        startIndex: Int = -1
     ) {
         var imgs = images.toList()
         imgs = if (shuffle) {
@@ -626,7 +662,9 @@ class ReaderViewModel(
                 viewerImagesInternal.clear()
                 viewerImagesInternal.addAll(imgs)
             }
-            viewerImages.postValue(viewerImagesInternal.toList())
+            if (startIndex > -1) onPageChange(startIndex - 1, 1) {
+                viewerImages.postValue(viewerImagesInternal.toList())
+            } else viewerImages.postValue(viewerImagesInternal.toList())
         }
     }
 
@@ -641,7 +679,7 @@ class ReaderViewModel(
             Settings.readerDeleteAskMode = VIEWER_DELETE_ASK_AGAIN
         indexDlInProgress.clear()
         indexExtractInProgress.clear()
-        imageTypes.postValue(emptyMap())
+        imageTypes.postValue(ConcurrentHashMap())
         archiveExtractKillSwitch.set(true)
 
         // Don't do anything if the Content hasn't even been loaded
@@ -1174,20 +1212,30 @@ class ReaderViewModel(
      * @param viewerIndex Viewer index of the page that has just been displayed
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
-    fun onPageChange(viewerIndex: Int, direction: Int) {
+    fun onPageChange(viewerIndex: Int, direction: Int, onDoneAfterPreload: KRunnable? = null) {
         viewModelScope.launch(Dispatchers.IO) {
             if (viewerImagesInternal.size <= viewerIndex) return@launch
             val theContent = getContent().value ?: return@launch
             val isArchive = theContent.isArchive
             val isPdf = theContent.isPdf
+            val isStreamed = DownloadMode.STREAM == theContent.downloadMode
+            val isNeither = !isArchive && !isPdf && !isStreamed
             val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
-                .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
+                .filter {
+                    isPictureNeedsProcessing(
+                        it,
+                        viewerImagesInternal,
+                        imageTypes.value ?: emptyMap()
+                    )
+                }.toSet()
             if (picturesLeftToProcess.isEmpty()) return@launch
 
             // Identify pages to be loaded
             val setToLoad: MutableSet<Int> = HashSet()
             val increment = if (direction >= 0) 1 else -1
-            val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
+            val quantity = if (isArchive || isPdf) EXTRACT_RANGE
+            else if (isStreamed) DOWNLOAD_RANGE
+            else PRELOAD_RANGE
             // pageIndex at 1/3rd of the range to extract/download
             // (2/3 forward; 1/3 backwards just in case)
             // => determine its bound
@@ -1206,6 +1254,11 @@ class ReaderViewModel(
                 if (setToLoad.contains(viewerIndex + distance)) indexesToLoad.add(viewerIndex + distance)
                 if (setToLoad.contains(viewerIndex - distance)) indexesToLoad.add(viewerIndex - distance)
             }
+
+            // Preload image types
+            preloadImageTypes(indexesToLoad.toList(), onDoneAfterPreload)
+
+            if (isNeither) return@launch
 
             // Only run extraction when there's at least 1/3rd of the extract range to fetch
             // (prevents calling extraction for one single picture at every page turn)
@@ -1277,17 +1330,23 @@ class ReaderViewModel(
      * Indicate if the picture at the given page index in the given list needs processing
      * (i.e. downloading or extracting)
      *
-     * @param pageIndex Index to test
-     * @param images    List of pictures to test against
+     * @param pageIndex  Index to test
+     * @param images     List of pictures to test against
+     * @param imageTypes List of types to test against
      * @return True if the picture at the given index needs processing; false if not
      */
-    private fun isPictureNeedsProcessing(pageIndex: Int, images: List<ImageFile>): Boolean {
+    private fun isPictureNeedsProcessing(
+        pageIndex: Int,
+        images: List<ImageFile>,
+        imageTypes: Map<Long, ImageType>
+    ): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         images[pageIndex].let {
             return (it.status == StatusContent.ONLINE || // Image has to be downloaded
                     it.isArchived || // Image has to be extracted from an archive
                     it.isPdf // Image has to be extracted from a PDF
                     )
+                    || !imageTypes.contains(it.id) // Neither downloadable not extractable, but needs a preload
         }
     }
 
@@ -1340,9 +1399,10 @@ class ReaderViewModel(
                             downloadedPic.order,
                             downloadedPic.fileUri
                         )
-
-                        // Instanciate a new list to trigger an actual Adapter UI refresh
-                        viewerImages.postValue(ArrayList(viewerImagesInternal))
+                        preloadImageTypes(listOf(downloadedPageIndex)) {
+                            // Instanciate a new list to trigger an actual Adapter UI refresh
+                            viewerImages.postValue(ArrayList(viewerImagesInternal))
+                        }
                     }
                 } catch (t: Throwable) {
                     Timber.w(t)
@@ -1536,8 +1596,9 @@ class ReaderViewModel(
             Timber.v(
                 "Extracting : replacing index $idx - order ${extractedPic.order} -> ${extractedPic.fileUri}"
             )
-
-            if (refresh) viewerImages.postValue(ArrayList(viewerImagesInternal))
+            preloadImageTypes(listOf(idx)) {
+                if (refresh) viewerImages.postValue(ArrayList(viewerImagesInternal))
+            }
         }
     }
 
@@ -1560,7 +1621,7 @@ class ReaderViewModel(
     }
 
     /**
-     * Download the picture at the given index to the given folder
+     * Download the picture at the given index to the given folder (blocking)
      *
      * @param pageIndex    Index of the picture to download
      * @param stopDownload Switch to interrupt the download
@@ -1994,5 +2055,55 @@ class ReaderViewModel(
                 ) it.fileUri = ""
             }
         }
+    }
+
+    private fun preloadImageTypes(indexes: List<Int>, onDone: KRunnable? = null) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // TODO interrupt when needed
+            imageTypes.value?.let { imgTypes ->
+                indexes.forEach {
+                    val img = viewerImagesInternal[it]
+                    if (!imgTypes.containsKey(img.id)) {
+                        imgTypes[img.id] = readImageType(application, img.fileUri.toUri())
+                        Timber.d("${img.id} : Set image type to ${imgTypes[img.id]}")
+                        imageTypes.postValue(imgTypes)
+                    }
+                }
+                onDone?.invoke()
+            }
+        }
+    }
+
+    private fun readImageType(context: Context, uri: Uri): ImageType {
+        assertNonUiThread()
+        if (uri == Uri.EMPTY) return ImageType.IMG_TYPE_OTHER
+
+        try {
+            getInputStream(context, uri).use { input ->
+                val header = ByteArray(400)
+                if (input.read(header) > 0) {
+                    val mime = getMimeTypeFromPictureBinary(header)
+                    val isAnimated = isImageAnimated(header)
+                    if (isAnimated) {
+                        when (mime) {
+                            MIME_IMAGE_PNG -> return ImageType.IMG_TYPE_APNG
+                            MIME_IMAGE_WEBP -> return ImageType.IMG_TYPE_AWEBP
+                            MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
+                            MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AAVIF
+                            MIME_VIDEO_MP4 -> return ImageType.IMG_TYPE_VIDEO
+                        }
+                    } else {
+                        when (mime) {
+                            MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
+                            MIME_IMAGE_JXL -> return ImageType.IMG_TYPE_JXL
+                            MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AVIF
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Timber.w(e, "Unable to open image file")
+        }
+        return ImageType.IMG_TYPE_OTHER
     }
 }
