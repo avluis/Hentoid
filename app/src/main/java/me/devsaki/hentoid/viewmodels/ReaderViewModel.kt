@@ -22,6 +22,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.adapters.ImagePagerAdapter
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
 import me.devsaki.hentoid.core.READER_CACHE
 import me.devsaki.hentoid.core.SEED_PAGES
@@ -133,6 +134,9 @@ class ReaderViewModel(
     private val shuffled = MutableLiveData<Boolean>() // Shuffle state of the current book
 
     private val reversed = MutableLiveData<Boolean>() // Reverse state of the current book
+
+    private val imageTypes =
+        MutableLiveData<Map<Int, ImagePagerAdapter.ImageType>>() // Image types read from file content
 
     // True during one loading where images need to be reloaded on screen
     private var forceImageUIReload = false
@@ -637,6 +641,7 @@ class ReaderViewModel(
             Settings.readerDeleteAskMode = VIEWER_DELETE_ASK_AGAIN
         indexDlInProgress.clear()
         indexExtractInProgress.clear()
+        imageTypes.postValue(emptyMap())
         archiveExtractKillSwitch.set(true)
 
         // Don't do anything if the Content hasn't even been loaded
@@ -1170,32 +1175,26 @@ class ReaderViewModel(
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
     fun onPageChange(viewerIndex: Int, direction: Int) {
-        viewModelScope.launch {
-            doPageChange(viewerIndex, direction)
-        }
-    }
-
-    private suspend fun doPageChange(viewerIndex: Int, direction: Int) =
-        withContext(Dispatchers.IO) {
-            if (viewerImagesInternal.size <= viewerIndex) return@withContext
-            val theContent = getContent().value ?: return@withContext
+        viewModelScope.launch(Dispatchers.IO) {
+            if (viewerImagesInternal.size <= viewerIndex) return@launch
+            val theContent = getContent().value ?: return@launch
             val isArchive = theContent.isArchive
             val isPdf = theContent.isPdf
             val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
                 .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
-            if (picturesLeftToProcess.isEmpty()) return@withContext
+            if (picturesLeftToProcess.isEmpty()) return@launch
 
             // Identify pages to be loaded
             val indexesToLoad: MutableList<Int> = ArrayList()
             val increment = if (direction >= 0) 1 else -1
             val quantity = if (isArchive || isPdf) EXTRACT_RANGE else DOWNLOAD_RANGE
-            // pageIndex at 1/3rd of the range to extract/download -> determine its bound
-            val initialIndex = floor(
-                coerceIn(
-                    1f * viewerIndex - quantity * increment / 3f,
-                    0f,
-                    (viewerImagesInternal.size - 1).toFloat()
-                )
+            // pageIndex at 1/3rd of the range to extract/download
+            // (2/3 forward; 1/3 backwards just in case)
+            // => determine its bound
+            val initialIndex = coerceIn(
+                1f * viewerIndex - quantity * increment / 3f,
+                0f,
+                (viewerImagesInternal.size - 1).toFloat()
             ).toInt()
             for (i in 0 until quantity)
                 if (picturesLeftToProcess.contains(initialIndex + increment * i))
@@ -1214,7 +1213,7 @@ class ReaderViewModel(
                     greenlight = indexesToLoad.size == leftToProcessDirection
                 }
             }
-            if (indexesToLoad.isEmpty() || !greenlight) return@withContext
+            if (indexesToLoad.isEmpty() || !greenlight) return@launch
 
             // Populate what's already cached
             val cachedIndexes = HashSet<Int>()
@@ -1265,6 +1264,7 @@ class ReaderViewModel(
 
             dao.cleanup()
         }
+    }
 
     /**
      * Indicate if the picture at the given page index in the given list needs processing
