@@ -93,7 +93,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
                 val bundle = payloads[0] as Bundle
                 val bundleParser = FileItemBundle(bundle)
 
-                var strValue = bundleParser.coverUri
+                val strValue = bundleParser.coverUri
                 if (!strValue.isNullOrBlank()) item.doc.coverUri = strValue.toUri()
                 bundleParser.contentId?.let { item.doc.contentId = it }
                 bundleParser.processed?.let { item.doc.isBeingProcessed = it }
@@ -130,7 +130,7 @@ class FileItem : AbstractItem<FileItem.ViewHolder>,
         }
 
         private fun attachCover(doc: DisplayFile) {
-            val coverUri = doc.coverUri?.toString() ?: ""
+            val coverUri = doc.coverUri.toString()
             if (!coverUri.isBlank()) {
                 ivCover.scaleType = ImageView.ScaleType.FIT_CENTER
                 ivCover.loadStill(coverUri)

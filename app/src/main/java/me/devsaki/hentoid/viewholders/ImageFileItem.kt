@@ -128,7 +128,7 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             } else chapterOverlay.visibility = View.GONE
 
             // Image
-            image.loadStill(item.image.fileUri)
+            image.loadStill(item.image.usableUri)
         }
 
         private fun updateText(item: ImageFileItem) {

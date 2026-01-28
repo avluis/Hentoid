@@ -58,7 +58,6 @@ import me.devsaki.hentoid.util.image.needsRotating
 import me.devsaki.hentoid.views.ZoomableRecyclerView
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import timber.log.Timber
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -83,7 +82,7 @@ class ImagePagerAdapter(context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ImageType(val value: Int) {
-        IMG_TYPE_UNKNOWN(-1),
+        IMG_TYPE_UNSET(-1),
         IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Coil if animation detected
         IMG_TYPE_GIF(1), // Static and animated GIFs -> use Coil
         IMG_TYPE_APNG(2), // Animated PNGs -> use Coil
@@ -97,9 +96,6 @@ class ImagePagerAdapter(context: Context) :
     private enum class ActiveView {
         SSIV, IMAGEVIEW, VIDEOVIEW
     }
-
-    // Cached image types
-    private val imageTypes: MutableMap<Long, ImageType> = ConcurrentHashMap()
 
     private val pageMinHeight = context.resources.getDimension(R.dimen.page_min_height).toInt()
     private val screenWidth: Int
@@ -171,13 +167,6 @@ class ImagePagerAdapter(context: Context) :
 
     fun setItemTouchListener(itemTouchListener: OnZoneTapListener?) {
         this.itemTouchListener = itemTouchListener
-    }
-
-    fun setImageTypes(types: Map<Long, ImageType>) {
-        synchronized(imageTypes) {
-            imageTypes.clear()
-            imageTypes.putAll(types)
-        }
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ImageViewHolder {
@@ -378,12 +367,7 @@ class ImagePagerAdapter(context: Context) :
             ssiv.setIgnoreTouchEvents(isVertical || isHalfWidth)
 
             val img = getImageAt(position)
-            var imgType: ImageType = ImageType.IMG_TYPE_OTHER
-            img?.let {
-                synchronized(imageTypes) {
-                    imgType = imageTypes[it.id] ?: ImageType.IMG_TYPE_UNKNOWN
-                }
-            }
+            val imgType = img?.imageType ?: ImageType.IMG_TYPE_UNSET
 
             if (ImageType.IMG_TYPE_VIDEO == imgType) {
                 setActiveView(ActiveView.VIDEOVIEW, isClickThrough = true)
@@ -420,7 +404,7 @@ class ImagePagerAdapter(context: Context) :
             }
 
             var imageAvailable = true
-            if (img != null && img.fileUri.isNotEmpty()) setImage(img, imgType)
+            if (img != null && img.displayUri.isNotEmpty()) setImage(img, imgType)
             else imageAvailable = false
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
@@ -463,7 +447,7 @@ class ImagePagerAdapter(context: Context) :
 
         private fun setImage(img: ImageFile, imgType: ImageType) {
             this.img = img
-            val uri = img.fileUri.toUri()
+            val uri = img.displayUri.toUri()
             isLoading.set(true)
             noImgTxt.isVisible = false
             Timber.d("Picture $absoluteAdapterPosition (${img.id}) : binding viewholder $imgType $uri")
@@ -770,14 +754,12 @@ class ImagePagerAdapter(context: Context) :
         override fun onImageLoadError(e: Throwable) {
             Timber.d(
                 e,
-                "Picture %d : SSIV loading failed: %s",
-                absoluteAdapterPosition,
-                img!!.fileUri
+                "Picture $absoluteAdapterPosition : SSIV loading failed: ${img?.displayUri ?: ""}",
             )
         }
 
         override fun onTileLoadError(e: Throwable) {
-            Timber.d(e, "Picture %d : tileLoad error", absoluteAdapterPosition)
+            Timber.d(e, "Picture $absoluteAdapterPosition : tileLoad error")
         }
 
         override fun onPreviewReleased() {
@@ -788,9 +770,7 @@ class ImagePagerAdapter(context: Context) :
         private fun onCoilLoadFailed(err: ErrorResult) {
             Timber.d(
                 err.throwable,
-                "Picture %d : Coil loading failed : %s",
-                absoluteAdapterPosition,
-                img!!.fileUri
+                "Picture $absoluteAdapterPosition : Coil loading failed : ${img?.displayUri ?: ""}"
             )
             if (activeView == ActiveView.IMAGEVIEW) noImgTxt.visibility = View.VISIBLE
             isLoading.set(false)

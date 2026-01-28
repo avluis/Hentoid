@@ -308,7 +308,6 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             getStartingIndex().observe(viewLifecycleOwner) { onStartingIndexChanged(it) }
             getShuffled().observe(viewLifecycleOwner) { onShuffleChanged(it) }
             getShowFavouritesOnly().observe(viewLifecycleOwner) { updateShowFavouriteDisplay(it) }
-            getImageTypes().observe(viewLifecycleOwner) { adapter.setImageTypes(it.toMap()) } // Work on a copy to avoid concurrency issues
         }
     }
 
@@ -697,7 +696,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         if (BuildConfig.DEBUG) {
             Timber.v("IMAGES CHANGED")
             images.forEach {
-                if (it.fileUri.isNotEmpty()) Timber.v("[%d] %s", it.order, it.fileUri)
+                if (it.displayUri.isNotEmpty()) Timber.v("[%d] %s", it.order, it.displayUri)
             }
         }
 
@@ -1248,12 +1247,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 val currentImg = adapter.getImageAt(absIndex)
                 val nextImg = adapter.getImageAt(absIndex + 1)
                 if (previousImg != null) {
-                    previousImageView.load(previousImg.fileUri)
+                    previousImageView.load(previousImg.usableUri)
                     previousImageView.visibility = View.VISIBLE
                 } else previousImageView.visibility = View.INVISIBLE
-                if (currentImg != null) controlsOverlay.imagePreviewCenter.load(currentImg.fileUri)
+                if (currentImg != null) controlsOverlay.imagePreviewCenter.load(currentImg.usableUri)
                 if (nextImg != null) {
-                    nextImageView.load(nextImg.fileUri)
+                    nextImageView.load(nextImg.usableUri)
                     nextImageView.visibility = View.VISIBLE
                 } else nextImageView.visibility = View.INVISIBLE
             }

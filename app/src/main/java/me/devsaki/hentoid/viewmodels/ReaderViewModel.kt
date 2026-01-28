@@ -98,7 +98,6 @@ import java.io.File
 import java.util.Collections
 import java.util.Queue
 import java.util.Random
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -149,9 +148,6 @@ class ReaderViewModel(
 
     private val reversed = MutableLiveData<Boolean>() // Reverse state of the current book
 
-    // Image types read from file content
-    private val imageTypes = MutableLiveData<MutableMap<Long, ImageType>>()
-
     // True during one loading where images need to be reloaded on screen
     private var forceImageUIReload = false
 
@@ -181,7 +177,6 @@ class ReaderViewModel(
         showFavouritesOnly.postValue(false)
         shuffled.postValue(false)
         reversed.postValue(false)
-        imageTypes.postValue(ConcurrentHashMap())
         StorageCache.addCleanupObserver(READER_CACHE, this.javaClass.name) { this.onCacheCleanup() }
     }
 
@@ -209,10 +204,6 @@ class ReaderViewModel(
 
     fun getShowFavouritesOnly(): LiveData<Boolean> {
         return showFavouritesOnly
-    }
-
-    fun getImageTypes(): LiveData<MutableMap<Long, ImageType>> {
-        return imageTypes
     }
 
     // Artificial observer bound to the activity's lifecycle to ensure DB images are pushed to the ViewModel
@@ -414,7 +405,7 @@ class ReaderViewModel(
 
         // Don't reload from storage / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (!theContent.isArchive) {
+        if (!theContent.isArchive && !theContent.isPdf) {
             viewModelScope.launch {
                 withContext(Dispatchers.IO) {
                     processStorageImages(theContent, newImages)
@@ -422,18 +413,12 @@ class ReaderViewModel(
                 }
                 processImages(theContent, -1, newImages)
             }
-        } else {
+        } else { // Archive or PDF
             // Copy location properties of the new list on the current list
             for (i in newImages.indices) {
                 val newImg = newImages[i]
-                val cacheUri = StorageCache.getFile(READER_CACHE, formatCacheKey(newImg))
-                if (cacheUri != null) newImg.fileUri = cacheUri.toString()
-                else {
-                    // Downloads saved as archives
-                    if (
-                        (newImg.url.startsWith("http") || newImg.pageUrl.isNotBlank()) && newImg.fileUri.isNotEmpty()
-                    ) newImg.url = newImg.fileUri
-                    newImg.fileUri = ""
+                StorageCache.getFile(READER_CACHE, formatCacheKey(newImg))?.let {
+                    newImg.displayUri = it.toString()
                 }
             }
             processImages(theContent, pageNumber, newImages)
@@ -451,7 +436,7 @@ class ReaderViewModel(
         newImages: MutableList<ImageFile>
     ) = withContext(Dispatchers.IO) {
         require(!theContent.isArchive) { "Content must not be an archive" }
-        val missingUris = newImages.any { it.fileUri.isEmpty() }
+        val missingUris = newImages.any { it.displayUri.isEmpty() }
         val newImageFiles =
             if (missingUris || newImages.isEmpty()) reattachImageFiles(theContent, newImages)
             else ArrayList(newImages)
@@ -483,7 +468,7 @@ class ReaderViewModel(
         } else { // Try to get some from the cache
             newImageFiles.forEach {
                 StorageCache.getFile(READER_CACHE, formatCacheKey(it))?.let { existingUri ->
-                    it.fileUri = existingUri.toString()
+                    it.displayUri = existingUri.toString()
                 }
             }
         }
@@ -679,7 +664,6 @@ class ReaderViewModel(
             Settings.readerDeleteAskMode = VIEWER_DELETE_ASK_AGAIN
         indexDlInProgress.clear()
         indexExtractInProgress.clear()
-        imageTypes.postValue(ConcurrentHashMap())
         archiveExtractKillSwitch.set(true)
 
         // Don't do anything if the Content hasn't even been loaded
@@ -1219,15 +1203,9 @@ class ReaderViewModel(
             val isArchive = theContent.isArchive
             val isPdf = theContent.isPdf
             val isStreamed = DownloadMode.STREAM == theContent.downloadMode
-            val isNeither = !isArchive && !isPdf && !isStreamed
+            val isStored = !isArchive && !isPdf && !isStreamed && !theContent.isDynamic
             val picturesLeftToProcess = IntRange(0, viewerImagesInternal.size - 1)
-                .filter {
-                    isPictureNeedsProcessing(
-                        it,
-                        viewerImagesInternal,
-                        imageTypes.value ?: emptyMap()
-                    )
-                }.toSet()
+                .filter { isPictureNeedsProcessing(it, viewerImagesInternal) }.toSet()
             if (picturesLeftToProcess.isEmpty()) return@launch
 
             // Identify pages to be loaded
@@ -1252,13 +1230,14 @@ class ReaderViewModel(
             val indexesToLoad: MutableList<Int> = ArrayList()
             for (distance in 0..quantity) {
                 if (setToLoad.contains(viewerIndex + distance)) indexesToLoad.add(viewerIndex + distance)
-                if (setToLoad.contains(viewerIndex - distance)) indexesToLoad.add(viewerIndex - distance)
+                if (distance != 0 && setToLoad.contains(viewerIndex - distance))
+                    indexesToLoad.add(viewerIndex - distance)
             }
 
             // Preload image types
             preloadImageTypes(indexesToLoad.toList(), onDoneAfterPreload)
 
-            if (isNeither) return@launch
+            if (isStored) return@launch
 
             // Only run extraction when there's at least 1/3rd of the extract range to fetch
             // (prevents calling extraction for one single picture at every page turn)
@@ -1332,21 +1311,19 @@ class ReaderViewModel(
      *
      * @param pageIndex  Index to test
      * @param images     List of pictures to test against
-     * @param imageTypes List of types to test against
      * @return True if the picture at the given index needs processing; false if not
      */
     private fun isPictureNeedsProcessing(
         pageIndex: Int,
-        images: List<ImageFile>,
-        imageTypes: Map<Long, ImageType>
+        images: List<ImageFile>
     ): Boolean {
         if (pageIndex < 0 || images.size <= pageIndex) return false
         images[pageIndex].let {
-            return (it.status == StatusContent.ONLINE || // Image has to be downloaded
+            return (it.isOnline || // Image has to be downloaded
                     it.isArchived || // Image has to be extracted from an archive
                     it.isPdf // Image has to be extracted from a PDF
                     )
-                    || !imageTypes.contains(it.id) // Neither downloadable not extractable, but needs a preload
+                    || it.imageType == ImageType.IMG_TYPE_UNSET // Neither downloadable not extractable, but needs a preload
         }
     }
 
@@ -1390,14 +1367,14 @@ class ReaderViewModel(
                                 populateContent = true,
                                 populateChapter = true
                             )
-                        downloadedPic.fileUri = resultOpt.second
+                        downloadedPic.displayUri = resultOpt.second
                         viewerImagesInternal.removeAt(downloadedPageIndex)
                         viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
                         Timber.d(
                             "REPLACING INDEX %d - ORDER %d -> %s",
                             downloadedPageIndex,
                             downloadedPic.order,
-                            downloadedPic.fileUri
+                            downloadedPic.displayUri
                         )
                         preloadImageTypes(listOf(downloadedPageIndex)) {
                             // Instanciate a new list to trigger an actual Adapter UI refresh
@@ -1467,7 +1444,7 @@ class ReaderViewModel(
             } else {
                 extractInstructions.add(
                     Triple(
-                        img.url.replace(c.storageUri + File.separator, ""),
+                        img.fileUri.replace(c.storageUri + File.separator, ""),
                         img.id,
                         formatCacheKey(img)
                     )
@@ -1589,12 +1566,12 @@ class ReaderViewModel(
     ) {
         // Instanciate a new ImageFile not to modify the one used by the UI
         val extractedPic = ImageFile(img, populateContent = true, populateChapter = true)
-        extractedPic.fileUri = uri.toString()
+        extractedPic.displayUri = uri.toString()
         synchronized(viewerImagesInternal) {
             viewerImagesInternal.removeAt(idx)
             viewerImagesInternal.add(idx, extractedPic)
             Timber.v(
-                "Extracting : replacing index $idx - order ${extractedPic.order} -> ${extractedPic.fileUri}"
+                "Extracting : replacing index $idx - order ${extractedPic.order} -> ${extractedPic.displayUri}"
             )
             preloadImageTypes(listOf(idx)) {
                 if (refresh) viewerImages.postValue(ArrayList(viewerImagesInternal))
@@ -1640,9 +1617,9 @@ class ReaderViewModel(
         val content = img.content.target
 
         // Already downloaded
-        if (img.fileUri.isNotEmpty() &&
+        if (img.displayUri.isNotEmpty() &&
             StorageCache.getFile(READER_CACHE, formatCacheKey(img)) != null
-        ) return@withContext Pair(pageIndex, img.fileUri)
+        ) return@withContext Pair(pageIndex, img.displayUri)
 
         // Run actual download
         return@withContext me.devsaki.hentoid.util.download.downloadPic(
@@ -2052,7 +2029,7 @@ class ReaderViewModel(
             viewerImagesInternal.forEach {
                 if ((it.isArchived || it.status == StatusContent.ONLINE)
                     && !StorageCache.peekFile(READER_CACHE, formatCacheKey(it))
-                ) it.fileUri = ""
+                ) it.displayUri = ""
             }
         }
     }
@@ -2060,23 +2037,23 @@ class ReaderViewModel(
     private fun preloadImageTypes(indexes: List<Int>, onDone: KRunnable? = null) {
         viewModelScope.launch(Dispatchers.IO) {
             // TODO interrupt when needed
-            imageTypes.value?.let { imgTypes ->
-                indexes.forEach {
-                    val img = viewerImagesInternal[it]
-                    if (!imgTypes.containsKey(img.id)) {
-                        imgTypes[img.id] = readImageType(application, img.fileUri.toUri())
-                        Timber.d("${img.id} : Set image type to ${imgTypes[img.id]}")
-                        imageTypes.postValue(imgTypes)
-                    }
+            indexes.forEach {
+                val img = viewerImagesInternal[it]
+                if (img.imageType == ImageType.IMG_TYPE_UNSET) {
+                    val uri = img.displayUri.ifBlank { img.fileUri }
+                    img.imageType = readImageType(application, uri.toUri())
+                    Timber.d("${img.id} : Set image type to ${img.imageType}")
+                    // Make image usable by reader if stored
+                    if (!img.isArchived && !img.isPdf && !img.isOnline) img.displayUri = img.fileUri
                 }
-                onDone?.invoke()
             }
+            onDone?.invoke()
         }
     }
 
     private fun readImageType(context: Context, uri: Uri): ImageType {
         assertNonUiThread()
-        if (uri == Uri.EMPTY) return ImageType.IMG_TYPE_OTHER
+        if (uri == Uri.EMPTY) return ImageType.IMG_TYPE_UNSET
 
         try {
             getInputStream(context, uri).use { input ->
@@ -2099,11 +2076,12 @@ class ReaderViewModel(
                             MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AVIF
                         }
                     }
+                    return ImageType.IMG_TYPE_OTHER
                 }
             }
         } catch (e: Exception) {
             Timber.w(e, "Unable to open image file")
         }
-        return ImageType.IMG_TYPE_OTHER
+        return ImageType.IMG_TYPE_UNSET
     }
 }
