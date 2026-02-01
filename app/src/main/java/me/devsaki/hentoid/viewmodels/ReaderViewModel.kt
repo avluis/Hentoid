@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.adapters.ImagePagerAdapter.ImageType
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
@@ -104,7 +105,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.floor
 import kotlin.math.roundToInt
 
-private const val PRELOAD_RANGE = 5
+private const val PRELOAD_RANGE = 6
 private const val DOWNLOAD_RANGE = 6 // Sequential download; not concurrent
 private const val EXTRACT_RANGE = 15
 
@@ -436,7 +437,7 @@ class ReaderViewModel(
         newImages: MutableList<ImageFile>
     ) = withContext(Dispatchers.IO) {
         require(!theContent.isArchive) { "Content must not be an archive" }
-        val missingUris = newImages.any { it.displayUri.isEmpty() }
+        val missingUris = newImages.any { it.fileUri.isEmpty() }
         val newImageFiles =
             if (missingUris || newImages.isEmpty()) reattachImageFiles(theContent, newImages)
             else ArrayList(newImages)
@@ -616,11 +617,16 @@ class ReaderViewModel(
         }
         // Don't keep the cover thumb
         imgs = imgs.filter { it.isReadable }
-        val showFavouritesOnlyVal = getShowFavouritesOnly().value
-        if (showFavouritesOnlyVal != null && showFavouritesOnlyVal) {
+        if (true == getShowFavouritesOnly().value) {
             imgs = imgs.filter { it.favourite }
         }
-        for (i in imgs.indices) imgs[i].displayOrder = i
+
+        // Populate / restore transient attributes
+        for (i in imgs.indices) {
+            imgs[i].displayOrder = i
+            if (viewerImagesInternal.size > i)
+                imgs[i].displayUri = viewerImagesInternal[i].displayUri
+        }
 
         // Only update if there's any noticeable difference on images...
         var hasDiff = imgs.size != viewerImagesInternal.size
@@ -647,9 +653,8 @@ class ReaderViewModel(
                 viewerImagesInternal.clear()
                 viewerImagesInternal.addAll(imgs)
             }
-            if (startIndex > -1) onPageChange(startIndex - 1, 1) {
-                viewerImages.postValue(viewerImagesInternal.toList())
-            } else viewerImages.postValue(viewerImagesInternal.toList())
+            if (startIndex > -1) onPageChange(startIndex - 1, 1)
+            else viewerImages.postValue(viewerImagesInternal.toList())
         }
     }
 
@@ -1196,7 +1201,14 @@ class ReaderViewModel(
      * @param viewerIndex Viewer index of the page that has just been displayed
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
-    fun onPageChange(viewerIndex: Int, direction: Int, onDoneAfterPreload: KRunnable? = null) {
+    fun onPageChange(viewerIndex: Int, direction: Int) {
+        onPageChange(viewerIndex, direction) {
+            // Instanciate a new list to trigger an actual Adapter UI refresh
+            viewerImages.postValue(ArrayList(viewerImagesInternal))
+        }
+    }
+
+    private fun onPageChange(viewerIndex: Int, direction: Int, onDoneAfterPreload: KRunnable?) {
         viewModelScope.launch(Dispatchers.IO) {
             if (viewerImagesInternal.size <= viewerIndex) return@launch
             val theContent = getContent().value ?: return@launch
@@ -1232,6 +1244,12 @@ class ReaderViewModel(
                 if (setToLoad.contains(viewerIndex + distance)) indexesToLoad.add(viewerIndex + distance)
                 if (distance != 0 && setToLoad.contains(viewerIndex - distance))
                     indexesToLoad.add(viewerIndex - distance)
+            }
+
+            if (BuildConfig.DEBUG) {
+                val sb = StringBuilder()
+                indexesToLoad.forEach { sb.append(it).append("-") }
+                Timber.v("IndexesToLoad $sb")
             }
 
             // Preload image types
@@ -1370,12 +1388,7 @@ class ReaderViewModel(
                         downloadedPic.displayUri = resultOpt.second
                         viewerImagesInternal.removeAt(downloadedPageIndex)
                         viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
-                        Timber.d(
-                            "REPLACING INDEX %d - ORDER %d -> %s",
-                            downloadedPageIndex,
-                            downloadedPic.order,
-                            downloadedPic.displayUri
-                        )
+                        Timber.d("REPLACING ${downloadedPic.id} [idx $downloadedPageIndex / order ${downloadedPic.order}] -> ${downloadedPic.displayUri}")
                         preloadImageTypes(listOf(downloadedPageIndex)) {
                             // Instanciate a new list to trigger an actual Adapter UI refresh
                             viewerImages.postValue(ArrayList(viewerImagesInternal))
@@ -2035,6 +2048,7 @@ class ReaderViewModel(
     }
 
     private fun preloadImageTypes(indexes: List<Int>, onDone: KRunnable? = null) {
+        if (indexes.isEmpty()) return
         viewModelScope.launch(Dispatchers.IO) {
             // TODO interrupt when needed
             indexes.forEach {
@@ -2043,8 +2057,8 @@ class ReaderViewModel(
                     val uri = img.displayUri.ifBlank { img.fileUri }
                     img.imageType = readImageType(application, uri.toUri())
                     Timber.d("${img.id} : Set image type to ${img.imageType}")
-                    // Make image usable by reader if stored
-                    if (!img.isArchived && !img.isPdf && !img.isOnline) img.displayUri = img.fileUri
+                    // Make image usable by reader if not set yet
+                    if (img.displayUri.isBlank()) img.displayUri = img.fileUri
                 }
             }
             onDone?.invoke()

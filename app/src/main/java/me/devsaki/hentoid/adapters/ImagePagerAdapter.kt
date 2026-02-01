@@ -336,7 +336,6 @@ class ImagePagerAdapter(context: Context) :
         private var isSmoothRendering = false
         private var isHalfWidth = false
 
-        //private var isImageView = false
         private var activeView: ActiveView = ActiveView.SSIV
 
         private var img: ImageFile? = null
@@ -369,6 +368,7 @@ class ImagePagerAdapter(context: Context) :
             val img = getImageAt(position)
             val imgType = img?.imageType ?: ImageType.IMG_TYPE_UNSET
 
+            Timber.d("Picture ${img?.id ?: -1} @ $position : bind $imgType")
             if (ImageType.IMG_TYPE_VIDEO == imgType) {
                 setActiveView(ActiveView.VIDEOVIEW, isClickThrough = true)
             } else if (ImageType.IMG_TYPE_GIF == imgType || ImageType.IMG_TYPE_APNG == imgType || ImageType.IMG_TYPE_AWEBP == imgType || ImageType.IMG_TYPE_JXL == imgType || (ImageType.IMG_TYPE_AVIF == imgType) || ImageType.IMG_TYPE_AAVIF == imgType) {

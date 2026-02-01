@@ -100,10 +100,8 @@ class ImageFileItem(private val image: ImageFile, private val showChapter: Boole
             if (payloads.isNotEmpty()) {
                 val bundle = payloads[0] as Bundle
                 val bundleParser = ImageItemBundle(bundle)
-                val boolValue = bundleParser.isFavourite
-                if (boolValue != null) item.image.favourite = boolValue
-                val intValue = bundleParser.chapterOrder
-                if (intValue != null) item.chapter.order = intValue
+                bundleParser.isFavourite?.let { item.image.favourite = it }
+                bundleParser.chapterOrder?.let { item.chapter.order = it }
             }
             updateText(item)
 

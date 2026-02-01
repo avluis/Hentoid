@@ -694,7 +694,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
      */
     private fun onImagesChanged(images: List<ImageFile>) {
         if (BuildConfig.DEBUG) {
-            Timber.v("IMAGES CHANGED")
+            Timber.v("IMAGES CHANGED (total : ${images.size})")
             images.forEach {
                 if (it.displayUri.isNotEmpty()) Timber.v("[%d] %s", it.order, it.displayUri)
             }

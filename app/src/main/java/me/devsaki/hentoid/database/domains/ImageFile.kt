@@ -106,6 +106,7 @@ data class ImageFile(
         this.downloadParams = img.downloadParams
         this.uniqueHash = img.uniqueHash
         this.displayOrder = img.displayOrder
+        this.displayUri = img.displayUri
         this.backupUrl = img.backupUrl
         this.isBackup = img.isBackup
         this.isForceRefresh = img.isForceRefresh
@@ -266,14 +267,10 @@ data class ImageFile(
 
     val usableUri: String
         get() {
-            if (!isArchived && !isPdf) {
-                if (isInLibrary(status)) {
-                    if (displayUri.isNotBlank()) return displayUri
-                    else if (fileUri.isNotBlank()) return fileUri
-                }
-                if (url.isNotBlank()) return url
-            }
-            return linkedContent?.coverImageUrl ?: ""
+            if (displayUri.isNotBlank()) return displayUri
+            if (!isArchived && !isPdf && isInLibrary(status) && fileUri.isNotBlank()) return fileUri
+            if (url.isNotBlank()) return url
+            return if (isCover) linkedContent?.coverImageUrl ?: "" else ""
         }
 
     val isArchived: Boolean
