@@ -426,8 +426,9 @@ fun removeFile(file: File): Boolean {
  */
 fun removeDocument(context: Context, docUri: Uri): Boolean {
     // Check the document is not a site root
-    val fileName = docUri.lastPathSegment ?: ""
-    if (fileName.isBlank() || Site.entries.any { it.folder.equals(fileName, true) }) {
+    val docPath = docUri.lastPathSegment?:""
+    val docName = docPath.substringAfterLast('/')
+    if (docName.isBlank() || Site.entries.any { it.folder.equals(docName, true) }) {
         Timber.w("Trying to delete a site folder : $docUri")
         return false
     }

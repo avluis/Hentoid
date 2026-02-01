@@ -70,6 +70,7 @@ import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
+import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findFolder
@@ -583,7 +584,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteContent(content)
 
-        if (content.isArchive || content.isPdf) { // Remove an archive
+        if (content.isArchive || content.isPdf || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE) {
             purgeArchivePdfFiles(context, content, removeJson = true, removeCover = true)
         } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
@@ -1417,7 +1418,7 @@ fun purgeFiles(
     removeJson: Boolean,
     removeCover: Boolean
 ) {
-    if (content.isArchive || content.isPdf) {
+    if (content.isArchive || content.isPdf || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE) {
         purgeArchivePdfFiles(context, content, removeJson, removeCover)
     } else { // Regular and streamed downloads
         purgeFolderFiles(context, content, removeJson, removeCover)
@@ -1430,14 +1431,27 @@ private fun purgeArchivePdfFiles(
     removeJson: Boolean,
     removeCover: Boolean
 ) {
-    val archive = getFileFromSingleUriString(context, content.storageUri)
-        ?: throw FileNotProcessedException(content, "Failed to find archive ${content.storageUri}")
+    val uri = content.storageUri.toUri()
+    if (!fileExists(context, uri))
+        throw FileNotProcessedException(content, "Failed to find document ${content.storageUri}")
 
-    if (archive.delete()) {
+    if (removeDocument(context, uri)) {
         Timber.i("Archive removed : ${content.storageUri}")
         content.storageUri = ""
     } else {
-        throw FileNotProcessedException(content, "Failed to delete archive ${content.storageUri}")
+        // Trying to delete an archive file before download is finalized
+        if (DownloadMode.DOWNLOAD_ARCHIVE_FILE == content.downloadMode) {
+            content.imageList.forEach {
+                val fileUri = it.fileUri.toUri()
+                if (it.fileUri.isNotBlank() && fileExists(context, fileUri))
+                    removeDocument(context, fileUri)
+            }
+        } else {
+            throw FileNotProcessedException(
+                content,
+                "Failed to delete document ${content.storageUri}"
+            )
+        }
     }
 
     // Remove the cover stored in the app's persistent folder

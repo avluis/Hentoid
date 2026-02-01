@@ -232,9 +232,8 @@ class QueueViewModel(
     fun remove(contentList: List<Content>) {
         val builder = DeleteData.Builder()
         builder.setOperation(BaseDeleteWorker.Operation.DELETE)
-        if (contentList.isNotEmpty()) builder.setQueueIds(
-            contentList.map { it.id }.filter { it > 0 }
-        )
+        if (contentList.isNotEmpty())
+            builder.setQueueIds(contentList.map { it.id }.filter { it > 0 })
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
             R.id.delete_service_delete.toString(),
