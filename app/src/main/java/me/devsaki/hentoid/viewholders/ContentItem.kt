@@ -468,6 +468,11 @@ class ContentItem : AbstractItem<ContentItem.ViewHolder>,
             else if (chapter != null) qtyPages = chapter.readableImageFiles.size
 
             tvPages.visibility = if (0 == qtyPages) View.INVISIBLE else View.VISIBLE
+            content?.apply {
+                // Don't show pages when we don't have the information
+                if (DownloadMode.DOWNLOAD_ARCHIVE_FILE == downloadMode)
+                    tvPages.visibility = View.INVISIBLE
+            }
 
             val context = baseLayout.context
             val template: String
