@@ -41,6 +41,8 @@ private const val DOSTIME_BEFORE_1980 = (1 shl 21) or (1 shl 16)
 class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = false) {
     val records = ArrayList<ZipRecord>()
     val allNotCompressed: Boolean
+    // Aligned with sevenzipjbinding when charset is exotic (e.g. Shift_JIS)
+    private val readCharset = Charsets.ISO_8859_1
 
     init {
         // Read Zip file; build index
@@ -137,7 +139,7 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
                         it.skip(2) // Disk number
                         it.skip(6) // Internal and external attributes
                         var lfhOffset = it.readUIntLe().toLong()
-                        val name = it.readString(nameLength, Charsets.UTF_8)
+                        val name = it.readString(nameLength, readCharset)
                         // Extra data
                         if (extraDataLength > 0) {
                             var read = 0L
@@ -184,7 +186,7 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
                         var compressedSize = it.readUIntLe().toLong()
                         val nameLength = it.readUShortLe().toLong()
                         val extraDataLength = it.readUShortLe().toInt()
-                        val name = it.readString(nameLength, Charsets.UTF_8)
+                        val name = it.readString(nameLength, readCharset)
                         // Extra data
                         if (extraDataLength > 0) {
                             var read = 0L
