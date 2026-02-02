@@ -268,8 +268,8 @@ data class ImageFile(
     val usableUri: String
         get() {
             if (displayUri.isNotBlank()) return displayUri
-            if (isInLibrary(status) && fileUri.isNotBlank()) return fileUri
-            if (url.isNotBlank()) return url
+            if (!isArchived && !isPdf && isInLibrary(status) && fileUri.isNotBlank()) return fileUri
+            if (url.isNotBlank() && url.startsWith("http")) return url
             return if (isCover) linkedContent?.coverImageUrl ?: "" else ""
         }
 

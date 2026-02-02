@@ -534,12 +534,17 @@ data class Content(
             if (images.isEmpty()) {
                 val makeupCover = fromImageUrl(0, coverImageUrl, StatusContent.ONLINE, 1)
                 makeupCover.imageHash = Long.MIN_VALUE // Makeup cover is unhashable
+                makeupCover.isCover = true
                 return makeupCover
             }
             for (img in images) if (img.isCover) return img
+
             // If nothing found, get 1st supported image as cover
-            return imageList.firstOrNull { isSupportedImage(UriParts(it.fileUri).fileNameFull) }
-                ?: ImageFile()
+            val makeupCover =
+                imageList.firstOrNull { isSupportedImage(UriParts(it.fileUri).fileNameFull) }
+                    ?: ImageFile()
+            makeupCover.isCover = true
+            return makeupCover
         }
 
     val errorList: List<ErrorRecord>
