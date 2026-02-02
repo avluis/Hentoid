@@ -701,7 +701,8 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     val newContentId = dao.insertContent(content)
     content.id = newContentId
 
-    if (content.isArchive || content.isPdf) createArchivePdfCover(context, content, dao)
+    if (content.isArchive || content.isPdf || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE)
+        createArchivePdfCover(context, content, dao)
 
     return newContentId
 }

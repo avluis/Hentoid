@@ -56,6 +56,7 @@ import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.formatAuthor
 import me.devsaki.hentoid.util.hash64
+import me.devsaki.hentoid.util.image.isSupportedImage
 import me.devsaki.hentoid.util.isNumeric
 import me.devsaki.hentoid.util.jsonToObject
 import me.devsaki.hentoid.util.network.UriParts
@@ -536,8 +537,9 @@ data class Content(
                 return makeupCover
             }
             for (img in images) if (img.isCover) return img
-            // If nothing found, get 1st page as cover
-            return imageList.first()
+            // If nothing found, get 1st supported image as cover
+            return imageList.firstOrNull { isSupportedImage(UriParts(it.fileUri).fileNameFull) }
+                ?: ImageFile()
         }
 
     val errorList: List<ErrorRecord>
