@@ -84,12 +84,14 @@ import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.viewmodels.ReaderViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.views.ZoomableRecyclerView
+import me.devsaki.hentoid.widget.DeviceOrientation
 import me.devsaki.hentoid.widget.OnZoneTapListener
 import me.devsaki.hentoid.widget.PageSnapWidget
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager
 import me.devsaki.hentoid.widget.ReaderKeyListener
 import me.devsaki.hentoid.widget.ReaderSmoothScroller
 import me.devsaki.hentoid.widget.ScrollPositionListener
+import me.devsaki.hentoid.widget.SimpleOrientationListener
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -119,6 +121,7 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
 
     private var hasGalleryBeenShown = false
     override val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
+    private var orientation = DeviceOrientation.PORTRAIT
 
     override var displayParams: DisplayParams? = null
 
@@ -204,6 +207,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
         zoomLevelDebouncer = Debouncer(lifecycleScope, 500) {
             hideZoomLevel()
         }
+
+        val orientationListener =
+            SimpleOrientationListener(requireContext(), onOrientationChange = { orientation = it })
+        if (orientationListener.canDetectOrientation()) {
+            orientationListener.enable()
+        } else {
+            orientationListener.disable()
+        }
+
         Settings.registerPrefsChangedListener(prefsListener)
     }
 
@@ -259,8 +271,12 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                 insetView.setBackgroundColor(systemUiColor)
 
                 // Move the overlay not to be covered by navigation shapes
-                val isLandscape =
+                val isScreenLandscape =
                     (Configuration.ORIENTATION_LANDSCAPE == resources.configuration.orientation)
+                // Detect devices where landscape display is the default position (e.g. tablets)
+                val isLandscapeDevice =
+                    (isScreenLandscape && (orientation == DeviceOrientation.PORTRAIT || orientation == DeviceOrientation.PORTRAIT_REVERSE)) || (!isScreenLandscape && (orientation == DeviceOrientation.LANDSCAPE || orientation == DeviceOrientation.LANDSCAPE_REVERSE))
+
                 binding?.controlsOverlay?.apply {
                     toolbar.setPadding(
                         0,
@@ -269,12 +285,15 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
                         0
                     )
 
-                    // TODO detect landscape with navbar on left vs. landscape with navbar on right
+                    // Follow tablet logic where the navigation bar is _always_ located at the bottom of the screen
+                    val isBottomPadding =
+                        (!isLandscapeDevice && (orientation == DeviceOrientation.PORTRAIT || orientation == DeviceOrientation.PORTRAIT_REVERSE) || isLandscapeDevice)
+                    Timber.v("orientation apply $orientation $isScreenLandscape $isLandscapeDevice $isBottomPadding")
                     viewerBottomBg.setPadding(
+                        if (orientation == DeviceOrientation.LANDSCAPE_REVERSE && isScreenLandscape && !isLandscapeDevice) navBarHeight else 0,
                         0,
-                        0,
-                        if (isLandscape) navBarHeight else 0,
-                        if (isLandscape) 0 else navBarHeight
+                        if (orientation == DeviceOrientation.LANDSCAPE && isScreenLandscape && !isLandscapeDevice) navBarHeight else 0,
+                        if (isBottomPadding) navBarHeight else 0
                     )
                 }
                 WindowInsetsCompat.CONSUMED
