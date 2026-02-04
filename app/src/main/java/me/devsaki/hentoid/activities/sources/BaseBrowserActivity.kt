@@ -236,7 +236,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     // Handler for fetch interceptor
     protected var fetchHandler: BiConsumer<String, String>? = null
     protected var xhrHandler: BiConsumer<String, String>? = null
-    private var jsInterceptorScript: String? = null
+    private var fetchInterceptorScript: String? = null
+    private var xhrInterceptorScript: String? = null
     private var internalCustomCss: String? = null
 
 
@@ -719,15 +720,15 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
         // Activate fetch handler
         if (fetchHandler != null) {
-            if (null == jsInterceptorScript) jsInterceptorScript =
+            if (null == fetchInterceptorScript) fetchInterceptorScript =
                 webClient.getJsScript(this, "fetch_override.js", null)
-            webView.loadUrl(jsInterceptorScript!!)
+            webView.loadUrl(fetchInterceptorScript!!)
         }
         // Activate XHR handler
         if (xhrHandler != null) {
-            if (null == jsInterceptorScript) jsInterceptorScript =
+            if (null == xhrInterceptorScript) xhrInterceptorScript =
                 webClient.getJsScript(this, "xhr_override.js", null)
-            webView.loadUrl(jsInterceptorScript!!)
+            webView.loadUrl(xhrInterceptorScript!!)
         }
 
         if (isBrowsable) {
