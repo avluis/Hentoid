@@ -20,7 +20,6 @@ import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.applyTheme
 
 /**
  * Welcome (Intro Slide) Activity
@@ -95,7 +94,6 @@ class IntroActivity : AppIntro2() {
 
     fun setThemePrefs(pref: Int) {
         Settings.colorTheme = pref
-        applyTheme()
         goToNextSlide(false)
     }
 
