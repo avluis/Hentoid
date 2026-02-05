@@ -14,8 +14,8 @@ class SplitMergeCompleteNotification(
     BaseNotification() {
     override fun onCreateNotification(context: Context): android.app.Notification {
         val title = if (nbError > 0) {
-            if (SplitMergeType.SPLIT == type) R.string.merge_fail
-            else R.string.split_fail
+            if (SplitMergeType.SPLIT == type) R.string.split_fail
+            else R.string.merge_fail
         } else {
             if (SplitMergeType.SPLIT == type) R.string.split_success
             else R.string.merge_success
@@ -26,7 +26,7 @@ class SplitMergeCompleteNotification(
             nbError
         )
         else context.resources.getQuantityString(
-            R.plurals.notif_process_complete_details,
+            R.plurals.notif_process_complete_details_generic,
             books,
             books
         )

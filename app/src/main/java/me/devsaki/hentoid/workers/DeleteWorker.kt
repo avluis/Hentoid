@@ -447,8 +447,8 @@ abstract class BaseDeleteWorker(
         }
     }
 
-    private suspend fun removeQueue(ids: LongArray) {
-        val contents = dao.selectContent(ids)
+    private suspend fun removeQueue(contentIds: LongArray) {
+        val contents = dao.selectContent(contentIds)
         try {
             for (c in contents) {
                 removeQueuedContent(c)

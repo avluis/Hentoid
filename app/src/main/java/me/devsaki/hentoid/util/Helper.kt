@@ -52,6 +52,7 @@ import me.devsaki.hentoid.util.file.getOutputStream
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.openFile
 import timber.log.Timber
+import java.io.BufferedInputStream
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -69,6 +70,7 @@ import java.time.format.ResolverStyle
 import java.time.temporal.ChronoField
 import java.util.Locale
 import java.util.Random
+import java.util.zip.Checksum
 import kotlin.math.floor
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -666,6 +668,22 @@ fun exportToDownloadsFolder(
             ).show()
         }
     }
+}
+
+fun getChecksumValue(checksum: Checksum, fis: InputStream): Long {
+    try {
+        BufferedInputStream(fis).use { bis ->
+            val bytes = ByteArray(1024)
+            var len = 0
+
+            while ((bis.read(bytes).also { len = it }) >= 0) {
+                checksum.update(bytes, 0, len)
+            }
+        }
+    } catch (e: kotlinx.io.IOException) {
+        Timber.w(e)
+    }
+    return checksum.value
 }
 
 fun byteArrayOfInts(vararg ints: Int) = ByteArray(ints.size) { pos -> ints[pos].toByte() }

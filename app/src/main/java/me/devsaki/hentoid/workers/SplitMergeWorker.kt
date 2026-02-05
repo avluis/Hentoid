@@ -299,7 +299,10 @@ abstract class BaseSplitMergeWorker(
                     bookTitle = s
                     launchProgressNotification()
                 }
-            ) { progressDone(contentList.size) }
+            ) { isError ->
+                if (isError) nbError = contentList.size
+                progressDone(contentList.size)
+            }
             // If we're here, no exception has been triggered -> cleanup if asked
             if (deleteAfterOperation && !isStopped) {
                 contentList.forEach { c ->

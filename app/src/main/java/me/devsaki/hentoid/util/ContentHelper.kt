@@ -25,6 +25,7 @@ import me.devsaki.hentoid.activities.UnlockActivity.Companion.wrapIntent
 import me.devsaki.hentoid.activities.bundles.BaseBrowserActivityBundle
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
 import me.devsaki.hentoid.core.JSON_ARCHIVE_SUFFIX
 import me.devsaki.hentoid.core.JSON_FILE_NAME_V2
@@ -69,12 +70,14 @@ import me.devsaki.hentoid.util.file.URI_ELEMENTS_SEPARATOR
 import me.devsaki.hentoid.util.file.cleanFileName
 import me.devsaki.hentoid.util.file.copyFile
 import me.devsaki.hentoid.util.file.extractArchiveEntriesBlocking
+import me.devsaki.hentoid.util.file.fileExists
 import me.devsaki.hentoid.util.file.fileSizeFromUri
 import me.devsaki.hentoid.util.file.findFile
 import me.devsaki.hentoid.util.file.findFolder
 import me.devsaki.hentoid.util.file.getArchiveEntries
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUri
 import me.devsaki.hentoid.util.file.getDocumentFromTreeUriString
+import me.devsaki.hentoid.util.file.getExtension
 import me.devsaki.hentoid.util.file.getFileFromSingleUri
 import me.devsaki.hentoid.util.file.getFileFromSingleUriString
 import me.devsaki.hentoid.util.file.getFileNameWithoutExtension
@@ -581,7 +584,7 @@ suspend fun removeContent(context: Context, dao: CollectionDAO, content: Content
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
         dao.deleteContent(content)
 
-        if (content.isArchive || content.isPdf) { // Remove an archive
+        if (content.isArchive || content.isPdf || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE) {
             purgeArchivePdfFiles(context, content, removeJson = true, removeCover = true)
         } else if (content.storageUri.isNotEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
@@ -698,7 +701,8 @@ fun addContent(context: Context, dao: CollectionDAO, content: Content): Long {
     val newContentId = dao.insertContent(content)
     content.id = newContentId
 
-    if (content.isArchive || content.isPdf) createArchivePdfCover(context, content, dao)
+    if (content.isArchive || content.isPdf || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE)
+        createArchivePdfCover(context, content, dao)
 
     return newContentId
 }
@@ -1415,7 +1419,7 @@ fun purgeFiles(
     removeJson: Boolean,
     removeCover: Boolean
 ) {
-    if (content.isArchive || content.isPdf) {
+    if (content.isArchive || content.isPdf || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE || content.downloadMode == DownloadMode.DOWNLOAD_ARCHIVE_FILE) {
         purgeArchivePdfFiles(context, content, removeJson, removeCover)
     } else { // Regular and streamed downloads
         purgeFolderFiles(context, content, removeJson, removeCover)
@@ -1428,14 +1432,27 @@ private fun purgeArchivePdfFiles(
     removeJson: Boolean,
     removeCover: Boolean
 ) {
-    val archive = getFileFromSingleUriString(context, content.storageUri)
-        ?: throw FileNotProcessedException(content, "Failed to find archive ${content.storageUri}")
+    val uri = content.storageUri.toUri()
+    if (!fileExists(context, uri))
+        throw FileNotProcessedException(content, "Failed to find document ${content.storageUri}")
 
-    if (archive.delete()) {
+    if (removeDocument(context, uri)) {
         Timber.i("Archive removed : ${content.storageUri}")
         content.storageUri = ""
     } else {
-        throw FileNotProcessedException(content, "Failed to delete archive ${content.storageUri}")
+        // Trying to delete an archive file before download is finalized
+        if (DownloadMode.DOWNLOAD_ARCHIVE_FILE == content.downloadMode) {
+            content.imageList.forEach {
+                val fileUri = it.fileUri.toUri()
+                if (it.fileUri.isNotBlank() && fileExists(context, fileUri))
+                    removeDocument(context, fileUri)
+            }
+        } else {
+            throw FileNotProcessedException(
+                content,
+                "Failed to delete document ${content.storageUri}"
+            )
+        }
     }
 
     // Remove the cover stored in the app's persistent folder
@@ -1887,7 +1904,7 @@ suspend fun mergeContents(
     dao: CollectionDAO,
     isCanceled: () -> Boolean,
     onProgress: (Int, Int, String) -> Unit,
-    onComplete: () -> Unit
+    onComplete: Consumer<Boolean>
 ) {
     // New book inherits properties of the first content of the list
     // which takes "precedence" as the 1st chapter
@@ -1915,6 +1932,7 @@ suspend fun mergeContents(
     val mergedAttributes = contentList.flatMap { it.attributes }
     mergedContent.addAttributes(mergedAttributes)
 
+    var isError = false
     withContext(Dispatchers.IO) {
         // Create destination folder for new content
         val parentFolder: DocumentFile?
@@ -1960,7 +1978,6 @@ suspend fun mergeContents(
         val mergedImages: MutableList<ImageFile> = ArrayList()
         val mergedChapters: MutableList<Chapter> = ArrayList()
 
-        var isError = false
         var tempFolder: File? = null
 
         try {
@@ -1995,10 +2012,11 @@ suspend fun mergeContents(
                         // TODO we have an unarchiving loop that gets multiple files inside a loop that goes on images one by one => OPTIMIZE
                         tempFolder?.delete()
                         tempFolder = getOrCreateCacheFolder(context, "tmp-merge-archive")
-                        if (null == tempFolder) throw ContentNotProcessedException(
-                            mergedContent,
-                            "Could not create temp unarchive folder"
-                        )
+                        if (null == tempFolder)
+                            throw ContentNotProcessedException(
+                                mergedContent,
+                                "Could not create temp unarchive folder"
+                            )
                         var unarchivedBytes = 0L
                         val picsToUnarchive: MutableList<ImageFile> = ArrayList()
                         var idx = -1
@@ -2017,9 +2035,10 @@ suspend fun mergeContents(
                             Triple(
                                 uri.replace(c.storageUri + File.separator, ""),
                                 it.id,
-                                it.id.toString()
+                                "${it.id}.${getExtension(uri)}" // Using ID to avoid name collisions when unarchiving multiple Contents
                             )
                         }
+                            .distinctBy { it.first } // Prevent failures when processing corrupted archives with duplicate entries
                         val unarchivedFiles = if (c.isArchive) {
                             context.extractArchiveEntriesBlocking(
                                 c.storageUri.toUri(),
@@ -2039,7 +2058,8 @@ suspend fun mergeContents(
                                     isCanceled
                                 )
                             } ?: emptyList()
-                        }
+                        } // Archive or PDF
+
                         if (unarchivedFiles.size < picsToUnarchive.size) throw ContentNotProcessedException(
                             mergedContent,
                             "Issue when unarchiving " + unarchivedFiles.size + " " + picsToUnarchive.size
@@ -2152,7 +2172,7 @@ suspend fun mergeContents(
     }
     dao.cleanup()
 
-    if (!isCanceled.invoke()) onComplete.invoke()
+    if (!isCanceled.invoke()) onComplete.invoke(isError)
 }
 
 fun getLocation(content: Content): StorageLocation {

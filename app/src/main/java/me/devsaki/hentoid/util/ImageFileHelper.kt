@@ -36,7 +36,6 @@ import java.io.IOException
 import kotlin.math.max
 
 
-// TODO empty this cache at some point
 private val fileNameMatchCache: MutableMap<String, String> = HashMap()
 
 
@@ -238,6 +237,10 @@ private fun removeLeadingZeroesAndExtensionCached(s: String): String {
         fileNameMatchCache[s] = result
     }
     return result
+}
+
+fun clearFileNameMatchCache() {
+    fileNameMatchCache.clear()
 }
 
 

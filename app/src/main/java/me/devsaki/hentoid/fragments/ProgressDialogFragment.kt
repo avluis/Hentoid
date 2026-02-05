@@ -86,6 +86,7 @@ class ProgressDialogFragment : BaseDialogFragment<Nothing>() {
         binding = null
     }
 
+    @Suppress("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         if (event.processId != R.id.generic_progress) return
@@ -105,7 +106,10 @@ class ProgressDialogFragment : BaseDialogFragment<Nothing>() {
                 )
                 bar.progress = nbProcessed
             }
-            if (ProcessEvent.Type.COMPLETE == event.eventType || (nbProcessed > 0 && nbProcessed == event.elementsTotal)) {
+            if (ProcessEvent.Type.COMPLETE == event.eventType
+                || ProcessEvent.Type.FAILURE == event.eventType
+                || (nbProcessed > 0 && nbProcessed == event.elementsTotal)
+            ) {
                 dismissAllowingStateLoss()
             }
         }
@@ -119,6 +123,7 @@ class ProgressDialogFragment : BaseDialogFragment<Nothing>() {
             bar.isIndeterminate = false
         }
         EventBus.getDefault().removeStickyEvent(event)
-        if (ProcessEvent.Type.COMPLETE == event.eventType) dismissAllowingStateLoss()
+        if (ProcessEvent.Type.COMPLETE == event.eventType || ProcessEvent.Type.FAILURE == event.eventType)
+            dismissAllowingStateLoss()
     }
 }

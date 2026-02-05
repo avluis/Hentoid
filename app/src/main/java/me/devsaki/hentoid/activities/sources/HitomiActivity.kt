@@ -72,7 +72,11 @@ class HitomiActivity : BaseBrowserActivity() {
             "exosrv.com",
             "realsrv.com",
             "ad-provider",
-            "adprovider"
+            "adprovider",
+            "exovideoslider",
+            "adsbyexoclick",
+            "\"ads\"",
+            "\"adverts\""
         )
         private val REMOVABLE_ELEMENTS = arrayOf(
             ".content div[class^=hitomi-]",

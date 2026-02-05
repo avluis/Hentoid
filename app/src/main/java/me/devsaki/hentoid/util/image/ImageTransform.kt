@@ -170,7 +170,7 @@ private fun resizePlainRatio(
         val rescaled = sharpRescale(sourceBmp, ratio)
         if (rescaled != sourceBmp) sourceBmp.recycle()
         try {
-            rescaled.scale((dims.x * ratio).toInt(), (dims.y * ratio).toInt())
+            rescaled.scale((dims.x * ratio).roundToInt(), (dims.y * ratio).roundToInt())
         } finally {
             rescaled.recycle()
         }
@@ -612,9 +612,9 @@ fun clampDims(dims: Point) {
     val targetHeightInScreenDims =
         dims.y.toFloat() * screenWidth.toFloat() / dims.x.toFloat()
     if (targetHeightInScreenDims > maxPicHeight)
-        dims.y = (maxPicHeight.toFloat() * dims.x.toFloat() / screenWidth.toFloat()).toInt()
+        dims.y = (maxPicHeight.toFloat() * dims.x.toFloat() / screenWidth.toFloat()).roundToInt()
     else if (targetHeightInScreenDims < minPicHeight)
-        dims.y = (minPicHeight.toFloat() * dims.x.toFloat() / screenWidth.toFloat()).toInt()
+        dims.y = (minPicHeight.toFloat() * dims.x.toFloat() / screenWidth.toFloat()).roundToInt()
 }
 
 fun isSingleOutlier(dims: List<Point>, idx: Int): Boolean {

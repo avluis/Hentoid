@@ -93,7 +93,8 @@ class EHentaiParser : ImageListParser {
             requestHeaders: List<Pair<String, String>>,
             site: Site
         ): Pair<String, String?> {
-            val mpvInfo = jsonToObject(json, MpvImageInfo::class.java)
+            val jsonClean = json.substring(json.indexOf('{'))
+            val mpvInfo = jsonToObject(jsonClean, MpvImageInfo::class.java)
                 ?: throw EmptyResultException("MPV : No metadata found")
             val imageMetadata = getMpvImage(
                 mpvInfo,
@@ -153,9 +154,8 @@ class EHentaiParser : ImageListParser {
             requestHeaders: List<Pair<String, String>>,
             site: Site
         ): Pair<String, String?> {
-            return if (url.startsWith("http"))
-                parseImagePageClassic(url, requestHeaders, site)
-            else parseImagePageMpv(url, requestHeaders, site)
+            return if (url.contains("\"gid\"")) parseImagePageMpv(url, requestHeaders, site)
+            else parseImagePageClassic(url, requestHeaders, site)
         }
 
         /**

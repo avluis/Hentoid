@@ -1033,9 +1033,6 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                 }
             }
 
-            // Compute perceptual hash for the cover picture
-            computeAndSaveCoverHash(applicationContext, content, dao)
-
             // Mark content as downloaded (download processing date; if none set before)
             if (0L == content.downloadDate) content.downloadDate = now
             if (0 == pagesKO && !hasError) {
@@ -1057,6 +1054,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             addContent(applicationContext, dao, content)
+
+            // Compute perceptual hash for the cover picture
+            computeAndSaveCoverHash(applicationContext, content, dao)
 
             // Delete the duplicate book that was meant to be replaced, if any
             if (!content.contentToReplace.isNull) {

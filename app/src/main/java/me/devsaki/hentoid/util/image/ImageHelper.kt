@@ -37,10 +37,10 @@ import me.devsaki.hentoid.util.startsWith
 import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
-import java.nio.charset.StandardCharsets
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.pow
+import kotlin.math.roundToInt
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -443,10 +443,10 @@ fun getScaledDownBitmap(
  */
 fun scaleDownToMax(srcDims: Point, maxDim: Int): Point {
     if (srcDims.x > srcDims.y && srcDims.x > maxDim) {
-        return Point(maxDim, (srcDims.y * maxDim.toFloat() / srcDims.x).toInt())
+        return Point(maxDim, (srcDims.y * maxDim.toFloat() / srcDims.x).roundToInt())
     }
     if (srcDims.x < srcDims.y && srcDims.y > maxDim) {
-        return Point(maxDim, (srcDims.x * maxDim.toFloat() / srcDims.y).toInt())
+        return Point(maxDim, (srcDims.x * maxDim.toFloat() / srcDims.y).roundToInt())
     }
     if (srcDims.x == srcDims.y && srcDims.x > maxDim) {
         return Point(maxDim, maxDim)

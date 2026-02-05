@@ -130,13 +130,16 @@ private suspend fun indexContent(
 
 suspend fun getIdxCoverBitmapFromContent(context: Context, content: Content): Bitmap? =
     withContext(Dispatchers.IO) {
-        val uriStr = content.cover.fileUri
-        if (uriStr.isEmpty()) return@withContext null
+        val cover = content.imageList.firstOrNull { it.isCover && !it.isReadable }
+        val uriStr = cover?.fileUri ?: content.coverImageUrl
+        if (uriStr.isEmpty() || uriStr.startsWith("http")) return@withContext null
         return@withContext getIdxCoverBitmap(context, uriStr.toUri())
     }
 
 suspend fun getIdxCoverBitmap(context: Context, coverUri: Uri): Bitmap? =
     withContext(Dispatchers.IO) {
+        Timber.v("getIdxCoverBitmap from $coverUri")
+
         val isAnimated = try {
             getInputStream(context, coverUri).use {
                 val header = ByteArray(1000)

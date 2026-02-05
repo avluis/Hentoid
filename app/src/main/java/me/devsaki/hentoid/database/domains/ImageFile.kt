@@ -7,6 +7,7 @@ import io.objectbox.annotation.Index
 import io.objectbox.annotation.Transient
 import io.objectbox.annotation.Uid
 import io.objectbox.relation.ToOne
+import me.devsaki.hentoid.adapters.ImagePagerAdapter
 import me.devsaki.hentoid.core.EXT_THUMB_FILE_PREFIX
 import me.devsaki.hentoid.core.THUMB_FILE_NAME
 import me.devsaki.hentoid.database.isReachable
@@ -66,6 +67,14 @@ data class ImageFile(
     @Transient
     var displayOrder = 0
 
+    // Uri to use to display images in the viewer (read-time only)
+    @Transient
+    var displayUri = ""
+
+    // Uri to use to display images in the viewer (read-time only)
+    @Transient
+    var imageType = ImagePagerAdapter.ImageType.IMG_TYPE_UNSET
+
     // Backup URL for that picture (download-time only)
     @Transient
     var backupUrl = ""
@@ -97,6 +106,7 @@ data class ImageFile(
         this.downloadParams = img.downloadParams
         this.uniqueHash = img.uniqueHash
         this.displayOrder = img.displayOrder
+        this.displayUri = img.displayUri
         this.backupUrl = img.backupUrl
         this.isBackup = img.isBackup
         this.isForceRefresh = img.isForceRefresh
@@ -257,25 +267,17 @@ data class ImageFile(
 
     val usableUri: String
         get() {
-            var result = ""
-            if (isInLibrary(status) && !isArchivedOrPdf(fileUri)) result = fileUri
-            if (result.isEmpty() && !isArchivedOrPdf(url)) result = url
-            if (result.isEmpty()) result = linkedContent?.coverImageUrl ?: ""
-
-            return result
+            if (displayUri.isNotBlank()) return displayUri
+            if (!isArchived && !isPdf && isInLibrary(status) && fileUri.isNotBlank()) return fileUri
+            if (url.isNotBlank() && url.startsWith("http")) return url
+            return if (isCover) linkedContent?.coverImageUrl ?: "" else ""
         }
 
     val isArchived: Boolean
-        get() = isContainedInFile(url, getSupportedExtensions())
+        get() = isContainedInFile(fileUri, getSupportedExtensions())
 
     val isPdf: Boolean
-        get() = isContainedInFile(url, setOf("pdf"))
-
-    fun isArchivedOrPdf(uri: String): Boolean {
-        val exts = getSupportedExtensions().toMutableSet()
-        exts.add("pdf")
-        return isContainedInFile(uri, exts)
-    }
+        get() = isContainedInFile(fileUri, setOf("pdf"))
 
     private fun isContainedInFile(uri: String, exts: Set<String>): Boolean {
         val lowerUri = uri.lowercase(Locale.getDefault())
@@ -307,7 +309,7 @@ data class ImageFile(
         val imageFile = other as ImageFile
         if (imageFile.isForceRefresh || isForceRefresh) return false
 
-        return id == imageFile.id && url == imageFile.url && pageUrl == imageFile.pageUrl && fileUri == imageFile.fileUri && order == imageFile.order && isCover == imageFile.isCover && favourite == imageFile.favourite && chapter.targetId == imageFile.chapter.targetId
+        return id == imageFile.id && url == imageFile.url && pageUrl == imageFile.pageUrl && fileUri == imageFile.fileUri && displayUri == imageFile.displayUri && order == imageFile.order && isCover == imageFile.isCover && favourite == imageFile.favourite && chapter.targetId == imageFile.chapter.targetId
     }
 
     override fun hashCode(): Int {
@@ -317,6 +319,7 @@ data class ImageFile(
             pageUrl,
             url,
             fileUri,
+            displayUri,
             order,
             isCover,
             favourite,

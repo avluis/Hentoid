@@ -54,6 +54,7 @@ import me.devsaki.hentoid.util.LogEntry
 import me.devsaki.hentoid.util.LogInfo
 import me.devsaki.hentoid.util.Settings
 import me.devsaki.hentoid.util.addContent
+import me.devsaki.hentoid.util.clearFileNameMatchCache
 import me.devsaki.hentoid.util.createImageListFromFiles
 import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.file.FileExplorer
@@ -125,7 +126,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
     }
 
     override suspend fun onClear(logFile: DocumentFile?) {
-        // Nothing
+        clearFileNameMatchCache()
     }
 
     override fun runProgressNotification() {
