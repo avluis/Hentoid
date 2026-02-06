@@ -15,15 +15,9 @@ data class DeviantArtGallection(
         val result: MutableList<ImageFile> = ArrayList()
         results.forEach { res ->
             val imgs = res.getImages()
-            result.addAll(imgs.filter { it.isReadable }.map { ImageFile(it,
-                populateContent = true,
-                populateChapter = true
-            ) })
+            result.addAll(imgs.filter { it.isReadable }.map { ImageFile(it) })
             if (null == result.find { it.isCover }) {
-                val cover = ImageFile(imgs.first { it.isCover },
-                    populateContent = true,
-                    populateChapter = true
-                )
+                val cover = ImageFile(imgs.first { it.isCover })
                 result.add(0, cover)
             }
         }
