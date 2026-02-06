@@ -562,8 +562,6 @@ class ReaderViewModel(
         startingIndex: Int,
         imageFiles: List<ImageFile>
     ) {
-        setViewerStartingIndex(startingIndex)
-
         // Init the read pages write cache
         readPageNumbers.clear()
 
@@ -653,7 +651,7 @@ class ReaderViewModel(
                 viewerImagesInternal.clear()
                 viewerImagesInternal.addAll(imgs)
             }
-            if (startIndex > -1) onPageChange(startIndex - 1, 1)
+            if (startIndex > -1) onPageChange(startIndex - 1, 1, true)
             else viewerImages.postValue(viewerImagesInternal.toList())
         }
     }
@@ -1201,10 +1199,11 @@ class ReaderViewModel(
      * @param viewerIndex Viewer index of the page that has just been displayed
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
-    fun onPageChange(viewerIndex: Int, direction: Int) {
+    fun onPageChange(viewerIndex: Int, direction: Int, setIndex: Boolean = false) {
         onPageChange(viewerIndex, direction) {
             // Instanciate a new list to trigger an actual Adapter UI refresh
             viewerImages.postValue(ArrayList(viewerImagesInternal))
+            if (setIndex) setViewerStartingIndex(viewerIndex + 1)
         }
     }
 
@@ -1379,12 +1378,7 @@ class ReaderViewModel(
                         if (viewerImagesInternal.size <= downloadedPageIndex) return@launch
 
                         // Instanciate a new ImageFile not to modify the one used by the UI
-                        val downloadedPic =
-                            ImageFile(
-                                viewerImagesInternal[downloadedPageIndex],
-                                populateContent = true,
-                                populateChapter = true
-                            )
+                        val downloadedPic = ImageFile(viewerImagesInternal[downloadedPageIndex])
                         downloadedPic.displayUri = resultOpt.second
                         viewerImagesInternal.removeAt(downloadedPageIndex)
                         viewerImagesInternal.add(downloadedPageIndex, downloadedPic)
@@ -1578,7 +1572,7 @@ class ReaderViewModel(
         refresh: Boolean
     ) {
         // Instanciate a new ImageFile not to modify the one used by the UI
-        val extractedPic = ImageFile(img, populateContent = true, populateChapter = true)
+        val extractedPic = ImageFile(img)
         extractedPic.displayUri = uri.toString()
         synchronized(viewerImagesInternal) {
             viewerImagesInternal.removeAt(idx)
@@ -2058,7 +2052,11 @@ class ReaderViewModel(
                     img.imageType = readImageType(application, uri.toUri())
                     Timber.d("${img.id} : Set image type to ${img.imageType}")
                     // Make image usable by reader if not set yet
-                    if (img.displayUri.isBlank()) img.displayUri = img.fileUri
+                    if (img.displayUri.isBlank()) {
+                        val updatedImg = ImageFile(img)
+                        updatedImg.displayUri = img.fileUri
+                        viewerImagesInternal[it] = updatedImg
+                    }
                 }
             }
             onDone?.invoke()

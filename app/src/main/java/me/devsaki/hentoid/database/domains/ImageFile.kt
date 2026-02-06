@@ -88,7 +88,7 @@ data class ImageFile(
     var isForceRefresh: Boolean = false
 
 
-    constructor(img: ImageFile, populateContent: Boolean, populateChapter: Boolean) : this(
+    constructor(img: ImageFile, populateContent: Boolean = true, populateChapter: Boolean = true) : this(
         img.id,
         img.order,
         img.url,
@@ -107,6 +107,7 @@ data class ImageFile(
         this.uniqueHash = img.uniqueHash
         this.displayOrder = img.displayOrder
         this.displayUri = img.displayUri
+        this.imageType = img.imageType
         this.backupUrl = img.backupUrl
         this.isBackup = img.isBackup
         this.isForceRefresh = img.isForceRefresh

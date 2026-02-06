@@ -408,7 +408,7 @@ class ImagePagerAdapter(context: Context) :
             else imageAvailable = false
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
-            val isExtracting = img != null && !imageAvailable && !img.url.startsWith("http")
+            val isExtracting = img != null && !imageAvailable && (img.isArchived || img.isPdf)
 
             @StringRes var text: Int = R.string.image_not_found
             if (isStreaming) text = R.string.image_streaming

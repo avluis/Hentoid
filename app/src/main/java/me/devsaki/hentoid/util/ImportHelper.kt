@@ -1040,7 +1040,7 @@ private fun mapMetadata(recipient: List<ImageFile>, ref: List<ImageFile>) {
  */
 fun createCover(images: MutableList<ImageFile>) {
     if (images.isNotEmpty()) {
-        val img = ImageFile(images[0], populateContent = true, populateChapter = true)
+        val img = ImageFile(images[0])
         img.isCover = true
         img.name = THUMB_FILE_NAME
         // Create a new cover entry from the 1st element
