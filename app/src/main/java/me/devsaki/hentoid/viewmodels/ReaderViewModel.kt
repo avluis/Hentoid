@@ -562,8 +562,6 @@ class ReaderViewModel(
         startingIndex: Int,
         imageFiles: List<ImageFile>
     ) {
-        setViewerStartingIndex(startingIndex)
-
         // Init the read pages write cache
         readPageNumbers.clear()
 
@@ -653,7 +651,7 @@ class ReaderViewModel(
                 viewerImagesInternal.clear()
                 viewerImagesInternal.addAll(imgs)
             }
-            if (startIndex > -1) onPageChange(startIndex - 1, 1)
+            if (startIndex > -1) onPageChange(startIndex - 1, 1, true)
             else viewerImages.postValue(viewerImagesInternal.toList())
         }
     }
@@ -1201,10 +1199,11 @@ class ReaderViewModel(
      * @param viewerIndex Viewer index of the page that has just been displayed
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
-    fun onPageChange(viewerIndex: Int, direction: Int) {
+    fun onPageChange(viewerIndex: Int, direction: Int, setIndex: Boolean = false) {
         onPageChange(viewerIndex, direction) {
             // Instanciate a new list to trigger an actual Adapter UI refresh
             viewerImages.postValue(ArrayList(viewerImagesInternal))
+            if (setIndex) setViewerStartingIndex(viewerIndex + 1)
         }
     }
 
