@@ -20,5 +20,3 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLParameters
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
-
--keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule

@@ -57,3 +57,26 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+-dontwarn timber.log.**
+-dontwarn coil.**
+-dontwarn androidx.media3.**
+
+########################################
+# Room (required by WorkManager)
+########################################
+-keep class androidx.room.** { *; }
+-keep class androidx.sqlite.db.** { *; }
+-dontwarn androidx.room.**
+-dontwarn androidx.sqlite.db.**
+
+########################################
+# WorkManager
+########################################
+-keep class androidx.work.** { *; }
+-dontwarn androidx.work.**
+
+########################################
+# Parcelable (@Parcelize)
+########################################
+-keepclassmembers class * implements android.os.Parcelable { static ** CREATOR; }
