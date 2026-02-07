@@ -1,11 +1,10 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.google.devtools.ksp").version('2.3.2')
+    id("com.google.devtools.ksp").version('2.3.5')
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 apply plugin: 'org.sonarqube'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -17,12 +16,14 @@ if (file('signing.gradle').exists()) {
 }
 
 aboutLibraries {
-    exclusionPatterns = [~"com_google_android.*", ~"android.*", ~"com_mikepenz__fastadapter_extensions.*"]
-    configPath = "about-config"
+    // exclusionPatterns = [~"com_google_android.*", ~"android.*", ~"com_mikepenz__fastadapter_extensions.*"]
+    // configPath = "about-config"
+    /*
     additionalLicenses {
         LGPL_2_1_or_later
         BSD_3_Clause
     }
+     */
 }
 
 kotlin {
@@ -308,7 +309,7 @@ dependencies {
     implementation 'com.github.ByteHamster:SearchPreference:2.7.3'
 
     // Automated generation of the Licenses screen
-    def about_version = '8.9.4'
+    def about_version = '13.2.1'
     implementation "com.mikepenz:aboutlibraries-core:$about_version"
     implementation "com.mikepenz:aboutlibraries:$about_version"
 
@@ -336,5 +337,5 @@ sonarqube {
     }
 }
 
+apply plugin: 'com.android.legacy-kapt'
 apply plugin: 'io.objectbox'
-apply plugin: 'org.jetbrains.kotlin.android'// apply last

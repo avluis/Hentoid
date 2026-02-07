@@ -4,7 +4,6 @@ import android.util.SparseIntArray
 import io.objectbox.BoxStore
 import io.objectbox.Property
 import io.objectbox.android.Admin
-import io.objectbox.kotlin.inValues
 import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import io.objectbox.query.QueryCondition
@@ -1639,7 +1638,7 @@ object ObjectBoxDB {
         }
     }
 
-    fun updateImageFileUri(locations : Map<Long, String>) {
+    fun updateImageFileUri(locations: Map<Long, String>) {
         val imgBox = store.boxFor(ImageFile::class.java)
         store.runInTx {
             val imgs = imgBox[locations.keys].map { img ->
@@ -2064,7 +2063,7 @@ object ObjectBoxDB {
         // Select all eligible content
         val allContentQ =
             store.boxFor(Content::class.java).query()
-                .inValues(Content_.status, libraryStatus)
+                .`in`(Content_.status, libraryStatus)
                 .notIn(Content_.id, excludedIds.toLongArray())
 
         return allContentQ.build()
