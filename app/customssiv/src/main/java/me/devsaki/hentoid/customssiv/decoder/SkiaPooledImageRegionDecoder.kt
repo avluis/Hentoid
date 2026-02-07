@@ -59,16 +59,6 @@ internal class SkiaPooledImageRegionDecoder(private val bitmapConfig: Bitmap.Con
     private val imageDimensions = Point(0, 0)
     private val lazyInited = AtomicBoolean(false)
 
-    /**
-     * Controls logging of debug messages. All instances are affected.
-     *
-     * @param debug true to enable debug logging, false to disable.
-     */
-    @Keep
-    @Suppress("unused")
-    fun setDebug(debug: Boolean) {
-        this.debug = debug
-    }
 
     /**
      * Initialises the decoder pool. This method creates one decoder on the current thread and uses
