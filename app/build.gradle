@@ -259,7 +259,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     // Download speed limit
-    implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.0'
+    implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.1'
 
     // TLS v1.3 support for Android <= 9
     implementation 'org.conscrypt:conscrypt-android:2.5.3'
@@ -303,7 +303,7 @@ dependencies {
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // Biometrics
-    implementation 'dev.skomlach:biometric:2.3.4'
+    implementation 'dev.skomlach:biometric:2.3.5'
 
     // Searchable prefs
     implementation 'com.github.ByteHamster:SearchPreference:2.7.3'
