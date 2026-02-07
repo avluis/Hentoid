@@ -30,7 +30,7 @@ import com.google.android.material.slider.Slider
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import io.whitfin.siphash.SipHasher
+import io.whitfin.siphash.SipHash
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
@@ -223,7 +223,7 @@ fun formatDuration(ms: Long): String {
  * @return Hash built from the given data
  */
 fun hash64(data: ByteArray): Long {
-    return SipHasher.hash(SIP_KEY, data)
+    return SipHash.hash(SIP_KEY, data)
 }
 
 fun hash64(data: String): Long {
