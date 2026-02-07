@@ -121,6 +121,8 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         private set
     var parallelDownloadCap = 0
         private set
+    var noReferer = false
+        private set
 
     // Controls for "Mark downloaded/merged" in browser
     var bookCardDepth = 2
@@ -166,6 +168,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         if (jsonSite.useCloudflare != null) useCloudflare = jsonSite.useCloudflare
         if (jsonSite.hasUniqueBookId != null) hasUniqueBookId = jsonSite.hasUniqueBookId
         if (jsonSite.parallelDownloadCap != null) parallelDownloadCap = jsonSite.parallelDownloadCap
+        if (jsonSite.noReferer != null) noReferer = jsonSite.noReferer
         if (jsonSite.requestsCapPerSecond != null)
             requestsCapPerSecond = jsonSite.requestsCapPerSecond
         if (jsonSite.bookCardDepth != null) bookCardDepth = jsonSite.bookCardDepth
