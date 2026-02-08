@@ -705,7 +705,10 @@ open class CustomWebViewClient : WebViewClient {
         if (response != null) {
             try {
                 // Scram if the response is an error
-                if (response.code >= 400) return null
+                if (response.code >= 400) {
+                    Timber.i("Request FAILED (HTTP ${response.code}) for $url")
+                    return null
+                }
 
                 // Handle redirection and force the browser to reload to be able to process the page
                 // NB1 : shouldInterceptRequest doesn't trigger on redirects
