@@ -23,6 +23,9 @@ import me.devsaki.hentoid.workers.UpdateJsonWorker
 import me.devsaki.hentoid.workers.data.UpdateJsonData
 import timber.log.Timber
 
+// TODO update when adding tasks to "oneShot" functions
+const val DB_UPDATE_VERSION = 1
+
 @Suppress("UNUSED_PARAMETER")
 object DatabaseMaintenance {
     /**
@@ -39,14 +42,15 @@ object DatabaseMaintenance {
             this::createGroups,
             this::computeReadingProgress,
             this::reattachGroupCovers,
-            this::cleanOrphanGroups
+            this::cleanOrphanGroups,
+            this::setDbUpdateVersion,
         )
     }
 
     fun getPostLaunchCleanupTasks(): List<SuspendBiConsumer<Context, (Float) -> Unit>> {
         return listOf(
             this::clearTempContent,
-            this::cleanBookmarksOneShot,
+            this::cleanBookmarks,
             this::cleanOrphanAttributes,
             this::cleanOrphanChapters,
             this::refreshJsonForSecondDownloadDate
@@ -148,6 +152,7 @@ object DatabaseMaintenance {
 
     private suspend fun cleanPropertiesOneShot(context: Context, emitter: (Float) -> Unit) =
         withContext(Dispatchers.IO) {
+            if (Settings.lastDBUpdateVersion > DB_UPDATE_VERSION - 1) return@withContext
             val db = MaintenanceDAO()
             try {
                 // Update URLs from deprecated Hitomi image covers
@@ -230,7 +235,7 @@ object DatabaseMaintenance {
             }
         }
 
-    private suspend fun cleanBookmarksOneShot(context: Context, emitter: (Float) -> Unit) =
+    private suspend fun cleanBookmarks(context: Context, emitter: (Float) -> Unit) =
         withContext(Dispatchers.IO) {
             try {
                 // Detect duplicate bookmarks (host/someurl and host/someurl/)
@@ -250,6 +255,7 @@ object DatabaseMaintenance {
 
     private suspend fun setDefaultPropertiesOneShot(context: Context, emitter: (Float) -> Unit) =
         withContext(Dispatchers.IO) {
+            if (Settings.lastDBUpdateVersion > DB_UPDATE_VERSION - 1) return@withContext
             val db = MaintenanceDAO()
             try {
                 // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
@@ -531,6 +537,11 @@ object DatabaseMaintenance {
             } finally {
                 db.cleanup()
             }
+        }
+
+    private suspend fun setDbUpdateVersion(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            Settings.lastDBUpdateVersion = DB_UPDATE_VERSION
         }
 
     private suspend fun cleanOrphanAttributes(context: Context, emitter: (Float) -> Unit) =
