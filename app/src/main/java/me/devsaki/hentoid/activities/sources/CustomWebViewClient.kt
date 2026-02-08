@@ -12,6 +12,10 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.webkit.CustomHeader
+import androidx.webkit.Profile
+import androidx.webkit.ProfileStore
+import androidx.webkit.WebViewFeature
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
@@ -213,6 +217,7 @@ open class CustomWebViewClient : WebViewClient {
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
         adBlocker = AdBlocker(site)
+        initProfile()
     }
 
     constructor(
@@ -227,12 +232,37 @@ open class CustomWebViewClient : WebViewClient {
         for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
         adBlocker = AdBlocker(site)
+        initProfile()
     }
 
     private fun initJspoon(site: Site): HtmlAdapter<out ContentParser> {
         val c = ContentParserFactory.getContentParserClass(site)
         val jspoon = Jspoon.create()
         return jspoon.adapter(c) // Unchecked but alright
+    }
+
+    private fun initProfile() {
+        if (site.url.isBlank()) return
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)
+            && WebViewFeature.isFeatureSupported(WebViewFeature.CUSTOM_REQUEST_HEADERS)
+        ) {
+            // Generate a random bogus header value
+            val sb = StringBuilder()
+            repeat(8 + getRandomInt(8)) {
+                val randomChar = 48 + getRandomInt(75)
+                sb.append(randomChar.toChar())
+            }
+
+            val profileStore = ProfileStore.getInstance()
+            val profile = profileStore.getOrCreateProfile(Profile.DEFAULT_PROFILE_NAME)
+            var pattern = site.url
+            if (pattern.endsWith('/')) pattern = pattern.substringBeforeLast('/')
+            profile.addCustomHeader(CustomHeader("x-requested-with", sb.toString(), setOf(pattern)))
+        } else {
+            if (!WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) Timber.w("Multiprofile not supported!")
+            if (!WebViewFeature.isFeatureSupported(WebViewFeature.CUSTOM_REQUEST_HEADERS))
+                Timber.w("Custom request headers not supported!")
+        }
     }
 
     open fun destroy() {

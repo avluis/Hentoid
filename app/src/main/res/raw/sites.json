@@ -94,8 +94,7 @@
     },
     "NOVELCROW": {
       "useHentoidAgent": false,
-      "useWebviewAgent": false,
-      "useManagedRequests": true
+      "useWebviewAgent": false
     },
     "KEMONO": {
       "useHentoidAgent": false,
