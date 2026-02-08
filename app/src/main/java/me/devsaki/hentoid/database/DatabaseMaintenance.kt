@@ -266,6 +266,7 @@ object DatabaseMaintenance {
                     db.insertContentCore(c)
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
+
                 contents = db.selectContentWithNullDlModeField()
                 Timber.i(
                     "Set default value for Content.downloadMode field : %s items detected",
@@ -278,6 +279,7 @@ object DatabaseMaintenance {
                     db.insertContentCore(c)
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
+
                 contents = db.selectContentWithNullMergeField()
                 Timber.i(
                     "Set default value for Content.manuallyMerged field : %s items detected",
@@ -290,6 +292,7 @@ object DatabaseMaintenance {
                     db.insertContentCore(c)
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
+
                 contents = db.selectContentWithNullDlCompletionDateField()
                 Timber.i(
                     "Set default value for Content.downloadCompletionDate field : %s items detected",
@@ -304,6 +307,7 @@ object DatabaseMaintenance {
                     db.insertContentCore(c)
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
+
                 contents = db.selectContentWithInvalidUploadDate()
                 Timber.i("Fixing invalid upload dates : %s items detected", contents.size)
                 max = contents.size
@@ -313,6 +317,7 @@ object DatabaseMaintenance {
                     db.insertContentCore(c)
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
+
                 val chapters = db.selectChapterWithNullUploadDate()
                 Timber.i(
                     "Set default value for Chapter.uploadDate field : %s items detected",
@@ -325,6 +330,7 @@ object DatabaseMaintenance {
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 db.insertChapters(chapters)
+
                 val searchRecords = db.selectSearchRecordWithNullEntity()
                 Timber.i(
                     "Set default value for SearchRecord.entityType field : %s items detected",
@@ -337,6 +343,20 @@ object DatabaseMaintenance {
                     withContext(Dispatchers.Main) { emitter(pos++ / max) }
                 }
                 db.insertSearchRecords(searchRecords)
+
+                val imageFiles = db.selectImageFilesWithNullPageUrl()
+                Timber.i(
+                    "Set default value for ImageFile.dbPageUrl field : %s items detected",
+                    imageFiles.size
+                )
+                max = imageFiles.size
+                pos = 1f
+                for (c in imageFiles) {
+                    c.dbPageUrl = ""
+                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
+                }
+                db.insertImageFiles(imageFiles)
+
                 Timber.i("Set default ObjectBox properties : done")
             } finally {
                 db.cleanup()
