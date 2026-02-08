@@ -531,13 +531,12 @@ object Settings {
 
 
     // APP-WIDE
+    // Used to detect if the intro wizard has been completed
     var isFirstRun: Boolean by BoolSetting(Key.FIRST_RUN, true)
 
     // Used to detect when LibraryActivity opens for the first time to force-open navigation drawer
     var isFirstRunProcessComplete: Boolean by BoolSetting(Key.WELCOME_DONE, false)
     var lastKnownAppVersionCode: Int by IntSettingStr(Key.LAST_KNOWN_APP_VERSION_CODE, 0)
-    var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
-    var lastDBUpdateVersion: Int by IntSetting("last_db_update", 0)
     val isAnalyticsEnabled: Boolean by BoolSetting(Key.ANALYTICS_PREFERENCE, true)
     val isAutomaticUpdateEnabled: Boolean by BoolSetting("pref_check_updates", true)
     var isBrowserMode: Boolean by BoolSetting(Key.BROWSER_MODE, false)
@@ -547,6 +546,11 @@ object Settings {
     val recentVisibility: Boolean by BoolSetting(Key.APP_PREVIEW, BuildConfig.DEBUG)
     val maxDbSizeKb: Long by LongSetting("db_max_size", 4L * 1024 * 1024) // 4GB
     var colorTheme: Int by IntSettingStr(Key.COLOR_THEME, Value.COLOR_THEME_LIGHT)
+
+    // Used to execute heavy maintenance tasks just one time
+    var isRefreshJson1Complete: Boolean by BoolSetting(Key.REFRESH_JSON_1_DONE, false)
+    var lastDBUpdateVersion: Int by IntSetting("last_db_update", 0)
+
 
 
     // Public Helpers
