@@ -106,7 +106,9 @@ class MaintenanceDAO {
 
     fun selectImageFilesWithNullPageUrl(): List<ImageFile> {
         return ObjectBoxDB.store.boxFor(ImageFile::class.java).query()
-            .isNull(ImageFile_.dbPageUrl).safeFind()
+            .isNull(ImageFile_.dbPageUrl)
+            .or()
+            .equal(ImageFile_.dbPageUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).safeFind()
     }
 
     fun selectOrphanQueueRecordIds(): LongArray {
