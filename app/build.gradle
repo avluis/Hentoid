@@ -9,7 +9,6 @@ apply plugin: 'org.sonarqube'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
-apply plugin: 'com.mikepenz.aboutlibraries.plugin.android'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {

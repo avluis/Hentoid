@@ -7,7 +7,6 @@ plugins {
     // Kept for ObjectBox while they still use kapt (see https://github.com/objectbox/objectbox-java/issues/1075)
     id("com.android.legacy-kapt") version ("9.0.0") apply false
     id("com.mikepenz.aboutlibraries.plugin") version "13.2.1" apply false
-    id("com.mikepenz.aboutlibraries.plugin.android") version "13.2.1" apply false
 }
 
 allprojects {
