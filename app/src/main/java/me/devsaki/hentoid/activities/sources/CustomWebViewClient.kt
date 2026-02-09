@@ -1026,8 +1026,9 @@ open class CustomWebViewClient : WebViewClient {
                         var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1)
+                            repeat(site.bookCardDepth - 1) {
                                 if (imgParent != null) imgParent = imgParent.parent()
+                            }
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -1042,8 +1043,9 @@ open class CustomWebViewClient : WebViewClient {
                         var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent.parent()
+                            repeat(site.bookCardDepth - 1) {
+                                if (imgParent != null) imgParent = imgParent.parent()
+                            }
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -1058,8 +1060,9 @@ open class CustomWebViewClient : WebViewClient {
                         var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent.parent()
+                            repeat(site.bookCardDepth - 1) {
+                                if (imgParent != null) imgParent = imgParent.parent()
+                            }
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -1101,9 +1104,8 @@ open class CustomWebViewClient : WebViewClient {
                                 ) || isPresentAsWord(blockedTag, tag)
                             ) {
                                 var imgParent = entry.key
-                                for (i in 0..site.galleryHeight) {
-                                    if (imgParent.parent() != null) imgParent =
-                                        imgParent.parent()!!
+                                repeat(site.galleryHeight) {
+                                    imgParent.parent()?.let { imgParent = it }
                                 }
                                 val imgs = imgParent.allElements.select("img")
                                 for (img in imgs) {
