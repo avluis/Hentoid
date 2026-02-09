@@ -25,6 +25,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.util.Consumer
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
@@ -588,8 +589,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         webClient = createWebClient()
         webView.webViewClient = webClient
         if (getStartSite().useManagedRequests || Settings.proxy.isNotEmpty() || Settings.dnsOverHttps > -1) {
-            xhrHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
-            fetchHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
+            xhrHandler = { url, body -> webClient.recordDynamicPostResults(url, body) }
+            enableStandardFetchHandler()
         }
 
         // Download immediately on long click on a link / image link
@@ -616,6 +617,11 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             webSettings.isAlgorithmicDarkeningAllowed =
                 (!Settings.isBrowserForceLightMode && Settings.colorTheme != Settings.Value.COLOR_THEME_LIGHT)
         }
+    }
+
+    private fun enableStandardFetchHandler() {
+        if (null == fetchHandler)
+            fetchHandler = { url, body -> webClient.recordDynamicPostResults(url, body) }
     }
 
     private fun initSwipeLayout() {
@@ -721,13 +727,13 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         // Activate fetch handler
         if (fetchHandler != null) {
             if (null == fetchInterceptorScript) fetchInterceptorScript =
-                webClient.getJsScript(this, "fetch_override.js", null)
+                webClient.getAssetJsScript(this, "fetch_override.js", null)
             webView.loadUrl(fetchInterceptorScript!!)
         }
         // Activate XHR handler
         if (xhrHandler != null) {
             if (null == xhrInterceptorScript) xhrInterceptorScript =
-                webClient.getJsScript(this, "xhr_override.js", null)
+                webClient.getAssetJsScript(this, "xhr_override.js", null)
             webView.loadUrl(xhrInterceptorScript!!)
         }
 
@@ -1812,6 +1818,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         return internalCustomCss!!
     }
 
+    fun jsGet(url: String, callback: Consumer<String>) {
+        enableStandardFetchHandler()
+        webView.evaluateJavascript("fetch(\"$url\")", null)
+    }
 
     /**
      * Listener for preference changes (from the settings dialog)

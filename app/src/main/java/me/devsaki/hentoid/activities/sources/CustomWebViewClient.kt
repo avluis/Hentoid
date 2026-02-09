@@ -159,7 +159,7 @@ open class CustomWebViewClient : WebViewClient {
     // Communication between XHR intercept and POST rewrite
     //   Key : URL
     //   Value : POST Body
-    private val xhrPostQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
+    private val postResultQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
 
 
     companion object {
@@ -500,7 +500,7 @@ open class CustomWebViewClient : WebViewClient {
         isPageLoading.set(true)
 
         // Activate startup JS
-        for (s in jsStartupScripts) view.loadUrl(getJsScript(view.context, s, jsReplacements))
+        for (s in jsStartupScripts) view.loadUrl(getAssetJsScript(view.context, s, jsReplacements))
         activity?.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true)
     }
 
@@ -524,7 +524,7 @@ open class CustomWebViewClient : WebViewClient {
             Timber.v("[$url] ignored by interceptor; method = ${request.method}")
             var postBody = ""
             // Try to retrieve POST body from previously intercepted XHR
-            xhrPostQueue[url]?.let { queue ->
+            postResultQueue[url]?.let { queue ->
                 queue.poll()?.let { body ->
                     postBody = body
                 }
@@ -648,11 +648,11 @@ open class CustomWebViewClient : WebViewClient {
         } else return null
     }
 
-    fun recordDynamicPostRequests(url: String, body: String) {
-        val queue = if (xhrPostQueue.contains(url)) xhrPostQueue[url]
+    fun recordDynamicPostResults(url: String, body: String) {
+        val queue = if (postResultQueue.contains(url)) postResultQueue[url]
         else {
             val q = ConcurrentLinkedQueue<String>()
-            xhrPostQueue[url] = q
+            postResultQueue[url] = q
             q
         }
         queue?.add(body)
@@ -1127,7 +1127,7 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     // TODO cache assets (not replacements)
-    fun getJsScript(
+    fun getAssetJsScript(
         context: Context,
         assetName: String,
         replacements: Map<String, String>?
@@ -1141,7 +1141,6 @@ open class CustomWebViewClient : WebViewClient {
         }
         return result
     }
-
 
     interface BrowserActivity : WebResultConsumer {
         // ACTIONS
