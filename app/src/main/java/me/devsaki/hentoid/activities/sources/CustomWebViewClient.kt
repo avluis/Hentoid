@@ -83,6 +83,7 @@ import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.util.Collections
 import java.util.Locale
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
@@ -159,7 +160,11 @@ open class CustomWebViewClient : WebViewClient {
     // Communication between XHR intercept and POST rewrite
     //   Key : URL
     //   Value : POST Body
-    private val postResultQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
+    private val postRequestQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
+
+    // TODO doc
+    private val quickDownloadFlags: MutableSet<String> =
+        Collections.synchronizedSet(HashSet<String>())
 
 
     companion object {
@@ -498,6 +503,9 @@ open class CustomWebViewClient : WebViewClient {
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url)
         isPageLoading.set(true)
+        synchronized(quickDownloadFlags) {
+            quickDownloadFlags.clear()
+        }
 
         // Activate startup JS
         for (s in jsStartupScripts) view.loadUrl(getAssetJsScript(view.context, s, jsReplacements))
@@ -524,7 +532,7 @@ open class CustomWebViewClient : WebViewClient {
             Timber.v("[$url] ignored by interceptor; method = ${request.method}")
             var postBody = ""
             // Try to retrieve POST body from previously intercepted XHR
-            postResultQueue[url]?.let { queue ->
+            postRequestQueue[url]?.let { queue ->
                 queue.poll()?.let { body ->
                     postBody = body
                 }
@@ -578,7 +586,7 @@ open class CustomWebViewClient : WebViewClient {
                 url,
                 headers,
                 analyzeForDownload = true,
-                quickDownload = false
+                quickDownload = quickDownloadFlags.contains(url)
             )
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url)
 
@@ -596,7 +604,7 @@ open class CustomWebViewClient : WebViewClient {
                         url,
                         headers,
                         analyzeForDownload = false,
-                        quickDownload = false
+                        quickDownload = quickDownloadFlags.contains(url)
                     )
             }
             null
@@ -648,11 +656,11 @@ open class CustomWebViewClient : WebViewClient {
         } else return null
     }
 
-    fun recordDynamicPostResults(url: String, body: String) {
-        val queue = if (postResultQueue.contains(url)) postResultQueue[url]
+    fun recordDynamicPostRequests(url: String, body: String) {
+        val queue = if (postRequestQueue.contains(url)) postRequestQueue[url]
         else {
             val q = ConcurrentLinkedQueue<String>()
-            postResultQueue[url] = q
+            postRequestQueue[url] = q
             q
         }
         queue?.add(body)
@@ -1126,6 +1134,12 @@ open class CustomWebViewClient : WebViewClient {
     private fun containsForbiddenClass(s: Site, classNames: Set<String>): Boolean {
         val forbiddenElements = s.bookCardExcludedParentClasses
         return classNames.any { o -> forbiddenElements.contains(o) }
+    }
+
+    fun flagAsQuickDownload(url: String) {
+        synchronized(quickDownloadFlags) {
+            quickDownloadFlags.add(url)
+        }
     }
 
     // TODO cache assets (not replacements)
