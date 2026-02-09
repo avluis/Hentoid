@@ -567,6 +567,8 @@ object ObjectBoxDB {
         val urlCondition = if (searchChapters) {
             val chapterUrlCondition: QueryCondition<Content> =
                 Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
+                    .and(Content_.site.equal(site.code))
+
             contentUrlCondition.or(chapterUrlCondition)
         } else contentUrlCondition
 
