@@ -47,6 +47,7 @@ import me.devsaki.hentoid.activities.bundles.QueueActivityBundle
 import me.devsaki.hentoid.activities.bundles.SettingsBundle
 import me.devsaki.hentoid.activities.settings.SettingsActivity
 import me.devsaki.hentoid.core.BiConsumer
+import me.devsaki.hentoid.core.Consumer
 import me.devsaki.hentoid.core.URL_GITHUB_WIKI_DOWNLOAD
 import me.devsaki.hentoid.core.initDrawerLayout
 import me.devsaki.hentoid.core.startBrowserActivity
@@ -91,7 +92,6 @@ import me.devsaki.hentoid.util.getCenter
 import me.devsaki.hentoid.util.getCoverBitmapFromStream
 import me.devsaki.hentoid.util.getFixedContext
 import me.devsaki.hentoid.util.getHashEngine
-import me.devsaki.hentoid.util.getThemedColor
 import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
@@ -234,7 +234,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     private var alert: UpdateInfo.SourceAlert? = null
 
     // Handler for fetch interceptor
+    protected var isManagedFetch = false
     protected var fetchHandler: BiConsumer<String, String>? = null
+    protected var fetchResponseHandler: Consumer<String>? = null
+    private var fetchResponseCallback: Consumer<String>? = null
     protected var xhrHandler: BiConsumer<String, String>? = null
     private var fetchInterceptorScript: String? = null
     private var xhrInterceptorScript: String? = null
@@ -589,7 +592,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         webView.webViewClient = webClient
         if (getStartSite().useManagedRequests || Settings.proxy.isNotEmpty() || Settings.dnsOverHttps > -1) {
             xhrHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
-            fetchHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
+            enableStandardFetchHandler()
         }
 
         // Download immediately on long click on a link / image link
@@ -611,11 +614,24 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         webSettings.javaScriptEnabled = true
         webSettings.loadWithOverviewMode = true
         fetchHandler?.let { webView.addJavascriptInterface(FetchHandler(it), "fetchHandler") }
+        if (isManagedFetch) {
+            val responseHandler =
+                { responseBody: String -> fetchResponseCallback?.invoke(responseBody) ?: Unit }
+            webView.addJavascriptInterface(
+                FetchResponseHandler(responseHandler),
+                "fetchResponseHandler"
+            )
+        }
         xhrHandler?.let { webView.addJavascriptInterface(XhrHandler(it), "xhrHandler") }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             webSettings.isAlgorithmicDarkeningAllowed =
                 (!Settings.isBrowserForceLightMode && Settings.colorTheme != Settings.Value.COLOR_THEME_LIGHT)
         }
+    }
+
+    private fun enableStandardFetchHandler() {
+        if (null == fetchHandler)
+            fetchHandler = { url, body -> webClient.recordDynamicPostRequests(url, body) }
     }
 
     private fun initSwipeLayout() {
@@ -681,27 +697,8 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                 quickDlFeedback.visibility = View.VISIBLE
             }
 
-            // Run on a new thread to avoid crashes
-            lifecycleScope.launch {
-                try {
-                    val res = withContext(Dispatchers.IO) {
-                        webClient.parseResponse(
-                            url, null,
-                            analyzeForDownload = true,
-                            quickDownload = true
-                        )
-                    }
-                    if (null == res) {
-                        binding?.quickDlFeedback?.visibility = View.INVISIBLE
-                    } else {
-                        binding?.quickDlFeedback?.setIndicatorColor(
-                            baseContext.getThemedColor(R.color.secondary_light)
-                        )
-                    }
-                } catch (t: Throwable) {
-                    Timber.e(t)
-                }
-            }
+            webClient.flagAsQuickDownload(url)
+            browserFetch(url)
         }
     }
 
@@ -719,15 +716,15 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         }
 
         // Activate fetch handler
-        if (fetchHandler != null) {
+        if (fetchHandler != null || fetchResponseHandler != null || isManagedFetch) {
             if (null == fetchInterceptorScript) fetchInterceptorScript =
-                webClient.getJsScript(this, "fetch_override.js", null)
+                webClient.getAssetJsScript(this, "fetch_override.js", null)
             webView.loadUrl(fetchInterceptorScript!!)
         }
         // Activate XHR handler
         if (xhrHandler != null) {
             if (null == xhrInterceptorScript) xhrInterceptorScript =
-                webClient.getJsScript(this, "xhr_override.js", null)
+                webClient.getAssetJsScript(this, "xhr_override.js", null)
             webView.loadUrl(xhrInterceptorScript!!)
         }
 
@@ -1812,6 +1809,10 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         return internalCustomCss!!
     }
 
+    fun browserFetch(url: String, callback: Consumer<String>? = null) {
+        fetchResponseCallback = callback
+        webView.evaluateJavascript("fetch(\"$url\")", null)
+    }
 
     /**
      * Listener for preference changes (from the settings dialog)
@@ -1888,6 +1889,15 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         fun onFetchCall(url: String, body: String?) {
             Timber.d("fetch Begin %s : %s", url, body)
             handler.invoke(url, body ?: "")
+        }
+    }
+
+    class FetchResponseHandler(private val handler: Consumer<String>) {
+        @JavascriptInterface
+        @Suppress("unused")
+        fun onFetchCall(url: String, body: String?, responseBody: String) {
+            Timber.d("fetch response $url $body $responseBody")
+            handler.invoke(responseBody)
         }
     }
 

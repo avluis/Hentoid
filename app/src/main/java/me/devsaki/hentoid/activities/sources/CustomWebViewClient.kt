@@ -52,6 +52,7 @@ import me.devsaki.hentoid.util.isPresentAsWord
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.cleanContentType
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getChromeVersion
@@ -83,6 +84,7 @@ import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
 import java.nio.charset.StandardCharsets
+import java.util.Collections
 import java.util.Locale
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
@@ -159,7 +161,11 @@ open class CustomWebViewClient : WebViewClient {
     // Communication between XHR intercept and POST rewrite
     //   Key : URL
     //   Value : POST Body
-    private val xhrPostQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
+    private val postRequestQueue: MutableMap<String, Queue<String>> = ConcurrentHashMap()
+
+    // TODO doc
+    private val quickDownloadFlags: MutableSet<String> =
+        Collections.synchronizedSet(HashSet<String>())
 
 
     companion object {
@@ -255,9 +261,13 @@ open class CustomWebViewClient : WebViewClient {
 
             val profileStore = ProfileStore.getInstance()
             val profile = profileStore.getOrCreateProfile(Profile.DEFAULT_PROFILE_NAME)
-            var pattern = site.url
-            if (pattern.endsWith('/')) pattern = pattern.substringBeforeLast('/')
-            profile.addCustomHeader(CustomHeader("x-requested-with", sb.toString(), setOf(pattern)))
+            profile.addCustomHeader(
+                CustomHeader(
+                    "x-requested-with",
+                    sb.toString(),
+                    setOf(UriParts(site.url).host)
+                )
+            )
         } else {
             if (!WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) Timber.w("Multiprofile not supported!")
             if (!WebViewFeature.isFeatureSupported(WebViewFeature.CUSTOM_REQUEST_HEADERS))
@@ -498,9 +508,12 @@ open class CustomWebViewClient : WebViewClient {
     override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
         if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url)
         isPageLoading.set(true)
+        synchronized(quickDownloadFlags) {
+            quickDownloadFlags.clear()
+        }
 
         // Activate startup JS
-        for (s in jsStartupScripts) view.loadUrl(getJsScript(view.context, s, jsReplacements))
+        for (s in jsStartupScripts) view.loadUrl(getAssetJsScript(view.context, s, jsReplacements))
         activity?.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true)
     }
 
@@ -524,7 +537,7 @@ open class CustomWebViewClient : WebViewClient {
             Timber.v("[$url] ignored by interceptor; method = ${request.method}")
             var postBody = ""
             // Try to retrieve POST body from previously intercepted XHR
-            xhrPostQueue[url]?.let { queue ->
+            postRequestQueue[url]?.let { queue ->
                 queue.poll()?.let { body ->
                     postBody = body
                 }
@@ -578,7 +591,7 @@ open class CustomWebViewClient : WebViewClient {
                 url,
                 headers,
                 analyzeForDownload = true,
-                quickDownload = false
+                quickDownload = quickDownloadFlags.contains(url)
             )
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url)
 
@@ -596,7 +609,7 @@ open class CustomWebViewClient : WebViewClient {
                         url,
                         headers,
                         analyzeForDownload = false,
-                        quickDownload = false
+                        quickDownload = quickDownloadFlags.contains(url)
                     )
             }
             null
@@ -649,10 +662,10 @@ open class CustomWebViewClient : WebViewClient {
     }
 
     fun recordDynamicPostRequests(url: String, body: String) {
-        val queue = if (xhrPostQueue.contains(url)) xhrPostQueue[url]
+        val queue = if (postRequestQueue.contains(url)) postRequestQueue[url]
         else {
             val q = ConcurrentLinkedQueue<String>()
-            xhrPostQueue[url] = q
+            postRequestQueue[url] = q
             q
         }
         queue?.add(body)
@@ -1026,8 +1039,9 @@ open class CustomWebViewClient : WebViewClient {
                         var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1)
+                            repeat(site.bookCardDepth - 1) {
                                 if (imgParent != null) imgParent = imgParent.parent()
+                            }
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -1042,8 +1056,9 @@ open class CustomWebViewClient : WebViewClient {
                         var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent.parent()
+                            repeat(site.bookCardDepth - 1) {
+                                if (imgParent != null) imgParent = imgParent.parent()
+                            }
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -1058,8 +1073,9 @@ open class CustomWebViewClient : WebViewClient {
                         var markedElement = value.second
                         if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                             var imgParent = markedElement.parent()
-                            for (i in 0 until site.bookCardDepth - 1) if (imgParent != null) imgParent =
-                                imgParent.parent()
+                            repeat(site.bookCardDepth - 1) {
+                                if (imgParent != null) imgParent = imgParent.parent()
+                            }
                             if (imgParent != null) markedElement = imgParent
                         } else { // Mark plain link
                             markedElement = value.first
@@ -1101,9 +1117,8 @@ open class CustomWebViewClient : WebViewClient {
                                 ) || isPresentAsWord(blockedTag, tag)
                             ) {
                                 var imgParent = entry.key
-                                for (i in 0..site.galleryHeight) {
-                                    if (imgParent.parent() != null) imgParent =
-                                        imgParent.parent()!!
+                                repeat(site.galleryHeight) {
+                                    imgParent.parent()?.let { imgParent = it }
                                 }
                                 val imgs = imgParent.allElements.select("img")
                                 for (img in imgs) {
@@ -1126,8 +1141,14 @@ open class CustomWebViewClient : WebViewClient {
         return classNames.any { o -> forbiddenElements.contains(o) }
     }
 
+    fun flagAsQuickDownload(url: String) {
+        synchronized(quickDownloadFlags) {
+            quickDownloadFlags.add(url)
+        }
+    }
+
     // TODO cache assets (not replacements)
-    fun getJsScript(
+    fun getAssetJsScript(
         context: Context,
         assetName: String,
         replacements: Map<String, String>?
@@ -1141,7 +1162,6 @@ open class CustomWebViewClient : WebViewClient {
         }
         return result
     }
-
 
     interface BrowserActivity : WebResultConsumer {
         // ACTIONS

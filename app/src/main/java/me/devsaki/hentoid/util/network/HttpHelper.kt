@@ -932,9 +932,10 @@ class UriParts(uri: String, lowercase: Boolean = false) {
         uriNoParams = if (uriNoParams.contains("%3A", true) || uriNoParams.contains("%2F", true))
             URLDecoder.decode(uriNoParams, "UTF-8") else uriNoParams
 
-        val pathIndex = uriNoParams.lastIndexOf('/')
+        val protocolEndIndex = uriNoParams.indexOf("://")
+        var pathIndex = uriNoParams.lastIndexOf('/')
+        if (pathIndex == protocolEndIndex + 2) pathIndex = -1
         path = if (pathIndex > -1) uriNoParams.take(pathIndex) else uriNoParams
-        val protocolEndIndex = path.indexOf("://")
         val hostEndIndex = path.indexOf("/", protocolEndIndex + 3)
         host = if (hostEndIndex > -1) path.substring(0, hostEndIndex) else path
 

@@ -3,18 +3,24 @@ if (typeof origFetch === 'undefined') {
     fetch = async (...args) => {
       /* console.log("fetch called with args:", args);*/
 
-      /* Send the calling args to the webview */
-      fetchHandler.onFetchCall(args[0], args[1].body);
+      /* Send the calling args to the app */
+      if (typeof (fetchHandler) != 'undefined') {
+        var body = ""
+        if (args.length > 1) body = args[1].body
+        fetchHandler.onFetchCall(args[0], body);
+      }
+
       const response = await origFetch(...args);
 
-      /* we don't need the response data for Hentoid... yet
-      response
-        .clone()
-        .json()
-        .then(body => ajaxHandler.ajaxBegin(args[0], args[1].body))
-        .catch(err => console.error(err))
-      ;
-      */
+      /* Send the response to the app if handler is set */
+      if (typeof (fetchResponseHandler) != 'undefined') {
+         var body = ""
+         if (args.length > 1) body = args[1].body
+         response
+            .clone()
+            .then(r => fetchResponseHandler.onCall(args[0], body, r.text()))
+            .catch(err => console.error(err));
+      }
 
       /* the original response is resolved unmodified */
       return response;
