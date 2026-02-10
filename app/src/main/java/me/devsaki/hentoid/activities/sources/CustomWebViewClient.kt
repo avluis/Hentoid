@@ -52,6 +52,7 @@ import me.devsaki.hentoid.util.isPresentAsWord
 import me.devsaki.hentoid.util.network.HEADER_CONTENT_TYPE
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
+import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.cleanContentType
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getChromeVersion
@@ -260,9 +261,13 @@ open class CustomWebViewClient : WebViewClient {
 
             val profileStore = ProfileStore.getInstance()
             val profile = profileStore.getOrCreateProfile(Profile.DEFAULT_PROFILE_NAME)
-            var pattern = site.url
-            if (pattern.endsWith('/')) pattern = pattern.substringBeforeLast('/')
-            profile.addCustomHeader(CustomHeader("x-requested-with", sb.toString(), setOf(pattern)))
+            profile.addCustomHeader(
+                CustomHeader(
+                    "x-requested-with",
+                    sb.toString(),
+                    setOf(UriParts(site.url).host)
+                )
+            )
         } else {
             if (!WebViewFeature.isFeatureSupported(WebViewFeature.MULTI_PROFILE)) Timber.w("Multiprofile not supported!")
             if (!WebViewFeature.isFeatureSupported(WebViewFeature.CUSTOM_REQUEST_HEADERS))
