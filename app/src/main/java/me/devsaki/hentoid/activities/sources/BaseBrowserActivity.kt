@@ -887,9 +887,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      * Handler for the "bookmark" top menu button of the browser
      */
     private fun onBookmarkClick() {
-        browserFetch("https://myreadingmanga.info/catnapstar-rod-x-roscoe-animal-crossing/") {
-            Timber.d("GET OK $it")
-        }
         binding?.drawerLayout?.openDrawer(GravityCompat.END)
     }
 
