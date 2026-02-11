@@ -474,7 +474,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
             dao.updateImageContentStatus(content.id, targetImageStatus, StatusContent.ERROR)
-            completeDownload(content.id, content.title, 0, images.size, 0)
+            completeDownload(content.id, 0, images.size, 0)
             return Pair(QueuingResult.CONTENT_FAILED, content)
         }
 
@@ -870,7 +870,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         if (isDone && !downloadProcessStopped) {
             Timber.d("Content download completed : %s [%s]", content.title, content.id)
             // NB : no need to supply the Content itself as it has not been updated during the loop
-            completeDownload(content.id, content.title, pagesOK, pagesKO, downloadedBytes)
+            completeDownload(content.id, pagesOK, pagesKO, downloadedBytes)
         } else if (isScheduledTimeOver) {
             Timber.d(
                 "Content download paused (scheduled time over) : %s [%s]",
@@ -888,19 +888,20 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
 
     /**
      * Completes the download of a book when all images have been processed
-     * Then launches a new IntentService
      *
-     * @param contentId Id of the Content to mark as downloaded
+     * @param contentId             ID of the Content to mark as downloaded
+     * @param pagesOK               Number of successfuly downloaded pages
+     * @param pagesKO               Number of pages whose download has failed
+     * @param sizeDownloadedBytes   Number of downloaded bytes
      */
     private suspend fun completeDownload(
-        contentId: Long, title: String,
+        contentId: Long,
         pagesOK: Int, pagesKO: Int,
         sizeDownloadedBytes: Long
     ) {
         // Get the latest value of Content
-        val content = dao.selectContent(contentId)
-        if (null == content) {
-            Timber.w("Content ID %s not found", contentId)
+        val content = dao.selectContent(contentId) ?: run {
+            Timber.w("Content ID $contentId not found")
             return
         }
         EventBus.getDefault().post(
@@ -932,11 +933,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             if (content.qtyPages > 0 && nbImages < content.qtyPages && !isPreviousDownload
                 && abs(nbImages - content.qtyPages) > content.qtyPages * 0.1
             ) {
-                val errorMsg = String.format(
-                    "The number of images found (%s) does not match the book's number of pages (%s)",
-                    nbImages,
-                    content.qtyPages
-                )
+                val errorMsg =
+                    "The number of images found ($nbImages) does not match the book's number of pages (${content.qtyPages})"
                 logErrorRecord(
                     contentId,
                     ErrorType.PARSING,
@@ -950,11 +948,8 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             // NB : this should not happen theoretically
             val nbDownloadedPages = content.getNbDownloadedPages()
             if (nbDownloadedPages < content.qtyPages && !isPreviousDownload) {
-                val errorMsg = String.format(
-                    "The number of downloaded images (%s) does not match the book's number of pages (%s)",
-                    nbDownloadedPages,
-                    content.qtyPages
-                )
+                val errorMsg =
+                    "The number of downloaded images ($nbDownloadedPages) does not match the book's number of pages (${content.qtyPages})"
                 logErrorRecord(
                     contentId,
                     ErrorType.PARSING,
@@ -1084,7 +1079,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
                     }
                 }
             }
-            Timber.i("Content download finished: %s [%s]", title, contentId)
+            Timber.i("Content download finished: ${content.title} [$contentId]")
 
             // Delete book from queue
             dao.deleteQueue(content)
@@ -1099,7 +1094,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             }
 
             // Signals current download as completed
-            Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO)
+            Timber.d("CompleteActivity : OK = $pagesOK; KO = $pagesKO")
             EventBus.getDefault().post(
                 DownloadEvent(
                     content = content,
@@ -1122,10 +1117,10 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             AchievementsManager.checkStorage(context)
             AchievementsManager.checkCollection()
         } else if (downloadCanceled.get()) {
-            Timber.d("Content download canceled: %s [%s]", title, contentId)
+            Timber.d("Content download canceled: ${content.title} [$contentId]")
             notificationManager.cancel()
         } else {
-            Timber.d("Content download skipped : %s [%s]", title, contentId)
+            Timber.d("Content download skipped : ${content.title} [$contentId]")
         }
     }
 
@@ -1590,7 +1585,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         content.status = StatusContent.ERROR
         // Needs a download date to appear the right location when sorted by download date
         content.downloadDate = Instant.now().toEpochMilli()
-        dao.insertContent(content)
+        dao.insertContentCore(content)
         dao.deleteQueue(content)
         val context = applicationContext
         if (updateQueueJson(context, dao))
