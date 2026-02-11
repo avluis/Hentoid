@@ -428,6 +428,26 @@ object ObjectBoxDB {
         }
     }
 
+    /**
+     * Cleanup all ImageFile that aren't linked to any Content
+     */
+    fun cleanupOrphanImageFiles() {
+        val imgBox = store.boxFor(ImageFile::class.java)
+        // NB : QueryContent.relationCount doesn't work properly even for toOne relations
+        val allImgs = imgBox.query().safeFindIds().toMutableSet()
+
+        val linkedImgsQb = imgBox.query()
+        linkedImgsQb.link(ImageFile_.content)
+        val linkedImgs = linkedImgsQb.build().safeFindIds().toSet()
+
+        allImgs.removeAll(linkedImgs)
+        if (allImgs.isEmpty()) return
+
+        // Clean the images
+        Timber.v(">> Found ${allImgs.size} empty images")
+        imgBox.removeByIds(allImgs)
+    }
+
     fun selectQueueContents(): List<Content> {
         val result: MutableList<Content> = ArrayList()
         val queueRecords = selectQueueRecordsQ().safeFind()

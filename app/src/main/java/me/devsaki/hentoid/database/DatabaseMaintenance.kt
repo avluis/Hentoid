@@ -53,6 +53,7 @@ object DatabaseMaintenance {
             this::cleanBookmarks,
             this::cleanOrphanAttributes,
             this::cleanOrphanChapters,
+            this::cleanOrphanImageFiles,
             this::refreshJsonForSecondDownloadDate
         )
     }
@@ -561,6 +562,17 @@ object DatabaseMaintenance {
                 Timber.i("Cleaning orphan chapters : start")
                 ObjectBoxDB.cleanupOrphanChapters()
                 Timber.i("Cleaning orphan chapters : done")
+            } finally {
+                ObjectBoxDB.cleanup()
+            }
+        }
+
+    private suspend fun cleanOrphanImageFiles(context: Context, emitter: (Float) -> Unit) =
+        withContext(Dispatchers.IO) {
+            try {
+                Timber.i("Cleaning orphan imageFiles : start")
+                ObjectBoxDB.cleanupOrphanImageFiles()
+                Timber.i("Cleaning orphan imageFiles : done")
             } finally {
                 ObjectBoxDB.cleanup()
             }
