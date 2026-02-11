@@ -245,7 +245,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
      *
      * @return Pair containing
      * - Left : Result of the processing
-     * - Right : 1st book of the download queue
+     * - Right : 1st book of the download queue; null if 1st item doesn't exist or can't be processed
      */
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("TimberExceptionLogging", "TimberArgCount")
@@ -258,8 +258,9 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
             Timber.i("Queue is paused. Download aborted.")
             return Pair(QueuingResult.QUEUE_END, null)
         }
-        val connectivity = context.getConnectivity()
+
         // Check for network connectivity
+        val connectivity = context.getConnectivity()
         if (Connectivity.NO_INTERNET == connectivity) {
             Timber.i("No internet connection available. Queue paused.")
             EventBus.getDefault()

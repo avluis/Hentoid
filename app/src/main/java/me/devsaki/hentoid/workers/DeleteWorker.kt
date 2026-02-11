@@ -379,9 +379,7 @@ abstract class BaseDeleteWorker(
             // Use an updated content from the DB
             dao.selectContent(content.id)?.let { freshC ->
                 // Apply changes from the purge
-                content.getStorageDoc()?.let { doc ->
-                    freshC.setStorageDoc(doc)
-                }
+                content.getStorageDoc()?.let { freshC.setStorageDoc(it) }
                 freshC.jsonUri = content.jsonUri
 
                 // Update content folder and JSON Uri's after purging
@@ -488,9 +486,9 @@ abstract class BaseDeleteWorker(
         val uris = imgs.filterNot { it.isPdf || it.isArchived }.map { it.fileUri }
         val contentIds = imgs.map { it.contentId }.distinct()
         dao.deleteImageFiles(imgs)
-        uris.forEachIndexed { index, uri ->
+        uris.forEach {
             if (isStopped) return@withContext
-            removeFile(applicationContext, uri.toUri())
+            removeFile(applicationContext, it.toUri())
             progressItem("", Operation.DELETE, Target.IMAGE)
         }
 

@@ -767,7 +767,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 it.setChapters(chaps)
                                 it.setImageFiles(chaps.flatMap { ch -> ch.imageList })
                             }
-                        } else { // Classic content
+                        } else { // Classic (non-merged) content
                             val isDownloadable = isDownloadable(c)
                             if (reparseContent || !isDownloadable) {
                                 var msg = "Reparsing content"

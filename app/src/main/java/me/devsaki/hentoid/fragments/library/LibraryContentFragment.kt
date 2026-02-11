@@ -481,7 +481,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
             R.id.action_change_group -> moveSelectedItems()
             R.id.action_open_folder -> openItemFolder()
             R.id.action_redownload -> {
-                askRedownloadSelectedItemsScratch()
+                askRedownloadSelectedItems()
                 keepToolbar = true
             }
 
@@ -704,7 +704,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     /**
      * Callback for the "redownload from scratch" action button
      */
-    private fun askRedownloadSelectedItemsScratch() {
+    private fun askRedownloadSelectedItems() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
         var externalContent = 0
         val contents: MutableList<Content> = ArrayList()
@@ -727,8 +727,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                 this
             ) { position: Int, _ ->
                 if (0 == position) redownloadFromScratch(contents) // Redownload images
-                else viewModel.downloadContent(
-                    contents, // Update metadata only
+                else viewModel.downloadContent( // Update metadata only
+                    contents,
                     reparseContent = true,
                     reparseImages = false,
                     position = QueuePosition.TOP,

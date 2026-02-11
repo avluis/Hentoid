@@ -397,7 +397,7 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun insertContent(content: Content): Long {
         val result = ObjectBoxDB.insertContentAndAttributes(content)
-        // Attach new attributes to existing groups, if any
+        // Attach new attributes to existing groups, if any TODO obsolete?
         for (a in result.second) {
             val g = selectGroupByName(Grouping.ARTIST.id, a.name)
             if (g != null) insertGroupItem(GroupItem(result.first, g, -1))
