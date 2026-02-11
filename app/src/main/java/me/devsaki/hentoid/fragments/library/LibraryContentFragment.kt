@@ -702,33 +702,37 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     }
 
     /**
-     * Callback for the "redownload from scratch" action button
+     * Callback for the "redownload" action button
      */
     private fun askRedownloadSelectedItems() {
         val selectedItems: Set<ContentItem> = selectExtension!!.selectedItems
-        var externalContent = 0
-        val contents: MutableList<Content> = ArrayList()
+        val contentsToRedownload: MutableList<Content> = ArrayList()
+        val contentsToUpdate: MutableList<Content> = ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
-            if (c.status == StatusContent.EXTERNAL) {
-                externalContent++
-            } else {
-                contents.add(c)
-            }
+            if (c.status == StatusContent.EXTERNAL) continue
+            if (c.site.canUpdateOnlineMetadata) contentsToUpdate.add(c)
+            if (c.downloadMode != DownloadMode.STREAM) contentsToRedownload.add(c)
         }
-        if (contents.size > 1000) {
+        if (0 == contentsToRedownload.size + contentsToUpdate.size) {
+            snack(R.string.redownload_nocando)
+            return
+        }
+        if (contentsToRedownload.size > 1000 || contentsToUpdate.size > 1000) {
             snack(R.string.redownload_limit)
             return
         }
         binding?.recyclerView?.let {
             showRedownloadMenu(
                 requireContext(),
+                contentsToRedownload.isNotEmpty(),
+                contentsToUpdate.isNotEmpty(),
                 it,
                 this
-            ) { position: Int, _ ->
-                if (0 == position) redownloadFromScratch(contents) // Redownload images
+            ) { _, i: PowerMenuItem ->
+                if (0 == i.tag) redownloadFromScratch(contentsToRedownload) // Redownload images
                 else viewModel.downloadContent( // Update metadata only
-                    contents,
+                    contentsToUpdate,
                     reparseContent = true,
                     reparseImages = false,
                     position = QueuePosition.TOP,
@@ -736,9 +740,9 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     onSuccess = { nbSuccess: Int? ->
                         val message = resources.getQuantityString(
                             R.plurals.add_to_queue,
-                            contents.size,
+                            contentsToUpdate.size,
                             nbSuccess,
-                            contents.size
+                            contentsToUpdate.size
                         )
                         val snackbar =
                             Snackbar.make(
