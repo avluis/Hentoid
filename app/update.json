@@ -44,6 +44,7 @@
 	  {"sourceName":"LUSCIOUS", "status":"RED", "fixedByBuild":"888"},
 	  {"sourceName":"NOVELCROW", "status":"ORANGE", "fixedByBuild":"888"},
 	  {"sourceName":"PORNCOMIX", "status":"RED"},
+	  {"sourceName":"MANHWA18", "status":"RED"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"TSUMINO", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
