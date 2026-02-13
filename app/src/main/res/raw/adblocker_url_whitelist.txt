@@ -5,3 +5,4 @@ jsdelivr.net
 googleapis.com
 recaptcha.net
 gstatic.com
+/.within.website/

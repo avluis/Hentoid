@@ -158,6 +158,9 @@ open class CustomWebViewClient : WebViewClient {
     private val jsStartupScripts: MutableList<String> by lazy { ArrayList() }
     private val jsReplacements: MutableMap<String, String> by lazy { HashMap() }
 
+    // TODO doc
+    private val ignoredUrls: MutableList<String> by lazy { ArrayList() }
+
     // Communication between XHR intercept and POST rewrite
     //   Key : URL
     //   Value : POST Body
@@ -333,6 +336,14 @@ open class CustomWebViewClient : WebViewClient {
 
     fun addJsReplacement(source: String, target: String) {
         jsReplacements[source] = target
+    }
+
+    fun setIgnoredUrls(vararg urls: String) {
+        ignoredUrls.addAll(urls)
+    }
+
+    fun isIgnored(url: String): Boolean {
+        return ignoredUrls.any { url.contains(it, true) }
     }
 
     /**
@@ -602,6 +613,7 @@ open class CustomWebViewClient : WebViewClient {
                         || activity != null && activity.customCss.isNotEmpty())
                 && (getExtensionFromUri(url).isEmpty()
                         || getExtensionFromUri(url).equals("html", ignoreCase = true))
+                && !isIgnored(url)
             ) {
                 val host = url.toUri().host
                 if (host != null && !isHostNotInRestrictedDomains(host))
