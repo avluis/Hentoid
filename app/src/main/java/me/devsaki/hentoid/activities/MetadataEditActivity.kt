@@ -199,7 +199,7 @@ class MetadataEditActivity : BaseActivity(), GalleryPickerDialogFragment.Parent,
             bindTagFiltersUI()
 
             // Cover
-            val thumbLocation = if (contents.size > 1) "" else contents[0].cover.usableUri
+            val thumbLocation = if (contents.size > 1) "" else contents[0].cover.usableUri.ifBlank { contents[0].coverImageUrl }
             if (thumbLocation.isEmpty()) {
                 it.ivCover.visibility = View.INVISIBLE
             } else {

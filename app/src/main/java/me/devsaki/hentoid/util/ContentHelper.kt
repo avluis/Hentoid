@@ -931,7 +931,7 @@ suspend fun setContentCover(
         )?.let { cachedThumbUri ->
             cover.status = StatusContent.DOWNLOADED
             cover.fileUri = cachedThumbUri.toString()
-            clearCoilKey(context, cover.usableUri)
+            clearCoilKey(context, cover.usableUri.ifBlank { content.coverImageUrl })
         } ?: run {
             Timber.w("Couldn't create thumb from archive for ${content.storageUri}")
             return@withContext false
@@ -942,7 +942,7 @@ suspend fun setContentCover(
         downloadPic(context, content, newCover, 0, targetFolder.toUri())?.let {
             cover.status = StatusContent.DOWNLOADED
             cover.fileUri = it.second
-            clearCoilKey(context, cover.usableUri)
+            clearCoilKey(context, cover.usableUri.ifBlank { content.coverImageUrl })
         } ?: run {
             Timber.w("Couldn't create thumb from stream for ${content.storageUri}")
             return@withContext false

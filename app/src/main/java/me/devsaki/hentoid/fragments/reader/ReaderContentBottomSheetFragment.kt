@@ -107,9 +107,8 @@ class ReaderContentBottomSheetFragment : BottomSheetDialogFragment() {
     private fun onContentChanged(content: Content?) {
         if (null == content) return
 
-        val thumbLocation = content.cover.usableUri
+        val thumbLocation = content.cover.usableUri.ifBlank { content.coverImageUrl }
         binding?.apply {
-
             // Cover
             if (thumbLocation.isEmpty()) {
                 ivCover.visibility = View.INVISIBLE

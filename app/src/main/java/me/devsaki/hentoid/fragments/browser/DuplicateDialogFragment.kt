@@ -101,7 +101,7 @@ class DuplicateDialogFragment : BaseDialogFragment<DuplicateDialogFragment.Paren
             tvTitle.text = libraryContent.title
             tvTitle.isSelected = true
             val cover = libraryContent.cover
-            val thumbLocation = cover.usableUri
+            val thumbLocation = cover.usableUri.ifBlank { libraryContent.coverImageUrl }
             if (thumbLocation.isEmpty()) {
                 ivCover.visibility = View.INVISIBLE
             } else {
