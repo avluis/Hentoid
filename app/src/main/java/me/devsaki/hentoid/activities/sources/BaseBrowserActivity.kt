@@ -1304,7 +1304,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         if (onlineContent.url.isEmpty()) return@withContext ContentStatus.UNDOWNLOADABLE
         if (onlineContent.status == StatusContent.IGNORED) return@withContext ContentStatus.UNDOWNLOADABLE
         currentContent = null
-        Timber.i("Processing ${onlineContent.site.name} Content @ ${onlineContent.url} ${onlineContent.coverImageUrl}")
+        Timber.i("Processing ${onlineContent.site.name} Content @ ${onlineContent.url} (cover ${onlineContent.coverImageUrl}) $quickDownload")
         val searchUrl =
             if (getStartSite().hasCoverBasedPageUpdates) onlineContent.coverImageUrl else ""
         // TODO manage DB calls concurrency to avoid getting read transaction conflicts

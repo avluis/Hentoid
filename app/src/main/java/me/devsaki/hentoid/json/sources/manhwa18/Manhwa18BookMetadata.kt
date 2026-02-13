@@ -80,8 +80,6 @@ data class Manhwa18BookMetadata(
 
         content.putAttributes(attributes)
 
-        content.setChapters(getChapters(content.id))
-
         if (updateImages) {
             content.setImageFiles(emptyList())
             content.qtyPages = 0
