@@ -173,6 +173,9 @@ class ReaderViewModel(
     // FIFO kill switches to interrupt downloads when browsing the book
     private val downloadKillSwitches: Queue<AtomicBoolean> = ConcurrentLinkedQueue()
 
+    // FIFO kill switches to interrupt preloads when browsing the book
+    private val preloadKillSwitches: Queue<AtomicBoolean> = ConcurrentLinkedQueue()
+
 
     init {
         showFavouritesOnly.postValue(false)
@@ -436,7 +439,9 @@ class ReaderViewModel(
         theContent: Content,
         newImages: MutableList<ImageFile>
     ) = withContext(Dispatchers.IO) {
-        require(!theContent.isArchive) { "Content must not be an archive" }
+        require(!theContent.isArchive && !theContent.isPdf) { "Content must not be an archive" }
+
+        // Make sure all image files are attached
         val missingUris = newImages.any { it.fileUri.isEmpty() }
         val newImageFiles =
             if (missingUris || newImages.isEmpty()) reattachImageFiles(theContent, newImages)
@@ -499,15 +504,17 @@ class ReaderViewModel(
         pageNumber: Int,
         imageFiles: List<ImageFile>
     ) {
-        val startingIndex = if (theContent.id != loadedContentId)
-            computeStartingIndex(theContent, pageNumber, imageFiles) else -1
+        val bookChanged = theContent.id != loadedContentId
+        val startingIndex =
+            if (bookChanged) computeStartingIndex(theContent, pageNumber, imageFiles) else -1
         sortAndSetViewerImages(
             imageFiles,
             getShuffled().value == true,
             reversed.value == true,
+            !bookChanged,
             startingIndex
         )
-        if (theContent.id != loadedContentId) contentFirstLoad(startingIndex, imageFiles)
+        if (bookChanged) contentFirstLoad(startingIndex, imageFiles)
         loadedContentId = theContent.id
     }
 
@@ -577,7 +584,7 @@ class ReaderViewModel(
         if (isShuffled) RandomSeed.renewSeed(SEED_PAGES)
         shuffled.postValue(isShuffled)
         databaseImages.value?.let {
-            sortAndSetViewerImages(it, isShuffled, reversed.value == true)
+            sortAndSetViewerImages(it, isShuffled, reversed.value == true, true)
         }
     }
 
@@ -588,7 +595,7 @@ class ReaderViewModel(
         val isReversed = reversed.value != true
         reversed.postValue(isReversed)
         databaseImages.value?.let {
-            sortAndSetViewerImages(it, shuffled.value == true, isReversed)
+            sortAndSetViewerImages(it, shuffled.value == true, isReversed, true)
         }
     }
 
@@ -604,6 +611,7 @@ class ReaderViewModel(
         images: List<ImageFile>,
         shuffle: Boolean,
         reverse: Boolean,
+        canReuse: Boolean,
         startIndex: Int = -1
     ) {
         var imgs = images.toList()
@@ -622,7 +630,7 @@ class ReaderViewModel(
         // Populate / restore transient attributes
         for (i in imgs.indices) {
             imgs[i].displayOrder = i
-            if (viewerImagesInternal.size > i)
+            if (canReuse && viewerImagesInternal.size > i)
                 imgs[i].displayUri = viewerImagesInternal[i].displayUri
         }
 
@@ -1200,10 +1208,14 @@ class ReaderViewModel(
      * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
      */
     fun onPageChange(viewerIndex: Int, direction: Int, setIndex: Boolean = false) {
+        var indexSet = false
         onPageChange(viewerIndex, direction) {
             // Instanciate a new list to trigger an actual Adapter UI refresh
             viewerImages.postValue(ArrayList(viewerImagesInternal))
-            if (setIndex) setViewerStartingIndex(viewerIndex + 1)
+            if (setIndex && !indexSet) {
+                setViewerStartingIndex(viewerIndex + 1)
+                indexSet = true
+            }
         }
     }
 
@@ -2043,57 +2055,69 @@ class ReaderViewModel(
 
     private fun preloadImageTypes(indexes: List<Int>, onDone: KRunnable? = null) {
         if (indexes.isEmpty()) return
-        viewModelScope.launch(Dispatchers.IO) {
-            // TODO interrupt when needed
-            indexes.forEach {
-                val img = viewerImagesInternal[it]
-                if (img.imageType == ImageType.IMG_TYPE_UNSET) {
-                    val uri = img.displayUri.ifBlank { img.fileUri }
-                    img.imageType = readImageType(application, uri.toUri())
-                    Timber.d("${img.id} : Set image type to ${img.imageType}")
-                    // Make image usable by reader if not set yet
-                    if (img.displayUri.isBlank()) {
+        indexes.forEach {
+            while (preloadKillSwitches.size >= PRELOAD_RANGE) {
+                val stopPreload = preloadKillSwitches.poll()
+                stopPreload?.set(true)
+                Timber.d("Aborting a preload")
+            }
+
+            val stopPreload = AtomicBoolean(false)
+            preloadKillSwitches.add(stopPreload)
+
+            val img = viewerImagesInternal[it]
+            if (img.imageType == ImageType.IMG_TYPE_UNSET) {
+                viewModelScope.launch {
+                    if (!stopPreload.get()) {
+                        val uri = img.displayUri.ifBlank { img.fileUri }.toUri()
+                        withContext(Dispatchers.IO) {
+                            img.imageType = readImageType(application, uri)
+                        }
+                        Timber.d("${img.id} : Set image type to ${img.imageType}")
+                        // Make image usable by reader if not set yet
                         val updatedImg = ImageFile(img)
-                        updatedImg.displayUri = img.fileUri
+                        if (img.displayUri.isBlank()) updatedImg.displayUri = img.fileUri
                         viewerImagesInternal[it] = updatedImg
+                        onDone?.invoke()
                     }
+                    preloadKillSwitches.remove(stopPreload)
                 }
             }
-            onDone?.invoke()
         }
+        //onDone?.invoke()
     }
+}
 
-    private fun readImageType(context: Context, uri: Uri): ImageType {
-        assertNonUiThread()
-        if (uri == Uri.EMPTY) return ImageType.IMG_TYPE_UNSET
+private fun readImageType(context: Context, uri: Uri): ImageType {
+    assertNonUiThread()
+    if (uri == Uri.EMPTY) return ImageType.IMG_TYPE_ERROR
 
-        try {
-            getInputStream(context, uri).use { input ->
-                val header = ByteArray(400)
-                if (input.read(header) > 0) {
-                    val mime = getMimeTypeFromPictureBinary(header)
-                    val isAnimated = isImageAnimated(header)
-                    if (isAnimated) {
-                        when (mime) {
-                            MIME_IMAGE_PNG -> return ImageType.IMG_TYPE_APNG
-                            MIME_IMAGE_WEBP -> return ImageType.IMG_TYPE_AWEBP
-                            MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
-                            MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AAVIF
-                            MIME_VIDEO_MP4 -> return ImageType.IMG_TYPE_VIDEO
-                        }
-                    } else {
-                        when (mime) {
-                            MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
-                            MIME_IMAGE_JXL -> return ImageType.IMG_TYPE_JXL
-                            MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AVIF
-                        }
+    try {
+        getInputStream(context, uri).use { input ->
+            val header = ByteArray(400)
+            if (input.read(header) > 0) {
+                val mime = getMimeTypeFromPictureBinary(header)
+                val isAnimated = isImageAnimated(header)
+                if (isAnimated) {
+                    when (mime) {
+                        MIME_IMAGE_PNG -> return ImageType.IMG_TYPE_APNG
+                        MIME_IMAGE_WEBP -> return ImageType.IMG_TYPE_AWEBP
+                        MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
+                        MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AAVIF
+                        MIME_VIDEO_MP4 -> return ImageType.IMG_TYPE_VIDEO
                     }
-                    return ImageType.IMG_TYPE_OTHER
+                } else {
+                    when (mime) {
+                        MIME_IMAGE_GIF -> return ImageType.IMG_TYPE_GIF
+                        MIME_IMAGE_JXL -> return ImageType.IMG_TYPE_JXL
+                        MIME_IMAGE_AVIF -> return ImageType.IMG_TYPE_AVIF
+                    }
                 }
+                return ImageType.IMG_TYPE_OTHER
             }
-        } catch (e: Exception) {
-            Timber.w(e, "Unable to open image file")
         }
-        return ImageType.IMG_TYPE_UNSET
+    } catch (e: Exception) {
+        Timber.w(e, "Unable to open image file")
     }
+    return ImageType.IMG_TYPE_ERROR
 }
