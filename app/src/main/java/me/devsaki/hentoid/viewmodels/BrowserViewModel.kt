@@ -15,7 +15,6 @@ import me.devsaki.hentoid.database.domains.SiteHistory
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.InnerNameNumberBookmarkComparator
 import me.devsaki.hentoid.util.updateBookmarksJson
-import timber.log.Timber
 import java.time.Instant
 
 class BrowserViewModel(
@@ -200,10 +199,10 @@ class BrowserViewModel(
         }
     }
 
-    fun saveCurrentUrl(site: Site, url: String) {
+    fun saveToHistory(site: Site, url: String) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                dao.insertSiteHistory(site, url, Instant.now().toEpochMilli())
+                dao.addSiteHistory(site, url, Instant.now().toEpochMilli())
                 dao.cleanup()
             }
         }

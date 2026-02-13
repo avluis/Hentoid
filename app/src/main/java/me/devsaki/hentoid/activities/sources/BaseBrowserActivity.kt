@@ -96,7 +96,6 @@ import me.devsaki.hentoid.util.isInLibrary
 import me.devsaki.hentoid.util.isInQueue
 import me.devsaki.hentoid.util.network.HEADER_COOKIE_KEY
 import me.devsaki.hentoid.util.network.HEADER_REFERER_KEY
-import me.devsaki.hentoid.util.network.UriParts
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.network.fixUrl
 import me.devsaki.hentoid.util.network.getCookies
@@ -466,11 +465,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         if (!WebkitPackageHelper.getWebViewAvailable()) return
         Timber.i("onPause")
         webView.url?.let {
-            val parts = UriParts(it)
-            val usefulData =
-                parts.pathFull.substring(parts.host.length).replace("/", "") + parts.query
-            if (usefulData.length < 8) return // Don't record useless locations (e.g. /en/, /artists/, /search/...)
-            viewModel.saveCurrentUrl(getStartSite(), it)
+            viewModel.saveToHistory(getStartSite(), it)
         }
     }
 
@@ -497,7 +492,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
                 // Priority 2 : Last viewed position, if setting enabled
                 if (Settings.isBrowserResumeLast) {
-                    val siteHistory = dao.selectHistory(getStartSite())
+                    val siteHistory = dao.selectLastHistory(getStartSite())
                     if (siteHistory.url.isNotEmpty()) return siteHistory.url
                 }
             }
@@ -771,6 +766,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         else onBottomAlertCloseClick()
 
         viewModel.setPageTitle(webView.title ?: "")
+        webView.url?.let {
+            viewModel.saveToHistory(getStartSite(), it)
+        }
     }
 
     /**

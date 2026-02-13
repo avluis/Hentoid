@@ -1796,22 +1796,21 @@ object ObjectBoxDB {
         return builder.build()
     }
 
-    fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
-        val siteHistory = selectHistory(site)
-        if (siteHistory != null) {
-            siteHistory.url = url
-            siteHistory.timestamp = timestamp
-            store.boxFor(SiteHistory::class.java).put(siteHistory)
-        } else {
-            store.boxFor(SiteHistory::class.java)
-                .put(SiteHistory(site = site, url = url, timestamp = timestamp))
-        }
+    fun addSiteHistory(site: Site, url: String, timestamp: Long) {
+        val historyBox = store.boxFor(SiteHistory::class.java)
+        val siteHistory = selectHistory(site).sortedBy { it.timestamp }
+
+        // Always keep 5 items in history
+        val extraEntries = siteHistory.size - 4
+        for (i in 0..<extraEntries) historyBox.remove(siteHistory[i])
+
+        historyBox.put(SiteHistory(site = site, url = url, timestamp = timestamp))
     }
 
-    fun selectHistory(s: Site): SiteHistory? {
+    fun selectHistory(s: Site): List<SiteHistory> {
         return store.boxFor(SiteHistory::class.java).query()
             .equal(SiteHistory_.site, s.code.toLong())
-            .safeFindFirst()
+            .safeFind()
     }
 
     fun selectHistory(): List<SiteHistory> {

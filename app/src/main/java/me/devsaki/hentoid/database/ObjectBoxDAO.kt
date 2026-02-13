@@ -1339,16 +1339,16 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.deleteQueueRecords()
     }
 
-    override fun selectHistory(s: Site): SiteHistory {
-        return ObjectBoxDB.selectHistory(s) ?: SiteHistory()
+    override fun selectLastHistory(s: Site): SiteHistory {
+        return ObjectBoxDB.selectHistory(s).maxByOrNull { it.timestamp } ?: SiteHistory()
     }
 
     override fun selectHistory(): List<SiteHistory> {
         return ObjectBoxDB.selectHistory()
     }
 
-    override fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
-        ObjectBoxDB.insertSiteHistory(site, url, timestamp)
+    override fun addSiteHistory(site: Site, url: String, timestamp: Long) {
+        ObjectBoxDB.addSiteHistory(site, url, timestamp)
     }
 
     // BOOKMARKS
