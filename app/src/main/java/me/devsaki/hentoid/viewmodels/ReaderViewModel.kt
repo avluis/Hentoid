@@ -630,8 +630,12 @@ class ReaderViewModel(
         // Populate / restore transient attributes
         for (i in imgs.indices) {
             imgs[i].displayOrder = i
-            if (canReuse && viewerImagesInternal.size > i)
-                imgs[i].displayUri = viewerImagesInternal[i].displayUri
+            if (canReuse) {
+                val id = imgs[i].id
+                viewerImagesInternal.first { it.id == id }.let {
+                    imgs[i].displayUri = it.displayUri
+                }
+            }
         }
 
         // Only update if there's any noticeable difference on images...
