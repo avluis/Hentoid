@@ -82,6 +82,7 @@ class ImagePagerAdapter(context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ImageType(val value: Int) {
+        IMG_TYPE_ERROR(-2),
         IMG_TYPE_UNSET(-1),
         IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Coil if animation detected
         IMG_TYPE_GIF(1), // Static and animated GIFs -> use Coil
@@ -405,7 +406,7 @@ class ImagePagerAdapter(context: Context) :
 
             var imageAvailable = true
             if (img != null && img.displayUri.isNotEmpty()) setImage(img, imgType)
-            else imageAvailable = false
+            else if (ImageType.IMG_TYPE_ERROR == imgType) imageAvailable = false
 
             val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
             val isExtracting = img != null && !imageAvailable && (img.isArchived || img.isPdf)
