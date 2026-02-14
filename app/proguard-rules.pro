@@ -12,8 +12,7 @@
 # keep all classes in our package
 -keep class me.devsaki.hentoid.** { *; }
 -keep class androidx.documentfile.provider.** { *; }
--keep class androidx.paging.PagedListAdapter.** { *; }
--keep class androidx.paging.AsyncPagedListDiffer.** { *; }
+-keep class androidx.paging.** { *; }
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
