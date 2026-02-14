@@ -85,6 +85,7 @@ import me.devsaki.hentoid.util.dimensAsDp
 import me.devsaki.hentoid.util.dpToPx
 import me.devsaki.hentoid.util.file.folderExists
 import me.devsaki.hentoid.util.file.formatHumanReadableSizeInt
+import me.devsaki.hentoid.util.file.isUriStored
 import me.devsaki.hentoid.util.file.openUri
 import me.devsaki.hentoid.util.formatEpochToDate
 import me.devsaki.hentoid.util.getContainingFolder
@@ -710,7 +711,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
         val contentsToUpdate: MutableList<Content> = ArrayList()
         for (ci in selectedItems) {
             val c = ci.content ?: continue
-            if (c.status == StatusContent.EXTERNAL) continue
+            if (c.status == StatusContent.EXTERNAL) {
+                // If Content Url is not stored, give it a chance
+                if (c.url.isBlank() || isUriStored(c.url.toUri())) continue
+            }
             if (c.site.canUpdateOnlineMetadata) contentsToUpdate.add(c)
             if (c.downloadMode != DownloadMode.STREAM) contentsToRedownload.add(c)
         }

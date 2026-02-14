@@ -1151,7 +1151,7 @@ class LibraryActivity : BaseActivity(), LibraryExportDialogFragment.Parent {
             exportMenu?.isVisible = !hasProcessed
             changeGroupMenu?.isVisible = !hasProcessed
             folderMenu?.isVisible = !isMultipleSelection
-            redownloadMenu?.isVisible = !hasProcessed && (selectedDownloadedCount > 0 || selectedStreamedCount > 0)
+            redownloadMenu?.isVisible = !hasProcessed && (selectedDownloadedCount > 0 || selectedStreamedCount > 0 || selectedExternalCount > 0)
             storageMethodMenu?.isVisible = !hasProcessed
             groupCoverMenu?.isVisible =
                 !isMultipleSelection && Settings.getGroupingDisplayG() != Grouping.FLAT
