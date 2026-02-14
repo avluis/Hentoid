@@ -42,6 +42,7 @@ import me.devsaki.hentoid.util.file.getAssetAsString
 import me.devsaki.hentoid.util.file.isSupportedArchive
 import me.devsaki.hentoid.util.file.isSupportedPdf
 import me.devsaki.hentoid.util.file.openFile
+import me.devsaki.hentoid.util.file.readStreamAsStrings
 import me.devsaki.hentoid.util.file.saveBinary
 import me.devsaki.hentoid.util.getRandomInt
 import me.devsaki.hentoid.util.image.MIME_IMAGE_WEBP
@@ -223,9 +224,9 @@ open class CustomWebViewClient : WebViewClient {
         activity = null
         scope = GlobalScope
         this.resConsumer = null
-        for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
         adBlocker = AdBlocker(site)
+        initLists(galleryUrl)
         initProfile()
     }
 
@@ -238,10 +239,21 @@ open class CustomWebViewClient : WebViewClient {
         this.activity = activity
         scope = activity.scope
         resConsumer = activity
-        for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
         htmlAdapter = initJspoon(site)
         adBlocker = AdBlocker(site)
+        initLists(galleryUrl)
         initProfile()
+    }
+
+    private fun initLists(galleryUrl: Array<String>) {
+        for (s in galleryUrl) galleryUrlPattern.add(Pattern.compile(s))
+        HentoidApp.getInstance().resources.apply {
+            openRawResource(R.raw.ignore_url_whitelist).use { input ->
+                ignoredUrls.addAll(
+                    readStreamAsStrings(input).map { it.lowercase(Locale.getDefault()) }
+                )
+            }
+        }
     }
 
     private fun initJspoon(site: Site): HtmlAdapter<out ContentParser> {
@@ -336,10 +348,6 @@ open class CustomWebViewClient : WebViewClient {
 
     fun addJsReplacement(source: String, target: String) {
         jsReplacements[source] = target
-    }
-
-    fun setIgnoredUrls(vararg urls: String) {
-        ignoredUrls.addAll(urls)
     }
 
     fun isIgnored(url: String): Boolean {

@@ -40,18 +40,18 @@ class AdBlocker(val site: Site) {
         HentoidApp.getInstance().resources.apply {
             openRawResource(R.raw.adblocker_url_blacklist).use { input ->
                 universalUrlBlacklist.addAll(
-                    readStreamAsStrings(input)
-                        .map { s -> s.lowercase(Locale.getDefault()) })
+                    readStreamAsStrings(input).map { it.lowercase(Locale.getDefault()) }
+                )
             }
             openRawResource(R.raw.adblocker_url_whitelist).use { input ->
                 universalUrlWhitelist.addAll(
-                    readStreamAsStrings(input)
-                        .map { s -> s.lowercase(Locale.getDefault()) })
+                    readStreamAsStrings(input).map { it.lowercase(Locale.getDefault()) }
+                )
             }
             openRawResource(R.raw.adblocker_js_word_blacklist).use { input ->
                 universalJsContentBlacklist.addAll(
-                    readStreamAsStrings(input)
-                        .map { s -> s.lowercase(Locale.getDefault()) })
+                    readStreamAsStrings(input).map { it.lowercase(Locale.getDefault()) }
+                )
             }
         }
     }

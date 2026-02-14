@@ -20,7 +20,6 @@ class NhentaiActivity : BaseBrowserActivity() {
             "//$DOMAIN_FILTER/search/\\?",
             "//$DOMAIN_FILTER/(character|artist|parody|tag|group)/"
         )
-        private val IGNORED_URLS = arrayOf("/.within.website/")
         private val BLOCKED_CONTENT = arrayOf("popunder")
         private val REMOVABLE_ELEMENTS = arrayOf("section.advertisement")
     }
@@ -37,7 +36,6 @@ class NhentaiActivity : BaseBrowserActivity() {
         client.setResultUrlRewriter { resultsUri: Uri, page: Int ->
             rewriteResultsUrl(resultsUri, page)
         }
-        client.setIgnoredUrls(*IGNORED_URLS)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
         client.adBlocker.addToUrlBlacklist(*BLOCKED_CONTENT)
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
