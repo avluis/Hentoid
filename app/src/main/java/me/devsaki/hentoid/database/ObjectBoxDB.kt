@@ -1651,15 +1651,6 @@ object ObjectBoxDB {
         store.boxFor(ImageFile::class.java).put(imgs)
     }
 
-    fun updateImageFileUrl(image: ImageFile) {
-        val imgBox = store.boxFor(ImageFile::class.java)
-        val img = imgBox[image.id]
-        if (img != null) {
-            img.url = image.url
-            imgBox.put(img)
-        }
-    }
-
     fun updateImageFileUri(locations: Map<Long, String>) {
         val imgBox = store.boxFor(ImageFile::class.java)
         store.runInTx {

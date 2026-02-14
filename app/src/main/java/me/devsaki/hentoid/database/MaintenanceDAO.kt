@@ -104,11 +104,19 @@ class MaintenanceDAO {
             .isNull(SearchRecord_.entityType).safeFind()
     }
 
-    fun selectImageFilesWithNullPageUrl(): List<ImageFile> {
+    fun selectImageFileIdsWithNullPageUrl(): Set<Long> {
         return ObjectBoxDB.store.boxFor(ImageFile::class.java).query()
             .isNull(ImageFile_.dbPageUrl)
             .or()
-            .equal(ImageFile_.dbPageUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).safeFind()
+            .equal(ImageFile_.dbPageUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+            .safeFindIds().toSet()
+    }
+
+    fun resetPageUrlForImageId(ids: Collection<Long>) {
+        val store = ObjectBoxDB.store.boxFor(ImageFile::class.java)
+        val imgFiles = store.get(ids)
+        imgFiles.forEach { it.pageUrl = "" }
+        store.put(imgFiles)
     }
 
     fun selectOrphanQueueRecordIds(): LongArray {
@@ -131,10 +139,6 @@ class MaintenanceDAO {
 
     fun insertGroup(g: Group) {
         ObjectBoxDB.insertGroup(g)
-    }
-
-    fun updateImageFileUrl(img: ImageFile) {
-        ObjectBoxDB.updateImageFileUrl(img)
     }
 
     fun insertImageFiles(imgs: List<ImageFile>) {

@@ -351,18 +351,18 @@ object DatabaseMaintenance {
                 }
                 db.insertSearchRecords(searchRecords)
 
-                val imageFiles = db.selectImageFilesWithNullPageUrl()
+                val imageFileIds = db.selectImageFileIdsWithNullPageUrl()
                 Timber.i(
                     "Set default value for ImageFile.dbPageUrl field : %s items detected",
-                    imageFiles.size
+                    imageFileIds.size
                 )
-                max = imageFiles.size
+                max = imageFileIds.size
                 pos = 1f
-                for (c in imageFiles) {
-                    c.dbPageUrl = ""
-                    withContext(Dispatchers.Main) { emitter(pos++ / max) }
+                imageFileIds.chunked(50).forEach {
+                    db.resetPageUrlForImageId(it)
+                    withContext(Dispatchers.Main) { emitter(pos / max) }
+                    pos += it.size
                 }
-                db.insertImageFiles(imageFiles)
 
                 Timber.i("Set default ObjectBox properties : done")
             } finally {
