@@ -961,7 +961,11 @@ class ReaderViewModel(
         // Switch to the next book if the list is populated (multi-book)
         if (contentIds.isNotEmpty()) {
             contentIds.removeAt(currentContentIndex)
-            if (currentContentIndex >= contentIds.size && currentContentIndex > 0) currentContentIndex--
+            if (Settings.Value.VIEWER_DELETE_DIRECTION_NEXT == Settings.readerDeleteLoadDirection) {
+                if (currentContentIndex >= contentIds.size && currentContentIndex > 0) currentContentIndex--
+            } else {
+                if (currentContentIndex > 1) currentContentIndex--
+            }
             if (contentIds.size > currentContentIndex) loadContentFromId(
                 contentIds[currentContentIndex], -1
             )

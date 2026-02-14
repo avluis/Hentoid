@@ -416,6 +416,10 @@ object Settings {
         "pref_viewer_read_threshold",
         Value.VIEWER_READ_THRESHOLD_1
     )
+    val readerDeleteLoadDirection: Int by IntSettingStr(
+        "pref_viewer_delete_load_direction",
+        Value.VIEWER_DELETE_DIRECTION_NEXT
+    )
     val readerRatioCompletedThreshold: Int by IntSettingStr(
         "pref_viewer_ratio_completed_threshold",
         Value.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE
@@ -854,6 +858,9 @@ object Settings {
         const val VIEWER_READ_THRESHOLD_2 = 1
         const val VIEWER_READ_THRESHOLD_5 = 2
         const val VIEWER_READ_THRESHOLD_ALL = 3
+
+        const val VIEWER_DELETE_DIRECTION_NEXT = 0
+        const val VIEWER_DELETE_DIRECTION_PREVIOUS = 1
 
         const val VIEWER_COMPLETED_RATIO_THRESHOLD_NONE = -1
         const val VIEWER_COMPLETED_RATIO_THRESHOLD_10 = 0

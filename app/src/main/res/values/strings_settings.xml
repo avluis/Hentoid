@@ -269,6 +269,7 @@
     <string name="pref_viewer_continuous_summary_on">Using next page on last page loads the next book</string>
     <string name="pref_viewer_read_threshold">Mark book as read after N pages</string>
     <string name="pref_viewer_ratio_completed_threshold">Mark book as completed after N% pages</string>
+    <string name="pref_viewer_delete_load_direction">Load direction after deleting book</string>
     <string name="pref_viewer_slideshow_delay">Delay between each page (horizontal display)</string>
     <string name="pref_viewer_slideshow_delay_vertical">Scrolling speed (vertical display)</string>
     <string name="pref_viewer_slideshow_loop">Loop</string>
