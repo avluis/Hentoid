@@ -397,7 +397,7 @@ class ObjectBoxDAO : CollectionDAO {
 
     override fun insertContent(content: Content): Long {
         val result = ObjectBoxDB.insertContentAndAttributes(content)
-        // Attach new attributes to existing groups, if any
+        // Attach new attributes to existing groups, if any TODO obsolete?
         for (a in result.second) {
             val g = selectGroupByName(Grouping.ARTIST.id, a.name)
             if (g != null) insertGroupItem(GroupItem(result.first, g, -1))
@@ -1339,16 +1339,16 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.deleteQueueRecords()
     }
 
-    override fun selectHistory(s: Site): SiteHistory {
-        return ObjectBoxDB.selectHistory(s) ?: SiteHistory()
+    override fun selectLastHistory(s: Site): SiteHistory {
+        return ObjectBoxDB.selectHistory(s).maxByOrNull { it.timestamp } ?: SiteHistory()
     }
 
     override fun selectHistory(): List<SiteHistory> {
         return ObjectBoxDB.selectHistory()
     }
 
-    override fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
-        ObjectBoxDB.insertSiteHistory(site, url, timestamp)
+    override fun addSiteHistory(site: Site, url: String, timestamp: Long) {
+        ObjectBoxDB.addSiteHistory(site, url, timestamp)
     }
 
     // BOOKMARKS

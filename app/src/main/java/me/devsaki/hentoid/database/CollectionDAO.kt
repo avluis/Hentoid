@@ -326,11 +326,11 @@ interface CollectionDAO {
 
 
     // SITE HISTORY
-    fun selectHistory(s: Site): SiteHistory
+    fun selectLastHistory(s: Site): SiteHistory
 
     fun selectHistory(): List<SiteHistory>
 
-    fun insertSiteHistory(site: Site, url: String, timestamp: Long)
+    fun addSiteHistory(site: Site, url: String, timestamp: Long)
 
 
     // BOOKMARKS

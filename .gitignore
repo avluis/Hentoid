@@ -69,3 +69,4 @@ signing.gradle
 .externalNativeBuild
 .cxx
 /.kotlin/sessions/kotlin-compiler-*.salive
+/app/src/main/resources/libraries.json

@@ -14,6 +14,9 @@ typealias Consumer<T> = (T) -> Unit
 typealias BiConsumer<T, U> = (T, U) -> Unit
 typealias SuspendBiConsumer<T, U> = suspend (T, U) -> Unit
 
+typealias TriConsumer<T, U, V> = (T, U, V) -> Unit
+typealias SuspendTriConsumer<T, U, V> = suspend (T, U, V) -> Unit
+
 val CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1
 
 fun <T> lazyWithReset(initializer: () -> T): ResetLazy<T> = ResetLazy(initializer)

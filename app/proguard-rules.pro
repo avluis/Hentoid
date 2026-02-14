@@ -11,6 +11,7 @@
 
 # keep all classes in our package
 -keep class me.devsaki.hentoid.** { *; }
+-keep class androidx.documentfile.provider.** { *; }
 -keep class androidx.paging.PagedListAdapter.** { *; }
 -keep class androidx.paging.AsyncPagedListDiffer.** { *; }
 -keep public class * extends android.app.Activity
@@ -57,3 +58,26 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+-dontwarn timber.log.**
+-dontwarn coil.**
+-dontwarn androidx.media3.**
+
+########################################
+# Room (required by WorkManager)
+########################################
+-keep class androidx.room.** { *; }
+-keep class androidx.sqlite.db.** { *; }
+-dontwarn androidx.room.**
+-dontwarn androidx.sqlite.db.**
+
+########################################
+# WorkManager
+########################################
+-keep class androidx.work.** { *; }
+-dontwarn androidx.work.**
+
+########################################
+# Parcelable (@Parcelize)
+########################################
+-keepclassmembers class * implements android.os.Parcelable { static ** CREATOR; }

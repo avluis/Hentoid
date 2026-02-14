@@ -121,6 +121,10 @@ fun getFullPathFromUri(context: Context, uri: Uri): String {
     }
 }
 
+fun isUriStored(uri : Uri) : Boolean {
+    return (ContentResolver.SCHEME_FILE == uri.scheme) || (ContentResolver.SCHEME_ANDROID_RESOURCE == uri.scheme) || (ContentResolver.SCHEME_CONTENT == uri.scheme)
+}
+
 fun getDocumentProperties(context: Context, uri: Uri): FileExplorer.DocumentProperties? {
     if (ContentResolver.SCHEME_FILE == uri.scheme) {
         legacyFileFromUri(uri)?.let { file ->

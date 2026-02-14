@@ -4,7 +4,6 @@ import android.util.SparseIntArray
 import io.objectbox.BoxStore
 import io.objectbox.Property
 import io.objectbox.android.Admin
-import io.objectbox.kotlin.inValues
 import io.objectbox.query.Query
 import io.objectbox.query.QueryBuilder
 import io.objectbox.query.QueryCondition
@@ -429,6 +428,26 @@ object ObjectBoxDB {
         }
     }
 
+    /**
+     * Cleanup all ImageFile that aren't linked to any Content
+     */
+    fun cleanupOrphanImageFiles() {
+        val imgBox = store.boxFor(ImageFile::class.java)
+        // NB : QueryContent.relationCount doesn't work properly even for toOne relations
+        val allImgs = imgBox.query().safeFindIds().toMutableSet()
+
+        val linkedImgsQb = imgBox.query()
+        linkedImgsQb.link(ImageFile_.content)
+        val linkedImgs = linkedImgsQb.build().safeFindIds().toSet()
+
+        allImgs.removeAll(linkedImgs)
+        if (allImgs.isEmpty()) return
+
+        // Clean the images
+        Timber.v(">> Found ${allImgs.size} empty images")
+        imgBox.removeByIds(allImgs)
+    }
+
     fun selectQueueContents(): List<Content> {
         val result: MutableList<Content> = ArrayList()
         val queueRecords = selectQueueRecordsQ().safeFind()
@@ -568,6 +587,8 @@ object ObjectBoxDB {
         val urlCondition = if (searchChapters) {
             val chapterUrlCondition: QueryCondition<Content> =
                 Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl))
+                    .and(Content_.site.equal(site.code))
+
             contentUrlCondition.or(chapterUrlCondition)
         } else contentUrlCondition
 
@@ -1639,7 +1660,7 @@ object ObjectBoxDB {
         }
     }
 
-    fun updateImageFileUri(locations : Map<Long, String>) {
+    fun updateImageFileUri(locations: Map<Long, String>) {
         val imgBox = store.boxFor(ImageFile::class.java)
         store.runInTx {
             val imgs = imgBox[locations.keys].map { img ->
@@ -1775,22 +1796,21 @@ object ObjectBoxDB {
         return builder.build()
     }
 
-    fun insertSiteHistory(site: Site, url: String, timestamp: Long) {
-        val siteHistory = selectHistory(site)
-        if (siteHistory != null) {
-            siteHistory.url = url
-            siteHistory.timestamp = timestamp
-            store.boxFor(SiteHistory::class.java).put(siteHistory)
-        } else {
-            store.boxFor(SiteHistory::class.java)
-                .put(SiteHistory(site = site, url = url, timestamp = timestamp))
-        }
+    fun addSiteHistory(site: Site, url: String, timestamp: Long) {
+        val historyBox = store.boxFor(SiteHistory::class.java)
+        val siteHistory = selectHistory(site).sortedBy { it.timestamp }
+
+        // Always keep 5 items in history
+        val extraEntries = siteHistory.size - 4
+        for (i in 0..<extraEntries) historyBox.remove(siteHistory[i])
+
+        historyBox.put(SiteHistory(site = site, url = url, timestamp = timestamp))
     }
 
-    fun selectHistory(s: Site): SiteHistory? {
+    fun selectHistory(s: Site): List<SiteHistory> {
         return store.boxFor(SiteHistory::class.java).query()
             .equal(SiteHistory_.site, s.code.toLong())
-            .safeFindFirst()
+            .safeFind()
     }
 
     fun selectHistory(): List<SiteHistory> {
@@ -2064,7 +2084,7 @@ object ObjectBoxDB {
         // Select all eligible content
         val allContentQ =
             store.boxFor(Content::class.java).query()
-                .inValues(Content_.status, libraryStatus)
+                .`in`(Content_.status, libraryStatus)
                 .notIn(Content_.id, excludedIds.toLongArray())
 
         return allContentQ.build()

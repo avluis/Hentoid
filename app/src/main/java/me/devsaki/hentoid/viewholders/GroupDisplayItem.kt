@@ -122,7 +122,7 @@ class GroupDisplayItem(
                     }
                 }
                 var uri = coverUri
-                coverContent?.let { uri = it.cover.usableUri }
+                coverContent?.let { uri = it.cover.usableUri.ifBlank { it.coverImageUrl } }
                 attachCover(uri)
             }
 

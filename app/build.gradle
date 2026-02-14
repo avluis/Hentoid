@@ -1,11 +1,10 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id("com.google.devtools.ksp").version("2.2.0-2.0.2")
+    id("com.google.devtools.ksp").version('2.3.5')
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 apply plugin: 'org.sonarqube'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
@@ -14,15 +13,6 @@ apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
-}
-
-aboutLibraries {
-    exclusionPatterns = [~"com_google_android.*", ~"android.*", ~"com_mikepenz__fastadapter_extensions.*"]
-    configPath = "about-config"
-    additionalLicenses {
-        LGPL_2_1_or_later
-        BSD_3_Clause
-    }
 }
 
 kotlin {
@@ -43,7 +33,7 @@ android {
         minSdkVersion 26
         targetSdkVersion 36
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.21.5'
+        versionName '1.21.6'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -53,9 +43,8 @@ android {
 
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
-        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        // Only include complete translations
         resourceConfigurations += ['en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja', 'es', 'sv']
-// Only include complete translations
     }
     buildFeatures {
         viewBinding = true
@@ -68,9 +57,9 @@ android {
 
             buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/dev/app/"'
 
-            proguardFile 'proguard-rules-debug.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-debug.pro'
 
-            // Library specific proguard files
+            // Library-specific proguard files
             proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
         }
         release {
@@ -79,10 +68,10 @@ android {
 
             buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/"'
 
-            proguardFile 'proguard-rules-release.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-rules-release.pro'
             testProguardFile 'proguard-rules-test.pro'
 
-            // Library specific proguard files
+            // Library-specific proguard files
             proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
         }
     }
@@ -122,11 +111,11 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:5.19.0'
+    testImplementation 'org.mockito:mockito-core:5.21.0'
     testImplementation 'androidx.test:core:1.7.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation 'androidx.arch.core:core-testing:2.2.0'
-    testImplementation 'org.robolectric:robolectric:4.15.1'
+    testImplementation 'org.robolectric:robolectric:4.16.1'
     // Auto Timber trees that redirect logs to the JUnit output
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.7.0'
@@ -149,9 +138,9 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.1.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2'
     implementation 'androidx.core:core-ktx:1.17.0'
-    implementation 'androidx.webkit:webkit:1.14.0'
+    implementation 'androidx.webkit:webkit:1.15.0'
 
-    def android_work_version = '2.11.0'
+    def android_work_version = '2.11.1'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
@@ -184,7 +173,7 @@ dependencies {
     implementation "com.github.penfeizhou.android.animation:avif:$APNG4Android_version"
 
     // Animated GIF creator -> https://github.com/shaksternano/gif.kt
-    implementation("com.shakster:gifkt:0.3.0")
+    implementation("com.shakster:gifkt:0.3.1")
 
     // PDF creator/extractor
     implementation 'com.itextpdf:itext7-core:8.0.5'
@@ -210,7 +199,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.6.13'
+    implementation 'com.github.skydoves:balloon:1.7.3'
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.4'
@@ -251,7 +240,7 @@ dependencies {
     implementation "pl.droidsonroids:jspoon:1.3.3"
 
     // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.21.2'
+    implementation 'org.jsoup:jsoup:1.22.1'
 
     //    https://github.com/square/retrofit
     def retrofit_version = '3.0.0'
@@ -259,7 +248,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
     // Download speed limit
-    implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.0'
+    implementation 'com.bucket4j:bucket4j_jdk17-core:8.16.1'
 
     // TLS v1.3 support for Android <= 9
     implementation 'org.conscrypt:conscrypt-android:2.5.3'
@@ -270,7 +259,7 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "5.0.1"
+    def objectbox_version = "5.1.0"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
@@ -288,7 +277,7 @@ dependencies {
     }
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text/
-    implementation 'org.apache.commons:commons-text:1.14.0'
+    implementation 'org.apache.commons:commons-text:1.15.0'
 
     // Archive management
     implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03'
@@ -297,19 +286,19 @@ dependencies {
     implementation 'net.grey-panther:natural-comparator:1.1'
 
     // Efficient hashing
-    implementation 'io.whitfin:siphash:2.0.0'
+    implementation 'io.whitfin:siphash:3.0.0'
 
     // Sentence similarity detection
     implementation 'info.debatty:java-string-similarity:2.0.0'
 
     // Biometrics
-    implementation 'dev.skomlach:biometric:2.3.4'
+    implementation 'dev.skomlach:biometric:2.3.5'
 
     // Searchable prefs
     implementation 'com.github.ByteHamster:SearchPreference:2.7.3'
 
     // Automated generation of the Licenses screen
-    def about_version = '8.9.4'
+    def about_version = '13.2.1'
     implementation "com.mikepenz:aboutlibraries-core:$about_version"
     implementation "com.mikepenz:aboutlibraries:$about_version"
 
@@ -318,7 +307,7 @@ dependencies {
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:34.6.0')
+    implementation platform('com.google.firebase:firebase-bom:34.9.0')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'
@@ -336,6 +325,59 @@ sonarqube {
         property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
 }
+/*
+aboutLibraries {
+    collect {
+        // Define the path configuration files are located in. E.g. additional libraries, licenses to add to the target .json
+        // Warning: Please do not use the parent folder of a module as path, as this can result in issues. More details: https://github.com/mikepenz/AboutLibraries/issues/936
+        // The path provided is relative to the modules path (not project root)
+        configPath = file("../config")
 
+        // Enable fetching of "remote" licenses.  Uses the API of supported source hosts
+        // See https://github.com/mikepenz/AboutLibraries#special-repository-support
+        // A `gitHubApiToken` is required for this to work as it fetches information from GitHub's API.
+        fetchRemoteLicense = false
+
+        // Enables fetching of "remote" funding information. Uses the API of supported source hosts
+        // See https://github.com/mikepenz/AboutLibraries#special-repository-support
+        // A `gitHubApiToken` is required for this to work as it fetches information from GitHub's API.
+        fetchRemoteFunding = false
+
+        // Allows to only collect dependencies of specific variants during the `collectDependencies` step.
+        // filterVariants.addAll("debug", "release")
+
+        // Enable inclusion of `platform` dependencies in the library report
+        includePlatform = true
+    }
+
+    license {
+        // Define the strict mode, will fail if the project uses licenses not allowed
+        // - This will only automatically fail for Android projects using the Android-specific plugin (com.mikepenz.aboutlibraries.plugin.android)
+        // For other projects, execute `exportLibraryDefinitions` manually
+        strictMode = com.mikepenz.aboutlibraries.plugin.StrictMode.FAIL
+
+        // Allowed set of licenses, this project will be able to use without build failure
+        allowedLicenses.addAll("Apache-2.0", "asdkl")
+
+        // Allowed set of licenses for specific dependencies, this project will be able to use without build failure
+        allowedLicensesMap = mapOf(
+                "asdkl" to listOf("androidx.jetpack.library"),
+                "NOASSERTION" to listOf("org.jetbrains.kotlinx"),
+        )
+
+        // Full license text for license IDs mentioned here will be included, even if no detected dependency uses them.
+        // additionalLicenses.addAll("mit", "mpl_2_0")
+    }
+
+    library {
+        // Enable the duplication mode, allows to merge, or link dependencies which relate
+        duplicationMode = com.mikepenz.aboutlibraries.plugin.DuplicateMode.MERGE
+        // Configure the duplication rule, to match "duplicates" with
+        duplicationRule = com.mikepenz.aboutlibraries.plugin.DuplicateRule.SIMPLE
+    }
+}
+
+ */
+
+apply plugin: 'com.android.legacy-kapt'
 apply plugin: 'io.objectbox'
-apply plugin: 'org.jetbrains.kotlin.android'// apply last

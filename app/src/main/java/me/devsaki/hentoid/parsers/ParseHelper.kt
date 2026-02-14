@@ -154,7 +154,9 @@ private fun parseAttribute(
 ) {
     var name: String
     name = if (null == childElementClass) {
-        element.ownText()
+        var res = element.ownText()
+        if (res.isBlank()) res = element.text()
+        res
     } else {
         val e = element.selectFirst(".$childElementClass")
         e?.ownText() ?: ""

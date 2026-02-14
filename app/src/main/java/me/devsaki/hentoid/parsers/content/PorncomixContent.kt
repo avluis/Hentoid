@@ -58,7 +58,7 @@ class PorncomixContent : BaseContentParser() {
     private var galleryCommonTags: List<Element>? = null
 
     @Selector(
-        value = "figure[itemtype='http://schema.org/ImageObject'] a",
+        value = "figure[itemtype='https://schema.org/ImageObject'] a",
         attr = "href",
         defValue = ""
     )

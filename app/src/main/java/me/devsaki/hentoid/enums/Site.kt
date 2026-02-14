@@ -122,6 +122,10 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     var parallelDownloadCap = 0
         private set
 
+    // true = don't use the "referer" HTTP request header when downloading images
+    var noReferer = false
+        private set
+
     // Controls for "Mark downloaded/merged" in browser
     var bookCardDepth = 2
         private set
@@ -135,6 +139,10 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     // Determine which Jsoup output to use when rewriting the HTML
     // 0 : html; 1 : xml
     var jsoupOutputSyntax = 0
+        private set
+
+    // Determine if the app can update Content metadata by using a ContentParser
+    var canUpdateOnlineMetadata = true
         private set
 
 
@@ -166,6 +174,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         if (jsonSite.useCloudflare != null) useCloudflare = jsonSite.useCloudflare
         if (jsonSite.hasUniqueBookId != null) hasUniqueBookId = jsonSite.hasUniqueBookId
         if (jsonSite.parallelDownloadCap != null) parallelDownloadCap = jsonSite.parallelDownloadCap
+        if (jsonSite.noReferer != null) noReferer = jsonSite.noReferer
         if (jsonSite.requestsCapPerSecond != null)
             requestsCapPerSecond = jsonSite.requestsCapPerSecond
         if (jsonSite.bookCardDepth != null) bookCardDepth = jsonSite.bookCardDepth
@@ -174,6 +183,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
                 java.util.HashSet(jsonSite.bookCardExcludedParentClasses)
         if (jsonSite.galleryHeight != null) galleryHeight = jsonSite.galleryHeight
         if (jsonSite.jsoupOutputSyntax != null) jsoupOutputSyntax = jsonSite.jsoupOutputSyntax
+        if (jsonSite.canUpdateOnlineMetadata != null) canUpdateOnlineMetadata = jsonSite.canUpdateOnlineMetadata
     }
 
     class SiteConverter : PropertyConverter<Site, Long?> {

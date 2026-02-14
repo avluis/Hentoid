@@ -931,7 +931,7 @@ suspend fun setContentCover(
         )?.let { cachedThumbUri ->
             cover.status = StatusContent.DOWNLOADED
             cover.fileUri = cachedThumbUri.toString()
-            clearCoilKey(context, cover.usableUri)
+            clearCoilKey(context, cover.usableUri.ifBlank { content.coverImageUrl })
         } ?: run {
             Timber.w("Couldn't create thumb from archive for ${content.storageUri}")
             return@withContext false
@@ -942,7 +942,7 @@ suspend fun setContentCover(
         downloadPic(context, content, newCover, 0, targetFolder.toUri())?.let {
             cover.status = StatusContent.DOWNLOADED
             cover.fileUri = it.second
-            clearCoilKey(context, cover.usableUri)
+            clearCoilKey(context, cover.usableUri.ifBlank { content.coverImageUrl })
         } ?: run {
             Timber.w("Couldn't create thumb from stream for ${content.storageUri}")
             return@withContext false
@@ -1292,8 +1292,9 @@ fun getBlockedTags(id: Long, dao: CollectionDAO): List<String> {
 /**
  * Update the given content's properties by parsing its webpage
  *
- * @param content   Content to parse again from its online source
- * @param keepUris  True to keep JSON and folder Uri values inside the result
+ * @param content       Content to parse again from its online source
+ * @param keepUris      True to keep JSON and folder Uri values inside the result
+ * @param updateImages  True to update images while parsing
  * @return Content updated from its online source, or null if something went wrong
  */
 suspend fun reparseFromScratch(
@@ -1331,9 +1332,10 @@ suspend fun parseFromScratch(url: String): Content? {
 /**
  * Parse the given webpage to update the given Content's properties
  *
- * @param url     Webpage to parse to update the given Content's properties
- * @param content Content which properties to update (read-only). If this parameter is null, the call returns a completely new Content
- * @param keepUris  True to keep JSON and folder Uri values inside the result
+ * @param url           Webpage to parse to update the given Content's properties
+ * @param content       Content which properties to update (read-only). If this parameter is null, the call returns a completely new Content
+ * @param keepUris      True to keep JSON and folder Uri values inside the result
+ * @param updateImages  True to update images while parsing; false to keep them as is (i.e. metadata only)
  * @return Content with updated properties, or null if something went wrong
  * @throws IOException If something horrible happens during parsing
  */
@@ -1377,7 +1379,8 @@ private suspend fun reparseFromScratch(
             val canonicalUrl = contentParser.canonicalUrl
             return@withContext if (canonicalUrl.isNotEmpty()
                 && !canonicalUrl.equals(urlToLoad, ignoreCase = true)
-            ) reparseFromScratch(canonicalUrl, content, keepUris, updateImages)
+            )
+                reparseFromScratch(canonicalUrl, content, keepUris, updateImages)
             else null
         }
 

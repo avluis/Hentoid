@@ -111,16 +111,28 @@ class WelcomeFragment : Fragment(R.layout.fragment_web_welcome) {
     }
 
     private fun onHistoryChanged(history: List<SiteHistory>) {
+        val displayedSites: MutableSet<Site> = HashSet()
+        val usefulHistory = history
+            .asSequence()
+            .sortedByDescending { it.timestamp }
+            .filter { it.site.isVisible }
+            .map {
+                val parts = UriParts(it.url)
+                Pair(it, URLDecoder.decode(parts.pathFull.substring(parts.host.length), "UTF-8"))
+            }.filter { it.second.length > 4 } // Don't show useless locations (e.g. /, /en/)
+            .filter {
+                if (displayedSites.contains(it.first.site)) {
+                    false
+                } else {
+                    displayedSites.add(it.first.site)
+                    true
+                }
+            }.toList()
+
         historyItemAdapter.set(
-            history
-                .sortedByDescending { it.timestamp }
-                .filter { it.site.isVisible }
-                .map {
-                    val parts = UriParts(it.url)
-                    val shortUrl =
-                        URLDecoder.decode(parts.pathFull.substring(parts.host.length), "UTF-8")
-                    DrawerItem(shortUrl, it.site.ico, it.id, mTag = it)
-                }.filter { it.label.length > 1 } // Don't include site roots or '/'
+            usefulHistory.map {
+                DrawerItem(it.second, it.first.site.ico, it.first.id, mTag = it.first)
+            }
         )
         sitePerTimestamp = history.sortedByDescending { it.timestamp }
             .map { it.site }.distinct()

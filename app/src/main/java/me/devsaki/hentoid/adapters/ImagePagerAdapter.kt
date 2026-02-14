@@ -82,6 +82,7 @@ class ImagePagerAdapter(context: Context) :
     ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder>(IMAGE_DIFF_CALLBACK) {
 
     enum class ImageType(val value: Int) {
+        IMG_TYPE_ERROR(-2),
         IMG_TYPE_UNSET(-1),
         IMG_TYPE_OTHER(0), // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Coil if animation detected
         IMG_TYPE_GIF(1), // Static and animated GIFs -> use Coil
@@ -404,17 +405,24 @@ class ImagePagerAdapter(context: Context) :
             }
 
             var imageAvailable = true
+            var preloadingFailed = false
             if (img != null && img.displayUri.isNotEmpty()) setImage(img, imgType)
-            else imageAvailable = false
+            else {
+                imageAvailable = false
+                if (ImageType.IMG_TYPE_ERROR == imgType) preloadingFailed = true
+            }
 
-            val isStreaming = img != null && !imageAvailable && img.status == StatusContent.ONLINE
-            val isExtracting = img != null && !imageAvailable && (img.isArchived || img.isPdf)
+            val isStreaming =
+                img != null && !preloadingFailed && !imageAvailable && img.status == StatusContent.ONLINE
+            val isExtracting =
+                img != null && !preloadingFailed && !imageAvailable && (img.isArchived || img.isPdf)
 
-            @StringRes var text: Int = R.string.image_not_found
+            @StringRes var text: Int = R.string.empty_string
             if (isStreaming) text = R.string.image_streaming
             else if (isExtracting) text = R.string.image_extracting
+            else if (preloadingFailed) text = R.string.image_not_found
             noImgTxt.setText(text)
-            noImgTxt.isVisible = !imageAvailable
+            noImgTxt.isVisible = noImgTxt.text.isNotBlank()
         }
 
         fun clear() {

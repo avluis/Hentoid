@@ -7,7 +7,8 @@
       "hasUniqueBookId": true,
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2,
-      "galleryHeight": 7
+      "galleryHeight": 7,
+      "canUpdateOnlineMetadata": false
     },
     "NHENTAI": {
       "useHentoidAgent": false,
@@ -94,8 +95,7 @@
     },
     "NOVELCROW": {
       "useHentoidAgent": false,
-      "useWebviewAgent": false,
-      "useManagedRequests": true
+      "useWebviewAgent": false
     },
     "KEMONO": {
       "useHentoidAgent": false,

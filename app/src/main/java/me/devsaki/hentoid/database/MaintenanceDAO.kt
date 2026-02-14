@@ -8,6 +8,7 @@ import me.devsaki.hentoid.database.domains.Content_
 import me.devsaki.hentoid.database.domains.Group
 import me.devsaki.hentoid.database.domains.Group_
 import me.devsaki.hentoid.database.domains.ImageFile
+import me.devsaki.hentoid.database.domains.ImageFile_
 import me.devsaki.hentoid.database.domains.QueueRecord
 import me.devsaki.hentoid.database.domains.QueueRecord_
 import me.devsaki.hentoid.database.domains.SearchRecord
@@ -51,40 +52,41 @@ class MaintenanceDAO {
 
     fun selectDownloadedContentWithNoSize(): List<Content> {
         return ObjectBoxDB.store.boxFor(Content::class.java).query()
-            .`in`(Content_.status, ObjectBoxDB.libraryStatus).isNull(Content_.size).safeFind()
+            .`in`(Content_.status, ObjectBoxDB.libraryStatus)
+            .isNull(Content_.size).safeFind()
     }
 
     fun selectDownloadedContentWithNoReadProgress(): List<Content> {
         return ObjectBoxDB.store.boxFor(Content::class.java).query()
-            .`in`(Content_.status, ObjectBoxDB.libraryStatus).isNull(Content_.readProgress)
-            .safeFind()
+            .`in`(Content_.status, ObjectBoxDB.libraryStatus)
+            .isNull(Content_.readProgress).safeFind()
     }
 
     fun selectGroupsWithNoCoverContent(): List<Group> {
-        return ObjectBoxDB.store.boxFor(Group::class.java).query().isNull(Group_.coverContentId)
+        return ObjectBoxDB.store.boxFor(Group::class.java).query()
+            .isNull(Group_.coverContentId)
             .or()
             .equal(Group_.coverContentId, 0).safeFind()
     }
 
     fun selectContentWithNullCompleteField(): List<Content> {
-        return ObjectBoxDB.store.boxFor(Content::class.java).query().isNull(Content_.completed)
-            .safeFind()
+        return ObjectBoxDB.store.boxFor(Content::class.java).query()
+            .isNull(Content_.completed).safeFind()
     }
 
     fun selectContentWithNullDlModeField(): List<Content> {
-        return ObjectBoxDB.store.boxFor(Content::class.java).query().isNull(Content_.downloadMode)
-            .safeFind()
+        return ObjectBoxDB.store.boxFor(Content::class.java).query()
+            .isNull(Content_.downloadMode).safeFind()
     }
 
     fun selectContentWithNullMergeField(): List<Content> {
-        return ObjectBoxDB.store.boxFor(Content::class.java).query().isNull(Content_.manuallyMerged)
-            .safeFind()
+        return ObjectBoxDB.store.boxFor(Content::class.java).query()
+            .isNull(Content_.manuallyMerged).safeFind()
     }
 
     fun selectContentWithNullDlCompletionDateField(): List<Content> {
         return ObjectBoxDB.store.boxFor(Content::class.java).query()
-            .isNull(Content_.downloadCompletionDate)
-            .safeFind()
+            .isNull(Content_.downloadCompletionDate).safeFind()
     }
 
     fun selectContentWithInvalidUploadDate(): List<Content> {
@@ -93,13 +95,20 @@ class MaintenanceDAO {
     }
 
     fun selectChapterWithNullUploadDate(): List<Chapter> {
-        return ObjectBoxDB.store.boxFor(Chapter::class.java).query().isNull(Chapter_.uploadDate)
-            .safeFind()
+        return ObjectBoxDB.store.boxFor(Chapter::class.java).query()
+            .isNull(Chapter_.uploadDate).safeFind()
     }
 
     fun selectSearchRecordWithNullEntity(): List<SearchRecord> {
         return ObjectBoxDB.store.boxFor(SearchRecord::class.java).query()
             .isNull(SearchRecord_.entityType).safeFind()
+    }
+
+    fun selectImageFilesWithNullPageUrl(): List<ImageFile> {
+        return ObjectBoxDB.store.boxFor(ImageFile::class.java).query()
+            .isNull(ImageFile_.dbPageUrl)
+            .or()
+            .equal(ImageFile_.dbPageUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).safeFind()
     }
 
     fun selectOrphanQueueRecordIds(): LongArray {

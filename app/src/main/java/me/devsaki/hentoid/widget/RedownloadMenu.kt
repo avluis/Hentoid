@@ -15,27 +15,36 @@ import me.devsaki.hentoid.util.getThemedColor
 
 fun showRedownloadMenu(
     context: Context,
+    showRedlScratch: Boolean,
+    showUpdateMetadata: Boolean,
     anchor: View,
     lifecycle: LifecycleOwner,
-    listener: OnMenuItemClickListener<PowerMenuItem?>
+    listener: OnMenuItemClickListener<PowerMenuItem>
 ) {
     val res = context.resources
-    val powerMenu = PowerMenu.Builder(context)
-        .addItem(
+    val builder = PowerMenu.Builder(context)
+
+    if (showRedlScratch)
+        builder.addItem(
             PowerMenuItem(
                 res.getString(R.string.redl_scratch),
                 false,
-                R.drawable.ic_action_download_scratch
+                R.drawable.ic_action_download_scratch,
+                tag = 0
             )
         )
-        .addItem(
+
+    if (showUpdateMetadata)
+        builder.addItem(
             PowerMenuItem(
                 res.getString(R.string.redl_refresh),
                 false,
-                R.drawable.ic_action_refresh
+                R.drawable.ic_action_refresh,
+                tag = 1
             )
         )
-        .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
+
+    val powermenu = builder.setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
         .setMenuRadius(10f)
         .setLifecycleOwner(lifecycle)
         .setTextColor(ContextCompat.getColor(context, R.color.white_opacity_87))
@@ -45,7 +54,8 @@ fun showRedownloadMenu(
         .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
         .setAutoDismiss(true)
         .build()
-    powerMenu.onMenuItemClickListener = listener
-    powerMenu.setIconColor(ContextCompat.getColor(context, R.color.white_opacity_87))
-    powerMenu.showAtCenter(anchor)
+
+    powermenu.onMenuItemClickListener = listener
+    powermenu.setIconColor(ContextCompat.getColor(context, R.color.white_opacity_87))
+    powermenu.showAtCenter(anchor)
 }

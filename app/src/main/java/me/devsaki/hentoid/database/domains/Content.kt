@@ -121,7 +121,7 @@ data class Content(
     // ObjectBox can't do the sum in a single Query, so here it is !
     var size: Long = 0,
     var readProgress: Float = 0f,
-    // Temporary during SAVED state only
+    // HTTP request header values to use during download; temporary during SAVED state only
     var downloadParams: String = "",
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON

@@ -48,9 +48,9 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         binding = FragmentAboutBinding.inflate(inflater, container, false)
-        return binding!!.root
+        return binding?.root
     }
 
     override fun onDestroyView() {
@@ -81,6 +81,7 @@ class AboutFragment : Fragment(R.layout.fragment_about) {
         }
     }
 
+    @Suppress("unused")
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     fun onUpdateEvent(event: AppRepoInfoEvent) {
         if (event.hasNewVersion) binding?.changelogButton?.setText(R.string.view_changelog_flagged)

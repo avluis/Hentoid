@@ -377,7 +377,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
     private fun enrichWithMetadata(f: DisplayFile, dao: CollectionDAO): DisplayFile {
         dao.selectContentByStorageUri(f.uri.toString(), false)?.let {
             Timber.d("Mapped metadata for ${it.title}")
-            f.coverUri = it.cover.usableUri.toUri()
+            f.coverUri = it.cover.usableUri.ifBlank { it.coverImageUrl }.toUri()
             f.contentId = it.id
         }
         return f
@@ -767,7 +767,7 @@ class LibraryViewModel(application: Application, val dao: CollectionDAO) :
                                 it.setChapters(chaps)
                                 it.setImageFiles(chaps.flatMap { ch -> ch.imageList })
                             }
-                        } else { // Classic content
+                        } else { // Classic (non-merged) content
                             val isDownloadable = isDownloadable(c)
                             if (reparseContent || !isDownloadable) {
                                 var msg = "Reparsing content"

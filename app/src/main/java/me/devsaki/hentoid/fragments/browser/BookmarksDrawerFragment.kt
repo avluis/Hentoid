@@ -99,31 +99,21 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
         super.onDestroy()
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        viewModel = ViewModelProvider(
+            requireActivity(),
+            ViewModelFactory(requireActivity().application)
+        )[BrowserViewModel::class.java]
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentWebBookmarksBinding.inflate(inflater, container, false)
-
-        viewModel = ViewModelProvider(
-            requireActivity(),
-            ViewModelFactory(requireActivity().application)
-        )[BrowserViewModel::class.java]
-
-        viewModel.pageTitle().observe(viewLifecycleOwner) { title = it }
-        viewModel.getBrowserSite().observe(viewLifecycleOwner) { onSiteChanged(browserSite = it) }
-        viewModel.getBookmarksSite().observe(viewLifecycleOwner) { onSiteChanged(site = it) }
-        viewModel.pageUrl().observe(viewLifecycleOwner) {
-            url = it
-            updateBookmarkButton()
-        }
-        viewModel.bookmarks().observe(viewLifecycleOwner) {
-            onBookmarksChanged(it)
-            updateBookmarkButton()
-        }
-        viewModel.bookmarkedSites().observe(viewLifecycleOwner) { bookmarkedSites = it }
-
         return binding?.root
     }
 
@@ -184,6 +174,20 @@ class BookmarksDrawerFragment : Fragment(R.layout.fragment_web_bookmarks),
             copyMenu = selectionToolbar.menu.findItem(R.id.action_copy)
             homeMenu = selectionToolbar.menu.findItem(R.id.action_home)
         }
+
+        viewModel.pageTitle().observe(viewLifecycleOwner) { title = it }
+        viewModel.getBrowserSite().observe(viewLifecycleOwner) { onSiteChanged(browserSite = it) }
+        viewModel.getBookmarksSite().observe(viewLifecycleOwner) { onSiteChanged(site = it) }
+        viewModel.pageUrl().observe(viewLifecycleOwner) {
+            url = it
+            updateBookmarkButton()
+        }
+        viewModel.bookmarks().observe(viewLifecycleOwner) {
+            onBookmarksChanged(it)
+            updateBookmarkButton()
+        }
+        viewModel.bookmarkedSites().observe(viewLifecycleOwner) { bookmarkedSites = it }
+
         viewModel.loadBookmarks()
     }
 

@@ -13,10 +13,12 @@ data class JsonSiteSettings(
         val useCloudflare: Boolean?,
         val hasUniqueBookId: Boolean?,
         val parallelDownloadCap: Int?,
+        val noReferer: Boolean?,
         val requestsCapPerSecond: Int?,
         val bookCardDepth: Int?,
         val bookCardExcludedParentClasses: List<String>?,
         val galleryHeight: Int?,
-        val jsoupOutputSyntax: Int?
+        val jsoupOutputSyntax: Int?,
+        val canUpdateOnlineMetadata : Boolean?
     )
 }

@@ -1,8 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
-apply plugin: 'org.jetbrains.kotlin.android'
 
 kotlin {
     compilerOptions {
@@ -32,7 +30,12 @@ android {
         }
     }
     namespace = 'me.devsaki.hentoid.customssiv'
-
+    lint {
+        targetSdk 36
+    }
+    testOptions {
+        targetSdk 36
+    }
 }
 
 dependencies {

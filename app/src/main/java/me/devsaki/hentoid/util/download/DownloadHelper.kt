@@ -319,17 +319,19 @@ private suspend fun downloadToFile(
     notifyProgress: Consumer<Float>? = null
 ): Uri? = withContext(Dispatchers.IO) {
     val url = fixUrl(rawUrl, site.url)
+    val headers =
+        if (site.noReferer) requestHeaders.filterNot { it.first == HEADER_REFERER_KEY } else requestHeaders
     if (isCanceled?.invoke() == true) throw DownloadInterruptedException("Download interrupted 1")
     Timber.d("DOWNLOADING %d %s", resourceId, url)
     val response = if (failFast) getOnlineResourceFast(
         url,
-        requestHeaders,
+        headers,
         site.useMobileAgent,
         site.useHentoidAgent,
         site.useWebviewAgent
     ) else getOnlineResourceDownloader(
         url,
-        requestHeaders,
+        headers,
         site.useMobileAgent,
         site.useHentoidAgent,
         site.useWebviewAgent

@@ -109,7 +109,7 @@ class ReaderNavigation(private val pager: Pager, inBinding: FragmentReaderPagerB
             if (images.isNotEmpty()) galleryBtn.visibility = View.VISIBLE
             else galleryBtn.visibility = View.INVISIBLE
         }
-        maxPageNumber = images.count { obj: ImageFile -> obj.isReadable }
+        maxPageNumber = images.count { it.isReadable }
     }
 
     private fun onChapterChanged(chapter: Chapter) {
