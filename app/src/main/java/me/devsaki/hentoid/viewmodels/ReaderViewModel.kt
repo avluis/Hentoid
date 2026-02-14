@@ -1264,7 +1264,7 @@ class ReaderViewModel(
             if (BuildConfig.DEBUG) {
                 val sb = StringBuilder()
                 indexesToLoad.forEach { sb.append(it).append("-") }
-                Timber.v("IndexesToLoad $sb")
+                Timber.v("ViewerIndex $viewerIndex / IndexesToLoad $sb")
             }
 
             // Preload image types
@@ -2059,6 +2059,7 @@ class ReaderViewModel(
 
     private fun preloadImageTypes(indexes: List<Int>, onDone: KRunnable? = null) {
         if (indexes.isEmpty()) return
+        var canProcessOne = false
         indexes.forEach {
             while (preloadKillSwitches.size >= PRELOAD_RANGE) {
                 val stopPreload = preloadKillSwitches.poll()
@@ -2066,29 +2067,33 @@ class ReaderViewModel(
                 Timber.d("Aborting a preload")
             }
 
-            val stopPreload = AtomicBoolean(false)
-            preloadKillSwitches.add(stopPreload)
-
             val img = viewerImagesInternal[it]
-            if (img.imageType == ImageType.IMG_TYPE_UNSET) {
+            val uri =
+                img.displayUri.ifBlank { if (img.isArchived || img.isPdf) "" else img.fileUri }
+            if (img.imageType == ImageType.IMG_TYPE_UNSET && uri.isNotBlank()) {
+                canProcessOne = true
+                val stopPreload = AtomicBoolean(false)
+                preloadKillSwitches.add(stopPreload)
+
                 viewModelScope.launch {
                     if (!stopPreload.get()) {
-                        val uri = img.displayUri.ifBlank { img.fileUri }.toUri()
-                        withContext(Dispatchers.IO) {
-                            img.imageType = readImageType(application, uri)
-                        }
-                        Timber.d("${img.id} : Set image type to ${img.imageType}")
+                        val imageType =
+                            withContext(Dispatchers.IO) {
+                                readImageType(application, uri.toUri())
+                            }
+                        Timber.d("${img.id} : Set image type to $imageType")
                         // Make image usable by reader if not set yet
                         val updatedImg = ImageFile(img)
                         if (img.displayUri.isBlank()) updatedImg.displayUri = img.fileUri
+                        updatedImg.imageType = imageType
                         viewerImagesInternal[it] = updatedImg
                         onDone?.invoke()
                     }
                     preloadKillSwitches.remove(stopPreload)
                 }
             }
-        }
-        //onDone?.invoke()
+        } // Indexes
+        if (!canProcessOne) onDone?.invoke()
     }
 }
 
