@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.21.5/hentoid1215-902.apk",
-  "versionCode": "902",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.21.6/hentoid1216-904.apk",
+  "versionCode": "904",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/v1.20.0/hentoid1200-747.apk",
   "versionCode.beta": "999",
   "sourceAlerts":[
@@ -43,8 +43,8 @@
 	  {"sourceName":"KEMONO", "status":"ORANGE", "fixedByBuild":"869"},
 	  {"sourceName":"LUSCIOUS", "status":"RED", "fixedByBuild":"888"},
 	  {"sourceName":"NOVELCROW", "status":"ORANGE", "fixedByBuild":"888"},
-	  {"sourceName":"PORNCOMIX", "status":"RED"},
-	  {"sourceName":"MANHWA18", "status":"RED"},
+	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"904"},
+	  {"sourceName":"MANHWA18", "status":"RED", "fixedByBuild":"904"},
 	  {"sourceName":"ANCHIRA", "status":"BLACK"},
 	  {"sourceName":"TSUMINO", "status":"BLACK"},
 	  {"sourceName":"EDOUJIN", "status":"BLACK"},
