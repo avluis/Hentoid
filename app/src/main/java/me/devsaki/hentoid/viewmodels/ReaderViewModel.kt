@@ -632,7 +632,7 @@ class ReaderViewModel(
             imgs[i].displayOrder = i
             if (canReuse) {
                 val id = imgs[i].id
-                viewerImagesInternal.first { it.id == id }.let {
+                viewerImagesInternal.firstOrNull { it.id == id }?.let {
                     imgs[i].displayUri = it.displayUri
                 }
             }
