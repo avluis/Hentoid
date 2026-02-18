@@ -88,7 +88,11 @@ data class ImageFile(
     var isForceRefresh: Boolean = false
 
 
-    constructor(img: ImageFile, populateContent: Boolean = true, populateChapter: Boolean = true) : this(
+    constructor(
+        img: ImageFile,
+        populateContent: Boolean = true,
+        populateChapter: Boolean = true
+    ) : this(
         img.id,
         img.order,
         img.url,
@@ -310,7 +314,7 @@ data class ImageFile(
         val imageFile = other as ImageFile
         if (imageFile.isForceRefresh || isForceRefresh) return false
 
-        return id == imageFile.id && url == imageFile.url && pageUrl == imageFile.pageUrl && fileUri == imageFile.fileUri && displayUri == imageFile.displayUri &&  imageType == imageFile.imageType && order == imageFile.order && isCover == imageFile.isCover && favourite == imageFile.favourite && chapter.targetId == imageFile.chapter.targetId
+        return id == imageFile.id && url == imageFile.url && pageUrl == imageFile.pageUrl && fileUri == imageFile.fileUri && displayUri == imageFile.displayUri && order == imageFile.order && isCover == imageFile.isCover && favourite == imageFile.favourite && chapter.targetId == imageFile.chapter.targetId
     }
 
     override fun hashCode(): Int {
@@ -321,7 +325,6 @@ data class ImageFile(
             url,
             fileUri,
             displayUri,
-            imageType,
             order,
             isCover,
             favourite,
