@@ -130,12 +130,12 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
 
             binding?.apply {
                 imagePath.text = filePath
-                val imageExists = fileExists(requireContext(), it.fileUri.toUri())
+                val imageExists = fileExists(requireContext(), it.displayUri.toUri())
                 if (imageExists) {
                     lifecycleScope.launch {
                         imageStats.text = formatImageStats(it)
                     }
-                    ivThumb.load(it.fileUri)
+                    ivThumb.load(it.displayUri)
                 } else {
                     imageStats.setText(R.string.image_not_found)
                     imgActionFavourite.isEnabled = false
@@ -154,12 +154,12 @@ class ReaderImageBottomSheetFragment : BottomSheetDialogFragment(),
     }
 
     private suspend fun formatImageStats(img: ImageFile): String {
-        val dimensions = getImageDimensions(requireContext(), img.fileUri)
+        val dimensions = getImageDimensions(requireContext(), img.displayUri)
         val sizeStr = formatHumanReadableSize(
             if (img.size > 0) {
                 img.size
             } else {
-                fileSizeFromUri(requireContext(), img.fileUri.toUri())
+                fileSizeFromUri(requireContext(), img.displayUri.toUri())
             }, resources
         )
 
