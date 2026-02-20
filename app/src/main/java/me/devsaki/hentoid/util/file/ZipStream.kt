@@ -32,6 +32,8 @@ private val TOCEND64 = byteArrayOfInts(0x50, 0x4B, 0x06, 0x06)
 private val TOCEND64_LOCATOR = byteArrayOfInts(0x50, 0x4B, 0x06, 0x07)
 private val TOCEND = byteArrayOfInts(0x50, 0x4B, 0x05, 0x06)
 private val FILE_EXTRA64 = byteArrayOfInts(0x01, 0x00)
+private const val FLAG_ENCRYPTED: UShort = 0x01u
+private const val FLAG_UTF8_ENCODE: UShort = 0x800u
 
 /**
  * DOS time constant for representing timestamps before 1980.
@@ -41,8 +43,11 @@ private const val DOSTIME_BEFORE_1980 = (1 shl 21) or (1 shl 16)
 class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = false) {
     val records = ArrayList<ZipRecord>()
     val allNotCompressed: Boolean
+
     // Aligned with sevenzipjbinding when charset is exotic (e.g. Shift_JIS)
-    private val readCharset = Charsets.ISO_8859_1
+    // (should actually be IBM Code Page 437)
+    // see also https://github.com/omicronapps/7-Zip-JBinding-4Android/issues/15
+    private val defaultCharset = Charsets.ISO_8859_1
 
     init {
         // Read Zip file; build index
@@ -50,11 +55,12 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
         var is64 = false
         var cdrSize = 0
         var tocOffset: Long
+        var charset = defaultCharset
 
         Timber.d("Reading archive $archiveUri")
         val fileSize = fileSizeFromUri(context, archiveUri)
 
-        if (0L == fileSize) { // Brand new file
+        if (0L == fileSize) { // Brand-new file
             tocOffset = 0
             allNotCompressed = false
         } else { // Existing file
@@ -106,7 +112,7 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
             }
             Timber.d("$cdrCount $cdrSize $tocOffset")
 
-            // Start with a brand new file stream to avoid mark/reset nightmares
+            // Start with a brand-new file stream to avoid mark/reset nightmares
             var hasOneCompressed = false
             var corruptedToC = false
             getInputStream(context, archiveUri).use { fis ->
@@ -125,8 +131,11 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
                         }
                         it.skip(4) // Version (creator and viewer)
                         val flags = it.readUShortLe()
-                        if (1u == flags % 2u && failOnUnsupported)
+                        if (FLAG_ENCRYPTED == (flags and FLAG_ENCRYPTED) && failOnUnsupported)
                             throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
+                        if (FLAG_UTF8_ENCODE == (flags and FLAG_UTF8_ENCODE)) { // Bit 11 : Language encoding flag (EFS)
+                            charset = Charsets.UTF_8
+                        }
                         val compressionMode = it.readUShortLe()
                         if (compressionMode > 0u) hasOneCompressed = true
                         val datetime = dosToJavaTime(it.readUIntLe().toLong())
@@ -139,19 +148,34 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
                         it.skip(2) // Disk number
                         it.skip(6) // Internal and external attributes
                         var lfhOffset = it.readUIntLe().toLong()
-                        val name = it.readString(nameLength, readCharset)
+                        var name = it.readString(nameLength, charset)
                         // Extra data
                         if (extraDataLength > 0) {
                             var read = 0L
                             do {
-                                id = it.readByteArray(2)
+                                val id = it.readUShortLe().toInt()
                                 val size = it.readUShortLe().toLong()
-                                if (id.contentEquals(FILE_EXTRA64)) {
-                                    uncompressedSize = it.readLongLe()
-                                    it.skip(8) // Compressed size
-                                    lfhOffset = it.readLongLe()
-                                } else {
-                                    it.skip(size)
+                                //Timber.v("extra data $id ($size)")
+                                when (id) {
+                                    0x0001 -> {
+                                        uncompressedSize = it.readLongLe()
+                                        it.skip(8) // Compressed size
+                                        lfhOffset = it.readLongLe()
+                                    }
+                                    /*
+                                    0x0008 -> {
+                                        Timber.v("has PSF $size")
+                                        it.skip(size)
+                                    }
+                                     */
+                                    0x7075 -> { // Info-ZIP Unicode Path Extra Field
+                                        it.skip(5) // Version and CRC32
+                                        name = it.readString(size - 5, Charsets.UTF_8)
+                                    }
+
+                                    else -> {
+                                        it.skip(size)
+                                    }
                                 }
                                 read += (4 + size)
                             } while (read < extraDataLength)
@@ -176,8 +200,11 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
                     do {
                         it.skip(2) // Version (viewer)
                         val flags = it.readUShortLe()
-                        if (1u == flags % 2u && failOnUnsupported)
+                        if (FLAG_ENCRYPTED == (flags and FLAG_ENCRYPTED) && failOnUnsupported)
                             throw UnsupportedOperationException("Encrypted ZIP entries are not supported")
+                        if (FLAG_UTF8_ENCODE == (flags and FLAG_UTF8_ENCODE)) { // Bit 11 : Language encoding flag (EFS)
+                            charset = Charsets.UTF_8
+                        }
                         val compressionMode = it.readUShortLe()
                         if (compressionMode > 0u) hasOneCompressed = true
                         val datetime = dosToJavaTime(it.readUIntLe().toLong())
@@ -186,18 +213,32 @@ class ZipReader(context: Context, archiveUri: Uri, failOnUnsupported: Boolean = 
                         var compressedSize = it.readUIntLe().toLong()
                         val nameLength = it.readUShortLe().toLong()
                         val extraDataLength = it.readUShortLe().toInt()
-                        val name = it.readString(nameLength, readCharset)
+                        var name = it.readString(nameLength, charset)
                         // Extra data
                         if (extraDataLength > 0) {
                             var read = 0L
                             do {
-                                id = it.readByteArray(2)
+                                val extraIid = it.readUShortLe().toInt()
                                 val size = it.readUShortLe().toLong()
-                                if (id.contentEquals(FILE_EXTRA64)) {
-                                    uncompressedSize = it.readLongLe()
-                                    compressedSize = it.readLongLe()
-                                } else {
-                                    it.skip(size)
+                                when (extraIid) {
+                                    0x0001 -> {
+                                        uncompressedSize = it.readLongLe()
+                                        compressedSize = it.readLongLe()
+                                    }
+                                    /*
+                                    0x0008 -> {
+                                        Timber.v("has PSF $size")
+                                        it.skip(size)
+                                    }
+                                     */
+                                    0x7075 -> { // Info-ZIP Unicode Path Extra Field
+                                        it.skip(5) // Version and CRC32
+                                        name = it.readString(size - 5, Charsets.UTF_8)
+                                    }
+
+                                    else -> {
+                                        it.skip(size)
+                                    }
                                 }
                                 read += (4 + size)
                             } while (read < extraDataLength)
@@ -278,7 +319,7 @@ class ZipStream(context: Context, archiveUri: Uri, append: Boolean) : Closeable 
     fun putStoredRecord(path: String, size: Long, crc: Long) {
         sink.write(FILE)
         sink.writeUShortLe(45u) // Version for ZIP64
-        sink.writeUShortLe(0u) // Flag
+        sink.writeUShortLe(FLAG_UTF8_ENCODE) // Flag : UTF-8 encoded name
         sink.writeUShortLe(0u) // STORED mode
         val time = java.time.Instant.now().toEpochMilli()
         sink.writeUIntLe(javaToExtendedDosTime(time).first.toUInt()) // Time & Date
