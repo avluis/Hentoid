@@ -112,11 +112,9 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                 for (contentId in contentIds) {
                     if (isStopped) break
                     try {
-                        val content = dao.selectContent(contentId)
-                        content?.let {
-                            if (canBeArchived(content)) archiveContent(content, params, dao)
+                        dao.selectContent(contentId)?.let {
+                            if (canBeArchived(it)) archiveContent(it, params, dao)
                             else {
-                                dao.updateContentProcessedFlag(it.id, false)
                                 globalProgress.setProgress(contentId.toString(), 1f)
                                 nextKO()
                             }
@@ -126,10 +124,12 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                         globalProgress.setProgress(contentId.toString(), 1f)
                         nextKO()
                     }
+                    dao.updateContentProcessedFlag(contentId, false)
                 }
                 if (isStopped) notificationManager.cancel()
                 notifyProcessEnd()
             } finally {
+                dao.updateContentsProcessedFlagById(contentIds.toList(), false)
                 dao.cleanup()
             }
         }
@@ -207,7 +207,6 @@ class ArchiveWorker(context: Context, parameters: WorkerParameters) :
                     removeDocument(context, bookFolder)
                     // Create thumb
                     createArchivePdfCover(context, content, dao)
-                    dao.updateContentProcessedFlag(content.id, false)
                 }
             }
             if (params.deleteOnSuccess) removeContent(context, dao, content)
