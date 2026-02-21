@@ -396,7 +396,7 @@ object Settings {
         Value.VIEWER_RENDERING_SHARP
     )
     val isReaderDisplayPageNum: Boolean by BoolSetting(Key.VIEWER_DISPLAY_PAGENUM, false)
-    val isReaderTapTransitions: Boolean by BoolSetting("pref_viewer_tap_transitions", true)
+    val isReaderTurnTransitions: Boolean by BoolSetting(Key.VIEWER_TURN_TRANSITIONS, true)
     val isReaderZoomTransitions: Boolean by BoolSetting(Key.VIEWER_ZOOM_TRANSITIONS, true)
     val isReaderSwipeToFling: Boolean by BoolSetting(Key.VIEWER_SWIPE_TO_FLING, false)
     val isReaderInvertVolumeRocker: Boolean by BoolSetting(
@@ -734,6 +734,7 @@ object Settings {
         const val VIEWER_BROWSE_MODE = "pref_viewer_browse_mode"
         const val VIEWER_RENDERING = "pref_viewer_rendering"
         const val VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum"
+        const val VIEWER_TURN_TRANSITIONS = "pref_viewer_tap_transitions"
         const val VIEWER_ZOOM_TRANSITIONS = "pref_viewer_zoom_transitions"
         const val VIEWER_SWIPE_TO_FLING = "pref_viewer_swipe_to_fling"
         const val VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe"

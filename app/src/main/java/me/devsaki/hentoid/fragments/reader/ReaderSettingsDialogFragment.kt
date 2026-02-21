@@ -178,7 +178,7 @@ class ReaderSettingsDialogFragment : BaseDialogFragment<ReaderSettingsDialogFrag
                 if (displayPicker.index > 0) newPrefs[VIEWER_IMAGE_DISPLAY] =
                     (displayPicker.index - 1).toString()
             }
-            parent?.onBookPreferenceChanged(newPrefs)
+            parent?.onContentSettingsChanged(newPrefs)
             dismiss()
         }
     }
@@ -193,6 +193,6 @@ class ReaderSettingsDialogFragment : BaseDialogFragment<ReaderSettingsDialogFrag
     }
 
     interface Parent {
-        fun onBookPreferenceChanged(newPrefs: Map<String, String>)
+        fun onContentSettingsChanged(newPrefs: Map<String, String>)
     }
 }
