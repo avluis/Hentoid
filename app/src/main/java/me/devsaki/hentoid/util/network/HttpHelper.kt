@@ -135,26 +135,8 @@ fun getOnlineResourceFast(
     headers: List<Pair<String, String>>?,
     useMobileAgent: Boolean,
     useHentoidAgent: Boolean,
-    useWebviewAgent: Boolean
-): Response {
-    return getOnlineResourceFast(
-        url,
-        headers,
-        useMobileAgent,
-        useHentoidAgent,
-        useWebviewAgent,
-        true
-    )
-}
-
-@Throws(IOException::class)
-fun getOnlineResourceFast(
-    url: String,
-    headers: List<Pair<String, String>>?,
-    useMobileAgent: Boolean,
-    useHentoidAgent: Boolean,
     useWebviewAgent: Boolean,
-    followRedirects: Boolean
+    followRedirects: Boolean = true
 ): Response {
     val requestBuilder: Request.Builder =
         buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent)

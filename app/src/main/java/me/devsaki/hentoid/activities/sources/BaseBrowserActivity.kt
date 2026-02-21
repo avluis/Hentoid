@@ -105,6 +105,7 @@ import me.devsaki.hentoid.util.openReader
 import me.devsaki.hentoid.util.parseDownloadParams
 import me.devsaki.hentoid.util.setMargins
 import me.devsaki.hentoid.util.showTooltip
+import me.devsaki.hentoid.util.snack
 import me.devsaki.hentoid.util.toast
 import me.devsaki.hentoid.util.tryShowMenuIcons
 import me.devsaki.hentoid.util.useLegacyInsets
@@ -285,7 +286,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         tryShowMenuIcons(this, toolbar.menu)
         toolbar.setOnMenuItemClickListener { this.onMenuItemSelected(it) }
         toolbar.title = getStartSite().description
-        toolbar.setOnClickListener { loadUrl(getStartUrl(true)) }
+        toolbar.setOnClickListener { getStartUrl(true) { loadUrl(it) } }
         addCustomBackControl()
 
         refreshStopMenu = toolbar.menu.findItem(R.id.web_menu_refresh_stop)
@@ -308,7 +309,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         // Webview
         initWebview()
         initSwipeLayout()
-        webView.loadUrl(getStartUrl())
+        getStartUrl { webView.loadUrl(it) }
         if (!Settings.recentVisibility) {
             window.setFlags(
                 WindowManager.LayoutParams.FLAG_SECURE,
@@ -471,7 +472,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
 
     /**
      * Determine the URL the browser will load at startup
-     * - Either an URL specifically given to the activity (e.g. "view source" action)
+     * - Either a URL specifically given to the activity (e.g. "view source" action)
      * - Or the last viewed page, if the setting is enabled
      * - If neither of the previous cases, the default URL of the site
      *
@@ -479,31 +480,58 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
      *
      * @return URL to load at startup
      */
-    private fun getStartUrl(forceHomepage: Boolean = false): String {
-        val dao: CollectionDAO = ObjectBoxDAO()
-        try {
-            if (!forceHomepage) {
-                // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
-                if (intent.extras != null) {
-                    val bundle = BaseBrowserActivityBundle(intent.extras!!)
-                    val intentUrl = bundle.url
-                    if (intentUrl.isNotEmpty()) return intentUrl
+    private fun getStartUrl(
+        forceHomepage: Boolean = false,
+        onFound: Consumer<String>
+    ) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val dao: CollectionDAO = ObjectBoxDAO()
+            val site = getStartSite()
+            var result = ""
+            try {
+                if (!forceHomepage) {
+                    // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
+                    if (intent.extras != null) {
+                        val bundle = BaseBrowserActivityBundle(intent.extras!!)
+                        result = bundle.url
+                    }
+
+                    // Priority 2 : Last viewed position, if setting enabled
+                    if (result.isBlank() && Settings.isBrowserResumeLast) {
+                        val siteHistory = dao.selectLastHistory(getStartSite())
+                        result = siteHistory.url
+                    }
+                    var reason = ""
+                    if (result.isNotBlank()) {
+                        try {
+                            val headers: MutableList<Pair<String, String>> = ArrayList()
+                            headers.add(Pair(HEADER_REFERER_KEY, site.url))
+                            val response = getOnlineResourceFast(
+                                result,
+                                headers,
+                                site.useMobileAgent,
+                                site.useHentoidAgent,
+                                site.useWebviewAgent
+                            )
+                            if (response.code < 300) {
+                                withContext(Dispatchers.Main) { onFound(result) }
+                                return@launch
+                            }
+                            else reason = "HTTP ${response.code}"
+                        } catch (e: Exception) {
+                            Timber.i(e, "Unavailable resource ($reason) : $result")
+                            reason = e.javaClass.name
+                        }
+                    }
+                    snack("Webpage not available ($reason); loading the welcome page instead") // TODO make a resource
                 }
 
-                // Priority 2 : Last viewed position, if setting enabled
-                if (Settings.isBrowserResumeLast) {
-                    val siteHistory = dao.selectLastHistory(getStartSite())
-                    if (siteHistory.url.isNotEmpty()) return siteHistory.url
-                }
+                // Priority 3 : Homepage (manually set through bookmarks or default)
+                val welcomePage = dao.selectHomepage(getStartSite())
+                withContext(Dispatchers.Main) { onFound(welcomePage?.url ?: getStartSite().url) }
+            } finally {
+                dao.cleanup()
             }
-
-            // Priority 3 : Homepage (manually set through bookmarks or default)
-            val welcomePage = dao.selectHomepage(getStartSite())
-            return welcomePage?.url ?: getStartSite().url
-
-            // Default site URL
-        } finally {
-            dao.cleanup()
         }
     }
 
@@ -1328,10 +1356,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             getCookies(onlineContent.coverImageUrl)
                         downloadParams[HEADER_REFERER_KEY] = onlineContent.site.url
                         getOnlineResourceFast(
-                            fixUrl(
-                                onlineContent.coverImageUrl,
-                                getStartUrl() // TODO is that the URL we need?!
-                            ),
+                            fixUrl(onlineContent.coverImageUrl, onlineContent.site.url),
                             requestHeadersList,
                             getStartSite().useMobileAgent,
                             getStartSite().useHentoidAgent,
