@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.LibsBuilder
@@ -55,7 +56,8 @@ class AboutActivity : BaseActivity() {
                     recyclerView.setBackgroundColor(
                         getThemedColor(R.color.window_background_light)
                     )
-                    val scrollListener = ScrollPositionListener { _ -> /* Nothing */ }
+                    val scrollListener =
+                        ScrollPositionListener(lifecycleScope) { _ -> /* Nothing */ }
                     scrollListener.setOnEndOutOfBoundScrollListener {
                         AchievementsManager.trigger(16)
                     }

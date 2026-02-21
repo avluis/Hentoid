@@ -164,7 +164,8 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
     private var llm: LinearLayoutManager? = null
 
     // Scroll listener for the top FAB
-    private val scrollListener = ScrollPositionListener { i -> onScrollPositionChange(i) }
+    private val scrollListener =
+        ScrollPositionListener(lifecycleScope) { i -> onScrollPositionChange(i) }
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private var itemAdapter: ItemAdapter<ContentItem>? = null
@@ -357,7 +358,7 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
 
         // Hide FAB when scrolling up
         binding?.topFab?.apply {
-            scrollListener.setDeltaYListener(lifecycleScope) { i: Int ->
+            scrollListener.setDeltaYListener { i: Int ->
                 isVisible = (Settings.topFabEnabled && i > 0)
             }
 
@@ -1148,7 +1149,10 @@ class LibraryContentFragment : Fragment(), ChangeGroupDialogFragment.Parent,
                     calledFromOnStart: Boolean
                 ) {
                     selectExtension?.let { se ->
-                        if (isSelected) IntRange(start, end).forEach { se.select(it, false, true) }
+                        if (isSelected) IntRange(start, end).forEach { se.select(it,
+                            fireEvent = false,
+                            considerSelectableFlag = true
+                        ) }
                         else se.deselect(IntRange(start, end).toMutableList())
                     }
                 }

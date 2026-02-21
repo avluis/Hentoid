@@ -23,7 +23,7 @@ class ReaderSmoothScroller(context: Context) : LinearSmoothScroller(context) {
     }
 
     fun setSpeed(speed: Float) {
-        Timber.i("SPEED : %s", speed)
+        Timber.d("SPEED : $speed")
         this.speed = speed
     }
 
@@ -61,7 +61,7 @@ class ReaderSmoothScroller(context: Context) : LinearSmoothScroller(context) {
         mInterimTargetDy = scrollVector.y.toInt()
         val time = calculateTimeForScrolling(mInterimTargetDy)
         // To avoid UI hiccups, trigger a smooth scroll to a distance little further than the
-        // interim target. Since we track the distance travelled in onSeekTargetStep callback, it
+        // interim target. Since we track the distance traveled in onSeekTargetStep callback, it
         // won't actually scroll more than what we need.
         action.update(mInterimTargetDx, mInterimTargetDy, time, mLinearInterpolator)
     }

@@ -121,7 +121,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
     var reachedPosition = -1
 
     private var hasGalleryBeenShown = false
-    override val scrollListener = ScrollPositionListener { onScrollPositionChange(it) }
+    override val scrollListener =
+        ScrollPositionListener(lifecycleScope) { onScrollPositionChange(it) }
     private var orientation = DeviceOrientation.PORTRAIT
 
     override var displayParams: DisplayParams? = null
@@ -490,6 +491,8 @@ class ReaderPagerFragment : Fragment(R.layout.fragment_reader_pager),
             // Slideshow slider
             slideshowMgr = ReaderSlideshow(this, lifecycleScope)
             slideshowMgr.init(it, this.resources)
+
+            scrollListener.setAbsYListener { slideshowMgr.onManualScrollY() }
 
             // Fix page button
             it.viewerFixBtn.setOnClickListener { fixPage() }

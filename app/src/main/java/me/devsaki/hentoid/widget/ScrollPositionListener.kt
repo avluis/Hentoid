@@ -1,11 +1,15 @@
 package me.devsaki.hentoid.widget
 
+import androidx.core.util.Consumer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import me.devsaki.hentoid.util.Debouncer
 
-class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit) :
+class ScrollPositionListener(
+    scope: CoroutineScope,
+    private val onPositionChangeListener: (Int) -> Unit
+) :
     RecyclerView.OnScrollListener() {
     private var isScrollEnabled = true
 
@@ -24,17 +28,29 @@ class ScrollPositionListener(private val onPositionChangeListener: (Int) -> Unit
 
     private var deltaEventDebouncer: Debouncer<Int>? = null
 
+    private var onScrollYDelta: Consumer<Int>? = null
+    private var onScrollYAbs: Consumer<Int>? = null
+
     private var onPositionReachedListener: ((Int) -> Unit)? = null
 
     private var onStartOutOfBoundScroll: Runnable? = null
     private var onEndOutOfBoundScroll: Runnable? = null
 
 
-    fun setDeltaYListener(scope: CoroutineScope, deltaYListener: (Int) -> Unit) {
-        deltaEventDebouncer = Debouncer(scope, 75) { i: Int ->
-            deltaYListener.invoke(i - mInitialOffsetY)
+    init {
+        deltaEventDebouncer = Debouncer(scope, 75) { absY: Int ->
+            onScrollYAbs?.accept(absY)
+            onScrollYDelta?.accept(absY - mInitialOffsetY)
             mInitialOffsetY = -1
         }
+    }
+
+    fun setDeltaYListener(deltaYListener: Consumer<Int>) {
+        onScrollYDelta = deltaYListener
+    }
+
+    fun setAbsYListener(absYListener: Consumer<Int>) {
+        onScrollYAbs = absYListener
     }
 
     fun setOnStartOutOfBoundScrollListener(onStartOutOfBoundScrollListener: Runnable?) {

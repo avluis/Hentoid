@@ -54,6 +54,8 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
 
     private var hasGoneBack = false
 
+    private var autoScrollFactor = 1f
+
     // Debouncer for the slideshow slider
     private val slideshowSliderDebouncer: Debouncer<Int>
 
@@ -227,21 +229,26 @@ class ReaderSlideshow(private val pager: Pager, lifecycleScope: LifecycleCorouti
     }
 
     private fun activateAutoScroll(factor: Float = -1f) {
-        val theFactor = if (factor < 0) {
+        autoScrollFactor = if (factor < 0) {
             val scrollParams = getScrollParams()
             scrollParams.second
         } else factor
 
-        // Create a a specific ReaderSmoothScroller to perform vertical slideshow (=auto-scroll)
+        // Create a specific ReaderSmoothScroller to perform vertical slideshow (=auto-scroll)
         // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
-        val smoothScroller = ReaderSmoothScroller(controlsOverlay!!.root.context)
-        smoothScroller.apply {
+        ReaderSmoothScroller(controlsOverlay!!.root.context).apply {
             setCurrentPositionY(pager.scrollListener.totalScrolledY)
             setItemHeight(pager.adapter.getDimensionsAtPosition(pager.absImageIndex).y)
             targetPosition = pager.adapter.itemCount - 1
-            setSpeed(900f / (theFactor / 4f))
+            setSpeed(900f / (autoScrollFactor / 4f))
+            pager.setAndStartSmoothScroll(this)
         }
-        pager.setAndStartSmoothScroll(smoothScroller)
+    }
+
+    fun onManualScrollY() {
+        if (!isSlideshowActive) return
+        if (VIEWER_ORIENTATION_VERTICAL != pager.displayParams?.orientation) return
+        activateAutoScroll(autoScrollFactor)
     }
 
     private fun onSlideshowTick() {
