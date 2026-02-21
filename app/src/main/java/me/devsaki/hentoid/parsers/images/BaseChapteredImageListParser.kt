@@ -127,11 +127,11 @@ abstract class BaseChapteredImageListParser : BaseImageListParser() {
     fun parseChapterImageListImpl(url: String, content: Content): List<ImageFile> {
         require(URLUtil.isValidUrl(url)) { "Invalid gallery URL : $url" }
         if (processedUrl.isEmpty()) processedUrl = url
-        Timber.d("Chapter URL: %s", url)
+        Timber.d("Chapter URL: $url")
         EventBus.getDefault().register(this)
         val result: List<ImageFile>
         try {
-            val ch = Chapter(url = url) // Forge a chapter
+            val ch = Chapter(name = content.title, url = url, order = 1)
             result = parseChapterImageFiles(content, ch, 1)
             if (result.isNotEmpty() && content.coverImageUrl.isEmpty())
                 content.coverImageUrl = result[0].url
