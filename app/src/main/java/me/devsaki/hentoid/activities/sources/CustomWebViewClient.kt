@@ -622,14 +622,14 @@ open class CustomWebViewClient : WebViewClient {
                 && (getExtensionFromUri(url).isEmpty()
                         || getExtensionFromUri(url).equals("html", ignoreCase = true))
                 && !isIgnored(url)
+                && !isOutsideRestrictedDomains(url.toUri())
             ) {
-                if (!isOutsideRestrictedDomains(url.toUri()))
-                    return parseResponse(
-                        url,
-                        headers,
-                        analyzeForDownload = false,
-                        quickDownload = quickDownloadFlags.contains(url)
-                    )
+                return parseResponse(
+                    url,
+                    headers,
+                    analyzeForDownload = false,
+                    quickDownload = quickDownloadFlags.contains(url)
+                )
             }
             null
         }
@@ -988,8 +988,11 @@ open class CustomWebViewClient : WebViewClient {
         }
 
         // Add custom inline CSS to the main page only
-        if (customCss != null && baseUri == mainPageUrl)
-            doc.head().appendElement("style").attr("type", "text/css").appendText(customCss)
+        customCss?.let {
+            // mainPageUrl can be null when its HTML is preloaded by a service worker
+            if (null == mainPageUrl || baseUri == mainPageUrl)
+                doc.head().appendElement("style").attr("type", "text/css").appendText(customCss)
+        }
 
         val isAdBlock = Settings.isAdBlockerOn(site) && Settings.isBrowserAugmented(site)
 

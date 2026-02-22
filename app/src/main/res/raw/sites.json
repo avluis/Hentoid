@@ -110,6 +110,12 @@
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2
+    },
+    "EROMANGA": {
+      "useMobileAgent": false,
+      "comment": "Eromanga mobile loading doesn't seem to be compatible even with vanilla mobile browsers",
+      "useHentoidAgent": false,
+      "useWebviewAgent": false
     }
   }
 }

@@ -1,11 +1,15 @@
 .vdo.ai
 /ads-iframe/
 /nutaku/
+/ssp-bid/
 /thumbspot/
 10.com
 2mdn.net
 a-ads.com
+ad-nex.com
 adoperatorcore
+ads-pixiv.net
+ads-twitter.com
 ads.js
 ads.php
 adsco.re
@@ -15,6 +19,8 @@ adtng.com
 adtng.net
 aftv-serving.bid
 alliedthirteen.com
+analytics.twitter.com
+appollo
 bebi.com
 besttextservice
 bidgear.com
@@ -23,6 +29,7 @@ bncloudfl.com
 bonertraffic
 boostcpm
 bounceme.net
+chat-lab
 chaturbate
 clerrrep.com
 contentabc.com
@@ -59,6 +66,7 @@ popads.net
 pubadx.one
 pubfuture-ad.com
 pushnotifications.click
+react-ad.com
 realsrv.com
 riverpush
 s24hc8xzag.com
@@ -69,6 +77,7 @@ smartclick.net
 smatoo.net
 stripchat.com
 strpst.com
+t.co
 tracot.com
 traffichaus
 trafficjunky
@@ -81,7 +90,4 @@ whugesto.net
 wpadmngr.com
 yads.c.yimg.jp
 yourlustmedia.com
-ads-pixiv.net
-analytics.twitter.com
-t.co
-ads-twitter.com
+im-apps.net

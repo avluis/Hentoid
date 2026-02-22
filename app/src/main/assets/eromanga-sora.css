@@ -1,0 +1,78 @@
+/* Custom style to fit desktop display on a mobile screen (...cuz the mobile version is broken) */
+div.blog-title-inner {
+    width: 100%;
+}
+h1#blog-title {
+    width: 100%;
+}
+h1#blog-title img {
+    height: 80px;
+}
+
+.navi .menu_box{
+    width: 100%;
+}
+
+div#container{
+    width: 100%;
+}
+
+div#content{
+   width: 100%;
+}
+
+div#main{
+   width: 100%;
+   margin: 0 0 0 0;
+}
+
+article.article-outer {
+    height: auto;
+    width: 100%;
+    overflow: clip;
+}
+
+.article-body {
+    height: auto;
+}
+
+.article-body .article-body-inner {
+    width: 100px;
+}
+
+.article-body .article-body-inner a {
+   width: 100px;
+   height: auto;
+}
+
+div.article-title-outer{
+    margin: 10px 0 15px 115px;
+}
+
+div.article-date-outer {
+    margin: 0 0 0 115px;
+}
+
+div.index_toolbox {
+    margin: 0 10px 10px 0;
+    height: auto;
+}
+
+body.single div#main, body.page div#main {
+    margin: 0 0 0;
+    width: 100%;
+}
+
+article.article-outer_single {
+    margin: 0 0 0;
+    width: 100%;
+}
+
+body.single .entry-content {
+    margin: 0 0 0;
+}
+
+body.single .entry-content img {
+    margin: 0 0 0;
+    width: 100%;
+}

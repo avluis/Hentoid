@@ -83,6 +83,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     NOVELCROW(35, "Novelcrow", "https://novelcrow.com/", R.drawable.ic_site_novelcrow),
     TMO(36, "TMOHentai", "https://tmohentai.com/", R.drawable.ic_site_tmo),
     KEMONO(37, "Kemono.cr", "https://kemono.cr/", R.drawable.ic_site_kemono),
+    EROMANGA(38, "Eromanga-Sora", "https://eromanga-sora.com/", R.drawable.ic_site_sora),
 
     MAL(96, "MyAnimeList", "", R.drawable.ic_app),
 

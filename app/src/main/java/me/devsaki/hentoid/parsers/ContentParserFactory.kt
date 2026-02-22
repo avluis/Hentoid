@@ -10,6 +10,7 @@ import me.devsaki.hentoid.parsers.content.DoujinsContent
 import me.devsaki.hentoid.parsers.content.DummyContent
 import me.devsaki.hentoid.parsers.content.EdoujinContent
 import me.devsaki.hentoid.parsers.content.EhentaiContent
+import me.devsaki.hentoid.parsers.content.EromangaContent
 import me.devsaki.hentoid.parsers.content.ExhentaiContent
 import me.devsaki.hentoid.parsers.content.HdPornComicsContent
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent
@@ -41,6 +42,7 @@ import me.devsaki.hentoid.parsers.images.DoujinsParser
 import me.devsaki.hentoid.parsers.images.DummyParser
 import me.devsaki.hentoid.parsers.images.EHentaiParser
 import me.devsaki.hentoid.parsers.images.EdoujinParser
+import me.devsaki.hentoid.parsers.images.EromangaParser
 import me.devsaki.hentoid.parsers.images.ExHentaiParser
 import me.devsaki.hentoid.parsers.images.HdPornComicsParser
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser
@@ -101,6 +103,7 @@ object ContentParserFactory {
             Site.NOVELCROW -> NovelcrowContent::class.java
             Site.TMO -> TmoContent::class.java
             Site.KEMONO -> KemonoContent::class.java
+            Site.EROMANGA -> EromangaContent::class.java
             else -> DummyContent::class.java
         }
     }
@@ -141,6 +144,7 @@ object ContentParserFactory {
             Site.NOVELCROW -> NovelcrowParser()
             Site.TMO -> TmoParser()
             Site.KEMONO -> KemonoParser()
+            Site.EROMANGA -> EromangaParser()
             else -> DummyParser()
         }
     }

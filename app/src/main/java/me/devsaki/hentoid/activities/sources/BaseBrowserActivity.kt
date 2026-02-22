@@ -18,6 +18,8 @@ import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebBackForwardList
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebView.HitTestResult
 import androidx.activity.OnBackPressedCallback
@@ -32,6 +34,9 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.webkit.ServiceWorkerClientCompat
+import androidx.webkit.ServiceWorkerControllerCompat
+import androidx.webkit.WebViewFeature
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.skydoves.balloon.ArrowOrientation
 import kotlinx.coroutines.Dispatchers
@@ -242,6 +247,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
     private var xhrInterceptorScript: String? = null
     private var internalCustomCss: String? = null
 
+    protected var interceptServiceWorker = false
 
     protected abstract fun createWebClient(): CustomWebViewClient
 
@@ -660,6 +666,14 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             webSettings.isAlgorithmicDarkeningAllowed =
                 (!Settings.isBrowserForceLightMode && Settings.colorTheme != Settings.Value.COLOR_THEME_LIGHT)
+        }
+        if (interceptServiceWorker && WebViewFeature.isFeatureSupported(WebViewFeature.SERVICE_WORKER_BASIC_USAGE)) {
+            ServiceWorkerControllerCompat.getInstance().setServiceWorkerClient(
+                object : ServiceWorkerClientCompat() {
+                    override fun shouldInterceptRequest(request: WebResourceRequest): WebResourceResponse? {
+                        return webClient.shouldInterceptRequest(webView, request)
+                    }
+                })
         }
     }
 
@@ -1826,6 +1840,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             )
             if (getStartSite() == Site.IMHENTAI) getAssetAsString(
                 assets, "imhentai.css", sb
+            )
+            if (getStartSite() == Site.EROMANGA) getAssetAsString(
+                assets, "eromanga-sora.css", sb
             )
             if (getStartSite() == Site.HENTAIFOX) getAssetAsString(
                 assets, "hentaifox.css", sb

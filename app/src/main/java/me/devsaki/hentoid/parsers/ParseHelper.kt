@@ -83,7 +83,7 @@ private fun removeTrailingNumbers(s: String?): String {
 fun parseAttributes(
     map: AttributeMap,
     type: AttributeType,
-    elements: List<Element>?,
+    elements: Collection<Element>?,
     removeTrailingNumbers: Boolean,
     site: Site
 ) {

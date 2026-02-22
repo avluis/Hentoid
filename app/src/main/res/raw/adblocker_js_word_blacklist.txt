@@ -33,3 +33,6 @@ realsrv.com
 trackingurl
 zfgloadedbanner
 zfgloadedpopup
+admage_tag_url
+admage-script
+ the ad tag
