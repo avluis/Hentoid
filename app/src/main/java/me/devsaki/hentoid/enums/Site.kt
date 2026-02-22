@@ -141,8 +141,12 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
     var jsoupOutputSyntax = 0
         private set
 
-    // Determine if the app can update Content metadata by using a ContentParser
+    // Determine if the source supports updating Content metadata by using a ContentParser
     var canUpdateOnlineMetadata = true
+        private set
+
+    // Determine if the source supports book streaming
+    var shouldBeStreamed = true
         private set
 
 
@@ -184,6 +188,7 @@ enum class Site(val code: Int, val description: String, val url: String, val ico
         if (jsonSite.galleryHeight != null) galleryHeight = jsonSite.galleryHeight
         if (jsonSite.jsoupOutputSyntax != null) jsoupOutputSyntax = jsonSite.jsoupOutputSyntax
         if (jsonSite.canUpdateOnlineMetadata != null) canUpdateOnlineMetadata = jsonSite.canUpdateOnlineMetadata
+        if (jsonSite.shouldBeStreamed != null) shouldBeStreamed = jsonSite.shouldBeStreamed
     }
 
     class SiteConverter : PropertyConverter<Site, Long?> {

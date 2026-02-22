@@ -86,6 +86,10 @@ class ObjectBoxDAO : CollectionDAO {
             .use { query -> query.forEach { consumer(it) } }
     }
 
+    override fun countStoredContent(includeQueued: Boolean): Long {
+        return ObjectBoxDB.selectStoredContentQ(includeQueued, -1, false).build().count()
+    }
+
     override fun selectRecentBookIds(searchBundle: ContentSearchBundle): List<Long> {
         return contentIdSearch(false, searchBundle, emptySet())
     }
@@ -1040,7 +1044,7 @@ class ObjectBoxDAO : CollectionDAO {
         ObjectBoxDB.updateImageFileStatusParamsMimeTypeUriSize(image)
     }
 
-    override fun updateImageLocations(locations : Map<Long, String>) {
+    override fun updateImageLocations(locations: Map<Long, String>) {
         ObjectBoxDB.updateImageFileUri(locations)
     }
 

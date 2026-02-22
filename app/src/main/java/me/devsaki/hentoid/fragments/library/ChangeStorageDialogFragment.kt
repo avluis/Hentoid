@@ -62,11 +62,15 @@ class ChangeStorageDialogFragment : BaseDialogFragment<ChangeStorageDialogFragme
             val nbStreamed = contents.count { DownloadMode.STREAM == it.downloadMode }
             val nbFolders = contents.size - nbPdf - nbArchive - nbStreamed
 
+            val canStream = !contents.any { !it.site.shouldBeStreamed }
+
             val onlyFolders = nbFolders == (contents.size - nbPdf)
             val onlyArchive = nbArchive == (contents.size - nbPdf)
             val onlyStreamed = nbStreamed == (contents.size - nbPdf)
 
             binding?.apply {
+                choiceStreamed.isEnabled = canStream
+
                 selector.addOnButtonCheckedListener { _, checkedId, isChecked ->
                     if (!isChecked) return@addOnButtonCheckedListener
 

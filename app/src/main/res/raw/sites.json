@@ -8,7 +8,8 @@
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2,
       "galleryHeight": 7,
-      "canUpdateOnlineMetadata": false
+      "canUpdateOnlineMetadata": false,
+      "shouldBeStreamed": false
     },
     "NHENTAI": {
       "useHentoidAgent": false,
@@ -85,7 +86,8 @@
     "MANGAGO": {
       "useHentoidAgent": false,
       "useWebviewAgent": false,
-      "requestsCapPerSecond": 2
+      "requestsCapPerSecond": 2,
+      "shouldBeStreamed": false
     },
     "TMO": {
       "useHentoidAgent": false,

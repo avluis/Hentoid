@@ -82,7 +82,7 @@ abstract class BaseDeleteWorker(
     private val contentPurgeKeepCovers: Boolean
 
     // Content IDs to delete
-    private val contentIds: LongArray
+    private lateinit var contentIds: LongArray
 
     // Groups IDs to delete
     private val groupIds: LongArray
@@ -91,7 +91,7 @@ abstract class BaseDeleteWorker(
     private val queueIds: LongArray
 
     // ImageFile IDs to delete
-    private val imageIds: LongArray
+    private lateinit var imageIds: LongArray
 
     // Uris of the DocumentFiles to delete
     private val docUris: List<Uri>
@@ -122,56 +122,16 @@ abstract class BaseDeleteWorker(
 
     init {
         val inputData = DeleteData.Parser(inputData)
-        var askedContentIds = inputData.contentIds
         contentPurgeKeepCovers = inputData.contentPurgeKeepCovers
         groupIds = inputData.groupIds
         queueIds = inputData.queueIds
         docUris = inputData.docUris
         docsRoot = inputData.docsRoot
         docsNames = inputData.docsNames
-        val isDeleteFlaggedImages = inputData.isDeleteFlaggedImages
         isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly
         operation = inputData.operation ?: throw IllegalArgumentException("Must set an Operation")
         isCleaning = inputData.isCleaning
-
-        // Use a query to avoid serialization hard-limit of androidx.work.Data.Builder
-        // when passing a large long[] through DeleteData
-        // NB : Using a filter overrides any value set in contentIds
-        if (!inputData.contentFilter.isEmpty) {
-            val csb = ContentSearchBundle(inputData.contentFilter)
-
-            val currentFilterContent =
-                ContentSearchManager.searchContentIds(csb, dao).toSet()
-
-            val scope = if (inputData.isInvertFilterScope) {
-                val processedContentIds: MutableSet<Long> = HashSet()
-                dao.streamStoredContent(false, -1, false)
-                { c -> if (!currentFilterContent.contains(c.id)) processedContentIds.add(c.id) }
-                processedContentIds
-            } else {
-                currentFilterContent
-            }
-
-            askedContentIds = if (inputData.isKeepFavGroups) {
-                val favGroupsContent = dao.selectStoredFavContentIds(
-                    bookFavs = false,
-                    groupFavs = true
-                ).toSet()
-                scope.filterNot { favGroupsContent.contains(it) }.toLongArray()
-            } else {
-                scope.toLongArray()
-            }
-        }
-        contentIds = askedContentIds
-
-        // Use pre-flagging to avoid serialization hard-limit of androidx.work.Data.Builder
-        // when passing a large long[] through DeleteData
-        imageIds = if (isDeleteFlaggedImages) {
-            ObjectBoxDB.selectAllFlaggedImgsQ().safeFindIds()
-        } else longArrayOf()
-
-        deleteMax = contentIds.size + groupIds.size + queueIds.size + imageIds.size + docUris.size
     }
 
     override fun getStartNotification(): BaseNotification {
@@ -196,6 +156,8 @@ abstract class BaseDeleteWorker(
 
         withContext(Dispatchers.IO) {
             try {
+                init(dao)
+
                 // First chain contents, then groups (to be sure to delete empty groups only)
                 if (contentIds.isNotEmpty()) processContentList(
                     contentIds,
@@ -231,6 +193,36 @@ abstract class BaseDeleteWorker(
             }
         }
         progressDone()
+    }
+
+    private suspend fun init(dao: CollectionDAO) {
+        val inputData = DeleteData.Parser(inputData)
+        var askedContentIds = inputData.contentIds
+        val isDeleteFlaggedImages = inputData.isDeleteFlaggedImages
+
+        // Use a query to avoid serialization hard-limit of androidx.work.Data.Builder
+        // when passing a large long[] through DeleteData
+        // NB : Using a filter overrides any value set in contentIds
+        if (!inputData.contentFilter.isEmpty) {
+            val csb = ContentSearchBundle(inputData.contentFilter)
+            val scope = selectScopedContent(
+                dao,
+                csb,
+                inputData.isInvertFilterScope,
+                inputData.isKeepFavGroups,
+                operation == Operation.STREAM
+            )
+            askedContentIds = scope.scope.toLongArray()
+        }
+        contentIds = askedContentIds
+
+        // Use pre-flagging to avoid serialization hard-limit of androidx.work.Data.Builder
+        // when passing a large long[] through DeleteData
+        imageIds = if (isDeleteFlaggedImages) {
+            ObjectBoxDB.selectAllFlaggedImgsQ().safeFindIds()
+        } else longArrayOf()
+
+        deleteMax = contentIds.size + groupIds.size + queueIds.size + imageIds.size + docUris.size
     }
 
     private suspend fun processContentList(
@@ -577,6 +569,66 @@ abstract class BaseDeleteWorker(
             )
         )
     }
+
+    companion object {
+        suspend fun selectScopedContent(
+            dao: CollectionDAO,
+            searchBundle: ContentSearchBundle,
+            invertScope: Boolean,
+            keepFavGroups: Boolean,
+            forStream: Boolean
+        ): ScopeResults = with(Dispatchers.IO) {
+            try {
+                val nonStreamableContentIds = HashSet<Long>()
+                var allCount = 0
+                dao.streamStoredContent(false, -1, false) {
+                    if (!it.site.shouldBeStreamed) nonStreamableContentIds.add(it.id)
+                    allCount++
+                }
+
+                var scope =
+                    ContentSearchManager.searchContentIds(searchBundle, dao).toSet()
+
+                scope = if (invertScope) {
+                    val processedContentIds: MutableSet<Long> = HashSet()
+                    dao.streamStoredContent(false, -1, false)
+                    { if (!scope.contains(it.id)) processedContentIds.add(it.id) }
+                    processedContentIds
+                } else {
+                    scope
+                }
+
+                scope = if (keepFavGroups) {
+                    val favGroupsContent =
+                        dao.selectStoredFavContentIds(false, groupFavs = true).toSet()
+                    scope.filterNot { favGroupsContent.contains(it) }.toSet()
+                } else {
+                    scope
+                }
+
+                val warnings = ArrayList<Int>()
+                scope = if (forStream) {
+                    val mScope = scope.toMutableSet()
+                    mScope.removeAll(nonStreamableContentIds)
+
+                    if (mScope.count() < scope.count()) {
+                        warnings.add(R.string.mass_external_warning_1)
+                    }
+                    mScope
+                } else scope
+
+                return@with ScopeResults(allCount, scope, warnings)
+            } finally {
+                dao.cleanup()
+            }
+        }
+    }
+
+    data class ScopeResults(
+        val totalCount: Int,
+        val scope: Set<Long>,
+        val warnings: List<Int>
+    )
 }
 
 class DeleteWorker(context: Context, parameters: WorkerParameters) :

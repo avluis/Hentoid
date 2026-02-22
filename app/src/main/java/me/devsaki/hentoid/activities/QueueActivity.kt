@@ -44,7 +44,6 @@ import me.devsaki.hentoid.fragments.queue.QueueFragment
 import me.devsaki.hentoid.util.Debouncer
 import me.devsaki.hentoid.util.QueuePosition
 import me.devsaki.hentoid.util.Settings
-import me.devsaki.hentoid.util.applyTheme
 import me.devsaki.hentoid.util.network.CloudflareHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.util.notification.NotificationManager
@@ -303,6 +302,12 @@ class QueueActivity : BaseActivity(), SelectSiteDialogFragment.Parent {
 
     fun getSelectionToolbar(): Toolbar? {
         return binding?.selectionToolbar
+    }
+
+    fun updateSelectionToolbar(selectedCount: Int) {
+        getSelectionToolbar()?.title = resources.getQuantityString(
+            R.plurals.items_selected, selectedCount, selectedCount
+        )
     }
 
     private fun onQueueChanged(result: List<QueueRecord>) {

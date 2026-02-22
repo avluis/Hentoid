@@ -7,22 +7,24 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
+import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.adapters.ItemAdapter
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.ToolsActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.databinding.DialogToolsMassOperationsBinding
 import me.devsaki.hentoid.fragments.BaseDialogFragment
 import me.devsaki.hentoid.util.Settings
+import me.devsaki.hentoid.viewholders.DrawerItem
 import me.devsaki.hentoid.widget.ContentSearchManager
+import me.devsaki.hentoid.workers.BaseDeleteWorker
+
+const val SEARCH_ARGS = "search_args"
 
 class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFragment.Parent>() {
 
     companion object {
-        const val SEARCH_ARGS = "search_args"
-
         fun invoke(fragment: Fragment, contentSearchBundle: Bundle?) {
             val args = Bundle()
             args.putBundle(SEARCH_ARGS, contentSearchBundle)
@@ -32,6 +34,9 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
 
 
     // == UI
+    private val itemAdapter = ItemAdapter<DrawerItem<Any>>()
+    private val fastAdapter = FastAdapter.with(itemAdapter)
+
     private var binding: DialogToolsMassOperationsBinding? = null
 
     private lateinit var contentSearchBundle: ContentSearchManager.ContentSearchBundle
@@ -72,42 +77,11 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
             keepFavGroups.setOnCheckedChangeListener { _, _ -> refresh() }
             confirm.setOnCheckedChangeListener { _, _ -> refresh() }
             actionButton.setOnClickListener { onActionClick() }
+
+            warningsList.adapter = fastAdapter
         }
 
         refresh()
-    }
-
-    private suspend fun countBooks(invertScope: Boolean, keepFavGroups: Boolean): Pair<Int, Int> {
-        return withContext(Dispatchers.IO) {
-            val dao = ObjectBoxDAO()
-            try {
-                var allCount = 0
-                dao.streamStoredContent(false, -1, false)
-                { allCount++ }
-
-                val currentFilterContent =
-                    ContentSearchManager.searchContentIds(contentSearchBundle, dao).toSet()
-
-                val scope = if (invertScope) {
-                    val processedContentIds: MutableSet<Long> = HashSet()
-                    dao.streamStoredContent(false, -1, false)
-                    { c -> if (!currentFilterContent.contains(c.id)) processedContentIds.add(c.id) }
-                    processedContentIds
-                } else {
-                    currentFilterContent
-                }
-
-                if (keepFavGroups) {
-                    val favGroupsContent =
-                        dao.selectStoredFavContentIds(false, groupFavs = true).toSet()
-                    Pair(allCount, scope.filterNot { e -> favGroupsContent.contains(e) }.count())
-                } else {
-                    Pair(allCount, scope.count())
-                }
-            } finally {
-                dao.cleanup()
-            }
-        }
     }
 
     private fun refresh() {
@@ -123,16 +97,36 @@ class MassOperationsDialogFragment : BaseDialogFragment<MassOperationsDialogFrag
 
             lifecycleScope.launch {
                 val invertScope = 1 == massOperationScope.index
-                val counts = countBooks(invertScope, keepFavGroups.isChecked)
+                val counts = BaseDeleteWorker.selectScopedContent(
+                    ObjectBoxDAO(),
+                    contentSearchBundle,
+                    invertScope,
+                    keepFavGroups.isChecked,
+                    1 == massOperation.index
+                )
                 val text = resources.getQuantityString(
                     R.plurals.book_keep,
-                    counts.first - counts.second,
-                    counts.first - counts.second
+                    counts.totalCount - counts.scope.size,
+                    counts.totalCount - counts.scope.size
                 ) + " / " + resources.getQuantityString(
                     if (0 == massOperation.index) R.plurals.book_delete else R.plurals.book_stream,
-                    counts.second,
-                    counts.second
+                    counts.totalCount,
+                    counts.totalCount
                 )
+                if (counts.warnings.isNotEmpty()) {
+                    itemAdapter.clear()
+                    counts.warnings.forEachIndexed { idx, resId ->
+                        itemAdapter.add(
+                            DrawerItem(
+                                resources.getString(resId),
+                                R.drawable.ic_warning,
+                                idx.toLong(),
+                                true
+                            )
+                        )
+                    }
+                    warningsList.isVisible = true
+                }
                 bookCount.text = text
                 bookCount.isVisible = true
             }

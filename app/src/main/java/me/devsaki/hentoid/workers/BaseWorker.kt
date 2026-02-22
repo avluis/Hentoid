@@ -102,6 +102,9 @@ abstract class BaseWorker(
         Timber.d("%s worker destroyed", this.javaClass.simpleName)
     }
 
+    /**
+     * Run on Dispatchers.Default
+     */
     override suspend fun doWork(): Result {
         try {
             ensureLongRunning()

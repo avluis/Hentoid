@@ -179,6 +179,8 @@ interface CollectionDAO {
         consumer: Consumer<Content>
     )
 
+    fun countStoredContent(includeQueued: Boolean) : Long
+
 
     fun selectRecentBookIds(searchBundle: ContentSearchBundle): List<Long>
 

@@ -20,10 +20,11 @@ fun showDownloadModeMenu(
     anchor: View,
     lifecycle: LifecycleOwner,
     listener: OnMenuItemClickListener<PowerMenuItem>,
+    canStream: Boolean,
     dismissListener: OnDismissedListener?
 ) {
     showDownloadModeMenu(
-        buildDownloadModeMenu(context, lifecycle, null == dismissListener),
+        buildDownloadModeMenu(context, lifecycle, canStream, null == dismissListener),
         anchor,
         listener,
         dismissListener
@@ -44,27 +45,29 @@ fun showDownloadModeMenu(
 fun buildDownloadModeMenu(
     context: Context,
     lifecycle: LifecycleOwner,
+    canStream: Boolean,
     autoDismiss: Boolean = false
 ): PowerMenu {
     val res = context.resources
-    val powerMenu = PowerMenu.Builder(context)
-        .addItem(
-            PowerMenuItem(
-                res.getString(R.string.pref_viewer_dl_action_entries_1),
-                false,
-                R.drawable.ic_action_download,
-                tag = Settings.Value.DL_ACTION_DL_PAGES
-            )
+    val builder = PowerMenu.Builder(context)
+    builder.addItem(
+        PowerMenuItem(
+            res.getString(R.string.pref_viewer_dl_action_entries_1),
+            false,
+            R.drawable.ic_action_download,
+            tag = Settings.Value.DL_ACTION_DL_PAGES
         )
-        .addItem(
-            PowerMenuItem(
-                res.getString(R.string.pref_viewer_dl_action_entries_4),
-                false,
-                R.drawable.ic_archive,
-                tag = Settings.Value.DL_ACTION_DL_ARCHIVE_PAGES
-            )
+    )
+    builder.addItem(
+        PowerMenuItem(
+            res.getString(R.string.pref_viewer_dl_action_entries_4),
+            false,
+            R.drawable.ic_archive,
+            tag = Settings.Value.DL_ACTION_DL_ARCHIVE_PAGES
         )
-        .addItem(
+    )
+    if (canStream)
+        builder.addItem(
             PowerMenuItem(
                 res.getString(R.string.pref_viewer_dl_action_entries_2),
                 false,
@@ -72,16 +75,18 @@ fun buildDownloadModeMenu(
                 tag = Settings.Value.DL_ACTION_STREAM
             )
         )
-        .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
-        .setMenuRadius(10f)
-        .setLifecycleOwner(lifecycle)
-        .setTextColor(ContextCompat.getColor(context, R.color.white_opacity_87))
-        .setTextTypeface(Typeface.DEFAULT)
-        .setMenuColor(context.getThemedColor(R.color.subbar_1_light))
-        .setTextSize(dimensAsDp(context, R.dimen.text_subtitle_1))
-        .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
-        .setAutoDismiss(autoDismiss)
-        .build()
+    builder.apply {
+        setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
+        setMenuRadius(10f)
+        setLifecycleOwner(lifecycle)
+        setTextColor(ContextCompat.getColor(context, R.color.white_opacity_87))
+        setTextTypeface(Typeface.DEFAULT)
+        setMenuColor(context.getThemedColor(R.color.subbar_1_light))
+        setTextSize(dimensAsDp(context, R.dimen.text_subtitle_1))
+        setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
+        setAutoDismiss(autoDismiss)
+    }
+    val powerMenu = builder.build()
     powerMenu.setIconColor(ContextCompat.getColor(context, R.color.white_opacity_87))
     return powerMenu
 }

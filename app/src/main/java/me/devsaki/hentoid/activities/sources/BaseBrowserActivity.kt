@@ -130,6 +130,8 @@ import kotlin.math.round
  */
 private val GALLERY_REGEX by lazy { "\\b|/galleries|/gallery|/g|/entry\\b".toRegex() }
 
+private const val SIMILARITY_MIN_THRESHOLD = 0.85f
+
 abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.BrowserActivity,
     DuplicateDialogFragment.Parent, BookmarksDrawerFragment.Parent {
 
@@ -153,10 +155,6 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         // Seek a specific results page
         PAGE,  // Back to latest gallery page
         GALLERY
-    }
-
-    companion object {
-        const val SIMILARITY_MIN_THRESHOLD = 0.85f
     }
 
 
@@ -516,14 +514,13 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             if (response.code < 300) {
                                 withContext(Dispatchers.Main) { onFound(result) }
                                 return@launch
-                            }
-                            else reason = "HTTP ${response.code}"
+                            } else reason = " (HTTP ${response.code})"
                         } catch (e: Exception) {
                             Timber.i(e, "Unavailable resource ($reason) : $result")
-                            reason = e.javaClass.name
+                            reason = " (${e.javaClass.name})"
                         }
                     }
-                    snack("Webpage not available ($reason); loading the welcome page instead") // TODO make a resource
+                    snack(resources.getString(R.string.web_target_page_unavailable, reason))
                 }
 
                 // Priority 3 : Homepage (manually set through bookmarks or default)
@@ -1193,7 +1190,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             replacementTitleFinal,
                             archiveUrl
                         )
-                    }, null
+                    }, content.site.shouldBeStreamed, null
                 )
             }
         } else if (Settings.queueNewDownloadPosition == Settings.Value.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
@@ -1218,7 +1215,7 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                         replacementTitleFinal,
                         archiveUrl
                     )
-                }, null
+                }, content.site.shouldBeStreamed, null
             )
         } else {
             addToQueue(

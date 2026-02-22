@@ -703,7 +703,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 contentId = content.id
                 // Pages download has started
                 if (pagesKO + pagesOK > 1 || forceDisplay) {
-                    // Downloader reports about the cover thumbnail too
+                    // Downloader reports about the cover thumbnail too.
                     // Display one less page to avoid confusing the user
                     val totalPagesDisplay = max(0, totalPages - 1)
                     val pagesOKDisplay = max(0, pagesOK - 1)
@@ -1080,7 +1080,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         var keepToolbar = false
         when (menuItem.itemId) {
             R.id.action_select_queue_cancel -> {
-                val selectedContent = selectedItems.mapNotNull { obj -> obj.content }
+                val selectedContent = selectedItems.mapNotNull { it.content }
                 if (selectedContent.isNotEmpty()) askDeleteSelected(selectedContent)
             }
 
@@ -1093,7 +1093,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             R.id.action_select_queue_bottom -> {
-                selectedPositions = selectedItems.map { i -> fastAdapter.getPosition(i) }.sorted()
+                selectedPositions = selectedItems.map { fastAdapter.getPosition(it) }.sorted()
                 selectExtension.apply {
                     deselect(selections.toMutableSet())
                 }
@@ -1109,11 +1109,13 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
             }
 
             R.id.action_change_mode -> {
-                binding?.let {
-                    val menu = buildDownloadModeMenu(requireContext(), requireActivity())
+                binding?.apply {
+                    val selectedContent = selectedItems.mapNotNull { it.content }
+                    val canStream = !selectedContent.any { !it.site.shouldBeStreamed }
+                    val menu = buildDownloadModeMenu(requireContext(), requireActivity(), canStream)
                     showDownloadModeMenu(
                         menu,
-                        it.queueList,
+                        queueList,
                         { _: Int, item: PowerMenuItem ->
                             onNewModeSelected(DownloadMode.fromValue(item.tag as Int))
                             menu.dismiss()
@@ -1170,10 +1172,8 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
         viewModel.setDownloadMode(selectedContentIds, downloadMode)
     }
 
-    private fun updateSelectionToolbar(selectedCount: Long) {
-        activity.get()?.getSelectionToolbar()?.title = resources.getQuantityString(
-            R.plurals.items_selected, selectedCount.toInt(), selectedCount.toInt()
-        )
+    private fun updateSelectionToolbarContent(selectedCount: Int) {
+        activity.get()?.updateSelectionToolbar(selectedCount)
     }
 
     /**
@@ -1186,7 +1186,7 @@ class QueueFragment : Fragment(R.layout.fragment_queue), ItemTouchCallback,
                 updateSelectionToolbarVis(false)
                 it.selectOnLongClick = true
             } else {
-                updateSelectionToolbar(selectedCount.toLong())
+                updateSelectionToolbarContent(selectedCount)
                 updateSelectionToolbarVis(true)
             }
         }

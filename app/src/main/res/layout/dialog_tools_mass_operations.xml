@@ -64,13 +64,31 @@
         app:layout_constraintTop_toBottomOf="@id/keep_fav_groups"
         tools:text="Delete 5464 books - Keep 4894 books" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/warnings_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:fadeScrollbars="false"
+        android:padding="8dp"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:scrollbars="vertical"
+        android:visibility="gone"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/book_count"
+        app:maxHeight="120dp"
+        tools:layout_height="120dp"
+        tools:listitem="@layout/item_drawer"
+        tools:visibility="visible" />
+
     <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/confirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:checked="false"
         android:text="@string/mass_delete_confirm"
-        app:layout_constraintTop_toBottomOf="@id/book_count" />
+        app:layout_constraintTop_toBottomOf="@id/warnings_list" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"
