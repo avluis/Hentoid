@@ -501,10 +501,11 @@ private fun hasBooks(context: Context, folder: DocumentFile): Boolean {
                 val subfolderName = subfolder.name
                 if (subfolderName != null) {
                     for (s in Site.entries)
-                        if (subfolderName.equals(s.folder, ignoreCase = true)) {
+                        if (subfolderName.startsWith(s.folder, ignoreCase = true)) {
                             // Search subfolders within identified download folders
-                            // NB : for performance issues, we assume the mere presence of a subfolder inside a download folder means there's an existing book
+                            // NB : for performance issues, we assume the mere presence of a subfolder or an archive inside a download folder means there's an existing book
                             if (explorer.hasFolders(subfolder)) return true
+                            if (explorer.hasFiles(subfolder, getArchiveNamesFilter())) return true
                             break
                         }
                 }

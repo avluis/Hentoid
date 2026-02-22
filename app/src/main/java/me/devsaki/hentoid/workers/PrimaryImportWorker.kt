@@ -251,7 +251,7 @@ class PrimaryImportWorker(context: Context, parameters: WorkerParameters) :
                 )
                 val siteFolders = explorer.listFolders(context, rootFolder)
                 var nbArchives = 0
-                for ((foldersProcessed, f) in siteFolders.withIndex()) {
+                siteFolders.forEachIndexed { foldersProcessed, f ->
                     eventProgress(
                         STEP_2_BOOK_FOLDERS,
                         siteFolders.size,

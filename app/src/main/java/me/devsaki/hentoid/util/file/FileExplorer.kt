@@ -81,6 +81,21 @@ class FileExplorer : Closeable {
     }
 
     /**
+     * Returns true if the given parent folder contains at least one file matching the given criteria
+     *
+     * @param parent Parent folder to test
+     * @return True if the given parent folder contains at least one file matching the given criteria; false instead
+     */
+    fun hasFiles(parent: DocumentFile, nameFilter : NameFilter): Boolean {
+        return countDocumentFiles(
+            parent, nameFilter,
+            countFolders = false,
+            countFiles = true,
+            stopFirst = true
+        ) > 0
+    }
+
+    /**
      * List all files (non-folders) inside the given parent folder (non recursive) that match the given name filter
      *
      * @param context Context to use
