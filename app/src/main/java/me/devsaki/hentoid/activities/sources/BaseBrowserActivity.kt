@@ -520,7 +520,12 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             reason = " (${e.javaClass.name})"
                         }
                     }
-                    snack(resources.getString(R.string.web_target_page_unavailable, reason))
+                    if (reason.isNotBlank()) snack(
+                        resources.getString(
+                            R.string.web_target_page_unavailable,
+                            reason
+                        )
+                    )
                 }
 
                 // Priority 3 : Homepage (manually set through bookmarks or default)
