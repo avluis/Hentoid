@@ -180,7 +180,7 @@ fun isImageAnimated(data: ByteArray): Boolean {
         MIME_IMAGE_APNG -> true
         MIME_VIDEO_MP4 -> true
         MIME_IMAGE_GIF ->
-            return if (data.size < 400) false
+            if (data.size < 400) false
             else findSequencePosition(
                 data,
                 0,
@@ -188,7 +188,7 @@ fun isImageAnimated(data: ByteArray): Boolean {
                 limit
             ) > -1
 
-        MIME_IMAGE_WEBP -> return if (data.size < 400) false
+        MIME_IMAGE_WEBP -> if (data.size < 400) false
         else findSequencePosition(
             data,
             0,
@@ -331,10 +331,8 @@ fun decodeSampledBitmapFromStream(
     // First decode with inJustDecodeBounds=true to check dimensions
     val options = BitmapFactory.Options()
     options.inJustDecodeBounds = true
-    try {
+    workStream1.use { workStream1 ->
         BitmapFactory.decodeStream(workStream1, null, options)
-    } finally {
-        workStream1.close()
     }
 
     // Calculate inSampleSize
@@ -343,10 +341,8 @@ fun decodeSampledBitmapFromStream(
 
     // Decode final bitmap with inSampleSize set
     options.inJustDecodeBounds = false
-    return try {
+    return workStream2.use { workStream2 ->
         BitmapFactory.decodeStream(workStream2, null, options)
-    } finally {
-        workStream2.close()
     }
 }
 
