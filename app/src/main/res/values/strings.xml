@@ -817,6 +817,7 @@
     <string name="web_storage_permission_denied">Storage permission denied - cannot use the downloader</string>
     <string name="web_all_sites">All sites</string>
     <string name="web_target_page_unavailable">Webpage not available%s; loading welcome page instead</string>
+    <string name="web_target_page_outside_restricted_domains">Host %s outside restricted domains</string>
 
     <!-- Web browser (site specifics) -->
     <string name="help_web_exh_account">Please use or create an exHentai account</string>

@@ -367,12 +367,13 @@ open class CustomWebViewClient : WebViewClient {
         restrictedDomainNames.addAll(s)
     }
 
-    private fun isHostNotInRestrictedDomains(host: String): Boolean {
+    fun isOutsideRestrictedDomains(uri: Uri): Boolean {
+        val host = uri.host ?: return true
         if (restrictedDomainNames.isEmpty()) return false
         for (s in restrictedDomainNames) {
             if (host.contains(s)) return false
         }
-        Timber.i("Unrestricted host detected : %s", host)
+        Timber.i("Unrestricted host detected : $host")
         return true
     }
 
@@ -468,8 +469,7 @@ open class CustomWebViewClient : WebViewClient {
         val uri = url.toUri()
         if (isSupportedDirectDownload(uri) && isMainPage) activity?.downloadContentArchivePdf(url)
 
-        val host = uri.host
-        return host != null && isHostNotInRestrictedDomains(host)
+        return isOutsideRestrictedDomains(uri)
     }
 
     private fun isSupportedDirectDownload(uri: Uri): Boolean {
@@ -623,8 +623,7 @@ open class CustomWebViewClient : WebViewClient {
                         || getExtensionFromUri(url).equals("html", ignoreCase = true))
                 && !isIgnored(url)
             ) {
-                val host = url.toUri().host
-                if (host != null && !isHostNotInRestrictedDomains(host))
+                if (!isOutsideRestrictedDomains(url.toUri()))
                     return parseResponse(
                         url,
                         headers,

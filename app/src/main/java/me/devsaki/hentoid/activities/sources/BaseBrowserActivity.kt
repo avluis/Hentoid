@@ -25,6 +25,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
@@ -502,21 +503,29 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                     var reason = ""
                     if (result.isNotBlank()) {
                         try {
-                            val headers: MutableList<Pair<String, String>> = ArrayList()
-                            headers.add(Pair(HEADER_REFERER_KEY, site.url))
-                            val response = getOnlineResourceFast(
-                                result,
-                                headers,
-                                site.useMobileAgent,
-                                site.useHentoidAgent,
-                                site.useWebviewAgent
-                            )
-                            if (response.code < 300) {
-                                withContext(Dispatchers.Main) { onFound(result) }
-                                return@launch
-                            } else reason = " (HTTP ${response.code})"
+                            val uri = result.toUri()
+                            if (webClient.isOutsideRestrictedDomains(uri)) {
+                                reason = " (" + resources.getString(
+                                    R.string.web_target_page_outside_restricted_domains,
+                                    uri.host ?: ""
+                                ) + ")"
+                            } else {
+                                val headers: MutableList<Pair<String, String>> = ArrayList()
+                                headers.add(Pair(HEADER_REFERER_KEY, site.url))
+                                val response = getOnlineResourceFast(
+                                    result,
+                                    headers,
+                                    site.useMobileAgent,
+                                    site.useHentoidAgent,
+                                    site.useWebviewAgent
+                                )
+                                if (response.code < 300) {
+                                    withContext(Dispatchers.Main) { onFound(result) }
+                                    return@launch
+                                } else reason = " (HTTP ${response.code})"
+                            }
                         } catch (e: Exception) {
-                            Timber.i(e, "Unavailable resource ($reason) : $result")
+                            Timber.i(e, "Unavailable resource$reason : $result")
                             reason = " (${e.javaClass.name})"
                         }
                     }
