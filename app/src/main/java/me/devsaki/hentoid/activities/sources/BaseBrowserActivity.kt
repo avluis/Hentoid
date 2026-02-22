@@ -494,6 +494,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
             val site = getStartSite()
             var result = ""
             try {
+                // Special case : app's welcome page
+                if (Site.NONE == getStartSite()) return@launch
+
                 if (!forceHomepage) {
                     // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
                     if (intent.extras != null) {
@@ -518,6 +521,9 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             } else {
                                 val headers: MutableList<Pair<String, String>> = ArrayList()
                                 headers.add(Pair(HEADER_REFERER_KEY, site.url))
+                                val cookieStr = getCookies(result)
+                                if (cookieStr.isNotEmpty())
+                                    headers.add(Pair(HEADER_COOKIE_KEY, cookieStr))
                                 val response = getOnlineResourceFast(
                                     result,
                                     headers,
