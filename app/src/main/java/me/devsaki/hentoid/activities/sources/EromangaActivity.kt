@@ -3,7 +3,7 @@ package me.devsaki.hentoid.activities.sources
 import me.devsaki.hentoid.enums.Site
 
 private const val DOMAIN_FILTER = "eromanga-sora.com"
-private val GALLERY_FILTER = arrayOf("eromanga-sora.com/[%\\w\\-_]+/[\\d]+/$")
+private val GALLERY_FILTER = arrayOf("$DOMAIN_FILTER/[%\\w\\-_]+/[\\d]+/$")
 private val REMOVABLE_ELEMENTS = arrayOf("#spwrapper", "#extra.column")
 private val JS_URL_PATTERN_WHITELIST = arrayOf("//$DOMAIN_FILTER/")
 private val JS_CONTENT_BLACKLIST = arrayOf("fam-ad.com")

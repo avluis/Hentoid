@@ -541,12 +541,15 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
                             reason = " (${e.javaClass.name})"
                         }
                     }
-                    if (reason.isNotBlank()) snack(
-                        resources.getString(
-                            R.string.web_target_page_unavailable,
-                            reason
+                    if (reason.isNotBlank()) {
+                        Timber.i("Unavailable resource$reason : $result")
+                        snack(
+                            resources.getString(
+                                R.string.web_target_page_unavailable,
+                                reason
+                            )
                         )
-                    )
+                    }
                 }
 
                 // Priority 3 : Homepage (manually set through bookmarks or default)
@@ -1458,10 +1461,16 @@ abstract class BaseBrowserActivity : BaseActivity(), CustomWebViewClient.Browser
         lifecycleScope.launch {
             try {
                 val status = processContent(content, quickDownload)
-                onContentProcessed(content, status, quickDownload)
+                withContext(Dispatchers.Main) { onContentProcessed(content, status, quickDownload) }
             } catch (t: Throwable) {
                 Timber.e(t)
-                onContentProcessed(content, ContentStatus.UNKNOWN, false)
+                withContext(Dispatchers.Main) {
+                    onContentProcessed(
+                        content,
+                        ContentStatus.UNKNOWN,
+                        false
+                    )
+                }
             }
         }
     }

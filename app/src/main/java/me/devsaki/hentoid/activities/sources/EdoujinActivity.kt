@@ -10,7 +10,7 @@ class EdoujinActivity : BaseBrowserActivity() {
         private val GALLERY_FILTER =
             arrayOf(GALLERY_PATTERN, GALLERY_PATTERN.replace("/$", "\\-") + "[0-9]+/$")
 
-        private val REMOVABLE_ELEMENTS = arrayOf("\$x//*[@class=\"adblock_title\"]/../../../../..")
+        private val REMOVABLE_ELEMENTS = arrayOf($$"$x//*[@class=\"adblock_title\"]/../../../../..")
 
         private val JS_WHITELIST = arrayOf(DOMAIN_FILTER)
         private val JS_CONTENT_BLACKLIST = arrayOf("exoloader", "popunder")

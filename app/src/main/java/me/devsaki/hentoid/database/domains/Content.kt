@@ -45,6 +45,7 @@ import me.devsaki.hentoid.activities.sources.SimplyActivity
 import me.devsaki.hentoid.activities.sources.TmoActivity
 import me.devsaki.hentoid.activities.sources.ToonilyActivity
 import me.devsaki.hentoid.activities.sources.TsuminoActivity
+import me.devsaki.hentoid.activities.sources.YifferActivity
 import me.devsaki.hentoid.database.domains.ImageFile.Companion.fromImageUrl
 import me.devsaki.hentoid.database.safeReach
 import me.devsaki.hentoid.enums.Grouping
@@ -231,6 +232,7 @@ data class Content(
                 Site.TMO -> TmoActivity::class.java
                 Site.KEMONO -> KemonoActivity::class.java
                 Site.EROMANGA -> EromangaActivity::class.java
+                Site.YIFFER -> YifferActivity::class.java
                 else -> BaseBrowserActivity::class.java
             }
         }
@@ -391,7 +393,7 @@ data class Content(
             Site.ASMHENTAI, Site.ASMHENTAI_COMICS, Site.NHENTAI -> return url.replace("/", "")
 
             Site.MUSES -> return url.replace("/comics/album/", "").replace("/", ".")
-            Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART, Site.HIPERDEX, Site.NOVELCROW, Site.TMO, Site.EROMANGA -> {
+            Site.FAKKU2, Site.HENTAIFOX, Site.PORNCOMIX, Site.MANHWA, Site.TOONILY, Site.IMHENTAI, Site.ALLPORNCOMIC, Site.MULTPORN, Site.EDOUJIN, Site.SIMPLY, Site.DEVIANTART, Site.HIPERDEX, Site.NOVELCROW, Site.TMO, Site.EROMANGA, Site.YIFFER -> {
                 // Last useful part of the URL
                 val indexDelta = if (url.endsWith('/')) 2 else 1
                 paths = url.split("/")

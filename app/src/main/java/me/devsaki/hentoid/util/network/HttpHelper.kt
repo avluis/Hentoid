@@ -211,8 +211,8 @@ fun postOnlineResource(
 fun fetchBodyFast(
     url: String,
     site: Site,
-    requestHeaders: MutableList<Pair<String, String>>?,
-    targetContentType: String?
+    requestHeaders: MutableList<Pair<String, String>>? = null,
+    targetContentType: String? = null
 ): Pair<ResponseBody?, String> {
     val requestHeadersList: MutableList<Pair<String, String>>
     if (null == requestHeaders) {
@@ -253,7 +253,7 @@ fun fetchBodyFast(
                 ignoreCase = true
             )
         ) throw IOException(
-            "Not an HTML resource $url"
+            "Not a $targetContentType resource : $url"
         )
     }
 

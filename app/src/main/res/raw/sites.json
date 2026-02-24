@@ -12,7 +12,6 @@
       "shouldBeStreamed": false
     },
     "NHENTAI": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false,
       "hasUniqueBookId": true,
       "useCloudflare": true
@@ -45,7 +44,6 @@
       "useCloudflare": true
     },
     "TOONILY": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false,
       "hasCoverBasedPageUpdates": true,
       "useCloudflare": true
@@ -84,29 +82,24 @@
       "hasBackupURLs": true
     },
     "MANGAGO": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2,
       "shouldBeStreamed": false
     },
     "TMO": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false,
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 2
     },
     "NOVELCROW": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false
     },
     "KEMONO": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false,
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 1
     },
     "PORNCOMIX": {
-      "useHentoidAgent": false,
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2,
       "parallelDownloadCap": 2
@@ -114,7 +107,9 @@
     "EROMANGA": {
       "useMobileAgent": false,
       "comment": "Eromanga mobile loading doesn't seem to be compatible even with vanilla mobile browsers",
-      "useHentoidAgent": false,
+      "useWebviewAgent": false
+    },
+    "YIFFER": {
       "useWebviewAgent": false
     }
   }

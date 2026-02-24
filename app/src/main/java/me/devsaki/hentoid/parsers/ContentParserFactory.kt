@@ -35,6 +35,7 @@ import me.devsaki.hentoid.parsers.content.SimplyContent
 import me.devsaki.hentoid.parsers.content.TmoContent
 import me.devsaki.hentoid.parsers.content.ToonilyContent
 import me.devsaki.hentoid.parsers.content.TsuminoContent
+import me.devsaki.hentoid.parsers.content.YifferContent
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser
 import me.devsaki.hentoid.parsers.images.AllPornComicParser
 import me.devsaki.hentoid.parsers.images.DeviantArtParser
@@ -68,6 +69,7 @@ import me.devsaki.hentoid.parsers.images.SimplyParser
 import me.devsaki.hentoid.parsers.images.TmoParser
 import me.devsaki.hentoid.parsers.images.ToonilyParser
 import me.devsaki.hentoid.parsers.images.TsuminoParser
+import me.devsaki.hentoid.parsers.images.YifferParser
 
 object ContentParserFactory {
 
@@ -104,6 +106,7 @@ object ContentParserFactory {
             Site.TMO -> TmoContent::class.java
             Site.KEMONO -> KemonoContent::class.java
             Site.EROMANGA -> EromangaContent::class.java
+            Site.YIFFER -> YifferContent::class.java
             else -> DummyContent::class.java
         }
     }
@@ -145,6 +148,7 @@ object ContentParserFactory {
             Site.TMO -> TmoParser()
             Site.KEMONO -> KemonoParser()
             Site.EROMANGA -> EromangaParser()
+            Site.YIFFER -> YifferParser()
             else -> DummyParser()
         }
     }

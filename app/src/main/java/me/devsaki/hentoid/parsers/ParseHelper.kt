@@ -187,7 +187,7 @@ fun urlsToImageFiles(
     imgUrls: List<String>,
     status: StatusContent,
     coverUrl: String?,
-    chapter: Chapter?
+    chapter: Chapter? = null
 ): List<ImageFile> {
     val result: MutableList<ImageFile> = ArrayList()
     if (!coverUrl.isNullOrEmpty()) result.add(ImageFile.newCover(coverUrl, status))
