@@ -5,8 +5,8 @@ if (typeof origFetch === 'undefined') {
 
       /* Send the calling args to the app */
       if (typeof (fetchHandler) != 'undefined') {
-        var body = ""
-        if (args.length > 1) body = args[1].body
+        var body = "";
+        if (args.length > 1) body = args[1].body;
         fetchHandler.onFetchCall(args[0], body);
       }
 
@@ -14,8 +14,8 @@ if (typeof origFetch === 'undefined') {
 
       /* Send the response to the app if handler is set */
       if (typeof (fetchResponseHandler) != 'undefined') {
-         var body = ""
-         if (args.length > 1) body = args[1].body
+         var body = "";
+         if (args.length > 1) body = args[1].body;
          response
             .clone()
             .then(r => fetchResponseHandler.onCall(args[0], body, r.text()))
