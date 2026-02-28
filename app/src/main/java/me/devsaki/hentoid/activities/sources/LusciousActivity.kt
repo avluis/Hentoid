@@ -18,8 +18,14 @@ class LusciousActivity : BaseBrowserActivity() {
     companion object {
         private const val DOMAIN_FILTER = "luscious.net"
         val GALLERY_FILTER = arrayOf(
-            "operationName=AlbumGet",  // Fetch using GraphQL call
+            "operationName=AlbumGet$",  // Fetch using GraphQL call
             "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$" // Actual gallery page URL (NB : only works for the first viewed gallery, or when manually reloading a page)
+        )
+        val RESULTS_FILTER = arrayOf(
+            "operationName=AlbumList$",
+            "operationName=LandingPageAlbumGenre$",
+            "operationName=LandingPageAlbumAudience$",
+            "operationName=LandingPageAlbumTag$"
         )
         // Won't work yet as we're overriding parseResponse
         // private val JS_BLACKLIST = arrayOf("slideradconfig", "tsyndicate.com", "admoxyctrl")
@@ -31,6 +37,7 @@ class LusciousActivity : BaseBrowserActivity() {
 
     override fun createWebClient(): CustomWebViewClient {
         val client = LusciousWebClient(getStartSite(), GALLERY_FILTER, this)
+        client.setResultsUrlPatterns(*RESULTS_FILTER)
         client.restrictTo(DOMAIN_FILTER)
 //        client.addJsContentBlacklist(*JS_BLACKLIST)
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER)
@@ -48,6 +55,7 @@ class LusciousActivity : BaseBrowserActivity() {
     ) :
         CustomWebViewClient(site, filter, activity) {
         fun onFetchCall(url: String, body: String) {
+            if (isResultsPage(url)) this@LusciousActivity.onNoResult()
             if (!isGalleryPage(url)) return
             try {
                 jsonToObject(body, LusciousQuery::class.java)?.let { query ->
@@ -72,7 +80,8 @@ class LusciousActivity : BaseBrowserActivity() {
         ): WebResourceResponse? {
             // We're only overriding to parse
             if (!analyzeForDownload && !quickDownload)
-                return super.parseResponse(url, requestHeaders,
+                return super.parseResponse(
+                    url, requestHeaders,
                     analyzeForDownload = false,
                     quickDownload = false
                 )

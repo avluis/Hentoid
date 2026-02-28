@@ -398,7 +398,7 @@ open class CustomWebViewClient : WebViewClient {
      * @param url URL to test
      * @return True if the given URL represents a results page
      */
-    private fun isResultsPage(url: String): Boolean {
+    fun isResultsPage(url: String): Boolean {
         if (resultsUrlPattern.isEmpty()) return false
         for (p in resultsUrlPattern) {
             val matcher = p.matcher(url)
