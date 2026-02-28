@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.activities.sources
 
+import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import android.webkit.WebView
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,10 +15,16 @@ import timber.log.Timber
 import java.io.IOException
 
 private const val DOMAIN_FILTER = "yiffer.xyz"
-private const val GALLERY_NAME = "c/[%'\\w\\-_\\.\\!\\,]+"
+private const val YIFFER_NAME = "[%'\\w\\-_\\.\\!\\,]+"
 private val GALLERY_FILTER = arrayOf(
-    "$DOMAIN_FILTER/$GALLERY_NAME$",
-    "$DOMAIN_FILTER/$GALLERY_NAME\\.data$",
+    "$DOMAIN_FILTER/c/$YIFFER_NAME$",
+    "$DOMAIN_FILTER/c/$YIFFER_NAME\\.data$",
+)
+val RESULTS_FILTER = arrayOf(
+    "$DOMAIN_FILTER/browse.data",
+    "$DOMAIN_FILTER/root.data",
+    "$DOMAIN_FILTER/_root.data",
+    "$DOMAIN_FILTER/artist/$YIFFER_NAME.data"
 )
 private val REMOVABLE_ELEMENTS =
     arrayOf($$"$x//a[contains(@href,\"kkbr.ai\")]/..", "a[href*='https://fundownun']")
@@ -31,6 +39,7 @@ class YifferActivity : BaseBrowserActivity() {
         val client = YifferWebClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
+        client.setResultsUrlPatterns(*RESULTS_FILTER)
         return client
     }
 
@@ -39,6 +48,14 @@ class YifferActivity : BaseBrowserActivity() {
         filter: Array<String>,
         activity: BrowserActivity
     ) : CustomWebViewClient(site, filter, activity) {
+
+        override fun shouldInterceptRequest(
+            view: WebView,
+            request: WebResourceRequest
+        ): WebResourceResponse? {
+            if (isResultsPage(request.url.toString())) onNoResult()
+            return super.shouldInterceptRequest(view, request)
+        }
 
         override fun parseResponse(
             url: String,
