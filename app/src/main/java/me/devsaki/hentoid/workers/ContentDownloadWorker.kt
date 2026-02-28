@@ -1612,8 +1612,7 @@ class ContentDownloadWorker(context: Context, parameters: WorkerParameters) :
         var result = attr
         for (rule in rules) {
             if (attr.type == rule.attributeType) {
-                val newName = processNewName(attr.name, rule)
-                if (newName != null) {
+                processNewName(attr.name, rule)?.let { newName ->
                     result = Attribute(type = attr.type, name = newName)
                     break
                 }

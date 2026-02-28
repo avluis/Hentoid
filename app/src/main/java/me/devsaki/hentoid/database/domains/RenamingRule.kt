@@ -10,6 +10,8 @@ import me.devsaki.hentoid.enums.AttributeType.AttributeTypeConverter
 import me.devsaki.hentoid.enums.AttributeType.UNDEFINED
 import java.util.Objects
 
+private val WILDCARD_PATTERN by lazy { "\\*".toRegex() }
+
 @Entity
 data class RenamingRule(
     @Id
@@ -27,6 +29,16 @@ data class RenamingRule(
     @Transient
     var rightPart: String = ""
 
+
+    fun computeParts() {
+        val starIndex = sourceName.indexOf('*')
+        if (starIndex > -1) {
+            leftPart = sourceName.substring(0, starIndex).lowercase()
+            rightPart = if (starIndex < sourceName.length - 1)
+                sourceName.substring(starIndex + 1, sourceName.length).lowercase()
+            else ""
+        }
+    }
 
     fun doesMatchSourceName(name: String): Boolean {
         val starIndex = sourceName.indexOf('*')
@@ -50,18 +62,7 @@ data class RenamingRule(
             if (leftPart.isNotEmpty()) sourceWildcard = sourceWildcard.substring(leftPart.length)
             if (rightPart.isNotEmpty()) sourceWildcard =
                 sourceWildcard.substring(0, sourceWildcard.length - rightPart.length - 1)
-            return targetName.replaceFirst("\\*".toRegex(), sourceWildcard)
-        }
-    }
-
-    fun computeParts() {
-        val starIndex = sourceName.indexOf('*')
-        if (starIndex > -1) {
-            leftPart = sourceName.substring(0, starIndex).lowercase()
-            rightPart = if ((starIndex < sourceName.length - 1)) sourceName.substring(
-                starIndex + 1,
-                sourceName.length - 1
-            ).lowercase() else ""
+            return targetName.replaceFirst(WILDCARD_PATTERN, sourceWildcard)
         }
     }
 
