@@ -20,8 +20,6 @@ private val GALLERY_FILTER = arrayOf(
 )
 private val REMOVABLE_ELEMENTS =
     arrayOf($$"$x//a[contains(@href,\"kkbr.ai\")]/..", "a[href*='https://fundownun']")
-//private val JS_URL_PATTERN_WHITELIST = arrayOf("//$DOMAIN_FILTER/")
-//private val JS_CONTENT_BLACKLIST = arrayOf("fam-ad.com")
 
 class YifferActivity : BaseBrowserActivity() {
 
@@ -33,11 +31,6 @@ class YifferActivity : BaseBrowserActivity() {
         val client = YifferWebClient(getStartSite(), GALLERY_FILTER, this)
         client.restrictTo(DOMAIN_FILTER)
         client.addRemovableElements(*REMOVABLE_ELEMENTS)
-//        for (s in JS_URL_PATTERN_WHITELIST) client.adBlocker.addJsUrlPatternWhitelist(s)
-//        client.addJsContentBlacklist(*JS_CONTENT_BLACKLIST)
-
-//        fetchHandler = { url: String, body: String -> client.onFetchCall(url, body) }
-
         return client
     }
 
