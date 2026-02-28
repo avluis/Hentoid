@@ -70,6 +70,13 @@ class LusciousActivity : BaseBrowserActivity() {
             analyzeForDownload: Boolean,
             quickDownload: Boolean
         ): WebResourceResponse? {
+            // We're only overriding to parse
+            if (!analyzeForDownload && !quickDownload)
+                return super.parseResponse(url, requestHeaders,
+                    analyzeForDownload = false,
+                    quickDownload = false
+                )
+
             activity?.onGalleryPageStarted()
             val contentParser: ContentParser = LusciousContent()
 
