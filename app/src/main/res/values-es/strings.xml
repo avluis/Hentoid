@@ -37,7 +37,6 @@
     <string name="apply_final">Aplicar opciones</string>
     <string name="archive_delete_after_archiving">Eliminar libros después de una exportación exitosa</string>
     <string name="archive_format">Formato de archivo</string>
-    <string name="archive_limit">No se pueden archivar más de 1000 libros a la vez</string>
     <string name="archive_overwrite">Sobrescribir archivos existentes</string>
     <string name="archive_progress">Archivando libros</string>
     <string name="archive_progress_subtitle">Completado: %s</string>
@@ -46,6 +45,7 @@
         <item quantity="one">%d libro archivado en tu carpeta de descargas</item>
         <item quantity="other">%d libros archivados en tu carpeta de descargas</item>
     </plurals>
+    <string name="archived_help">Libro archivado</string>
     <plurals name="ask_archive_multiple">
         <item quantity="many">¿Archivar %d elementos seleccionados?</item>
         <item quantity="one">¿Archivar el elemento seleccionado?</item>
@@ -568,7 +568,6 @@
     <string name="library_filter_nonfavourite_help">Mostrar libros no favoritos</string>
     <string name="library_filters_title">Filtros</string>
     <string name="library_imports_title">Importación de la biblioteca</string>
-    <string name="library_metrics_storage">%.0f MB</string>
     <string name="library_metrics_storage_gb">%.2f GB</string>
     <string name="library_metrics_storage_mb">%.0f MB</string>
     <string name="library_search_hint">Título, artista, etiqueta o ID del libro</string>
@@ -591,6 +590,7 @@
     <string name="mass_delete_action">Eliminación masiva</string>
     <string name="mass_delete_confirm">Sé lo que estoy haciendo.</string>
     <string name="mass_external_tip">Nota: Los libros externos se eliminarán con esta operación.</string>
+    <string name="mass_external_warning_1">Su selección actual contiene libros de sitios que no deberían reproducirse en línea. Esos libros no se procesarán.</string>
     <string name="mass_operation">Operación</string>
     <string name="mass_operation_1">Borrar</string>
     <string name="mass_operation_2">Cambiar a transmisión de internet</string>
@@ -609,7 +609,6 @@
     <string name="memory_hentoid_main">Hentoid (principal): %s</string>
     <string name="memory_title">Uso del almacenamiento</string>
     <string name="memory_total">Total: %s</string>
-    <string name="menu_archive">Archivar</string>
     <string name="menu_archive_help">Exportar libros como archivos o PDF</string>
     <string name="menu_change_dl_mode">Cambiar modo de descarga</string>
     <string name="menu_change_group">Mover a grupo</string>
@@ -640,7 +639,6 @@
     <string name="menu_sort">Clasificar</string>
     <string name="menu_sort_filter">Ordenar y filtrar</string>
     <string name="menu_storage_method">Método de almacenamiento</string>
-    <string name="menu_stream">Cambiar a lectura vía transmisión</string>
     <string name="merge_delete_after_merging">Borrar libros después de unir</string>
     <string name="merge_fail">No se pudo fusionar el contenido</string>
     <string name="merge_merge">Unir</string>
@@ -713,8 +711,8 @@
         <item quantity="other">%d libros procesados con éxito</item>
     </plurals>
     <plurals name="notif_process_complete_details_generic">
-        <item quantity="one">%d elemento procesado ​​con éxito</item>
-        <item quantity="other">%d elementos procesados ​​con éxito</item>
+        <item quantity="one">%d elemento procesado con éxito</item>
+        <item quantity="other">%d elementos procesados con éxito</item>
     </plurals>
     <string name="notif_split_merge">Dividir / fusionar</string>
     <string name="notif_stream_complete">Transmisión completa</string>
@@ -776,6 +774,7 @@
     <string name="paused_no_internet">No se puede descargar - Sin Internet</string>
     <string name="paused_no_storage">No se puede descargar - Poco espacio de almacenamiento (%s libres). Libera espacio o cambia el directorio de descarga</string>
     <string name="paused_no_wifi">No se puede descargar - Sin Wi-Fi</string>
+    <string name="pdf_help">PDF</string>
     <string name="permissioncomplaint_snackbar">Debes conceder permisos antes de poder continuar</string>
     <string name="permissioncomplaint_snackbar_manual">Debes conceder permisos manualmente antes de poder continuar</string>
     <string name="personalDataStatement1">DECLARACIÓN DE PRIVACIDAD DE LOS DATOS PERSONALES\n\nHentoid es un software libre y de código abierto mantenido por la Comunidad Hentoid (únete a nosotros en Discord - ver el enlace más arriba)</string>
@@ -841,6 +840,7 @@
     <string name="redownload_first_error">Primer error: %s</string>
     <string name="redownload_generating_log_file">Generando archivo de registro…</string>
     <string name="redownload_limit">No se pueden descargar más de 1000 libros a la vez</string>
+    <string name="redownload_nocando">Los libros seleccionados no son elegibles para descargarse porque no se actualizan.</string>
     <string name="redownload_open_log">Abrir registro de errores</string>
     <string name="redownload_queue_progress">Volviendo a descargar libros seleccionados</string>
     <string name="redownload_share_log">Compartir registro de errores</string>
@@ -1027,7 +1027,6 @@
     <string name="title_activity_app_lock">Bloqueo de la aplicación</string>
     <string name="title_activity_browser">Navigador</string>
     <string name="title_activity_downloads">Biblioteca</string>
-    <string name="title_activity_drawer_edit">Menú de edición</string>
     <string name="title_activity_duplicate_detector">Detector de duplicados</string>
     <string name="title_activity_meta_edit">Editar metadatos</string>
     <string name="title_activity_queue">Cola</string>
@@ -1110,7 +1109,6 @@
     <string name="web_all_sites">Todos los sitios</string>
     <string name="web_back">Retroceder</string>
     <string name="web_bookmarks">Marcadores</string>
-    <string name="web_copy_url">Copiar URL actual al portapapeles </string>
     <string name="web_download">Descargar</string>
     <string name="web_forward">Avanzar</string>
     <string name="web_gallery">Regresar a la última página de la galería</string>
@@ -1118,6 +1116,8 @@
     <string name="web_open_ext_browser">Navegador externo</string>
     <string name="web_refresh_stop">Actualizar/detener</string>
     <string name="web_storage_permission_denied">Permisos de almacenamiento denegados - no se puede usar el sistema de descargas</string>
+    <string name="web_target_page_outside_restricted_domains">Host fuera de dominios restringidos</string>
+    <string name="web_target_page_unavailable">Página web no disponible; cargando la página de bienvenida en su lugar</string>
     <string name="web_unparsable">No se puede descargar este contenido. Perdón~</string>
     <string name="web_url">Utilice un enlace</string>
     <string name="web_url_clipboard">URL copiada al portapapeles</string>

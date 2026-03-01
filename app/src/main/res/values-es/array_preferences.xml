@@ -72,6 +72,7 @@
     <string name="pref_viewer_dl_action_entries_1">Descargar todas las páginas</string>
     <string name="pref_viewer_dl_action_entries_2">Transmitir las páginas mientras se lee</string>
     <string name="pref_viewer_dl_action_entries_3">Preguntar siempre</string>
+    <string name="pref_viewer_dl_action_entries_4">Descargar todas las páginas y archivarlas</string>
     <string name="pref_viewer_read_threshold_entries_1">1 página (Predeterminada)</string>
     <string name="pref_viewer_read_threshold_entries_2">2 páginas</string>
     <string name="pref_viewer_read_threshold_entries_3">5 páginas</string>
