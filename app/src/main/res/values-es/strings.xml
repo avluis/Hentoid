@@ -1116,8 +1116,8 @@
     <string name="web_open_ext_browser">Navegador externo</string>
     <string name="web_refresh_stop">Actualizar/detener</string>
     <string name="web_storage_permission_denied">Permisos de almacenamiento denegados - no se puede usar el sistema de descargas</string>
-    <string name="web_target_page_outside_restricted_domains">Host fuera de dominios restringidos</string>
-    <string name="web_target_page_unavailable">Página web no disponible; cargando la página de bienvenida en su lugar</string>
+    <string name="web_target_page_outside_restricted_domains">Host %s fuera de dominios restringidos</string>
+    <string name="web_target_page_unavailable">Página web no disponible%s; cargando la página de bienvenida en su lugar</string>
     <string name="web_unparsable">No se puede descargar este contenido. Perdón~</string>
     <string name="web_url">Utilice un enlace</string>
     <string name="web_url_clipboard">URL copiada al portapapeles</string>

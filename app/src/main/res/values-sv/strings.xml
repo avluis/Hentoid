@@ -1059,8 +1059,8 @@
     <string name="web_open_ext_browser">Extern webbläsare</string>
     <string name="web_refresh_stop">Fräscha upp/stoppa</string>
     <string name="web_storage_permission_denied">Lagringstillstånd nekat - får inte använda nerladdaren</string>
-    <string name="web_target_page_outside_restricted_domains">Värd utanför begränsade domäner</string>
-    <string name="web_target_page_unavailable">Webbsida ej tillgänglig; läser in välkomstsida istället</string>
+    <string name="web_target_page_outside_restricted_domains">Värd %s utanför begränsade domäner</string>
+    <string name="web_target_page_unavailable">Webbsida ej tillgänglig%s; läser in välkomstsida istället</string>
     <string name="web_unparsable">Det här innehållet kan inte laddas ned. Förlåt~</string>
     <string name="web_url">Använd länk</string>
     <string name="web_url_clipboard">URL-kopierad till urklipp</string>

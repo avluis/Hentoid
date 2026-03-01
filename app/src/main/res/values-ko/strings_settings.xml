@@ -54,13 +54,9 @@
     <string name="pref_external_library_detach_title">외부 라이브러리 분리</string>
     <string name="pref_external_library_detach_summary">더 이상 외부 라이브러리를 포함하지 않습니다</string>
     <string name="pref_cat_eh">E-hentai / ExHentai</string>
-    <string name="pref_cat_ksk">Ksk.moe</string>
     <string name="pref_cat_advanced">고급</string>
     <string name="pref_refresh_library_title">라이브러리 새로고침</string>
     <string name="pref_refresh_library_summary">수동으로 라이브러리 컨텐츠를 새로고침합니다</string>
-    <string name="pref_delete_all_except_favs_title">즐겨찾기 외 항목 삭제</string>
-    <string name="pref_delete_all_except_favs_summary">즐겨찾기 항목만 유지하고 나머지를 삭제합니다\n주의: 외부 라이브러리 항목에는 적용되지 않습니다</string>
-    <string name="pref_ask_delete_all_except_favs">작품 %d개를 삭제하시겠습니까?</string>
     <string name="pref_screen_browser">브라우저</string>
     <string name="pref_browser_behaviour">행동</string>
     <string name="pref_browser_resume_last_title">마지막으로 본 페이지에서 재개</string>
@@ -100,11 +96,6 @@
     <string name="pref_browser_augmented_title">브라우저 향상</string>
     <string name="pref_browser_augmented_off">기본 브라우저를 사용합니다</string>
     <string name="pref_browser_augmented_on">광고 창을 제거하고 빠르게 불러옵니다</string>
-    <string name="pref_browser_override_overview_title">페이지 미리보기 비활성화</string>
-    <string name="pref_browser_override_overview_summary_off">페이지 미리보기를 비활성화하고 초기 확대율 설정을 가능하게 합니다</string>
-    <string name="pref_browser_override_overview_summary_on">초기 확대율을 설정하려면 아래 설정을 조정하세요\n주의: hitomi와 e-hentai에서만 작동합니다</string>
-    <string name="pref_browser_initial_zoom_title">초기 확대율</string>
-    <string name="pref_browser_initial_zoom_summary">페이지를 처음 불러올 때 확대율\n현재: %s%%</string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
     <string name="pref_browser_clear_cookies">모든 쿠키 삭제</string>
     <string name="pref_browser_clear_cookies_ok">모든 쿠키가 성공적으로 삭제되었습니다</string>
@@ -142,7 +133,6 @@
     <string name="download_eh_hires_title">고해상도 다운로드</string>
     <string name="pref_dl_eh_hires_on">가능하면 고해상도로 다운로드 합니다\n주의: 이 설정을 활성화 하면 E-hentai/Exhentai 이미지 보기 제한이 빠르게 소모됩니다</string>
     <string name="pref_dl_eh_hires_off">웹사이트에 표시되는 이미지을 다운로드 합니다</string>
-    <string name="pref_dl_ksk_hires_on">가능하면 고해상도로 다운로드 합니다</string>
     <string name="pref_dl_threads_quantity_title">병렬 다운로드 갯수</string>
     <string name="pref_dl_threads_quantity_summary">동시에 다운로드 할 이미지의 갯수를 지정합니다\n현재: %s</string>
     <string name="pref_dl_speed_cap_title">다운로드 속도 제한</string>

@@ -90,13 +90,11 @@
     <string name="menu_open_folder">Открыть родительскую папку</string>
     <string name="menu_redownload">Загрузить снова</string>
     <string name="menu_redownload_scratch">Загрузить с нуля</string>
-    <string name="menu_stream">Передавать потоком</string>
     <string name="menu_download_streamed">Загрузить</string>
     <string name="menu_select_all">Выбрать всё</string>
     <string name="menu_share">Поделиться</string>
     <string name="menu_share_help">Поделиться ссылкой на книгу и её названием через стороннее приложение</string>
     <string name="menu_share_title">Ссылка на книгу</string>
-    <string name="menu_archive">В архив</string>
     <string name="library_search_hint">Название, художник, тэг или ID книги</string>
     <string name="group_search_hint">Название группы</string>
     <string name="send_to">Поделиться через:</string>
@@ -433,7 +431,6 @@
     <string name="redownload_limit">Невозможно повторно загрузить более 1000 книг за раз</string>
     <string name="stream_limit">Невозможно одновременно прогрузить более 1000 книг</string>
     <string name="transform_limit">Невозможно преобразовать более 1000 книг одновременно</string>
-    <string name="archive_limit">Невозможно заархивировать более 1000 книг за раз</string>
     <string name="new_group_name">Название новой группы\?</string>
     <string name="group_edit_name">Редактировать название группы</string>
     <string name="book_edit_title">Редактировать название книги</string>
@@ -460,7 +457,6 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг успешно заархивированы</item>
     </plurals>
     <string name="notif_archive_fail">Архивация не удалась</string>
-    <string name="notif_archive_fail_details">Не удалось добавить в архив %d книгу(и)</string>
     <plurals name="archive_success">
         <item quantity="one"><x:g id="count" example="1">%d</x:g> книга заархивирована в Загрузках</item>
         <item quantity="few"><x:g id="count" example="2">%d</x:g> книги заархивировано в Загрузках</item>
@@ -665,7 +661,6 @@
     <string name="web_forward">Вперёд</string>
     <string name="web_bookmarks">Закладки</string>
     <string name="web_refresh_stop">Обновить/остановить</string>
-    <string name="web_copy_url">Скопировать адрес</string>
     <string name="web_download">Загрузить</string>
     <string name="web_unparsable">Этот контент не может быть загружен. Сорри~</string>
     <string name="web_url_clipboard">URL скопирован в буфер обмена</string>
@@ -822,7 +817,6 @@
     <string name="duplicate_find_action">Начать поиск</string>
     <string name="duplicate_index_covers">Индексирую обложки</string>
     <string name="duplicate_find">Определяю дубликаты</string>
-    <string name="duplicate_count">%d дубликат</string>
     <string name="duplicate_title_score">Название: %.0f%%</string>
     <string name="duplicate_title_score_nodata">Название: нет данных</string>
     <string name="duplicate_cover_score">Обложка: %.0f%%</string>
@@ -839,7 +833,6 @@
     </plurals>
     <string name="duplicate_empty_first_use">Нечего показывать, начните новый поиск</string>
     <string name="duplicate_processing">Идёт определение дубликатов</string>
-    <string name="duplicate_main_title">%d предмет остался</string>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g id="number" example="1">%d</x:g> дубликат</item>
         <item quantity="few"><x:g id="number" example="2">%d</x:g> дубликата</item>
@@ -901,7 +894,6 @@
     <string name="transform_start">Преобразование изображений</string>
     <string name="transform_progress">Преобразование изображений</string>
     <string name="transform_complete">Преобразование завершено</string>
-    <string name="transform_complete_details">%d изображение преобразовано</string>
     <string name="range_check">Значение должно быть между %1$d и %2$d</string>
     <string name="previous_page">Предыдущая страница</string>
     <string name="next_page">Следующая страница</string>
@@ -910,7 +902,6 @@
     <string name="folder_device_downloads">Папка загрузок устройства</string>
     <string name="folder_other">Выберите папку…</string>
     <string name="archive_overwrite">Перезаписать существующие архивы</string>
-    <string name="create_archive">Создать архив</string>
     <string name="notif_archive_title">Архивирование контента</string>
     <string name="notif_delete_title">Удаление контента</string>
     <string name="notif_delete_complete">Удаление завершено</string>

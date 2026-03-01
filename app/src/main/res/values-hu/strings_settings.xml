@@ -93,11 +93,6 @@
     <string name="pref_browser_augmented_title">Augmentált böngésző</string>
     <string name="pref_browser_augmented_off">Vanilla viselkedés használata</string>
     <string name="pref_browser_augmented_on">A reklámfelületek eltávolítása és gyors elemzése</string>
-    <string name="pref_browser_override_overview_title">Oldalnézet letiltása</string>
-    <string name="pref_browser_override_overview_summary_off">Letiltja az oldalnézetet, és lehetővé teszi, hogy beállítsa a kívánt kezdeti nagyítási szintet az alábbiakban.</string>
-    <string name="pref_browser_override_overview_summary_on">Állítsa be az alábbi beállítást a kezdeti nagyítási szint beállításához\nMegjegyzés: Csak a hitomi és az e-hentai beállításokra van hatással.</string>
-    <string name="pref_browser_initial_zoom_title">Kezdeti nagyítási szint</string>
-    <string name="pref_browser_initial_zoom_summary">A böngészőoldal nagyítási szintje az oldal kezdeti betöltésekor\nJelenleg: <x:g example="20%" id="percentage">%s%%</x:g></string>
     <string name="pref_browser_dns_title">DNS-iver-HTTPS</string>
     <string name="pref_browser_clear_cookies">Összes süti törlése</string>
     <string name="pref_browser_clear_cookies_ok">Az összes süti törlése sikeresen megtörtént</string>
@@ -149,7 +144,7 @@
 <string name="pref_screen_updates">Frissítések</string>
     <string name="pref_check_updates_manual_title">Manuális frissítés ellenőrzése</string>
     <string name="pref_check_updates_manual_summary">Manuálisan ellenőrizze a frissítéseket most</string>
-    <string name="pref_check_updates_manual_checking">Frissítések keresése...</string>
+    <string name="pref_check_updates_manual_checking">Frissítések keresése…</string>
     <string name="pref_check_updates_manual_no_new">Nem található frissítés - Már a legfrissebb verziót használja</string>
     <string name="pref_check_updates_manual_no_connection">Nem sikerült ellenőrizni a frissítéseket. Ellenőrizze a kapcsolatot, vagy próbálja meg később újra</string>
     <string name="pref_check_updates_title">Automatikus frissítések</string>

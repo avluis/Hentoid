@@ -86,12 +86,10 @@
     <string name="menu_open_folder">Відкрити батьківську папку</string>
     <string name="menu_redownload">Завантажити знову</string>
     <string name="menu_redownload_scratch">Завантажити з нуля</string>
-    <string name="menu_stream">Передавати потоком</string>
     <string name="menu_download_streamed">Завантажити</string>
     <string name="menu_select_all">Вибрати все</string>
     <string name="menu_share">Поділитися</string>
     <string name="menu_share_help">Поділитися лінком на книгу та її назвою через сторонній додаток</string>
-    <string name="menu_archive">В архів</string>
     <string name="menu_share_title">Лінк на книгу</string>
     <string name="library_search_hint">Назва, художник, теґ чи ID книги</string>
     <string name="send_to">Поділитися через:</string>
@@ -211,7 +209,6 @@
     <string name="work_pages_duplicate_dialog_library">Сторінок (в бібліотеці): %d</string>
     <string name="work_pages_duplicate_dialog_queue">Сторінок (в черзі): %d</string>
     <string name="work_pages_duplicate_dialog_source">Сторінок (в цьому джерелі): %d</string>
-    <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> МБ</string>
     <string name="redownload_queue_progress">Вибрані книги завантажуються знову</string>
     <string name="errortype_parsing">Обробка</string>
     <string name="errortype_networking">Мережа</string>
@@ -239,7 +236,6 @@
     <string name="refresh_options_remove_or">або</string>
 
     <!-- Delete all except favs -->
-    <string name="delete_title">Видалити все, окрім обраних</string>
     <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="книг">%3$s</x:g></string>
     <plurals name="book_progress">
         <item quantity="one"><x:g id="number" example="1">%1$d</x:g> книга з <x:g id="total" example="42">%2$d</x:g></item>
@@ -648,7 +644,6 @@
     <string name="web_forward">Уперед</string>
     <string name="web_bookmarks">Закладки</string>
     <string name="web_refresh_stop">Оновити/зупинити</string>
-    <string name="web_copy_url">Скопіювати адресу</string>
     <string name="web_download">Завантажити</string>
     <string name="web_unparsable">Цей контент не може бути завантажений. Соррі~</string>
     <string name="web_url_clipboard">URL скопійовано в буфер обміну</string>
@@ -791,9 +786,6 @@
     <string name="get_latest">Доступна нова версія (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
     <string name="update_success">Оновлення завершено!</string>
     <string name="starting_download">Завантаження почато</string>
-
-    <!-- Edit drawer -->
-    <string name="title_activity_drawer_edit">Меню редагування</string>
 
     <!-- Duplicate detector -->
     <string name="title_activity_duplicate_detector">Пошук дублікатів</string>

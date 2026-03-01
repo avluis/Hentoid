@@ -37,7 +37,6 @@
     <string name="apply_final">Applica scelte</string>
     <string name="archive_delete_after_archiving">Cancella i libri dopo averli esportati</string>
     <string name="archive_format">Formato archivio</string>
-    <string name="archive_limit">Impossibile archiviare più di 1000 libri in una volta</string>
     <string name="archive_overwrite">Sovrascrivi archivi esistenti</string>
     <string name="archive_progress">Archiviando i libri</string>
     <string name="archive_progress_subtitle">Finito: %s</string>
@@ -612,7 +611,6 @@
     <string name="memory_hentoid_main">Hentoid (principale): %s</string>
     <string name="memory_title">Utilizzo della memoria</string>
     <string name="memory_total">Totale: %s</string>
-    <string name="menu_archive">Archivio</string>
     <string name="menu_archive_help">Esporta i libri come archivi o PDF</string>
     <string name="menu_change_dl_mode">Cambia modalità download</string>
     <string name="menu_change_group">Muovi nel gruppo</string>
@@ -643,7 +641,6 @@
     <string name="menu_sort">Sorta</string>
     <string name="menu_sort_filter">Ordina e filtra</string>
     <string name="menu_storage_method">Metodo di archiviazione</string>
-    <string name="menu_stream">Passa allo streaming</string>
     <string name="merge_delete_after_merging">Elimina questi libri dopo l\'unione</string>
     <string name="merge_fail">Contenuto da unire fallito</string>
     <string name="merge_merge">Unisci</string>

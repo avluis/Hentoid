@@ -54,7 +54,6 @@
     <string name="pref_external_library_detach_title">Отключить внешнюю библиотеку</string>
     <string name="pref_external_library_detach_summary">Не использовать внешнюю библиотеку в Hentoid</string>
     <string name="pref_cat_eh">E-hentai / ExHentai</string>
-    <string name="pref_cat_ksk">Ksk.moe</string>
     <string name="pref_cat_advanced">Дополнительно</string>
     <string name="pref_refresh_library_title">Обновить библиотеку</string>
     <string name="pref_refresh_library_summary">Вручную обновить содержимое библиотеки</string>
@@ -97,11 +96,6 @@
     <string name="pref_browser_augmented_title">Улучшение качества жизни</string>
     <string name="pref_browser_augmented_off">Используется стандартное поведение</string>
     <string name="pref_browser_augmented_on">Реклама удаляется, а обработка происходит быстрее</string>
-    <string name="pref_browser_override_overview_title">Отключить обзор страницы</string>
-    <string name="pref_browser_override_overview_summary_off">Внизу вы можете выставить предпочитаемый уровень масштаба по умолчанию</string>
-    <string name="pref_browser_override_overview_summary_on">Воспользуйтесь настройкой внизу для определения предпочитаемого уровня масштаба по умолчанию\nПримечание: Работает только на hitomi и e-hentai</string>
-    <string name="pref_browser_initial_zoom_title">Масштаб по умолчанию</string>
-    <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы\nСейчас: %s%%</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
     <string name="pref_browser_clear_cookies">Очистить cookies браузера</string>
     <string name="pref_browser_clear_cookies_ok">Cookies удалены успешно</string>
@@ -139,7 +133,6 @@
     <string name="download_eh_hires_title">Скачать фотографии в высоком разрешении</string>
     <string name="pref_dl_eh_hires_on">Загружать изображения в высоком разрешении, если они доступны\nВНИМАНИЕ: При активации этой опции лимит просмотра изображений E-hentai/Exhentai будет расходоваться гораздо быстрее</string>
     <string name="pref_dl_eh_hires_off">Скачать изображения, отображаемые на веб-сайте</string>
-    <string name="pref_dl_ksk_hires_on">Скачать изображения в высоком разрешении, если они доступны</string>
     <string name="pref_dl_threads_quantity_title">Кол-во параллельных загрузок</string>
     <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно\nСейчас: %s</string>
     <string name="pref_dl_speed_cap_title">Ограничение скорости загрузки</string>
@@ -222,5 +215,4 @@
     <string name="pref_display_grid_rating_title">Изменить рейтинг</string>
     <string name="pref_display_grid_source_title">Посмотреть оригинал</string>
     <string name="pref_display_grid_storage_title">Информация о хранилище</string>
-    <string name="pref_grid_card_width">Ширина отображения книги</string>
 </resources>
