@@ -37,7 +37,6 @@
     <string name="apply_final">Verkställ val</string>
     <string name="archive_delete_after_archiving">Ta bort böcker efter lyckad export</string>
     <string name="archive_format">Arkivformat</string>
-    <string name="archive_limit">Kan inte arkivera fler än 1000 böcker samtidigt</string>
     <string name="archive_overwrite">Skriv över existerande arkiv</string>
     <string name="archive_progress">Arkiverar böcker</string>
     <string name="archive_progress_subtitle">Färdig: %s</string>
@@ -45,6 +44,7 @@
         <item quantity="one">%d bok arkiverad i din nerladdningsmapp</item>
         <item quantity="other">%d böcker arkiverade i din nerladdningsmapp</item>
     </plurals>
+    <string name="archived_help">Arkiverad bok</string>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Arkivera utvalt föremål\?</item>
         <item quantity="other">Arkivera %d utvalda föremål\?</item>
@@ -358,7 +358,6 @@
         <item quantity="one">Ta bort %d bok</item>
         <item quantity="other">Ta bort %d böcker</item>
     </plurals>
-    <string name="group_delete_selected_group">Ta endast bort gruppen</string>
     <plurals name="group_delete_selected_group">
         <item quantity="one">Ta endast bort grupp</item>
         <item quantity="other">Ta endast bort grupper</item>
@@ -493,7 +492,6 @@
     <string name="information_help">Information</string>
     <string name="invalid_selection_generic">Ogiltigt val</string>
     <string name="invert_queue">Invertera kö</string>
-    <string name="item">Element</string>
     <plurals name="item">
         <item quantity="one">föremål</item>
         <item quantity="other">föremål</item>
@@ -503,7 +501,6 @@
         <item quantity="other">%d föremål utvalda</item>
     </plurals>
     <string name="keep_chapters_first_book_title">Behåll alla kapitel i den första boken</string>
-    <string name="keep_fav_books">Behåll favoritböcker</string>
     <string name="keep_fav_groups">Behandla inte böcker i favoritgrupper</string>
     <string name="lang_cs">Tjeckiska</string>
     <string name="lang_de">Tyska</string>
@@ -521,7 +518,6 @@
     <string name="lang_sv">Svenska</string>
     <string name="lang_th">Thailändska</string>
     <string name="lang_tr">Turkiska</string>
-    <string name="lang_uk">Ukrainska</string>
     <string name="lang_vi">Vietnamesiska</string>
     <string name="lang_zh">Kinesiska</string>
     <string name="launch">Kör</string>
@@ -552,6 +548,7 @@
     <string name="mass_delete_action">Ta bort i massor</string>
     <string name="mass_delete_confirm">Jag vet vad jag gör</string>
     <string name="mass_external_tip">Notera : Externa böcker kommer tas bort av den här handlingen</string>
+    <string name="mass_external_warning_1">Ditt nuvarande val innehåller böcker från sidor som inte är tänkta att strömmas. Sådana böcker kommer ej behandlas.</string>
     <string name="mass_operation">Handling</string>
     <string name="mass_operation_1">Ta bort</string>
     <string name="mass_operation_2">Byt till streaming</string>
@@ -570,7 +567,6 @@
     <string name="memory_hentoid_main">Hentoid (primär): %s</string>
     <string name="memory_title">Användning av lagring</string>
     <string name="memory_total">Totalt: %s</string>
-    <string name="menu_archive">Arkiv</string>
     <string name="menu_archive_help">Exportera böcker som arkiv eller PDF</string>
     <string name="menu_change_dl_mode">Ändra nerladdningsläge</string>
     <string name="menu_change_group">Flytta till grupp</string>
@@ -601,7 +597,6 @@
     <string name="menu_sort">Sortera</string>
     <string name="menu_sort_filter">Sortera och filtrera</string>
     <string name="menu_storage_method">Lagringsmetod</string>
-    <string name="menu_stream">Byt till streaming</string>
     <string name="merge_delete_after_merging">Ta bort böckerna efter ihopslagning</string>
     <string name="merge_fail">Misslyckades att slå ihop innehåll</string>
     <string name="merge_merge">Slå ihop</string>
@@ -705,7 +700,6 @@
     <string name="open_drawer">Öppna låda</string>
     <string name="open_folder">Öppna mapp</string>
     <string name="open_settings">Öppna inställningar</string>
-    <string name="page">Sida</string>
     <plurals name="page">
         <item quantity="one">sida</item>
         <item quantity="other">sidor</item>
@@ -731,6 +725,7 @@
     <string name="paused_no_internet">Kan inte ladda ner - inget internet</string>
     <string name="paused_no_storage">Kan inte ladda ner - dåligt med lagringsutrymme (%s left). Frigör utrymme eller byt mapp för nedladdning</string>
     <string name="paused_no_wifi">Kan inte ladda ner - inget Wi-Fi</string>
+    <string name="pdf_help">PDF</string>
     <string name="permissioncomplaint_snackbar">Du måste ge tillstånd innan du kan fortsätta</string>
     <string name="permissioncomplaint_snackbar_manual">Du måste manuellt ge tillstånd innan du kan fortsätta</string>
     <string name="personalDataStatement1">SEKRETESSINFORMATION ANGÅENDE PERSONUPPGIFTER\n\nHentoid är en gratis och öppenkällkodsprogramvara underhållen av Hentoid-gemenskapen (gå med i vår Discord - se länk ovanför)</string>
@@ -744,9 +739,6 @@
     <string name="pin_reset">Återställ PIN-kod</string>
     <string name="pin_reset_success">PIN-kod återställd</string>
     <string name="please_wait">Vänligen vänta…</string>
-    <string name="pref_ask_delete_all_except_favs">Ta bort alla böcker förutom favoriter?</string>
-    <string name="pref_delete_all_except_favs_summary">Tar bort alla böcker förutom favoriter</string>
-    <string name="pref_delete_all_except_favs_title">Ta bort alla böcker förutom favoriter</string>
     <string name="press_back_again">Tryck på tillbaka två gånger (fort) för att stänga av.</string>
     <string name="preview">Förhandsvisning</string>
     <string name="previous_book_help">Föregående bok</string>
@@ -783,14 +775,12 @@
     <string name="redl_scratch">Ladda ner från början</string>
     <string name="redownload_action">ÅTERNERLADDA</string>
     <string name="redownload_all">Ladda ner samtliga från början</string>
-    <string name="redownload_confirm">Påbörja åternerladdning?</string>
     <plurals name="redownload_confirm">
         <item quantity="one">Åternerladda den utvalda boken från början\?</item>
         <item quantity="other">Åternerladda de utvalda böckerna från början\?</item>
     </plurals>
     <string name="redownload_dialog_message">Totala antalet bilder i nerladdning: %1$d\nBilder utan fel: %2$d\nBilder med fel: %3$d</string>
     <string name="redownload_dialog_title">Försök ladda ner igen\?</string>
-    <string name="redownload_external_content">En av böckerna finns lagrade externt och går därför inte att ladda ner</string>
     <plurals name="redownload_external_content">
         <item quantity="one">En av de utvalda böckerna finns lagrad i det externa biblioteket och kan inte bli åternedladdad\nDen boken kommer ignoreras.</item>
         <item quantity="other">%d Valda böcker lagras i det externa biblioteket och kan inte åternerladdas\nDe kommer bli ignorerade.</item>
@@ -798,12 +788,12 @@
     <string name="redownload_first_error">Första felet: %s</string>
     <string name="redownload_generating_log_file">Genererar loggfil…</string>
     <string name="redownload_limit">Kan inte åternerladda fler än 1000 böcker samtidigt</string>
+    <string name="redownload_nocando">Valda böcker är varken giltiga för åternerladdning eller uppdatering</string>
     <string name="redownload_open_log">Öppna fel-logg</string>
     <string name="redownload_queue_progress">Åternerladdar valda böcker</string>
     <string name="redownload_share_log">Dela fel-logg</string>
     <string name="redownloaded_error">Ett fel inträffade vid hämtning - avbröt</string>
     <string name="redownloaded_missing_webview">Webbvyn är otillgänglig, kan inte hämta just nu</string>
-    <string name="redownloaded_scratch">Laddade ned från början</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one">%1$d/%2$d Föremål färdig för hämtning</item>
         <item quantity="other">%1$d/%2$d Föremål färdiga för hämtning</item>
@@ -953,7 +943,6 @@
     <string name="storage_streamed">Strömma</string>
     <string name="storage_streamed_description">Ladda inte ner till lagringsenhet, strömma dem medans du läser</string>
     <string name="stream_canceled">Streaming avbruten - bok otillgänglig online</string>
-    <string name="stream_confirm">Streama vald bok?</string>
     <plurals name="stream_confirm">
         <item quantity="one">Byt utvald bok till streaming\?</item>
         <item quantity="other">Byt utvalda böcker till streaming\?</item>
@@ -982,7 +971,6 @@
     <string name="title_activity_app_lock">Applås</string>
     <string name="title_activity_browser">Webbläsare</string>
     <string name="title_activity_downloads">Bibliotek</string>
-    <string name="title_activity_drawer_edit">Ändra byrå</string>
     <string name="title_activity_duplicate_detector">Dubblettdetektor</string>
     <string name="title_activity_meta_edit">Ändra metadata</string>
     <string name="title_activity_queue">Kö</string>
@@ -1071,6 +1059,8 @@
     <string name="web_open_ext_browser">Extern webbläsare</string>
     <string name="web_refresh_stop">Fräscha upp/stoppa</string>
     <string name="web_storage_permission_denied">Lagringstillstånd nekat - får inte använda nerladdaren</string>
+    <string name="web_target_page_outside_restricted_domains">Värd utanför begränsade domäner</string>
+    <string name="web_target_page_unavailable">Webbsida ej tillgänglig; läser in välkomstsida istället</string>
     <string name="web_unparsable">Det här innehållet kan inte laddas ned. Förlåt~</string>
     <string name="web_url">Använd länk</string>
     <string name="web_url_clipboard">URL-kopierad till urklipp</string>

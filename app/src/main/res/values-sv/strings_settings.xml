@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="doh_warning">Vissa webbplatser kommer inte fungera så bra med DNS över HTTPS. Använd en extern DNS-app om du upplever svårigheter under navigering (ex tomma sidor, loginfönster utan responser)</string>
     <string name="download_eh_hires_title">Ladda ner högupplösta bilder</string>
     <string name="download_hitomi_avif_off">Ladda ner bilder i WEBP-format</string>
@@ -211,6 +211,7 @@
     <string name="pref_viewer_continuous_summary_on">Använda nästa sida på sista sidan laddar nästa bok</string>
     <string name="pref_viewer_continuous_title">Kontinuerlig läsning</string>
     <string name="pref_viewer_controls">Styrning</string>
+    <string name="pref_viewer_delete_load_direction">Inläsningsriktning efter bokborttagning</string>
     <string name="pref_viewer_display_mode">Visningsläge för horisontell visning</string>
     <string name="pref_viewer_display_notch">Visa tryckområdet</string>
     <string name="pref_viewer_display_pagenum">Visa alltid sidnummer</string>
